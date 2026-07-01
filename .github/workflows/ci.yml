@@ -19,16 +19,16 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm install
-      - run: buf lint
+      - run: docker run --rm -v "$PWD:/workspace" -w /workspace bufbuild/buf:latest lint
       - name: Check breaking changes
         if: github.event_name == 'pull_request'
         run: |
           if git rev-parse --verify origin/main >/dev/null 2>&1; then
-            buf breaking --against '.git#branch=main'
+            docker run --rm -v "$PWD:/workspace" -w /workspace bufbuild/buf:latest breaking --against '.git#branch=main'
           else
             echo "origin/main not found; skipping breaking check"
           fi
-      - run: buf generate
+      - run: docker run --rm -v "$PWD:/workspace" -w /workspace bufbuild/buf:latest generate
       - run: npm run build
       - run: go mod tidy
       - run: git diff --exit-code
