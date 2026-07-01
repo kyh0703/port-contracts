@@ -1,0 +1,44 @@
+syntax = "proto3";
+
+package port.api.v1;
+
+import "buf/validate/validate.proto";
+import "google/api/annotations.proto";
+import "google/protobuf/timestamp.proto";
+
+option go_package = "github.com/kyh0703/port-contracts/gen/go/port/api/v1;apiv1";
+
+service ApiEventService {
+  rpc RecordGatewayEvent(RecordGatewayEventRequest) returns (RecordGatewayEventResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/gateway/events"
+      body: "*"
+    };
+  }
+}
+
+message RecordGatewayEventRequest {
+  string event_id = 1;
+  GatewayLifecycleEventType event_type = 2 [(buf.validate.field).enum = {
+    defined_only: true
+    not_in: 0
+  }];
+  string conversation_id = 3 [(buf.validate.field).string.min_len = 1];
+  string session_id = 4;
+  string room_id = 5;
+  google.protobuf.Timestamp occurred_at = 6 [(buf.validate.field).required = true];
+  map<string, string> payload = 7;
+}
+
+message RecordGatewayEventResponse {}
+
+enum GatewayLifecycleEventType {
+  GATEWAY_LIFECYCLE_EVENT_TYPE_UNSPECIFIED = 0;
+  GATEWAY_LIFECYCLE_EVENT_TYPE_AGENT_STARTED = 1;
+  GATEWAY_LIFECYCLE_EVENT_TYPE_AGENT_FAILED = 2;
+  GATEWAY_LIFECYCLE_EVENT_TYPE_SIP_CONNECTED = 3;
+  GATEWAY_LIFECYCLE_EVENT_TYPE_SIP_ENDED = 4;
+  GATEWAY_LIFECYCLE_EVENT_TYPE_RECORDING_STARTED = 5;
+  GATEWAY_LIFECYCLE_EVENT_TYPE_RECORDING_COMPLETED = 6;
+  GATEWAY_LIFECYCLE_EVENT_TYPE_RECORDING_FAILED = 7;
+}

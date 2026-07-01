@@ -1,0 +1,104 @@
+syntax = "proto3";
+
+package port.media.v1;
+
+import "buf/validate/validate.proto";
+import "google/api/annotations.proto";
+import "google/protobuf/timestamp.proto";
+
+option go_package = "github.com/kyh0703/port-contracts/gen/go/port/media/v1;mediav1";
+
+service MediaService {
+  rpc CreateSession(CreateSessionRequest) returns (CreateSessionResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/sessions"
+      body: "*"
+    };
+  }
+
+  rpc GetSessionStatus(GetSessionStatusRequest) returns (GetSessionStatusResponse) {
+    option (google.api.http) = {get: "/api/v1/sessions/{session_id}/status"};
+  }
+
+  rpc LeaveParticipant(LeaveParticipantRequest) returns (LeaveParticipantResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/sessions/{session_id}/participants/{participant_id}/leave"
+      body: "*"
+    };
+  }
+
+  rpc EndSession(EndSessionRequest) returns (EndSessionResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/sessions/{session_id}/end"
+      body: "*"
+    };
+  }
+}
+
+message CreateSessionRequest {
+  string session_id = 1 [(buf.validate.field).string.min_len = 1];
+  string conversation_id = 2 [(buf.validate.field).string.min_len = 1];
+}
+
+message CreateSessionResponse {
+  string session_id = 1 [(buf.validate.field).string.min_len = 1];
+  string conversation_id = 2 [(buf.validate.field).string.min_len = 1];
+  string room_id = 3 [(buf.validate.field).string.min_len = 1];
+  string status = 4 [(buf.validate.field).string.min_len = 1];
+}
+
+message GetSessionStatusRequest {
+  string session_id = 1 [(buf.validate.field).string.min_len = 1];
+}
+
+message GetSessionStatusResponse {
+  string session_id = 1;
+  string conversation_id = 2;
+  string user_id = 3;
+  string room_id = 4;
+  string status = 5;
+  string connection_state = 6;
+  string media_state = 7;
+  int32 participants = 8 [(buf.validate.field).int32.gte = 0];
+  repeated ParticipantState participant_states = 9;
+  string last_runtime_event_type = 10;
+  google.protobuf.Timestamp last_runtime_event_at = 11;
+  repeated RuntimeEvent recent_runtime_events = 12;
+  google.protobuf.Timestamp started_at = 13;
+  google.protobuf.Timestamp last_active_at = 14;
+}
+
+message ParticipantState {
+  string id = 1;
+  string role = 2;
+  string audio_mode = 3;
+  string connection_state = 4;
+  int32 tracks = 5 [(buf.validate.field).int32.gte = 0];
+}
+
+message RuntimeEvent {
+  string type = 1;
+  google.protobuf.Timestamp at = 2;
+}
+
+message LeaveParticipantRequest {
+  string session_id = 1 [(buf.validate.field).string.min_len = 1];
+  string participant_id = 2 [(buf.validate.field).string.min_len = 1];
+}
+
+message LeaveParticipantResponse {
+  string session_id = 1 [(buf.validate.field).string.min_len = 1];
+  string room_id = 2 [(buf.validate.field).string.min_len = 1];
+  string participant_id = 3 [(buf.validate.field).string.min_len = 1];
+  string status = 4 [(buf.validate.field).string.min_len = 1];
+}
+
+message EndSessionRequest {
+  string session_id = 1 [(buf.validate.field).string.min_len = 1];
+}
+
+message EndSessionResponse {
+  string session_id = 1 [(buf.validate.field).string.min_len = 1];
+  string room_id = 2 [(buf.validate.field).string.min_len = 1];
+  string status = 3 [(buf.validate.field).string.min_len = 1];
+}

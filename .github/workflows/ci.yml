@@ -1,0 +1,35 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: bufbuild/buf-setup-action@v1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm install
+      - run: buf dep update
+      - run: buf lint
+      - name: Check breaking changes
+        if: github.event_name == 'pull_request'
+        run: |
+          if git rev-parse --verify origin/main >/dev/null 2>&1; then
+            buf breaking --against '.git#branch=main'
+          else
+            echo "origin/main not found; skipping breaking check"
+          fi
+      - run: buf generate
+      - run: npm run build
+      - run: go mod tidy
+      - run: git diff --exit-code

@@ -1,0 +1,38 @@
+{
+  "name": "@overthinker1127/port-contracts",
+  "version": "1.0.0",
+  "description": "Shared protobuf contracts for port services.",
+  "private": false,
+  "license": "UNLICENSED",
+  "files": [
+    "dist",
+    "proto",
+    "buf.yaml",
+    "buf.gen.yaml"
+  ],
+  "scripts": {
+    "generate": "buf generate",
+    "build": "tsc -p tsconfig.json",
+    "prepack": "npm run build",
+    "lint:proto": "buf lint",
+    "check": "npm run lint:proto && npm run generate && npm run build"
+  },
+  "exports": {
+    "./gen/ts/*": {
+      "types": "./dist/gen/ts/*.d.ts",
+      "default": "./dist/gen/ts/*.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "dependencies": {
+    "@bufbuild/protobuf": "^2.12.1",
+    "@grpc/grpc-js": "^1.14.0",
+    "protobufjs": "^7.5.4"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}
