@@ -19,7 +19,6 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm install
-      - run: buf dep update
       - run: buf lint
       - name: Check breaking changes
         if: github.event_name == 'pull_request'
