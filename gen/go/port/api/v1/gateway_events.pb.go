@@ -27,14 +27,11 @@ const (
 type GatewayLifecycleEventType int32
 
 const (
-	GatewayLifecycleEventType_GATEWAY_LIFECYCLE_EVENT_TYPE_UNSPECIFIED         GatewayLifecycleEventType = 0
-	GatewayLifecycleEventType_GATEWAY_LIFECYCLE_EVENT_TYPE_AGENT_STARTED       GatewayLifecycleEventType = 1
-	GatewayLifecycleEventType_GATEWAY_LIFECYCLE_EVENT_TYPE_AGENT_FAILED        GatewayLifecycleEventType = 2
-	GatewayLifecycleEventType_GATEWAY_LIFECYCLE_EVENT_TYPE_SIP_CONNECTED       GatewayLifecycleEventType = 3
-	GatewayLifecycleEventType_GATEWAY_LIFECYCLE_EVENT_TYPE_SIP_ENDED           GatewayLifecycleEventType = 4
-	GatewayLifecycleEventType_GATEWAY_LIFECYCLE_EVENT_TYPE_RECORDING_STARTED   GatewayLifecycleEventType = 5
-	GatewayLifecycleEventType_GATEWAY_LIFECYCLE_EVENT_TYPE_RECORDING_COMPLETED GatewayLifecycleEventType = 6
-	GatewayLifecycleEventType_GATEWAY_LIFECYCLE_EVENT_TYPE_RECORDING_FAILED    GatewayLifecycleEventType = 7
+	GatewayLifecycleEventType_GATEWAY_LIFECYCLE_EVENT_TYPE_UNSPECIFIED   GatewayLifecycleEventType = 0
+	GatewayLifecycleEventType_GATEWAY_LIFECYCLE_EVENT_TYPE_AGENT_STARTED GatewayLifecycleEventType = 1
+	GatewayLifecycleEventType_GATEWAY_LIFECYCLE_EVENT_TYPE_AGENT_FAILED  GatewayLifecycleEventType = 2
+	GatewayLifecycleEventType_GATEWAY_LIFECYCLE_EVENT_TYPE_SIP_CONNECTED GatewayLifecycleEventType = 3
+	GatewayLifecycleEventType_GATEWAY_LIFECYCLE_EVENT_TYPE_SIP_ENDED     GatewayLifecycleEventType = 4
 )
 
 // Enum value maps for GatewayLifecycleEventType.
@@ -45,19 +42,13 @@ var (
 		2: "GATEWAY_LIFECYCLE_EVENT_TYPE_AGENT_FAILED",
 		3: "GATEWAY_LIFECYCLE_EVENT_TYPE_SIP_CONNECTED",
 		4: "GATEWAY_LIFECYCLE_EVENT_TYPE_SIP_ENDED",
-		5: "GATEWAY_LIFECYCLE_EVENT_TYPE_RECORDING_STARTED",
-		6: "GATEWAY_LIFECYCLE_EVENT_TYPE_RECORDING_COMPLETED",
-		7: "GATEWAY_LIFECYCLE_EVENT_TYPE_RECORDING_FAILED",
 	}
 	GatewayLifecycleEventType_value = map[string]int32{
-		"GATEWAY_LIFECYCLE_EVENT_TYPE_UNSPECIFIED":         0,
-		"GATEWAY_LIFECYCLE_EVENT_TYPE_AGENT_STARTED":       1,
-		"GATEWAY_LIFECYCLE_EVENT_TYPE_AGENT_FAILED":        2,
-		"GATEWAY_LIFECYCLE_EVENT_TYPE_SIP_CONNECTED":       3,
-		"GATEWAY_LIFECYCLE_EVENT_TYPE_SIP_ENDED":           4,
-		"GATEWAY_LIFECYCLE_EVENT_TYPE_RECORDING_STARTED":   5,
-		"GATEWAY_LIFECYCLE_EVENT_TYPE_RECORDING_COMPLETED": 6,
-		"GATEWAY_LIFECYCLE_EVENT_TYPE_RECORDING_FAILED":    7,
+		"GATEWAY_LIFECYCLE_EVENT_TYPE_UNSPECIFIED":   0,
+		"GATEWAY_LIFECYCLE_EVENT_TYPE_AGENT_STARTED": 1,
+		"GATEWAY_LIFECYCLE_EVENT_TYPE_AGENT_FAILED":  2,
+		"GATEWAY_LIFECYCLE_EVENT_TYPE_SIP_CONNECTED": 3,
+		"GATEWAY_LIFECYCLE_EVENT_TYPE_SIP_ENDED":     4,
 	}
 )
 
@@ -236,16 +227,13 @@ const file_port_api_v1_gateway_events_proto_rawDesc = "" +
 	"\fPayloadEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
 	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"\x1c\n" +
-	"\x1aRecordGatewayEventResponse*\xa1\x03\n" +
+	"\x1aRecordGatewayEventResponse*\x84\x02\n" +
 	"\x19GatewayLifecycleEventType\x12,\n" +
 	"(GATEWAY_LIFECYCLE_EVENT_TYPE_UNSPECIFIED\x10\x00\x12.\n" +
 	"*GATEWAY_LIFECYCLE_EVENT_TYPE_AGENT_STARTED\x10\x01\x12-\n" +
 	")GATEWAY_LIFECYCLE_EVENT_TYPE_AGENT_FAILED\x10\x02\x12.\n" +
 	"*GATEWAY_LIFECYCLE_EVENT_TYPE_SIP_CONNECTED\x10\x03\x12*\n" +
-	"&GATEWAY_LIFECYCLE_EVENT_TYPE_SIP_ENDED\x10\x04\x122\n" +
-	".GATEWAY_LIFECYCLE_EVENT_TYPE_RECORDING_STARTED\x10\x05\x124\n" +
-	"0GATEWAY_LIFECYCLE_EVENT_TYPE_RECORDING_COMPLETED\x10\x06\x121\n" +
-	"-GATEWAY_LIFECYCLE_EVENT_TYPE_RECORDING_FAILED\x10\a2\x9c\x01\n" +
+	"&GATEWAY_LIFECYCLE_EVENT_TYPE_SIP_ENDED\x10\x042\x9c\x01\n" +
 	"\x0fApiEventService\x12\x88\x01\n" +
 	"\x12RecordGatewayEvent\x12&.port.api.v1.RecordGatewayEventRequest\x1a'.port.api.v1.RecordGatewayEventResponse\"!\x82\xd3\xe4\x93\x02\x1b:\x01*\"\x16/api/v1/gateway/eventsB<Z:github.com/kyh0703/port-contracts/gen/go/port/api/v1;apiv1b\x06proto3"
 
