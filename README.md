@@ -28,7 +28,7 @@ pnpm add @overthinker1127/port-contracts
 Example import:
 
 ```ts
-import { MediaServiceClient } from '@overthinker1127/port-contracts/gen/ts/port/media/v1/media'
+import { ApiEventServiceClient } from '@overthinker1127/port-contracts/gen/ts/port/api/v1/gateway_events'
 ```
 
 ## Go
@@ -36,7 +36,7 @@ import { MediaServiceClient } from '@overthinker1127/port-contracts/gen/ts/port/
 Example import:
 
 ```go
-import mediav1 "github.com/kyh0703/port-contracts/gen/go/port/media/v1"
+import apiv1 "github.com/kyh0703/port-contracts/gen/go/port/api/v1"
 ```
 
 Validation:
@@ -44,9 +44,10 @@ Validation:
 ```go
 import "github.com/kyh0703/port-contracts/validation"
 
-err := validation.Validate(&mediav1.CreateSessionRequest{
-    SessionId: "session-1",
+err := validation.Validate(&apiv1.RecordGatewayEventRequest{
+    EventType: apiv1.GatewayLifecycleEventType_GATEWAY_LIFECYCLE_EVENT_TYPE_AGENT_STARTED,
     ConversationId: "conversation-1",
+    OccurredAt: timestamppb.Now(),
 })
 ```
 
