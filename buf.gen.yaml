@@ -20,3 +20,11 @@ plugins:
       - forceLong=number
       - useExactTypes=false
       - useOptionals=messages
+  - remote: buf.build/protocolbuffers/python
+    out: gen/python
+    include_imports: true
+  - remote: buf.build/grpc/python
+    out: gen/python
+  - remote: buf.build/protocolbuffers/pyi
+    out: gen/python
+    include_imports: true

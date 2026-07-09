@@ -1,0 +1,32 @@
+syntax = "proto3";
+
+package port.reg.v1;
+
+import "buf/validate/validate.proto";
+
+option go_package = "github.com/kyh0703/port-contracts/gen/go/port/reg/v1;regv1";
+
+service RegService {
+  rpc Search(SearchRequest) returns (SearchResponse);
+}
+
+message SearchRequest {
+  string user_id = 1 [(buf.validate.field).string.min_len = 1];
+  string query = 2 [(buf.validate.field).string.min_len = 1];
+  int32 top_k = 3 [(buf.validate.field).int32.gte = 0];
+  optional string conversation_id = 4;
+}
+
+message SearchResponse {
+  repeated SearchResult results = 1;
+}
+
+message SearchResult {
+  string chunk_id = 1;
+  string document_id = 2;
+  string document_name = 3;
+  string text = 4;
+  float score = 5;
+  map<string, string> metadata = 6;
+  int32 seq = 7;
+}
