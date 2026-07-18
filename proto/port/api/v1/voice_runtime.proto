@@ -1,0 +1,41 @@
+syntax = "proto3";
+
+package port.api.v1;
+
+import "buf/validate/validate.proto";
+
+option go_package = "github.com/kyh0703/port-contracts/gen/go/port/api/v1;apiv1";
+
+service VoiceRuntimeService {
+  rpc ResolveLease(ResolveLeaseRequest) returns (ResolveLeaseResponse);
+}
+
+message ResolveLeaseRequest {
+  string lease_id = 1 [(buf.validate.field).string.min_len = 1];
+  string conversation_id = 2 [(buf.validate.field).string.min_len = 1];
+  string session_id = 3 [(buf.validate.field).string.min_len = 1];
+}
+
+message ResolveLeaseResponse {
+  SttRuntime stt = 1 [(buf.validate.field).required = true];
+  LlmRuntime llm = 2 [(buf.validate.field).required = true];
+  TtsRuntime tts = 3 [(buf.validate.field).required = true];
+}
+
+message SttRuntime {
+  string api_key = 1 [(buf.validate.field).string.min_len = 1];
+  string model = 2 [(buf.validate.field).string.min_len = 1];
+  string language = 3 [(buf.validate.field).string.min_len = 1];
+}
+
+message LlmRuntime {
+  string api_key = 1 [(buf.validate.field).string.min_len = 1];
+  string model = 2 [(buf.validate.field).string.min_len = 1];
+}
+
+message TtsRuntime {
+  string api_key = 1 [(buf.validate.field).string.min_len = 1];
+  string model = 2 [(buf.validate.field).string.min_len = 1];
+  string language = 3 [(buf.validate.field).string.min_len = 1];
+  string voice_id = 4 [(buf.validate.field).string.min_len = 1];
+}
