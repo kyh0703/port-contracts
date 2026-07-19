@@ -46,6 +46,19 @@ export interface BootstrapResponse {
   stt?: SttRuntime | undefined;
   llm?: LlmRuntime | undefined;
   tts?: TtsRuntime | undefined;
+  mcpServers: McpServerRuntime[];
+}
+
+export interface McpServerRuntime {
+  name: string;
+  transport: string;
+  url: string;
+  headers: { [key: string]: string };
+}
+
+export interface McpServerRuntime_HeadersEntry {
+  key: string;
+  value: string;
 }
 
 function createBaseBootstrapRequest(): BootstrapRequest {
@@ -332,6 +345,7 @@ function createBaseBootstrapResponse(): BootstrapResponse {
     stt: undefined,
     llm: undefined,
     tts: undefined,
+    mcpServers: [],
   };
 }
 
@@ -360,6 +374,9 @@ export const BootstrapResponse: MessageFns<BootstrapResponse> = {
     }
     if (message.tts !== undefined) {
       TtsRuntime.encode(message.tts, writer.uint32(66).fork()).join();
+    }
+    for (const v of message.mcpServers) {
+      McpServerRuntime.encode(v!, writer.uint32(74).fork()).join();
     }
     return writer;
   },
@@ -435,6 +452,14 @@ export const BootstrapResponse: MessageFns<BootstrapResponse> = {
           message.tts = TtsRuntime.decode(reader, reader.uint32());
           continue;
         }
+        case 9: {
+          if (tag !== 74) {
+            break;
+          }
+
+          message.mcpServers.push(McpServerRuntime.decode(reader, reader.uint32()));
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -470,6 +495,11 @@ export const BootstrapResponse: MessageFns<BootstrapResponse> = {
       stt: isSet(object.stt) ? SttRuntime.fromJSON(object.stt) : undefined,
       llm: isSet(object.llm) ? LlmRuntime.fromJSON(object.llm) : undefined,
       tts: isSet(object.tts) ? TtsRuntime.fromJSON(object.tts) : undefined,
+      mcpServers: globalThis.Array.isArray(object?.mcpServers)
+        ? object.mcpServers.map((e: any) => McpServerRuntime.fromJSON(e))
+        : globalThis.Array.isArray(object?.mcp_servers)
+        ? object.mcp_servers.map((e: any) => McpServerRuntime.fromJSON(e))
+        : [],
     };
   },
 
@@ -499,6 +529,9 @@ export const BootstrapResponse: MessageFns<BootstrapResponse> = {
     if (message.tts !== undefined) {
       obj.tts = TtsRuntime.toJSON(message.tts);
     }
+    if (message.mcpServers?.length) {
+      obj.mcpServers = message.mcpServers.map((e) => McpServerRuntime.toJSON(e));
+    }
     return obj;
   },
 
@@ -515,6 +548,216 @@ export const BootstrapResponse: MessageFns<BootstrapResponse> = {
     message.stt = (object.stt !== undefined && object.stt !== null) ? SttRuntime.fromPartial(object.stt) : undefined;
     message.llm = (object.llm !== undefined && object.llm !== null) ? LlmRuntime.fromPartial(object.llm) : undefined;
     message.tts = (object.tts !== undefined && object.tts !== null) ? TtsRuntime.fromPartial(object.tts) : undefined;
+    message.mcpServers = object.mcpServers?.map((e) => McpServerRuntime.fromPartial(e)) || [];
+    return message;
+  },
+};
+
+function createBaseMcpServerRuntime(): McpServerRuntime {
+  return { name: "", transport: "", url: "", headers: {} };
+}
+
+export const McpServerRuntime: MessageFns<McpServerRuntime> = {
+  encode(message: McpServerRuntime, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.name !== "") {
+      writer.uint32(10).string(message.name);
+    }
+    if (message.transport !== "") {
+      writer.uint32(18).string(message.transport);
+    }
+    if (message.url !== "") {
+      writer.uint32(26).string(message.url);
+    }
+    globalThis.Object.entries(message.headers).forEach(([key, value]: [string, string]) => {
+      McpServerRuntime_HeadersEntry.encode({ key: key as any, value }, writer.uint32(34).fork()).join();
+    });
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): McpServerRuntime {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseMcpServerRuntime();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.name = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.transport = reader.string();
+          continue;
+        }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.url = reader.string();
+          continue;
+        }
+        case 4: {
+          if (tag !== 34) {
+            break;
+          }
+
+          const entry4 = McpServerRuntime_HeadersEntry.decode(reader, reader.uint32());
+          if (entry4.value !== undefined) {
+            message.headers[entry4.key] = entry4.value;
+          }
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): McpServerRuntime {
+    return {
+      name: isSet(object.name) ? globalThis.String(object.name) : "",
+      transport: isSet(object.transport) ? globalThis.String(object.transport) : "",
+      url: isSet(object.url) ? globalThis.String(object.url) : "",
+      headers: isObject(object.headers)
+        ? (globalThis.Object.entries(object.headers) as [string, any][]).reduce(
+          (acc: { [key: string]: string }, [key, value]: [string, any]) => {
+            acc[key] = globalThis.String(value);
+            return acc;
+          },
+          {},
+        )
+        : {},
+    };
+  },
+
+  toJSON(message: McpServerRuntime): unknown {
+    const obj: any = {};
+    if (message.name !== "") {
+      obj.name = message.name;
+    }
+    if (message.transport !== "") {
+      obj.transport = message.transport;
+    }
+    if (message.url !== "") {
+      obj.url = message.url;
+    }
+    if (message.headers) {
+      const entries = globalThis.Object.entries(message.headers) as [string, string][];
+      if (entries.length > 0) {
+        obj.headers = {};
+        entries.forEach(([k, v]) => {
+          obj.headers[k] = v;
+        });
+      }
+    }
+    return obj;
+  },
+
+  create(base?: DeepPartial<McpServerRuntime>): McpServerRuntime {
+    return McpServerRuntime.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<McpServerRuntime>): McpServerRuntime {
+    const message = createBaseMcpServerRuntime();
+    message.name = object.name ?? "";
+    message.transport = object.transport ?? "";
+    message.url = object.url ?? "";
+    message.headers = (globalThis.Object.entries(object.headers ?? {}) as [string, string][]).reduce(
+      (acc: { [key: string]: string }, [key, value]: [string, string]) => {
+        if (value !== undefined) {
+          acc[key] = globalThis.String(value);
+        }
+        return acc;
+      },
+      {},
+    );
+    return message;
+  },
+};
+
+function createBaseMcpServerRuntime_HeadersEntry(): McpServerRuntime_HeadersEntry {
+  return { key: "", value: "" };
+}
+
+export const McpServerRuntime_HeadersEntry: MessageFns<McpServerRuntime_HeadersEntry> = {
+  encode(message: McpServerRuntime_HeadersEntry, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.key !== "") {
+      writer.uint32(10).string(message.key);
+    }
+    if (message.value !== "") {
+      writer.uint32(18).string(message.value);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): McpServerRuntime_HeadersEntry {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseMcpServerRuntime_HeadersEntry();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.key = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.value = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): McpServerRuntime_HeadersEntry {
+    return {
+      key: isSet(object.key) ? globalThis.String(object.key) : "",
+      value: isSet(object.value) ? globalThis.String(object.value) : "",
+    };
+  },
+
+  toJSON(message: McpServerRuntime_HeadersEntry): unknown {
+    const obj: any = {};
+    if (message.key !== "") {
+      obj.key = message.key;
+    }
+    if (message.value !== "") {
+      obj.value = message.value;
+    }
+    return obj;
+  },
+
+  create(base?: DeepPartial<McpServerRuntime_HeadersEntry>): McpServerRuntime_HeadersEntry {
+    return McpServerRuntime_HeadersEntry.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<McpServerRuntime_HeadersEntry>): McpServerRuntime_HeadersEntry {
+    const message = createBaseMcpServerRuntime_HeadersEntry();
+    message.key = object.key ?? "";
+    message.value = object.value ?? "";
     return message;
   },
 };
@@ -571,6 +814,10 @@ export type DeepPartial<T> = T extends Builtin ? T
   : T extends ReadonlyArray<infer U> ? ReadonlyArray<DeepPartial<U>>
   : T extends {} ? { [K in keyof T]?: DeepPartial<T[K]> }
   : Partial<T>;
+
+function isObject(value: any): boolean {
+  return typeof value === "object" && value !== null;
+}
 
 function isSet(value: any): boolean {
   return value !== null && value !== undefined;

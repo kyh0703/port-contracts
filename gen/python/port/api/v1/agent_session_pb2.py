@@ -26,7 +26,7 @@ from buf.validate import validate_pb2 as buf_dot_validate_dot_validate__pb2
 from port.api.v1 import voice_runtime_pb2 as port_dot_api_dot_v1_dot_voice__runtime__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x1fport/api/v1/agent_session.proto\x12\x0bport.api.v1\x1a\x1b\x62uf/validate/validate.proto\x1a\x1fport/api/v1/voice_runtime.proto\"\x85\x01\n\x10\x42ootstrapRequest\x12.\n\rwebrtc_ticket\x18\x01 \x01(\tB\x07\xbaH\x04r\x02\x10\x01H\x00R\x0cwebrtcTicket\x12\x34\n\x03sip\x18\x02 \x01(\x0b\x32 .port.api.v1.SipBootstrapContextH\x00R\x03sipB\x0b\n\tadmission\"\xc7\x02\n\x13SipBootstrapContext\x12\x1e\n\x06job_id\x18\x01 \x01(\tB\x07\xbaH\x04r\x02\x10\x01R\x05jobId\x12(\n\x0b\x64ispatch_id\x18\x02 \x01(\tB\x07\xbaH\x04r\x02\x10\x01R\ndispatchId\x12$\n\troom_name\x18\x03 \x01(\tB\x07\xbaH\x04r\x02\x10\x01R\x08roomName\x12:\n\x14participant_identity\x18\x04 \x01(\tB\x07\xbaH\x04r\x02\x10\x01R\x13participantIdentity\x12\"\n\x08trunk_id\x18\x05 \x01(\tB\x07\xbaH\x04r\x02\x10\x01R\x07trunkId\x12\x35\n\x12trunk_phone_number\x18\x06 \x01(\tB\x07\xbaH\x04r\x02\x10\x01R\x10trunkPhoneNumber\x12)\n\x0c\x63\x61ll_id_full\x18\x07 \x01(\tB\x07\xbaH\x04r\x02\x10\x01R\ncallIdFull\"\x96\x03\n\x11\x42ootstrapResponse\x12\x30\n\x0f\x63onversation_id\x18\x01 \x01(\tB\x07\xbaH\x04r\x02\x10\x01R\x0e\x63onversationId\x12&\n\nsession_id\x18\x02 \x01(\tB\x07\xbaH\x04r\x02\x10\x01R\tsessionId\x12*\n\x06source\x18\x03 \x01(\tB\x12\xbaH\x0fr\rR\x06webrtcR\x03sipR\x06source\x12$\n\troom_name\x18\x04 \x01(\tB\x07\xbaH\x04r\x02\x10\x01R\x08roomName\x12<\n\x16\x61gent_tool_snapshot_id\x18\x05 \x01(\tB\x07\xbaH\x04r\x02\x10\x01R\x13\x61gentToolSnapshotId\x12\x31\n\x03stt\x18\x06 \x01(\x0b\x32\x17.port.api.v1.SttRuntimeB\x06\xbaH\x03\xc8\x01\x01R\x03stt\x12\x31\n\x03llm\x18\x07 \x01(\x0b\x32\x17.port.api.v1.LlmRuntimeB\x06\xbaH\x03\xc8\x01\x01R\x03llm\x12\x31\n\x03tts\x18\x08 \x01(\x0b\x32\x17.port.api.v1.TtsRuntimeB\x06\xbaH\x03\xc8\x01\x01R\x03tts2a\n\x13\x41gentSessionService\x12J\n\tBootstrap\x12\x1d.port.api.v1.BootstrapRequest\x1a\x1e.port.api.v1.BootstrapResponseB<Z:github.com/kyh0703/port-contracts/gen/go/port/api/v1;apiv1b\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x1fport/api/v1/agent_session.proto\x12\x0bport.api.v1\x1a\x1b\x62uf/validate/validate.proto\x1a\x1fport/api/v1/voice_runtime.proto\"\x85\x01\n\x10\x42ootstrapRequest\x12.\n\rwebrtc_ticket\x18\x01 \x01(\tB\x07\xbaH\x04r\x02\x10\x01H\x00R\x0cwebrtcTicket\x12\x34\n\x03sip\x18\x02 \x01(\x0b\x32 .port.api.v1.SipBootstrapContextH\x00R\x03sipB\x0b\n\tadmission\"\xc7\x02\n\x13SipBootstrapContext\x12\x1e\n\x06job_id\x18\x01 \x01(\tB\x07\xbaH\x04r\x02\x10\x01R\x05jobId\x12(\n\x0b\x64ispatch_id\x18\x02 \x01(\tB\x07\xbaH\x04r\x02\x10\x01R\ndispatchId\x12$\n\troom_name\x18\x03 \x01(\tB\x07\xbaH\x04r\x02\x10\x01R\x08roomName\x12:\n\x14participant_identity\x18\x04 \x01(\tB\x07\xbaH\x04r\x02\x10\x01R\x13participantIdentity\x12\"\n\x08trunk_id\x18\x05 \x01(\tB\x07\xbaH\x04r\x02\x10\x01R\x07trunkId\x12\x35\n\x12trunk_phone_number\x18\x06 \x01(\tB\x07\xbaH\x04r\x02\x10\x01R\x10trunkPhoneNumber\x12)\n\x0c\x63\x61ll_id_full\x18\x07 \x01(\tB\x07\xbaH\x04r\x02\x10\x01R\ncallIdFull\"\xd6\x03\n\x11\x42ootstrapResponse\x12\x30\n\x0f\x63onversation_id\x18\x01 \x01(\tB\x07\xbaH\x04r\x02\x10\x01R\x0e\x63onversationId\x12&\n\nsession_id\x18\x02 \x01(\tB\x07\xbaH\x04r\x02\x10\x01R\tsessionId\x12*\n\x06source\x18\x03 \x01(\tB\x12\xbaH\x0fr\rR\x06webrtcR\x03sipR\x06source\x12$\n\troom_name\x18\x04 \x01(\tB\x07\xbaH\x04r\x02\x10\x01R\x08roomName\x12<\n\x16\x61gent_tool_snapshot_id\x18\x05 \x01(\tB\x07\xbaH\x04r\x02\x10\x01R\x13\x61gentToolSnapshotId\x12\x31\n\x03stt\x18\x06 \x01(\x0b\x32\x17.port.api.v1.SttRuntimeB\x06\xbaH\x03\xc8\x01\x01R\x03stt\x12\x31\n\x03llm\x18\x07 \x01(\x0b\x32\x17.port.api.v1.LlmRuntimeB\x06\xbaH\x03\xc8\x01\x01R\x03llm\x12\x31\n\x03tts\x18\x08 \x01(\x0b\x32\x17.port.api.v1.TtsRuntimeB\x06\xbaH\x03\xc8\x01\x01R\x03tts\x12>\n\x0bmcp_servers\x18\t \x03(\x0b\x32\x1d.port.api.v1.McpServerRuntimeR\nmcpServers\"\x87\x02\n\x10McpServerRuntime\x12\x1b\n\x04name\x18\x01 \x01(\tB\x07\xbaH\x04r\x02\x10\x01R\x04name\x12\x39\n\ttransport\x18\x02 \x01(\tB\x1b\xbaH\x18r\x16R\x03sseR\x0fstreamable-httpR\ttransport\x12\x19\n\x03url\x18\x03 \x01(\tB\x07\xbaH\x04r\x02\x10\x01R\x03url\x12\x44\n\x07headers\x18\x04 \x03(\x0b\x32*.port.api.v1.McpServerRuntime.HeadersEntryR\x07headers\x1a:\n\x0cHeadersEntry\x12\x10\n\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n\x05value\x18\x02 \x01(\tR\x05value:\x02\x38\x01\x32\x61\n\x13\x41gentSessionService\x12J\n\tBootstrap\x12\x1d.port.api.v1.BootstrapRequest\x1a\x1e.port.api.v1.BootstrapResponseB<Z:github.com/kyh0703/port-contracts/gen/go/port/api/v1;apiv1b\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -66,12 +66,24 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_BOOTSTRAPRESPONSE'].fields_by_name['llm']._serialized_options = b'\272H\003\310\001\001'
   _globals['_BOOTSTRAPRESPONSE'].fields_by_name['tts']._loaded_options = None
   _globals['_BOOTSTRAPRESPONSE'].fields_by_name['tts']._serialized_options = b'\272H\003\310\001\001'
+  _globals['_MCPSERVERRUNTIME_HEADERSENTRY']._loaded_options = None
+  _globals['_MCPSERVERRUNTIME_HEADERSENTRY']._serialized_options = b'8\001'
+  _globals['_MCPSERVERRUNTIME'].fields_by_name['name']._loaded_options = None
+  _globals['_MCPSERVERRUNTIME'].fields_by_name['name']._serialized_options = b'\272H\004r\002\020\001'
+  _globals['_MCPSERVERRUNTIME'].fields_by_name['transport']._loaded_options = None
+  _globals['_MCPSERVERRUNTIME'].fields_by_name['transport']._serialized_options = b'\272H\030r\026R\003sseR\017streamable-http'
+  _globals['_MCPSERVERRUNTIME'].fields_by_name['url']._loaded_options = None
+  _globals['_MCPSERVERRUNTIME'].fields_by_name['url']._serialized_options = b'\272H\004r\002\020\001'
   _globals['_BOOTSTRAPREQUEST']._serialized_start=111
   _globals['_BOOTSTRAPREQUEST']._serialized_end=244
   _globals['_SIPBOOTSTRAPCONTEXT']._serialized_start=247
   _globals['_SIPBOOTSTRAPCONTEXT']._serialized_end=574
   _globals['_BOOTSTRAPRESPONSE']._serialized_start=577
-  _globals['_BOOTSTRAPRESPONSE']._serialized_end=983
-  _globals['_AGENTSESSIONSERVICE']._serialized_start=985
-  _globals['_AGENTSESSIONSERVICE']._serialized_end=1082
+  _globals['_BOOTSTRAPRESPONSE']._serialized_end=1047
+  _globals['_MCPSERVERRUNTIME']._serialized_start=1050
+  _globals['_MCPSERVERRUNTIME']._serialized_end=1313
+  _globals['_MCPSERVERRUNTIME_HEADERSENTRY']._serialized_start=1255
+  _globals['_MCPSERVERRUNTIME_HEADERSENTRY']._serialized_end=1313
+  _globals['_AGENTSESSIONSERVICE']._serialized_start=1315
+  _globals['_AGENTSESSIONSERVICE']._serialized_end=1412
 # @@protoc_insertion_point(module_scope)

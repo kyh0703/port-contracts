@@ -206,6 +206,7 @@ type BootstrapResponse struct {
 	Stt                 *SttRuntime            `protobuf:"bytes,6,opt,name=stt,proto3" json:"stt,omitempty"`
 	Llm                 *LlmRuntime            `protobuf:"bytes,7,opt,name=llm,proto3" json:"llm,omitempty"`
 	Tts                 *TtsRuntime            `protobuf:"bytes,8,opt,name=tts,proto3" json:"tts,omitempty"`
+	McpServers          []*McpServerRuntime    `protobuf:"bytes,9,rep,name=mcp_servers,json=mcpServers,proto3" json:"mcp_servers,omitempty"`
 	unknownFields       protoimpl.UnknownFields
 	sizeCache           protoimpl.SizeCache
 }
@@ -296,6 +297,81 @@ func (x *BootstrapResponse) GetTts() *TtsRuntime {
 	return nil
 }
 
+func (x *BootstrapResponse) GetMcpServers() []*McpServerRuntime {
+	if x != nil {
+		return x.McpServers
+	}
+	return nil
+}
+
+type McpServerRuntime struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Name          string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	Transport     string                 `protobuf:"bytes,2,opt,name=transport,proto3" json:"transport,omitempty"`
+	Url           string                 `protobuf:"bytes,3,opt,name=url,proto3" json:"url,omitempty"`
+	Headers       map[string]string      `protobuf:"bytes,4,rep,name=headers,proto3" json:"headers,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *McpServerRuntime) Reset() {
+	*x = McpServerRuntime{}
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[3]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *McpServerRuntime) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*McpServerRuntime) ProtoMessage() {}
+
+func (x *McpServerRuntime) ProtoReflect() protoreflect.Message {
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[3]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use McpServerRuntime.ProtoReflect.Descriptor instead.
+func (*McpServerRuntime) Descriptor() ([]byte, []int) {
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{3}
+}
+
+func (x *McpServerRuntime) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *McpServerRuntime) GetTransport() string {
+	if x != nil {
+		return x.Transport
+	}
+	return ""
+}
+
+func (x *McpServerRuntime) GetUrl() string {
+	if x != nil {
+		return x.Url
+	}
+	return ""
+}
+
+func (x *McpServerRuntime) GetHeaders() map[string]string {
+	if x != nil {
+		return x.Headers
+	}
+	return nil
+}
+
 var File_port_api_v1_agent_session_proto protoreflect.FileDescriptor
 
 const file_port_api_v1_agent_session_proto_rawDesc = "" +
@@ -314,7 +390,7 @@ const file_port_api_v1_agent_session_proto_rawDesc = "" +
 	"\btrunk_id\x18\x05 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\atrunkId\x125\n" +
 	"\x12trunk_phone_number\x18\x06 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x10trunkPhoneNumber\x12)\n" +
 	"\fcall_id_full\x18\a \x01(\tB\a\xbaH\x04r\x02\x10\x01R\n" +
-	"callIdFull\"\x96\x03\n" +
+	"callIdFull\"\xd6\x03\n" +
 	"\x11BootstrapResponse\x120\n" +
 	"\x0fconversation_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x0econversationId\x12&\n" +
 	"\n" +
@@ -324,7 +400,17 @@ const file_port_api_v1_agent_session_proto_rawDesc = "" +
 	"\x16agent_tool_snapshot_id\x18\x05 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x13agentToolSnapshotId\x121\n" +
 	"\x03stt\x18\x06 \x01(\v2\x17.port.api.v1.SttRuntimeB\x06\xbaH\x03\xc8\x01\x01R\x03stt\x121\n" +
 	"\x03llm\x18\a \x01(\v2\x17.port.api.v1.LlmRuntimeB\x06\xbaH\x03\xc8\x01\x01R\x03llm\x121\n" +
-	"\x03tts\x18\b \x01(\v2\x17.port.api.v1.TtsRuntimeB\x06\xbaH\x03\xc8\x01\x01R\x03tts2a\n" +
+	"\x03tts\x18\b \x01(\v2\x17.port.api.v1.TtsRuntimeB\x06\xbaH\x03\xc8\x01\x01R\x03tts\x12>\n" +
+	"\vmcp_servers\x18\t \x03(\v2\x1d.port.api.v1.McpServerRuntimeR\n" +
+	"mcpServers\"\x87\x02\n" +
+	"\x10McpServerRuntime\x12\x1b\n" +
+	"\x04name\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x04name\x129\n" +
+	"\ttransport\x18\x02 \x01(\tB\x1b\xbaH\x18r\x16R\x03sseR\x0fstreamable-httpR\ttransport\x12\x19\n" +
+	"\x03url\x18\x03 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x03url\x12D\n" +
+	"\aheaders\x18\x04 \x03(\v2*.port.api.v1.McpServerRuntime.HeadersEntryR\aheaders\x1a:\n" +
+	"\fHeadersEntry\x12\x10\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
+	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x012a\n" +
 	"\x13AgentSessionService\x12J\n" +
 	"\tBootstrap\x12\x1d.port.api.v1.BootstrapRequest\x1a\x1e.port.api.v1.BootstrapResponseB<Z:github.com/kyh0703/port-contracts/gen/go/port/api/v1;apiv1b\x06proto3"
 
@@ -340,27 +426,31 @@ func file_port_api_v1_agent_session_proto_rawDescGZIP() []byte {
 	return file_port_api_v1_agent_session_proto_rawDescData
 }
 
-var file_port_api_v1_agent_session_proto_msgTypes = make([]protoimpl.MessageInfo, 3)
+var file_port_api_v1_agent_session_proto_msgTypes = make([]protoimpl.MessageInfo, 5)
 var file_port_api_v1_agent_session_proto_goTypes = []any{
 	(*BootstrapRequest)(nil),    // 0: port.api.v1.BootstrapRequest
 	(*SipBootstrapContext)(nil), // 1: port.api.v1.SipBootstrapContext
 	(*BootstrapResponse)(nil),   // 2: port.api.v1.BootstrapResponse
-	(*SttRuntime)(nil),          // 3: port.api.v1.SttRuntime
-	(*LlmRuntime)(nil),          // 4: port.api.v1.LlmRuntime
-	(*TtsRuntime)(nil),          // 5: port.api.v1.TtsRuntime
+	(*McpServerRuntime)(nil),    // 3: port.api.v1.McpServerRuntime
+	nil,                         // 4: port.api.v1.McpServerRuntime.HeadersEntry
+	(*SttRuntime)(nil),          // 5: port.api.v1.SttRuntime
+	(*LlmRuntime)(nil),          // 6: port.api.v1.LlmRuntime
+	(*TtsRuntime)(nil),          // 7: port.api.v1.TtsRuntime
 }
 var file_port_api_v1_agent_session_proto_depIdxs = []int32{
 	1, // 0: port.api.v1.BootstrapRequest.sip:type_name -> port.api.v1.SipBootstrapContext
-	3, // 1: port.api.v1.BootstrapResponse.stt:type_name -> port.api.v1.SttRuntime
-	4, // 2: port.api.v1.BootstrapResponse.llm:type_name -> port.api.v1.LlmRuntime
-	5, // 3: port.api.v1.BootstrapResponse.tts:type_name -> port.api.v1.TtsRuntime
-	0, // 4: port.api.v1.AgentSessionService.Bootstrap:input_type -> port.api.v1.BootstrapRequest
-	2, // 5: port.api.v1.AgentSessionService.Bootstrap:output_type -> port.api.v1.BootstrapResponse
-	5, // [5:6] is the sub-list for method output_type
-	4, // [4:5] is the sub-list for method input_type
-	4, // [4:4] is the sub-list for extension type_name
-	4, // [4:4] is the sub-list for extension extendee
-	0, // [0:4] is the sub-list for field type_name
+	5, // 1: port.api.v1.BootstrapResponse.stt:type_name -> port.api.v1.SttRuntime
+	6, // 2: port.api.v1.BootstrapResponse.llm:type_name -> port.api.v1.LlmRuntime
+	7, // 3: port.api.v1.BootstrapResponse.tts:type_name -> port.api.v1.TtsRuntime
+	3, // 4: port.api.v1.BootstrapResponse.mcp_servers:type_name -> port.api.v1.McpServerRuntime
+	4, // 5: port.api.v1.McpServerRuntime.headers:type_name -> port.api.v1.McpServerRuntime.HeadersEntry
+	0, // 6: port.api.v1.AgentSessionService.Bootstrap:input_type -> port.api.v1.BootstrapRequest
+	2, // 7: port.api.v1.AgentSessionService.Bootstrap:output_type -> port.api.v1.BootstrapResponse
+	7, // [7:8] is the sub-list for method output_type
+	6, // [6:7] is the sub-list for method input_type
+	6, // [6:6] is the sub-list for extension type_name
+	6, // [6:6] is the sub-list for extension extendee
+	0, // [0:6] is the sub-list for field type_name
 }
 
 func init() { file_port_api_v1_agent_session_proto_init() }
@@ -379,7 +469,7 @@ func file_port_api_v1_agent_session_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_port_api_v1_agent_session_proto_rawDesc), len(file_port_api_v1_agent_session_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   3,
+			NumMessages:   5,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

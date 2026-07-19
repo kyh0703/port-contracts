@@ -38,4 +38,12 @@ message BootstrapResponse {
   SttRuntime stt = 6 [(buf.validate.field).required = true];
   LlmRuntime llm = 7 [(buf.validate.field).required = true];
   TtsRuntime tts = 8 [(buf.validate.field).required = true];
+  repeated McpServerRuntime mcp_servers = 9;
+}
+
+message McpServerRuntime {
+  string name = 1 [(buf.validate.field).string.min_len = 1];
+  string transport = 2 [(buf.validate.field).string.in = "sse", (buf.validate.field).string.in = "streamable-http"];
+  string url = 3 [(buf.validate.field).string.min_len = 1];
+  map<string, string> headers = 4;
 }
