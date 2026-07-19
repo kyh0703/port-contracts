@@ -1,0 +1,41 @@
+syntax = "proto3";
+
+package port.api.v1;
+
+import "buf/validate/validate.proto";
+import "port/api/v1/voice_runtime.proto";
+
+option go_package = "github.com/kyh0703/port-contracts/gen/go/port/api/v1;apiv1";
+
+// AgentSessionService is the worker-only API boundary for LiveKit jobs.
+service AgentSessionService {
+  rpc Bootstrap(BootstrapRequest) returns (BootstrapResponse);
+}
+
+message BootstrapRequest {
+  oneof admission {
+    string webrtc_ticket = 1 [(buf.validate.field).string.min_len = 1];
+    SipBootstrapContext sip = 2;
+  }
+}
+
+message SipBootstrapContext {
+  string job_id = 1 [(buf.validate.field).string.min_len = 1];
+  string dispatch_id = 2 [(buf.validate.field).string.min_len = 1];
+  string room_name = 3 [(buf.validate.field).string.min_len = 1];
+  string participant_identity = 4 [(buf.validate.field).string.min_len = 1];
+  string trunk_id = 5 [(buf.validate.field).string.min_len = 1];
+  string trunk_phone_number = 6 [(buf.validate.field).string.min_len = 1];
+  string call_id_full = 7 [(buf.validate.field).string.min_len = 1];
+}
+
+message BootstrapResponse {
+  string conversation_id = 1 [(buf.validate.field).string.min_len = 1];
+  string session_id = 2 [(buf.validate.field).string.min_len = 1];
+  string source = 3 [(buf.validate.field).string.in = "webrtc", (buf.validate.field).string.in = "sip"];
+  string room_name = 4 [(buf.validate.field).string.min_len = 1];
+  string agent_tool_snapshot_id = 5 [(buf.validate.field).string.min_len = 1];
+  SttRuntime stt = 6 [(buf.validate.field).required = true];
+  LlmRuntime llm = 7 [(buf.validate.field).required = true];
+  TtsRuntime tts = 8 [(buf.validate.field).required = true];
+}

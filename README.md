@@ -31,12 +31,13 @@ Example import:
 import { ApiEventServiceClient } from '@overthinker1127/port-contracts/gen/ts/port/api/v1/gateway_events'
 ```
 
-`port/api/v1/voice_runtime.proto` is the API's internal voice-runtime
-contract. `VoiceRuntimeService.ResolveLease` is consumed by `voice-agent` to
-resolve a dispatch-bound runtime lease; it is not a browser-facing API.
+`port/api/v1/agent_session.proto` is the API's worker-only session bootstrap
+contract. `AgentSessionService.Bootstrap` admits either a one-time browser
+ticket or a verified SIP LiveKit job and returns the runtime bundle required by
+the worker. It is not a browser-facing API.
 
 ```ts
-import { VoiceRuntimeServiceClient } from '@overthinker1127/port-contracts/gen/ts/port/api/v1/voice_runtime'
+import { AgentSessionServiceClient } from '@overthinker1127/port-contracts/gen/ts/port/api/v1/agent_session'
 ```
 
 ## Go
