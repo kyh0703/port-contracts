@@ -35,7 +35,7 @@ class SipBootstrapContext(_message.Message):
     def __init__(self, job_id: _Optional[str] = ..., dispatch_id: _Optional[str] = ..., room_name: _Optional[str] = ..., participant_identity: _Optional[str] = ..., trunk_id: _Optional[str] = ..., trunk_phone_number: _Optional[str] = ..., call_id_full: _Optional[str] = ...) -> None: ...
 
 class BootstrapResponse(_message.Message):
-    __slots__ = ("conversation_id", "session_id", "source", "room_name", "agent_tool_snapshot_id", "stt", "llm", "tts", "mcp_servers")
+    __slots__ = ("conversation_id", "session_id", "source", "room_name", "agent_tool_snapshot_id", "stt", "llm", "tts", "mcp_servers", "agent_id", "flow_id", "flow_version_id")
     CONVERSATION_ID_FIELD_NUMBER: _ClassVar[int]
     SESSION_ID_FIELD_NUMBER: _ClassVar[int]
     SOURCE_FIELD_NUMBER: _ClassVar[int]
@@ -45,6 +45,9 @@ class BootstrapResponse(_message.Message):
     LLM_FIELD_NUMBER: _ClassVar[int]
     TTS_FIELD_NUMBER: _ClassVar[int]
     MCP_SERVERS_FIELD_NUMBER: _ClassVar[int]
+    AGENT_ID_FIELD_NUMBER: _ClassVar[int]
+    FLOW_ID_FIELD_NUMBER: _ClassVar[int]
+    FLOW_VERSION_ID_FIELD_NUMBER: _ClassVar[int]
     conversation_id: str
     session_id: str
     source: str
@@ -54,7 +57,10 @@ class BootstrapResponse(_message.Message):
     llm: _voice_runtime_pb2.LlmRuntime
     tts: _voice_runtime_pb2.TtsRuntime
     mcp_servers: _containers.RepeatedCompositeFieldContainer[McpServerRuntime]
-    def __init__(self, conversation_id: _Optional[str] = ..., session_id: _Optional[str] = ..., source: _Optional[str] = ..., room_name: _Optional[str] = ..., agent_tool_snapshot_id: _Optional[str] = ..., stt: _Optional[_Union[_voice_runtime_pb2.SttRuntime, _Mapping]] = ..., llm: _Optional[_Union[_voice_runtime_pb2.LlmRuntime, _Mapping]] = ..., tts: _Optional[_Union[_voice_runtime_pb2.TtsRuntime, _Mapping]] = ..., mcp_servers: _Optional[_Iterable[_Union[McpServerRuntime, _Mapping]]] = ...) -> None: ...
+    agent_id: str
+    flow_id: str
+    flow_version_id: str
+    def __init__(self, conversation_id: _Optional[str] = ..., session_id: _Optional[str] = ..., source: _Optional[str] = ..., room_name: _Optional[str] = ..., agent_tool_snapshot_id: _Optional[str] = ..., stt: _Optional[_Union[_voice_runtime_pb2.SttRuntime, _Mapping]] = ..., llm: _Optional[_Union[_voice_runtime_pb2.LlmRuntime, _Mapping]] = ..., tts: _Optional[_Union[_voice_runtime_pb2.TtsRuntime, _Mapping]] = ..., mcp_servers: _Optional[_Iterable[_Union[McpServerRuntime, _Mapping]]] = ..., agent_id: _Optional[str] = ..., flow_id: _Optional[str] = ..., flow_version_id: _Optional[str] = ...) -> None: ...
 
 class McpServerRuntime(_message.Message):
     __slots__ = ("name", "transport", "url", "headers")

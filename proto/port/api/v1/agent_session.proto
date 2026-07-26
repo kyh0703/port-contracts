@@ -39,6 +39,9 @@ message BootstrapResponse {
   LlmRuntime llm = 7 [(buf.validate.field).required = true];
   TtsRuntime tts = 8 [(buf.validate.field).required = true];
   repeated McpServerRuntime mcp_servers = 9;
+  string agent_id = 10 [(buf.validate.field).string.min_len = 1];
+  string flow_id = 11 [(buf.validate.field).string.min_len = 1];
+  string flow_version_id = 12 [(buf.validate.field).string.min_len = 1];
 }
 
 message McpServerRuntime {

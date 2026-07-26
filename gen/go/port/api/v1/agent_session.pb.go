@@ -207,6 +207,9 @@ type BootstrapResponse struct {
 	Llm                 *LlmRuntime            `protobuf:"bytes,7,opt,name=llm,proto3" json:"llm,omitempty"`
 	Tts                 *TtsRuntime            `protobuf:"bytes,8,opt,name=tts,proto3" json:"tts,omitempty"`
 	McpServers          []*McpServerRuntime    `protobuf:"bytes,9,rep,name=mcp_servers,json=mcpServers,proto3" json:"mcp_servers,omitempty"`
+	AgentId             string                 `protobuf:"bytes,10,opt,name=agent_id,json=agentId,proto3" json:"agent_id,omitempty"`
+	FlowId              string                 `protobuf:"bytes,11,opt,name=flow_id,json=flowId,proto3" json:"flow_id,omitempty"`
+	FlowVersionId       string                 `protobuf:"bytes,12,opt,name=flow_version_id,json=flowVersionId,proto3" json:"flow_version_id,omitempty"`
 	unknownFields       protoimpl.UnknownFields
 	sizeCache           protoimpl.SizeCache
 }
@@ -304,6 +307,27 @@ func (x *BootstrapResponse) GetMcpServers() []*McpServerRuntime {
 	return nil
 }
 
+func (x *BootstrapResponse) GetAgentId() string {
+	if x != nil {
+		return x.AgentId
+	}
+	return ""
+}
+
+func (x *BootstrapResponse) GetFlowId() string {
+	if x != nil {
+		return x.FlowId
+	}
+	return ""
+}
+
+func (x *BootstrapResponse) GetFlowVersionId() string {
+	if x != nil {
+		return x.FlowVersionId
+	}
+	return ""
+}
+
 type McpServerRuntime struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Name          string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
@@ -390,7 +414,7 @@ const file_port_api_v1_agent_session_proto_rawDesc = "" +
 	"\btrunk_id\x18\x05 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\atrunkId\x125\n" +
 	"\x12trunk_phone_number\x18\x06 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x10trunkPhoneNumber\x12)\n" +
 	"\fcall_id_full\x18\a \x01(\tB\a\xbaH\x04r\x02\x10\x01R\n" +
-	"callIdFull\"\xd6\x03\n" +
+	"callIdFull\"\xcd\x04\n" +
 	"\x11BootstrapResponse\x120\n" +
 	"\x0fconversation_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x0econversationId\x12&\n" +
 	"\n" +
@@ -402,7 +426,11 @@ const file_port_api_v1_agent_session_proto_rawDesc = "" +
 	"\x03llm\x18\a \x01(\v2\x17.port.api.v1.LlmRuntimeB\x06\xbaH\x03\xc8\x01\x01R\x03llm\x121\n" +
 	"\x03tts\x18\b \x01(\v2\x17.port.api.v1.TtsRuntimeB\x06\xbaH\x03\xc8\x01\x01R\x03tts\x12>\n" +
 	"\vmcp_servers\x18\t \x03(\v2\x1d.port.api.v1.McpServerRuntimeR\n" +
-	"mcpServers\"\x87\x02\n" +
+	"mcpServers\x12\"\n" +
+	"\bagent_id\x18\n" +
+	" \x01(\tB\a\xbaH\x04r\x02\x10\x01R\aagentId\x12 \n" +
+	"\aflow_id\x18\v \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x06flowId\x12/\n" +
+	"\x0fflow_version_id\x18\f \x01(\tB\a\xbaH\x04r\x02\x10\x01R\rflowVersionId\"\x87\x02\n" +
 	"\x10McpServerRuntime\x12\x1b\n" +
 	"\x04name\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x04name\x129\n" +
 	"\ttransport\x18\x02 \x01(\tB\x1b\xbaH\x18r\x16R\x03sseR\x0fstreamable-httpR\ttransport\x12\x19\n" +

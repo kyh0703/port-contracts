@@ -47,6 +47,9 @@ export interface BootstrapResponse {
   llm?: LlmRuntime | undefined;
   tts?: TtsRuntime | undefined;
   mcpServers: McpServerRuntime[];
+  agentId: string;
+  flowId: string;
+  flowVersionId: string;
 }
 
 export interface McpServerRuntime {
@@ -346,6 +349,9 @@ function createBaseBootstrapResponse(): BootstrapResponse {
     llm: undefined,
     tts: undefined,
     mcpServers: [],
+    agentId: "",
+    flowId: "",
+    flowVersionId: "",
   };
 }
 
@@ -377,6 +383,15 @@ export const BootstrapResponse: MessageFns<BootstrapResponse> = {
     }
     for (const v of message.mcpServers) {
       McpServerRuntime.encode(v!, writer.uint32(74).fork()).join();
+    }
+    if (message.agentId !== "") {
+      writer.uint32(82).string(message.agentId);
+    }
+    if (message.flowId !== "") {
+      writer.uint32(90).string(message.flowId);
+    }
+    if (message.flowVersionId !== "") {
+      writer.uint32(98).string(message.flowVersionId);
     }
     return writer;
   },
@@ -460,6 +475,30 @@ export const BootstrapResponse: MessageFns<BootstrapResponse> = {
           message.mcpServers.push(McpServerRuntime.decode(reader, reader.uint32()));
           continue;
         }
+        case 10: {
+          if (tag !== 82) {
+            break;
+          }
+
+          message.agentId = reader.string();
+          continue;
+        }
+        case 11: {
+          if (tag !== 90) {
+            break;
+          }
+
+          message.flowId = reader.string();
+          continue;
+        }
+        case 12: {
+          if (tag !== 98) {
+            break;
+          }
+
+          message.flowVersionId = reader.string();
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -500,6 +539,21 @@ export const BootstrapResponse: MessageFns<BootstrapResponse> = {
         : globalThis.Array.isArray(object?.mcp_servers)
         ? object.mcp_servers.map((e: any) => McpServerRuntime.fromJSON(e))
         : [],
+      agentId: isSet(object.agentId)
+        ? globalThis.String(object.agentId)
+        : isSet(object.agent_id)
+        ? globalThis.String(object.agent_id)
+        : "",
+      flowId: isSet(object.flowId)
+        ? globalThis.String(object.flowId)
+        : isSet(object.flow_id)
+        ? globalThis.String(object.flow_id)
+        : "",
+      flowVersionId: isSet(object.flowVersionId)
+        ? globalThis.String(object.flowVersionId)
+        : isSet(object.flow_version_id)
+        ? globalThis.String(object.flow_version_id)
+        : "",
     };
   },
 
@@ -532,6 +586,15 @@ export const BootstrapResponse: MessageFns<BootstrapResponse> = {
     if (message.mcpServers?.length) {
       obj.mcpServers = message.mcpServers.map((e) => McpServerRuntime.toJSON(e));
     }
+    if (message.agentId !== "") {
+      obj.agentId = message.agentId;
+    }
+    if (message.flowId !== "") {
+      obj.flowId = message.flowId;
+    }
+    if (message.flowVersionId !== "") {
+      obj.flowVersionId = message.flowVersionId;
+    }
     return obj;
   },
 
@@ -549,6 +612,9 @@ export const BootstrapResponse: MessageFns<BootstrapResponse> = {
     message.llm = (object.llm !== undefined && object.llm !== null) ? LlmRuntime.fromPartial(object.llm) : undefined;
     message.tts = (object.tts !== undefined && object.tts !== null) ? TtsRuntime.fromPartial(object.tts) : undefined;
     message.mcpServers = object.mcpServers?.map((e) => McpServerRuntime.fromPartial(e)) || [];
+    message.agentId = object.agentId ?? "";
+    message.flowId = object.flowId ?? "";
+    message.flowVersionId = object.flowVersionId ?? "";
     return message;
   },
 };
