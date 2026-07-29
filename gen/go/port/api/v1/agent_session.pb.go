@@ -208,10 +208,14 @@ type BootstrapResponse struct {
 	Tts                 *TtsRuntime            `protobuf:"bytes,8,opt,name=tts,proto3" json:"tts,omitempty"`
 	McpServers          []*McpServerRuntime    `protobuf:"bytes,9,rep,name=mcp_servers,json=mcpServers,proto3" json:"mcp_servers,omitempty"`
 	AgentId             string                 `protobuf:"bytes,10,opt,name=agent_id,json=agentId,proto3" json:"agent_id,omitempty"`
-	FlowId              string                 `protobuf:"bytes,11,opt,name=flow_id,json=flowId,proto3" json:"flow_id,omitempty"`
-	FlowVersionId       string                 `protobuf:"bytes,12,opt,name=flow_version_id,json=flowVersionId,proto3" json:"flow_version_id,omitempty"`
-	unknownFields       protoimpl.UnknownFields
-	sizeCache           protoimpl.SizeCache
+	Persona             *AgentPersona          `protobuf:"bytes,13,opt,name=persona,proto3" json:"persona,omitempty"`
+	// Frozen at publish time. Empty means a supervisor with no delegation steps.
+	Specialists   []*AgentSpecialist  `protobuf:"bytes,14,rep,name=specialists,proto3" json:"specialists,omitempty"`
+	GlobalActions *AgentGlobalActions `protobuf:"bytes,15,opt,name=global_actions,json=globalActions,proto3" json:"global_actions,omitempty"`
+	// Empty when the call ran the live draft rather than a published version.
+	AgentVersionId string `protobuf:"bytes,16,opt,name=agent_version_id,json=agentVersionId,proto3" json:"agent_version_id,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
 }
 
 func (x *BootstrapResponse) Reset() {
@@ -314,16 +318,529 @@ func (x *BootstrapResponse) GetAgentId() string {
 	return ""
 }
 
-func (x *BootstrapResponse) GetFlowId() string {
+func (x *BootstrapResponse) GetPersona() *AgentPersona {
 	if x != nil {
-		return x.FlowId
+		return x.Persona
+	}
+	return nil
+}
+
+func (x *BootstrapResponse) GetSpecialists() []*AgentSpecialist {
+	if x != nil {
+		return x.Specialists
+	}
+	return nil
+}
+
+func (x *BootstrapResponse) GetGlobalActions() *AgentGlobalActions {
+	if x != nil {
+		return x.GlobalActions
+	}
+	return nil
+}
+
+func (x *BootstrapResponse) GetAgentVersionId() string {
+	if x != nil {
+		return x.AgentVersionId
 	}
 	return ""
 }
 
-func (x *BootstrapResponse) GetFlowVersionId() string {
+// One delegation step the supervisor may hand the turn to. The worker builds an
+// AgentTask from this and exposes it to the supervisor as a single tool.
+type AgentSpecialist struct {
+	state        protoimpl.MessageState `protogen:"open.v1"`
+	SpecialistId string                 `protobuf:"bytes,1,opt,name=specialist_id,json=specialistId,proto3" json:"specialist_id,omitempty"`
+	// Becomes the tool name, so it must already be a valid LLM function name.
+	Key         string `protobuf:"bytes,2,opt,name=key,proto3" json:"key,omitempty"`
+	DisplayName string `protobuf:"bytes,3,opt,name=display_name,json=displayName,proto3" json:"display_name,omitempty"`
+	// Becomes the tool description — this is what actually routes the call.
+	WhenToUse        string                   `protobuf:"bytes,4,opt,name=when_to_use,json=whenToUse,proto3" json:"when_to_use,omitempty"`
+	Instructions     string                   `protobuf:"bytes,5,opt,name=instructions,proto3" json:"instructions,omitempty"`
+	CompletionFields []*CompletionField       `protobuf:"bytes,6,rep,name=completion_fields,json=completionFields,proto3" json:"completion_fields,omitempty"`
+	FailurePolicy    *SpecialistFailurePolicy `protobuf:"bytes,7,opt,name=failure_policy,json=failurePolicy,proto3" json:"failure_policy,omitempty"`
+	unknownFields    protoimpl.UnknownFields
+	sizeCache        protoimpl.SizeCache
+}
+
+func (x *AgentSpecialist) Reset() {
+	*x = AgentSpecialist{}
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[3]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *AgentSpecialist) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*AgentSpecialist) ProtoMessage() {}
+
+func (x *AgentSpecialist) ProtoReflect() protoreflect.Message {
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[3]
 	if x != nil {
-		return x.FlowVersionId
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use AgentSpecialist.ProtoReflect.Descriptor instead.
+func (*AgentSpecialist) Descriptor() ([]byte, []int) {
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{3}
+}
+
+func (x *AgentSpecialist) GetSpecialistId() string {
+	if x != nil {
+		return x.SpecialistId
+	}
+	return ""
+}
+
+func (x *AgentSpecialist) GetKey() string {
+	if x != nil {
+		return x.Key
+	}
+	return ""
+}
+
+func (x *AgentSpecialist) GetDisplayName() string {
+	if x != nil {
+		return x.DisplayName
+	}
+	return ""
+}
+
+func (x *AgentSpecialist) GetWhenToUse() string {
+	if x != nil {
+		return x.WhenToUse
+	}
+	return ""
+}
+
+func (x *AgentSpecialist) GetInstructions() string {
+	if x != nil {
+		return x.Instructions
+	}
+	return ""
+}
+
+func (x *AgentSpecialist) GetCompletionFields() []*CompletionField {
+	if x != nil {
+		return x.CompletionFields
+	}
+	return nil
+}
+
+func (x *AgentSpecialist) GetFailurePolicy() *SpecialistFailurePolicy {
+	if x != nil {
+		return x.FailurePolicy
+	}
+	return nil
+}
+
+// Becomes a JSON Schema property of the specialist's completion tool. A required
+// field is what stops the model from ending the step before collecting it.
+type CompletionField struct {
+	state       protoimpl.MessageState `protogen:"open.v1"`
+	Name        string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	Type        string                 `protobuf:"bytes,2,opt,name=type,proto3" json:"type,omitempty"`
+	Description string                 `protobuf:"bytes,3,opt,name=description,proto3" json:"description,omitempty"`
+	Required    bool                   `protobuf:"varint,4,opt,name=required,proto3" json:"required,omitempty"`
+	// Empty means no pattern check.
+	Pattern       string `protobuf:"bytes,5,opt,name=pattern,proto3" json:"pattern,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CompletionField) Reset() {
+	*x = CompletionField{}
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[4]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CompletionField) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CompletionField) ProtoMessage() {}
+
+func (x *CompletionField) ProtoReflect() protoreflect.Message {
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[4]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CompletionField.ProtoReflect.Descriptor instead.
+func (*CompletionField) Descriptor() ([]byte, []int) {
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{4}
+}
+
+func (x *CompletionField) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *CompletionField) GetType() string {
+	if x != nil {
+		return x.Type
+	}
+	return ""
+}
+
+func (x *CompletionField) GetDescription() string {
+	if x != nil {
+		return x.Description
+	}
+	return ""
+}
+
+func (x *CompletionField) GetRequired() bool {
+	if x != nil {
+		return x.Required
+	}
+	return false
+}
+
+func (x *CompletionField) GetPattern() string {
+	if x != nil {
+		return x.Pattern
+	}
+	return ""
+}
+
+// Bounds a specialist that never collects its fields. Without it a caller who
+// will not answer keeps the turn forever.
+type SpecialistFailurePolicy struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	MaxAttempts   int32                  `protobuf:"varint,1,opt,name=max_attempts,json=maxAttempts,proto3" json:"max_attempts,omitempty"`
+	TimeoutMs     int32                  `protobuf:"varint,2,opt,name=timeout_ms,json=timeoutMs,proto3" json:"timeout_ms,omitempty"`
+	OnFailure     string                 `protobuf:"bytes,3,opt,name=on_failure,json=onFailure,proto3" json:"on_failure,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SpecialistFailurePolicy) Reset() {
+	*x = SpecialistFailurePolicy{}
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[5]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SpecialistFailurePolicy) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SpecialistFailurePolicy) ProtoMessage() {}
+
+func (x *SpecialistFailurePolicy) ProtoReflect() protoreflect.Message {
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[5]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SpecialistFailurePolicy.ProtoReflect.Descriptor instead.
+func (*SpecialistFailurePolicy) Descriptor() ([]byte, []int) {
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{5}
+}
+
+func (x *SpecialistFailurePolicy) GetMaxAttempts() int32 {
+	if x != nil {
+		return x.MaxAttempts
+	}
+	return 0
+}
+
+func (x *SpecialistFailurePolicy) GetTimeoutMs() int32 {
+	if x != nil {
+		return x.TimeoutMs
+	}
+	return 0
+}
+
+func (x *SpecialistFailurePolicy) GetOnFailure() string {
+	if x != nil {
+		return x.OnFailure
+	}
+	return ""
+}
+
+// Mounted as AgentSession-level tools so they stay callable while a specialist
+// holds the turn — a caller can ask for a human or hang up mid-step.
+type AgentGlobalActions struct {
+	state           protoimpl.MessageState `protogen:"open.v1"`
+	TransferToHuman *TransferToHumanAction `protobuf:"bytes,1,opt,name=transfer_to_human,json=transferToHuman,proto3" json:"transfer_to_human,omitempty"`
+	EndCall         *EndCallAction         `protobuf:"bytes,2,opt,name=end_call,json=endCall,proto3" json:"end_call,omitempty"`
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
+}
+
+func (x *AgentGlobalActions) Reset() {
+	*x = AgentGlobalActions{}
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[6]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *AgentGlobalActions) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*AgentGlobalActions) ProtoMessage() {}
+
+func (x *AgentGlobalActions) ProtoReflect() protoreflect.Message {
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[6]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use AgentGlobalActions.ProtoReflect.Descriptor instead.
+func (*AgentGlobalActions) Descriptor() ([]byte, []int) {
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{6}
+}
+
+func (x *AgentGlobalActions) GetTransferToHuman() *TransferToHumanAction {
+	if x != nil {
+		return x.TransferToHuman
+	}
+	return nil
+}
+
+func (x *AgentGlobalActions) GetEndCall() *EndCallAction {
+	if x != nil {
+		return x.EndCall
+	}
+	return nil
+}
+
+type TransferToHumanAction struct {
+	state   protoimpl.MessageState `protogen:"open.v1"`
+	Enabled bool                   `protobuf:"varint,1,opt,name=enabled,proto3" json:"enabled,omitempty"`
+	// Empty when disabled. SIP destination for the warm transfer.
+	SipCallTo        string `protobuf:"bytes,2,opt,name=sip_call_to,json=sipCallTo,proto3" json:"sip_call_to,omitempty"`
+	HoldPhrase       string `protobuf:"bytes,3,opt,name=hold_phrase,json=holdPhrase,proto3" json:"hold_phrase,omitempty"`
+	RingingTimeoutMs int32  `protobuf:"varint,4,opt,name=ringing_timeout_ms,json=ringingTimeoutMs,proto3" json:"ringing_timeout_ms,omitempty"`
+	unknownFields    protoimpl.UnknownFields
+	sizeCache        protoimpl.SizeCache
+}
+
+func (x *TransferToHumanAction) Reset() {
+	*x = TransferToHumanAction{}
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[7]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *TransferToHumanAction) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*TransferToHumanAction) ProtoMessage() {}
+
+func (x *TransferToHumanAction) ProtoReflect() protoreflect.Message {
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[7]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use TransferToHumanAction.ProtoReflect.Descriptor instead.
+func (*TransferToHumanAction) Descriptor() ([]byte, []int) {
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{7}
+}
+
+func (x *TransferToHumanAction) GetEnabled() bool {
+	if x != nil {
+		return x.Enabled
+	}
+	return false
+}
+
+func (x *TransferToHumanAction) GetSipCallTo() string {
+	if x != nil {
+		return x.SipCallTo
+	}
+	return ""
+}
+
+func (x *TransferToHumanAction) GetHoldPhrase() string {
+	if x != nil {
+		return x.HoldPhrase
+	}
+	return ""
+}
+
+func (x *TransferToHumanAction) GetRingingTimeoutMs() int32 {
+	if x != nil {
+		return x.RingingTimeoutMs
+	}
+	return 0
+}
+
+type EndCallAction struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Enabled       bool                   `protobuf:"varint,1,opt,name=enabled,proto3" json:"enabled,omitempty"`
+	ClosingPhrase string                 `protobuf:"bytes,2,opt,name=closing_phrase,json=closingPhrase,proto3" json:"closing_phrase,omitempty"`
+	// Ask once before hanging up instead of ending immediately.
+	Confirm       bool `protobuf:"varint,3,opt,name=confirm,proto3" json:"confirm,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *EndCallAction) Reset() {
+	*x = EndCallAction{}
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[8]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *EndCallAction) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*EndCallAction) ProtoMessage() {}
+
+func (x *EndCallAction) ProtoReflect() protoreflect.Message {
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[8]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use EndCallAction.ProtoReflect.Descriptor instead.
+func (*EndCallAction) Descriptor() ([]byte, []int) {
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{8}
+}
+
+func (x *EndCallAction) GetEnabled() bool {
+	if x != nil {
+		return x.Enabled
+	}
+	return false
+}
+
+func (x *EndCallAction) GetClosingPhrase() string {
+	if x != nil {
+		return x.ClosingPhrase
+	}
+	return ""
+}
+
+func (x *EndCallAction) GetConfirm() bool {
+	if x != nil {
+		return x.Confirm
+	}
+	return false
+}
+
+// Session-scoped agent identity resolved by the API. The worker owns no prompt
+// configuration of its own; every value here comes from the caller's agent.
+type AgentPersona struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	DisplayName   string                 `protobuf:"bytes,1,opt,name=display_name,json=displayName,proto3" json:"display_name,omitempty"`
+	SystemPrompt  string                 `protobuf:"bytes,2,opt,name=system_prompt,json=systemPrompt,proto3" json:"system_prompt,omitempty"`
+	Greeting      string                 `protobuf:"bytes,3,opt,name=greeting,proto3" json:"greeting,omitempty"`
+	VoiceId       string                 `protobuf:"bytes,4,opt,name=voice_id,json=voiceId,proto3" json:"voice_id,omitempty"`
+	Language      string                 `protobuf:"bytes,5,opt,name=language,proto3" json:"language,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *AgentPersona) Reset() {
+	*x = AgentPersona{}
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[9]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *AgentPersona) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*AgentPersona) ProtoMessage() {}
+
+func (x *AgentPersona) ProtoReflect() protoreflect.Message {
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[9]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use AgentPersona.ProtoReflect.Descriptor instead.
+func (*AgentPersona) Descriptor() ([]byte, []int) {
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{9}
+}
+
+func (x *AgentPersona) GetDisplayName() string {
+	if x != nil {
+		return x.DisplayName
+	}
+	return ""
+}
+
+func (x *AgentPersona) GetSystemPrompt() string {
+	if x != nil {
+		return x.SystemPrompt
+	}
+	return ""
+}
+
+func (x *AgentPersona) GetGreeting() string {
+	if x != nil {
+		return x.Greeting
+	}
+	return ""
+}
+
+func (x *AgentPersona) GetVoiceId() string {
+	if x != nil {
+		return x.VoiceId
+	}
+	return ""
+}
+
+func (x *AgentPersona) GetLanguage() string {
+	if x != nil {
+		return x.Language
 	}
 	return ""
 }
@@ -340,7 +857,7 @@ type McpServerRuntime struct {
 
 func (x *McpServerRuntime) Reset() {
 	*x = McpServerRuntime{}
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[3]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -352,7 +869,7 @@ func (x *McpServerRuntime) String() string {
 func (*McpServerRuntime) ProtoMessage() {}
 
 func (x *McpServerRuntime) ProtoReflect() protoreflect.Message {
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[3]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -365,7 +882,7 @@ func (x *McpServerRuntime) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use McpServerRuntime.ProtoReflect.Descriptor instead.
 func (*McpServerRuntime) Descriptor() ([]byte, []int) {
-	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{3}
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *McpServerRuntime) GetName() string {
@@ -414,7 +931,7 @@ const file_port_api_v1_agent_session_proto_rawDesc = "" +
 	"\btrunk_id\x18\x05 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\atrunkId\x125\n" +
 	"\x12trunk_phone_number\x18\x06 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x10trunkPhoneNumber\x12)\n" +
 	"\fcall_id_full\x18\a \x01(\tB\a\xbaH\x04r\x02\x10\x01R\n" +
-	"callIdFull\"\xcd\x04\n" +
+	"callIdFull\"\x8f\x06\n" +
 	"\x11BootstrapResponse\x120\n" +
 	"\x0fconversation_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x0econversationId\x12&\n" +
 	"\n" +
@@ -428,9 +945,50 @@ const file_port_api_v1_agent_session_proto_rawDesc = "" +
 	"\vmcp_servers\x18\t \x03(\v2\x1d.port.api.v1.McpServerRuntimeR\n" +
 	"mcpServers\x12\"\n" +
 	"\bagent_id\x18\n" +
-	" \x01(\tB\a\xbaH\x04r\x02\x10\x01R\aagentId\x12 \n" +
-	"\aflow_id\x18\v \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x06flowId\x12/\n" +
-	"\x0fflow_version_id\x18\f \x01(\tB\a\xbaH\x04r\x02\x10\x01R\rflowVersionId\"\x87\x02\n" +
+	" \x01(\tB\a\xbaH\x04r\x02\x10\x01R\aagentId\x12;\n" +
+	"\apersona\x18\r \x01(\v2\x19.port.api.v1.AgentPersonaB\x06\xbaH\x03\xc8\x01\x01R\apersona\x12>\n" +
+	"\vspecialists\x18\x0e \x03(\v2\x1c.port.api.v1.AgentSpecialistR\vspecialists\x12F\n" +
+	"\x0eglobal_actions\x18\x0f \x01(\v2\x1f.port.api.v1.AgentGlobalActionsR\rglobalActions\x12(\n" +
+	"\x10agent_version_id\x18\x10 \x01(\tR\x0eagentVersionIdJ\x04\b\v\x10\fJ\x04\b\f\x10\rR\aflow_idR\x0fflow_version_id\"\xeb\x02\n" +
+	"\x0fAgentSpecialist\x12,\n" +
+	"\rspecialist_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\fspecialistId\x12\x19\n" +
+	"\x03key\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x03key\x12!\n" +
+	"\fdisplay_name\x18\x03 \x01(\tR\vdisplayName\x12'\n" +
+	"\vwhen_to_use\x18\x04 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\twhenToUse\x12+\n" +
+	"\finstructions\x18\x05 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\finstructions\x12I\n" +
+	"\x11completion_fields\x18\x06 \x03(\v2\x1c.port.api.v1.CompletionFieldR\x10completionFields\x12K\n" +
+	"\x0efailure_policy\x18\a \x01(\v2$.port.api.v1.SpecialistFailurePolicyR\rfailurePolicy\"\xc3\x01\n" +
+	"\x0fCompletionField\x12\x1b\n" +
+	"\x04name\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x04name\x122\n" +
+	"\x04type\x18\x02 \x01(\tB\x1e\xbaH\x1br\x19R\x06stringR\x06numberR\abooleanR\x04type\x12)\n" +
+	"\vdescription\x18\x03 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\vdescription\x12\x1a\n" +
+	"\brequired\x18\x04 \x01(\bR\brequired\x12\x18\n" +
+	"\apattern\x18\x05 \x01(\tR\apattern\"\xb4\x01\n" +
+	"\x17SpecialistFailurePolicy\x12!\n" +
+	"\fmax_attempts\x18\x01 \x01(\x05R\vmaxAttempts\x12\x1d\n" +
+	"\n" +
+	"timeout_ms\x18\x02 \x01(\x05R\ttimeoutMs\x12W\n" +
+	"\n" +
+	"on_failure\x18\x03 \x01(\tB8\xbaH5r3R\x14return_to_supervisorR\x11transfer_to_humanR\bend_callR\tonFailure\"\x9b\x01\n" +
+	"\x12AgentGlobalActions\x12N\n" +
+	"\x11transfer_to_human\x18\x01 \x01(\v2\".port.api.v1.TransferToHumanActionR\x0ftransferToHuman\x125\n" +
+	"\bend_call\x18\x02 \x01(\v2\x1a.port.api.v1.EndCallActionR\aendCall\"\xa0\x01\n" +
+	"\x15TransferToHumanAction\x12\x18\n" +
+	"\aenabled\x18\x01 \x01(\bR\aenabled\x12\x1e\n" +
+	"\vsip_call_to\x18\x02 \x01(\tR\tsipCallTo\x12\x1f\n" +
+	"\vhold_phrase\x18\x03 \x01(\tR\n" +
+	"holdPhrase\x12,\n" +
+	"\x12ringing_timeout_ms\x18\x04 \x01(\x05R\x10ringingTimeoutMs\"j\n" +
+	"\rEndCallAction\x12\x18\n" +
+	"\aenabled\x18\x01 \x01(\bR\aenabled\x12%\n" +
+	"\x0eclosing_phrase\x18\x02 \x01(\tR\rclosingPhrase\x12\x18\n" +
+	"\aconfirm\x18\x03 \x01(\bR\aconfirm\"\xbb\x01\n" +
+	"\fAgentPersona\x12*\n" +
+	"\fdisplay_name\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\vdisplayName\x12,\n" +
+	"\rsystem_prompt\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\fsystemPrompt\x12\x1a\n" +
+	"\bgreeting\x18\x03 \x01(\tR\bgreeting\x12\x19\n" +
+	"\bvoice_id\x18\x04 \x01(\tR\avoiceId\x12\x1a\n" +
+	"\blanguage\x18\x05 \x01(\tR\blanguage\"\x87\x02\n" +
 	"\x10McpServerRuntime\x12\x1b\n" +
 	"\x04name\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x04name\x129\n" +
 	"\ttransport\x18\x02 \x01(\tB\x1b\xbaH\x18r\x16R\x03sseR\x0fstreamable-httpR\ttransport\x12\x19\n" +
@@ -454,31 +1012,45 @@ func file_port_api_v1_agent_session_proto_rawDescGZIP() []byte {
 	return file_port_api_v1_agent_session_proto_rawDescData
 }
 
-var file_port_api_v1_agent_session_proto_msgTypes = make([]protoimpl.MessageInfo, 5)
+var file_port_api_v1_agent_session_proto_msgTypes = make([]protoimpl.MessageInfo, 12)
 var file_port_api_v1_agent_session_proto_goTypes = []any{
-	(*BootstrapRequest)(nil),    // 0: port.api.v1.BootstrapRequest
-	(*SipBootstrapContext)(nil), // 1: port.api.v1.SipBootstrapContext
-	(*BootstrapResponse)(nil),   // 2: port.api.v1.BootstrapResponse
-	(*McpServerRuntime)(nil),    // 3: port.api.v1.McpServerRuntime
-	nil,                         // 4: port.api.v1.McpServerRuntime.HeadersEntry
-	(*SttRuntime)(nil),          // 5: port.api.v1.SttRuntime
-	(*LlmRuntime)(nil),          // 6: port.api.v1.LlmRuntime
-	(*TtsRuntime)(nil),          // 7: port.api.v1.TtsRuntime
+	(*BootstrapRequest)(nil),        // 0: port.api.v1.BootstrapRequest
+	(*SipBootstrapContext)(nil),     // 1: port.api.v1.SipBootstrapContext
+	(*BootstrapResponse)(nil),       // 2: port.api.v1.BootstrapResponse
+	(*AgentSpecialist)(nil),         // 3: port.api.v1.AgentSpecialist
+	(*CompletionField)(nil),         // 4: port.api.v1.CompletionField
+	(*SpecialistFailurePolicy)(nil), // 5: port.api.v1.SpecialistFailurePolicy
+	(*AgentGlobalActions)(nil),      // 6: port.api.v1.AgentGlobalActions
+	(*TransferToHumanAction)(nil),   // 7: port.api.v1.TransferToHumanAction
+	(*EndCallAction)(nil),           // 8: port.api.v1.EndCallAction
+	(*AgentPersona)(nil),            // 9: port.api.v1.AgentPersona
+	(*McpServerRuntime)(nil),        // 10: port.api.v1.McpServerRuntime
+	nil,                             // 11: port.api.v1.McpServerRuntime.HeadersEntry
+	(*SttRuntime)(nil),              // 12: port.api.v1.SttRuntime
+	(*LlmRuntime)(nil),              // 13: port.api.v1.LlmRuntime
+	(*TtsRuntime)(nil),              // 14: port.api.v1.TtsRuntime
 }
 var file_port_api_v1_agent_session_proto_depIdxs = []int32{
-	1, // 0: port.api.v1.BootstrapRequest.sip:type_name -> port.api.v1.SipBootstrapContext
-	5, // 1: port.api.v1.BootstrapResponse.stt:type_name -> port.api.v1.SttRuntime
-	6, // 2: port.api.v1.BootstrapResponse.llm:type_name -> port.api.v1.LlmRuntime
-	7, // 3: port.api.v1.BootstrapResponse.tts:type_name -> port.api.v1.TtsRuntime
-	3, // 4: port.api.v1.BootstrapResponse.mcp_servers:type_name -> port.api.v1.McpServerRuntime
-	4, // 5: port.api.v1.McpServerRuntime.headers:type_name -> port.api.v1.McpServerRuntime.HeadersEntry
-	0, // 6: port.api.v1.AgentSessionService.Bootstrap:input_type -> port.api.v1.BootstrapRequest
-	2, // 7: port.api.v1.AgentSessionService.Bootstrap:output_type -> port.api.v1.BootstrapResponse
-	7, // [7:8] is the sub-list for method output_type
-	6, // [6:7] is the sub-list for method input_type
-	6, // [6:6] is the sub-list for extension type_name
-	6, // [6:6] is the sub-list for extension extendee
-	0, // [0:6] is the sub-list for field type_name
+	1,  // 0: port.api.v1.BootstrapRequest.sip:type_name -> port.api.v1.SipBootstrapContext
+	12, // 1: port.api.v1.BootstrapResponse.stt:type_name -> port.api.v1.SttRuntime
+	13, // 2: port.api.v1.BootstrapResponse.llm:type_name -> port.api.v1.LlmRuntime
+	14, // 3: port.api.v1.BootstrapResponse.tts:type_name -> port.api.v1.TtsRuntime
+	10, // 4: port.api.v1.BootstrapResponse.mcp_servers:type_name -> port.api.v1.McpServerRuntime
+	9,  // 5: port.api.v1.BootstrapResponse.persona:type_name -> port.api.v1.AgentPersona
+	3,  // 6: port.api.v1.BootstrapResponse.specialists:type_name -> port.api.v1.AgentSpecialist
+	6,  // 7: port.api.v1.BootstrapResponse.global_actions:type_name -> port.api.v1.AgentGlobalActions
+	4,  // 8: port.api.v1.AgentSpecialist.completion_fields:type_name -> port.api.v1.CompletionField
+	5,  // 9: port.api.v1.AgentSpecialist.failure_policy:type_name -> port.api.v1.SpecialistFailurePolicy
+	7,  // 10: port.api.v1.AgentGlobalActions.transfer_to_human:type_name -> port.api.v1.TransferToHumanAction
+	8,  // 11: port.api.v1.AgentGlobalActions.end_call:type_name -> port.api.v1.EndCallAction
+	11, // 12: port.api.v1.McpServerRuntime.headers:type_name -> port.api.v1.McpServerRuntime.HeadersEntry
+	0,  // 13: port.api.v1.AgentSessionService.Bootstrap:input_type -> port.api.v1.BootstrapRequest
+	2,  // 14: port.api.v1.AgentSessionService.Bootstrap:output_type -> port.api.v1.BootstrapResponse
+	14, // [14:15] is the sub-list for method output_type
+	13, // [13:14] is the sub-list for method input_type
+	13, // [13:13] is the sub-list for extension type_name
+	13, // [13:13] is the sub-list for extension extendee
+	0,  // [0:13] is the sub-list for field type_name
 }
 
 func init() { file_port_api_v1_agent_session_proto_init() }
@@ -497,7 +1069,7 @@ func file_port_api_v1_agent_session_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_port_api_v1_agent_session_proto_rawDesc), len(file_port_api_v1_agent_session_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   5,
+			NumMessages:   12,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

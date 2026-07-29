@@ -35,7 +35,7 @@ class SipBootstrapContext(_message.Message):
     def __init__(self, job_id: _Optional[str] = ..., dispatch_id: _Optional[str] = ..., room_name: _Optional[str] = ..., participant_identity: _Optional[str] = ..., trunk_id: _Optional[str] = ..., trunk_phone_number: _Optional[str] = ..., call_id_full: _Optional[str] = ...) -> None: ...
 
 class BootstrapResponse(_message.Message):
-    __slots__ = ("conversation_id", "session_id", "source", "room_name", "agent_tool_snapshot_id", "stt", "llm", "tts", "mcp_servers", "agent_id", "flow_id", "flow_version_id")
+    __slots__ = ("conversation_id", "session_id", "source", "room_name", "agent_tool_snapshot_id", "stt", "llm", "tts", "mcp_servers", "agent_id", "persona", "specialists", "global_actions", "agent_version_id")
     CONVERSATION_ID_FIELD_NUMBER: _ClassVar[int]
     SESSION_ID_FIELD_NUMBER: _ClassVar[int]
     SOURCE_FIELD_NUMBER: _ClassVar[int]
@@ -46,8 +46,10 @@ class BootstrapResponse(_message.Message):
     TTS_FIELD_NUMBER: _ClassVar[int]
     MCP_SERVERS_FIELD_NUMBER: _ClassVar[int]
     AGENT_ID_FIELD_NUMBER: _ClassVar[int]
-    FLOW_ID_FIELD_NUMBER: _ClassVar[int]
-    FLOW_VERSION_ID_FIELD_NUMBER: _ClassVar[int]
+    PERSONA_FIELD_NUMBER: _ClassVar[int]
+    SPECIALISTS_FIELD_NUMBER: _ClassVar[int]
+    GLOBAL_ACTIONS_FIELD_NUMBER: _ClassVar[int]
+    AGENT_VERSION_ID_FIELD_NUMBER: _ClassVar[int]
     conversation_id: str
     session_id: str
     source: str
@@ -58,9 +60,97 @@ class BootstrapResponse(_message.Message):
     tts: _voice_runtime_pb2.TtsRuntime
     mcp_servers: _containers.RepeatedCompositeFieldContainer[McpServerRuntime]
     agent_id: str
-    flow_id: str
-    flow_version_id: str
-    def __init__(self, conversation_id: _Optional[str] = ..., session_id: _Optional[str] = ..., source: _Optional[str] = ..., room_name: _Optional[str] = ..., agent_tool_snapshot_id: _Optional[str] = ..., stt: _Optional[_Union[_voice_runtime_pb2.SttRuntime, _Mapping]] = ..., llm: _Optional[_Union[_voice_runtime_pb2.LlmRuntime, _Mapping]] = ..., tts: _Optional[_Union[_voice_runtime_pb2.TtsRuntime, _Mapping]] = ..., mcp_servers: _Optional[_Iterable[_Union[McpServerRuntime, _Mapping]]] = ..., agent_id: _Optional[str] = ..., flow_id: _Optional[str] = ..., flow_version_id: _Optional[str] = ...) -> None: ...
+    persona: AgentPersona
+    specialists: _containers.RepeatedCompositeFieldContainer[AgentSpecialist]
+    global_actions: AgentGlobalActions
+    agent_version_id: str
+    def __init__(self, conversation_id: _Optional[str] = ..., session_id: _Optional[str] = ..., source: _Optional[str] = ..., room_name: _Optional[str] = ..., agent_tool_snapshot_id: _Optional[str] = ..., stt: _Optional[_Union[_voice_runtime_pb2.SttRuntime, _Mapping]] = ..., llm: _Optional[_Union[_voice_runtime_pb2.LlmRuntime, _Mapping]] = ..., tts: _Optional[_Union[_voice_runtime_pb2.TtsRuntime, _Mapping]] = ..., mcp_servers: _Optional[_Iterable[_Union[McpServerRuntime, _Mapping]]] = ..., agent_id: _Optional[str] = ..., persona: _Optional[_Union[AgentPersona, _Mapping]] = ..., specialists: _Optional[_Iterable[_Union[AgentSpecialist, _Mapping]]] = ..., global_actions: _Optional[_Union[AgentGlobalActions, _Mapping]] = ..., agent_version_id: _Optional[str] = ...) -> None: ...
+
+class AgentSpecialist(_message.Message):
+    __slots__ = ("specialist_id", "key", "display_name", "when_to_use", "instructions", "completion_fields", "failure_policy")
+    SPECIALIST_ID_FIELD_NUMBER: _ClassVar[int]
+    KEY_FIELD_NUMBER: _ClassVar[int]
+    DISPLAY_NAME_FIELD_NUMBER: _ClassVar[int]
+    WHEN_TO_USE_FIELD_NUMBER: _ClassVar[int]
+    INSTRUCTIONS_FIELD_NUMBER: _ClassVar[int]
+    COMPLETION_FIELDS_FIELD_NUMBER: _ClassVar[int]
+    FAILURE_POLICY_FIELD_NUMBER: _ClassVar[int]
+    specialist_id: str
+    key: str
+    display_name: str
+    when_to_use: str
+    instructions: str
+    completion_fields: _containers.RepeatedCompositeFieldContainer[CompletionField]
+    failure_policy: SpecialistFailurePolicy
+    def __init__(self, specialist_id: _Optional[str] = ..., key: _Optional[str] = ..., display_name: _Optional[str] = ..., when_to_use: _Optional[str] = ..., instructions: _Optional[str] = ..., completion_fields: _Optional[_Iterable[_Union[CompletionField, _Mapping]]] = ..., failure_policy: _Optional[_Union[SpecialistFailurePolicy, _Mapping]] = ...) -> None: ...
+
+class CompletionField(_message.Message):
+    __slots__ = ("name", "type", "description", "required", "pattern")
+    NAME_FIELD_NUMBER: _ClassVar[int]
+    TYPE_FIELD_NUMBER: _ClassVar[int]
+    DESCRIPTION_FIELD_NUMBER: _ClassVar[int]
+    REQUIRED_FIELD_NUMBER: _ClassVar[int]
+    PATTERN_FIELD_NUMBER: _ClassVar[int]
+    name: str
+    type: str
+    description: str
+    required: bool
+    pattern: str
+    def __init__(self, name: _Optional[str] = ..., type: _Optional[str] = ..., description: _Optional[str] = ..., required: _Optional[bool] = ..., pattern: _Optional[str] = ...) -> None: ...
+
+class SpecialistFailurePolicy(_message.Message):
+    __slots__ = ("max_attempts", "timeout_ms", "on_failure")
+    MAX_ATTEMPTS_FIELD_NUMBER: _ClassVar[int]
+    TIMEOUT_MS_FIELD_NUMBER: _ClassVar[int]
+    ON_FAILURE_FIELD_NUMBER: _ClassVar[int]
+    max_attempts: int
+    timeout_ms: int
+    on_failure: str
+    def __init__(self, max_attempts: _Optional[int] = ..., timeout_ms: _Optional[int] = ..., on_failure: _Optional[str] = ...) -> None: ...
+
+class AgentGlobalActions(_message.Message):
+    __slots__ = ("transfer_to_human", "end_call")
+    TRANSFER_TO_HUMAN_FIELD_NUMBER: _ClassVar[int]
+    END_CALL_FIELD_NUMBER: _ClassVar[int]
+    transfer_to_human: TransferToHumanAction
+    end_call: EndCallAction
+    def __init__(self, transfer_to_human: _Optional[_Union[TransferToHumanAction, _Mapping]] = ..., end_call: _Optional[_Union[EndCallAction, _Mapping]] = ...) -> None: ...
+
+class TransferToHumanAction(_message.Message):
+    __slots__ = ("enabled", "sip_call_to", "hold_phrase", "ringing_timeout_ms")
+    ENABLED_FIELD_NUMBER: _ClassVar[int]
+    SIP_CALL_TO_FIELD_NUMBER: _ClassVar[int]
+    HOLD_PHRASE_FIELD_NUMBER: _ClassVar[int]
+    RINGING_TIMEOUT_MS_FIELD_NUMBER: _ClassVar[int]
+    enabled: bool
+    sip_call_to: str
+    hold_phrase: str
+    ringing_timeout_ms: int
+    def __init__(self, enabled: _Optional[bool] = ..., sip_call_to: _Optional[str] = ..., hold_phrase: _Optional[str] = ..., ringing_timeout_ms: _Optional[int] = ...) -> None: ...
+
+class EndCallAction(_message.Message):
+    __slots__ = ("enabled", "closing_phrase", "confirm")
+    ENABLED_FIELD_NUMBER: _ClassVar[int]
+    CLOSING_PHRASE_FIELD_NUMBER: _ClassVar[int]
+    CONFIRM_FIELD_NUMBER: _ClassVar[int]
+    enabled: bool
+    closing_phrase: str
+    confirm: bool
+    def __init__(self, enabled: _Optional[bool] = ..., closing_phrase: _Optional[str] = ..., confirm: _Optional[bool] = ...) -> None: ...
+
+class AgentPersona(_message.Message):
+    __slots__ = ("display_name", "system_prompt", "greeting", "voice_id", "language")
+    DISPLAY_NAME_FIELD_NUMBER: _ClassVar[int]
+    SYSTEM_PROMPT_FIELD_NUMBER: _ClassVar[int]
+    GREETING_FIELD_NUMBER: _ClassVar[int]
+    VOICE_ID_FIELD_NUMBER: _ClassVar[int]
+    LANGUAGE_FIELD_NUMBER: _ClassVar[int]
+    display_name: str
+    system_prompt: str
+    greeting: str
+    voice_id: str
+    language: str
+    def __init__(self, display_name: _Optional[str] = ..., system_prompt: _Optional[str] = ..., greeting: _Optional[str] = ..., voice_id: _Optional[str] = ..., language: _Optional[str] = ...) -> None: ...
 
 class McpServerRuntime(_message.Message):
     __slots__ = ("name", "transport", "url", "headers")

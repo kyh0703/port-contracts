@@ -48,8 +48,91 @@ export interface BootstrapResponse {
   tts?: TtsRuntime | undefined;
   mcpServers: McpServerRuntime[];
   agentId: string;
-  flowId: string;
-  flowVersionId: string;
+  persona?:
+    | AgentPersona
+    | undefined;
+  /** Frozen at publish time. Empty means a supervisor with no delegation steps. */
+  specialists: AgentSpecialist[];
+  globalActions?:
+    | AgentGlobalActions
+    | undefined;
+  /** Empty when the call ran the live draft rather than a published version. */
+  agentVersionId: string;
+}
+
+/**
+ * One delegation step the supervisor may hand the turn to. The worker builds an
+ * AgentTask from this and exposes it to the supervisor as a single tool.
+ */
+export interface AgentSpecialist {
+  specialistId: string;
+  /** Becomes the tool name, so it must already be a valid LLM function name. */
+  key: string;
+  displayName: string;
+  /** Becomes the tool description — this is what actually routes the call. */
+  whenToUse: string;
+  instructions: string;
+  completionFields: CompletionField[];
+  failurePolicy?: SpecialistFailurePolicy | undefined;
+}
+
+/**
+ * Becomes a JSON Schema property of the specialist's completion tool. A required
+ * field is what stops the model from ending the step before collecting it.
+ */
+export interface CompletionField {
+  name: string;
+  type: string;
+  description: string;
+  required: boolean;
+  /** Empty means no pattern check. */
+  pattern: string;
+}
+
+/**
+ * Bounds a specialist that never collects its fields. Without it a caller who
+ * will not answer keeps the turn forever.
+ */
+export interface SpecialistFailurePolicy {
+  maxAttempts: number;
+  timeoutMs: number;
+  onFailure: string;
+}
+
+/**
+ * Mounted as AgentSession-level tools so they stay callable while a specialist
+ * holds the turn — a caller can ask for a human or hang up mid-step.
+ */
+export interface AgentGlobalActions {
+  transferToHuman?: TransferToHumanAction | undefined;
+  endCall?: EndCallAction | undefined;
+}
+
+export interface TransferToHumanAction {
+  enabled: boolean;
+  /** Empty when disabled. SIP destination for the warm transfer. */
+  sipCallTo: string;
+  holdPhrase: string;
+  ringingTimeoutMs: number;
+}
+
+export interface EndCallAction {
+  enabled: boolean;
+  closingPhrase: string;
+  /** Ask once before hanging up instead of ending immediately. */
+  confirm: boolean;
+}
+
+/**
+ * Session-scoped agent identity resolved by the API. The worker owns no prompt
+ * configuration of its own; every value here comes from the caller's agent.
+ */
+export interface AgentPersona {
+  displayName: string;
+  systemPrompt: string;
+  greeting: string;
+  voiceId: string;
+  language: string;
 }
 
 export interface McpServerRuntime {
@@ -350,8 +433,10 @@ function createBaseBootstrapResponse(): BootstrapResponse {
     tts: undefined,
     mcpServers: [],
     agentId: "",
-    flowId: "",
-    flowVersionId: "",
+    persona: undefined,
+    specialists: [],
+    globalActions: undefined,
+    agentVersionId: "",
   };
 }
 
@@ -387,11 +472,17 @@ export const BootstrapResponse: MessageFns<BootstrapResponse> = {
     if (message.agentId !== "") {
       writer.uint32(82).string(message.agentId);
     }
-    if (message.flowId !== "") {
-      writer.uint32(90).string(message.flowId);
+    if (message.persona !== undefined) {
+      AgentPersona.encode(message.persona, writer.uint32(106).fork()).join();
     }
-    if (message.flowVersionId !== "") {
-      writer.uint32(98).string(message.flowVersionId);
+    for (const v of message.specialists) {
+      AgentSpecialist.encode(v!, writer.uint32(114).fork()).join();
+    }
+    if (message.globalActions !== undefined) {
+      AgentGlobalActions.encode(message.globalActions, writer.uint32(122).fork()).join();
+    }
+    if (message.agentVersionId !== "") {
+      writer.uint32(130).string(message.agentVersionId);
     }
     return writer;
   },
@@ -483,20 +574,36 @@ export const BootstrapResponse: MessageFns<BootstrapResponse> = {
           message.agentId = reader.string();
           continue;
         }
-        case 11: {
-          if (tag !== 90) {
+        case 13: {
+          if (tag !== 106) {
             break;
           }
 
-          message.flowId = reader.string();
+          message.persona = AgentPersona.decode(reader, reader.uint32());
           continue;
         }
-        case 12: {
-          if (tag !== 98) {
+        case 14: {
+          if (tag !== 114) {
             break;
           }
 
-          message.flowVersionId = reader.string();
+          message.specialists.push(AgentSpecialist.decode(reader, reader.uint32()));
+          continue;
+        }
+        case 15: {
+          if (tag !== 122) {
+            break;
+          }
+
+          message.globalActions = AgentGlobalActions.decode(reader, reader.uint32());
+          continue;
+        }
+        case 16: {
+          if (tag !== 130) {
+            break;
+          }
+
+          message.agentVersionId = reader.string();
           continue;
         }
       }
@@ -544,15 +651,19 @@ export const BootstrapResponse: MessageFns<BootstrapResponse> = {
         : isSet(object.agent_id)
         ? globalThis.String(object.agent_id)
         : "",
-      flowId: isSet(object.flowId)
-        ? globalThis.String(object.flowId)
-        : isSet(object.flow_id)
-        ? globalThis.String(object.flow_id)
-        : "",
-      flowVersionId: isSet(object.flowVersionId)
-        ? globalThis.String(object.flowVersionId)
-        : isSet(object.flow_version_id)
-        ? globalThis.String(object.flow_version_id)
+      persona: isSet(object.persona) ? AgentPersona.fromJSON(object.persona) : undefined,
+      specialists: globalThis.Array.isArray(object?.specialists)
+        ? object.specialists.map((e: any) => AgentSpecialist.fromJSON(e))
+        : [],
+      globalActions: isSet(object.globalActions)
+        ? AgentGlobalActions.fromJSON(object.globalActions)
+        : isSet(object.global_actions)
+        ? AgentGlobalActions.fromJSON(object.global_actions)
+        : undefined,
+      agentVersionId: isSet(object.agentVersionId)
+        ? globalThis.String(object.agentVersionId)
+        : isSet(object.agent_version_id)
+        ? globalThis.String(object.agent_version_id)
         : "",
     };
   },
@@ -589,11 +700,17 @@ export const BootstrapResponse: MessageFns<BootstrapResponse> = {
     if (message.agentId !== "") {
       obj.agentId = message.agentId;
     }
-    if (message.flowId !== "") {
-      obj.flowId = message.flowId;
+    if (message.persona !== undefined) {
+      obj.persona = AgentPersona.toJSON(message.persona);
     }
-    if (message.flowVersionId !== "") {
-      obj.flowVersionId = message.flowVersionId;
+    if (message.specialists?.length) {
+      obj.specialists = message.specialists.map((e) => AgentSpecialist.toJSON(e));
+    }
+    if (message.globalActions !== undefined) {
+      obj.globalActions = AgentGlobalActions.toJSON(message.globalActions);
+    }
+    if (message.agentVersionId !== "") {
+      obj.agentVersionId = message.agentVersionId;
     }
     return obj;
   },
@@ -613,8 +730,868 @@ export const BootstrapResponse: MessageFns<BootstrapResponse> = {
     message.tts = (object.tts !== undefined && object.tts !== null) ? TtsRuntime.fromPartial(object.tts) : undefined;
     message.mcpServers = object.mcpServers?.map((e) => McpServerRuntime.fromPartial(e)) || [];
     message.agentId = object.agentId ?? "";
-    message.flowId = object.flowId ?? "";
-    message.flowVersionId = object.flowVersionId ?? "";
+    message.persona = (object.persona !== undefined && object.persona !== null)
+      ? AgentPersona.fromPartial(object.persona)
+      : undefined;
+    message.specialists = object.specialists?.map((e) => AgentSpecialist.fromPartial(e)) || [];
+    message.globalActions = (object.globalActions !== undefined && object.globalActions !== null)
+      ? AgentGlobalActions.fromPartial(object.globalActions)
+      : undefined;
+    message.agentVersionId = object.agentVersionId ?? "";
+    return message;
+  },
+};
+
+function createBaseAgentSpecialist(): AgentSpecialist {
+  return {
+    specialistId: "",
+    key: "",
+    displayName: "",
+    whenToUse: "",
+    instructions: "",
+    completionFields: [],
+    failurePolicy: undefined,
+  };
+}
+
+export const AgentSpecialist: MessageFns<AgentSpecialist> = {
+  encode(message: AgentSpecialist, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.specialistId !== "") {
+      writer.uint32(10).string(message.specialistId);
+    }
+    if (message.key !== "") {
+      writer.uint32(18).string(message.key);
+    }
+    if (message.displayName !== "") {
+      writer.uint32(26).string(message.displayName);
+    }
+    if (message.whenToUse !== "") {
+      writer.uint32(34).string(message.whenToUse);
+    }
+    if (message.instructions !== "") {
+      writer.uint32(42).string(message.instructions);
+    }
+    for (const v of message.completionFields) {
+      CompletionField.encode(v!, writer.uint32(50).fork()).join();
+    }
+    if (message.failurePolicy !== undefined) {
+      SpecialistFailurePolicy.encode(message.failurePolicy, writer.uint32(58).fork()).join();
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): AgentSpecialist {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseAgentSpecialist();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.specialistId = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.key = reader.string();
+          continue;
+        }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.displayName = reader.string();
+          continue;
+        }
+        case 4: {
+          if (tag !== 34) {
+            break;
+          }
+
+          message.whenToUse = reader.string();
+          continue;
+        }
+        case 5: {
+          if (tag !== 42) {
+            break;
+          }
+
+          message.instructions = reader.string();
+          continue;
+        }
+        case 6: {
+          if (tag !== 50) {
+            break;
+          }
+
+          message.completionFields.push(CompletionField.decode(reader, reader.uint32()));
+          continue;
+        }
+        case 7: {
+          if (tag !== 58) {
+            break;
+          }
+
+          message.failurePolicy = SpecialistFailurePolicy.decode(reader, reader.uint32());
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): AgentSpecialist {
+    return {
+      specialistId: isSet(object.specialistId)
+        ? globalThis.String(object.specialistId)
+        : isSet(object.specialist_id)
+        ? globalThis.String(object.specialist_id)
+        : "",
+      key: isSet(object.key) ? globalThis.String(object.key) : "",
+      displayName: isSet(object.displayName)
+        ? globalThis.String(object.displayName)
+        : isSet(object.display_name)
+        ? globalThis.String(object.display_name)
+        : "",
+      whenToUse: isSet(object.whenToUse)
+        ? globalThis.String(object.whenToUse)
+        : isSet(object.when_to_use)
+        ? globalThis.String(object.when_to_use)
+        : "",
+      instructions: isSet(object.instructions) ? globalThis.String(object.instructions) : "",
+      completionFields: globalThis.Array.isArray(object?.completionFields)
+        ? object.completionFields.map((e: any) => CompletionField.fromJSON(e))
+        : globalThis.Array.isArray(object?.completion_fields)
+        ? object.completion_fields.map((e: any) => CompletionField.fromJSON(e))
+        : [],
+      failurePolicy: isSet(object.failurePolicy)
+        ? SpecialistFailurePolicy.fromJSON(object.failurePolicy)
+        : isSet(object.failure_policy)
+        ? SpecialistFailurePolicy.fromJSON(object.failure_policy)
+        : undefined,
+    };
+  },
+
+  toJSON(message: AgentSpecialist): unknown {
+    const obj: any = {};
+    if (message.specialistId !== "") {
+      obj.specialistId = message.specialistId;
+    }
+    if (message.key !== "") {
+      obj.key = message.key;
+    }
+    if (message.displayName !== "") {
+      obj.displayName = message.displayName;
+    }
+    if (message.whenToUse !== "") {
+      obj.whenToUse = message.whenToUse;
+    }
+    if (message.instructions !== "") {
+      obj.instructions = message.instructions;
+    }
+    if (message.completionFields?.length) {
+      obj.completionFields = message.completionFields.map((e) => CompletionField.toJSON(e));
+    }
+    if (message.failurePolicy !== undefined) {
+      obj.failurePolicy = SpecialistFailurePolicy.toJSON(message.failurePolicy);
+    }
+    return obj;
+  },
+
+  create(base?: DeepPartial<AgentSpecialist>): AgentSpecialist {
+    return AgentSpecialist.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<AgentSpecialist>): AgentSpecialist {
+    const message = createBaseAgentSpecialist();
+    message.specialistId = object.specialistId ?? "";
+    message.key = object.key ?? "";
+    message.displayName = object.displayName ?? "";
+    message.whenToUse = object.whenToUse ?? "";
+    message.instructions = object.instructions ?? "";
+    message.completionFields = object.completionFields?.map((e) => CompletionField.fromPartial(e)) || [];
+    message.failurePolicy = (object.failurePolicy !== undefined && object.failurePolicy !== null)
+      ? SpecialistFailurePolicy.fromPartial(object.failurePolicy)
+      : undefined;
+    return message;
+  },
+};
+
+function createBaseCompletionField(): CompletionField {
+  return { name: "", type: "", description: "", required: false, pattern: "" };
+}
+
+export const CompletionField: MessageFns<CompletionField> = {
+  encode(message: CompletionField, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.name !== "") {
+      writer.uint32(10).string(message.name);
+    }
+    if (message.type !== "") {
+      writer.uint32(18).string(message.type);
+    }
+    if (message.description !== "") {
+      writer.uint32(26).string(message.description);
+    }
+    if (message.required !== false) {
+      writer.uint32(32).bool(message.required);
+    }
+    if (message.pattern !== "") {
+      writer.uint32(42).string(message.pattern);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): CompletionField {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseCompletionField();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.name = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.type = reader.string();
+          continue;
+        }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.description = reader.string();
+          continue;
+        }
+        case 4: {
+          if (tag !== 32) {
+            break;
+          }
+
+          message.required = reader.bool();
+          continue;
+        }
+        case 5: {
+          if (tag !== 42) {
+            break;
+          }
+
+          message.pattern = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): CompletionField {
+    return {
+      name: isSet(object.name) ? globalThis.String(object.name) : "",
+      type: isSet(object.type) ? globalThis.String(object.type) : "",
+      description: isSet(object.description) ? globalThis.String(object.description) : "",
+      required: isSet(object.required) ? globalThis.Boolean(object.required) : false,
+      pattern: isSet(object.pattern) ? globalThis.String(object.pattern) : "",
+    };
+  },
+
+  toJSON(message: CompletionField): unknown {
+    const obj: any = {};
+    if (message.name !== "") {
+      obj.name = message.name;
+    }
+    if (message.type !== "") {
+      obj.type = message.type;
+    }
+    if (message.description !== "") {
+      obj.description = message.description;
+    }
+    if (message.required !== false) {
+      obj.required = message.required;
+    }
+    if (message.pattern !== "") {
+      obj.pattern = message.pattern;
+    }
+    return obj;
+  },
+
+  create(base?: DeepPartial<CompletionField>): CompletionField {
+    return CompletionField.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<CompletionField>): CompletionField {
+    const message = createBaseCompletionField();
+    message.name = object.name ?? "";
+    message.type = object.type ?? "";
+    message.description = object.description ?? "";
+    message.required = object.required ?? false;
+    message.pattern = object.pattern ?? "";
+    return message;
+  },
+};
+
+function createBaseSpecialistFailurePolicy(): SpecialistFailurePolicy {
+  return { maxAttempts: 0, timeoutMs: 0, onFailure: "" };
+}
+
+export const SpecialistFailurePolicy: MessageFns<SpecialistFailurePolicy> = {
+  encode(message: SpecialistFailurePolicy, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.maxAttempts !== 0) {
+      writer.uint32(8).int32(message.maxAttempts);
+    }
+    if (message.timeoutMs !== 0) {
+      writer.uint32(16).int32(message.timeoutMs);
+    }
+    if (message.onFailure !== "") {
+      writer.uint32(26).string(message.onFailure);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): SpecialistFailurePolicy {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseSpecialistFailurePolicy();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 8) {
+            break;
+          }
+
+          message.maxAttempts = reader.int32();
+          continue;
+        }
+        case 2: {
+          if (tag !== 16) {
+            break;
+          }
+
+          message.timeoutMs = reader.int32();
+          continue;
+        }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.onFailure = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): SpecialistFailurePolicy {
+    return {
+      maxAttempts: isSet(object.maxAttempts)
+        ? globalThis.Number(object.maxAttempts)
+        : isSet(object.max_attempts)
+        ? globalThis.Number(object.max_attempts)
+        : 0,
+      timeoutMs: isSet(object.timeoutMs)
+        ? globalThis.Number(object.timeoutMs)
+        : isSet(object.timeout_ms)
+        ? globalThis.Number(object.timeout_ms)
+        : 0,
+      onFailure: isSet(object.onFailure)
+        ? globalThis.String(object.onFailure)
+        : isSet(object.on_failure)
+        ? globalThis.String(object.on_failure)
+        : "",
+    };
+  },
+
+  toJSON(message: SpecialistFailurePolicy): unknown {
+    const obj: any = {};
+    if (message.maxAttempts !== 0) {
+      obj.maxAttempts = Math.round(message.maxAttempts);
+    }
+    if (message.timeoutMs !== 0) {
+      obj.timeoutMs = Math.round(message.timeoutMs);
+    }
+    if (message.onFailure !== "") {
+      obj.onFailure = message.onFailure;
+    }
+    return obj;
+  },
+
+  create(base?: DeepPartial<SpecialistFailurePolicy>): SpecialistFailurePolicy {
+    return SpecialistFailurePolicy.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<SpecialistFailurePolicy>): SpecialistFailurePolicy {
+    const message = createBaseSpecialistFailurePolicy();
+    message.maxAttempts = object.maxAttempts ?? 0;
+    message.timeoutMs = object.timeoutMs ?? 0;
+    message.onFailure = object.onFailure ?? "";
+    return message;
+  },
+};
+
+function createBaseAgentGlobalActions(): AgentGlobalActions {
+  return { transferToHuman: undefined, endCall: undefined };
+}
+
+export const AgentGlobalActions: MessageFns<AgentGlobalActions> = {
+  encode(message: AgentGlobalActions, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.transferToHuman !== undefined) {
+      TransferToHumanAction.encode(message.transferToHuman, writer.uint32(10).fork()).join();
+    }
+    if (message.endCall !== undefined) {
+      EndCallAction.encode(message.endCall, writer.uint32(18).fork()).join();
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): AgentGlobalActions {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseAgentGlobalActions();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.transferToHuman = TransferToHumanAction.decode(reader, reader.uint32());
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.endCall = EndCallAction.decode(reader, reader.uint32());
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): AgentGlobalActions {
+    return {
+      transferToHuman: isSet(object.transferToHuman)
+        ? TransferToHumanAction.fromJSON(object.transferToHuman)
+        : isSet(object.transfer_to_human)
+        ? TransferToHumanAction.fromJSON(object.transfer_to_human)
+        : undefined,
+      endCall: isSet(object.endCall)
+        ? EndCallAction.fromJSON(object.endCall)
+        : isSet(object.end_call)
+        ? EndCallAction.fromJSON(object.end_call)
+        : undefined,
+    };
+  },
+
+  toJSON(message: AgentGlobalActions): unknown {
+    const obj: any = {};
+    if (message.transferToHuman !== undefined) {
+      obj.transferToHuman = TransferToHumanAction.toJSON(message.transferToHuman);
+    }
+    if (message.endCall !== undefined) {
+      obj.endCall = EndCallAction.toJSON(message.endCall);
+    }
+    return obj;
+  },
+
+  create(base?: DeepPartial<AgentGlobalActions>): AgentGlobalActions {
+    return AgentGlobalActions.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<AgentGlobalActions>): AgentGlobalActions {
+    const message = createBaseAgentGlobalActions();
+    message.transferToHuman = (object.transferToHuman !== undefined && object.transferToHuman !== null)
+      ? TransferToHumanAction.fromPartial(object.transferToHuman)
+      : undefined;
+    message.endCall = (object.endCall !== undefined && object.endCall !== null)
+      ? EndCallAction.fromPartial(object.endCall)
+      : undefined;
+    return message;
+  },
+};
+
+function createBaseTransferToHumanAction(): TransferToHumanAction {
+  return { enabled: false, sipCallTo: "", holdPhrase: "", ringingTimeoutMs: 0 };
+}
+
+export const TransferToHumanAction: MessageFns<TransferToHumanAction> = {
+  encode(message: TransferToHumanAction, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.enabled !== false) {
+      writer.uint32(8).bool(message.enabled);
+    }
+    if (message.sipCallTo !== "") {
+      writer.uint32(18).string(message.sipCallTo);
+    }
+    if (message.holdPhrase !== "") {
+      writer.uint32(26).string(message.holdPhrase);
+    }
+    if (message.ringingTimeoutMs !== 0) {
+      writer.uint32(32).int32(message.ringingTimeoutMs);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): TransferToHumanAction {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseTransferToHumanAction();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 8) {
+            break;
+          }
+
+          message.enabled = reader.bool();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.sipCallTo = reader.string();
+          continue;
+        }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.holdPhrase = reader.string();
+          continue;
+        }
+        case 4: {
+          if (tag !== 32) {
+            break;
+          }
+
+          message.ringingTimeoutMs = reader.int32();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): TransferToHumanAction {
+    return {
+      enabled: isSet(object.enabled) ? globalThis.Boolean(object.enabled) : false,
+      sipCallTo: isSet(object.sipCallTo)
+        ? globalThis.String(object.sipCallTo)
+        : isSet(object.sip_call_to)
+        ? globalThis.String(object.sip_call_to)
+        : "",
+      holdPhrase: isSet(object.holdPhrase)
+        ? globalThis.String(object.holdPhrase)
+        : isSet(object.hold_phrase)
+        ? globalThis.String(object.hold_phrase)
+        : "",
+      ringingTimeoutMs: isSet(object.ringingTimeoutMs)
+        ? globalThis.Number(object.ringingTimeoutMs)
+        : isSet(object.ringing_timeout_ms)
+        ? globalThis.Number(object.ringing_timeout_ms)
+        : 0,
+    };
+  },
+
+  toJSON(message: TransferToHumanAction): unknown {
+    const obj: any = {};
+    if (message.enabled !== false) {
+      obj.enabled = message.enabled;
+    }
+    if (message.sipCallTo !== "") {
+      obj.sipCallTo = message.sipCallTo;
+    }
+    if (message.holdPhrase !== "") {
+      obj.holdPhrase = message.holdPhrase;
+    }
+    if (message.ringingTimeoutMs !== 0) {
+      obj.ringingTimeoutMs = Math.round(message.ringingTimeoutMs);
+    }
+    return obj;
+  },
+
+  create(base?: DeepPartial<TransferToHumanAction>): TransferToHumanAction {
+    return TransferToHumanAction.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<TransferToHumanAction>): TransferToHumanAction {
+    const message = createBaseTransferToHumanAction();
+    message.enabled = object.enabled ?? false;
+    message.sipCallTo = object.sipCallTo ?? "";
+    message.holdPhrase = object.holdPhrase ?? "";
+    message.ringingTimeoutMs = object.ringingTimeoutMs ?? 0;
+    return message;
+  },
+};
+
+function createBaseEndCallAction(): EndCallAction {
+  return { enabled: false, closingPhrase: "", confirm: false };
+}
+
+export const EndCallAction: MessageFns<EndCallAction> = {
+  encode(message: EndCallAction, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.enabled !== false) {
+      writer.uint32(8).bool(message.enabled);
+    }
+    if (message.closingPhrase !== "") {
+      writer.uint32(18).string(message.closingPhrase);
+    }
+    if (message.confirm !== false) {
+      writer.uint32(24).bool(message.confirm);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): EndCallAction {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseEndCallAction();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 8) {
+            break;
+          }
+
+          message.enabled = reader.bool();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.closingPhrase = reader.string();
+          continue;
+        }
+        case 3: {
+          if (tag !== 24) {
+            break;
+          }
+
+          message.confirm = reader.bool();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): EndCallAction {
+    return {
+      enabled: isSet(object.enabled) ? globalThis.Boolean(object.enabled) : false,
+      closingPhrase: isSet(object.closingPhrase)
+        ? globalThis.String(object.closingPhrase)
+        : isSet(object.closing_phrase)
+        ? globalThis.String(object.closing_phrase)
+        : "",
+      confirm: isSet(object.confirm) ? globalThis.Boolean(object.confirm) : false,
+    };
+  },
+
+  toJSON(message: EndCallAction): unknown {
+    const obj: any = {};
+    if (message.enabled !== false) {
+      obj.enabled = message.enabled;
+    }
+    if (message.closingPhrase !== "") {
+      obj.closingPhrase = message.closingPhrase;
+    }
+    if (message.confirm !== false) {
+      obj.confirm = message.confirm;
+    }
+    return obj;
+  },
+
+  create(base?: DeepPartial<EndCallAction>): EndCallAction {
+    return EndCallAction.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<EndCallAction>): EndCallAction {
+    const message = createBaseEndCallAction();
+    message.enabled = object.enabled ?? false;
+    message.closingPhrase = object.closingPhrase ?? "";
+    message.confirm = object.confirm ?? false;
+    return message;
+  },
+};
+
+function createBaseAgentPersona(): AgentPersona {
+  return { displayName: "", systemPrompt: "", greeting: "", voiceId: "", language: "" };
+}
+
+export const AgentPersona: MessageFns<AgentPersona> = {
+  encode(message: AgentPersona, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.displayName !== "") {
+      writer.uint32(10).string(message.displayName);
+    }
+    if (message.systemPrompt !== "") {
+      writer.uint32(18).string(message.systemPrompt);
+    }
+    if (message.greeting !== "") {
+      writer.uint32(26).string(message.greeting);
+    }
+    if (message.voiceId !== "") {
+      writer.uint32(34).string(message.voiceId);
+    }
+    if (message.language !== "") {
+      writer.uint32(42).string(message.language);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): AgentPersona {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseAgentPersona();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.displayName = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.systemPrompt = reader.string();
+          continue;
+        }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.greeting = reader.string();
+          continue;
+        }
+        case 4: {
+          if (tag !== 34) {
+            break;
+          }
+
+          message.voiceId = reader.string();
+          continue;
+        }
+        case 5: {
+          if (tag !== 42) {
+            break;
+          }
+
+          message.language = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): AgentPersona {
+    return {
+      displayName: isSet(object.displayName)
+        ? globalThis.String(object.displayName)
+        : isSet(object.display_name)
+        ? globalThis.String(object.display_name)
+        : "",
+      systemPrompt: isSet(object.systemPrompt)
+        ? globalThis.String(object.systemPrompt)
+        : isSet(object.system_prompt)
+        ? globalThis.String(object.system_prompt)
+        : "",
+      greeting: isSet(object.greeting) ? globalThis.String(object.greeting) : "",
+      voiceId: isSet(object.voiceId)
+        ? globalThis.String(object.voiceId)
+        : isSet(object.voice_id)
+        ? globalThis.String(object.voice_id)
+        : "",
+      language: isSet(object.language) ? globalThis.String(object.language) : "",
+    };
+  },
+
+  toJSON(message: AgentPersona): unknown {
+    const obj: any = {};
+    if (message.displayName !== "") {
+      obj.displayName = message.displayName;
+    }
+    if (message.systemPrompt !== "") {
+      obj.systemPrompt = message.systemPrompt;
+    }
+    if (message.greeting !== "") {
+      obj.greeting = message.greeting;
+    }
+    if (message.voiceId !== "") {
+      obj.voiceId = message.voiceId;
+    }
+    if (message.language !== "") {
+      obj.language = message.language;
+    }
+    return obj;
+  },
+
+  create(base?: DeepPartial<AgentPersona>): AgentPersona {
+    return AgentPersona.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<AgentPersona>): AgentPersona {
+    const message = createBaseAgentPersona();
+    message.displayName = object.displayName ?? "";
+    message.systemPrompt = object.systemPrompt ?? "";
+    message.greeting = object.greeting ?? "";
+    message.voiceId = object.voiceId ?? "";
+    message.language = object.language ?? "";
     return message;
   },
 };

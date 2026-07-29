@@ -40,8 +40,90 @@ message BootstrapResponse {
   TtsRuntime tts = 8 [(buf.validate.field).required = true];
   repeated McpServerRuntime mcp_servers = 9;
   string agent_id = 10 [(buf.validate.field).string.min_len = 1];
-  string flow_id = 11 [(buf.validate.field).string.min_len = 1];
-  string flow_version_id = 12 [(buf.validate.field).string.min_len = 1];
+  // 11 and 12 were flow_id / flow_version_id, shipped in 1.2.3. The Flow layer
+  // is gone, and reusing those numbers for other types would misparse on any
+  // client still running that release.
+  reserved 11, 12;
+  reserved "flow_id", "flow_version_id";
+  AgentPersona persona = 13 [(buf.validate.field).required = true];
+  // Frozen at publish time. Empty means a supervisor with no delegation steps.
+  repeated AgentSpecialist specialists = 14;
+  AgentGlobalActions global_actions = 15;
+  // Empty when the call ran the live draft rather than a published version.
+  string agent_version_id = 16;
+}
+
+// One delegation step the supervisor may hand the turn to. The worker builds an
+// AgentTask from this and exposes it to the supervisor as a single tool.
+message AgentSpecialist {
+  string specialist_id = 1 [(buf.validate.field).string.min_len = 1];
+  // Becomes the tool name, so it must already be a valid LLM function name.
+  string key = 2 [(buf.validate.field).string.min_len = 1];
+  string display_name = 3;
+  // Becomes the tool description — this is what actually routes the call.
+  string when_to_use = 4 [(buf.validate.field).string.min_len = 1];
+  string instructions = 5 [(buf.validate.field).string.min_len = 1];
+  repeated CompletionField completion_fields = 6;
+  SpecialistFailurePolicy failure_policy = 7;
+}
+
+// Becomes a JSON Schema property of the specialist's completion tool. A required
+// field is what stops the model from ending the step before collecting it.
+message CompletionField {
+  string name = 1 [(buf.validate.field).string.min_len = 1];
+  string type = 2 [
+    (buf.validate.field).string.in = "string",
+    (buf.validate.field).string.in = "number",
+    (buf.validate.field).string.in = "boolean"
+  ];
+  string description = 3 [(buf.validate.field).string.min_len = 1];
+  bool required = 4;
+  // Empty means no pattern check.
+  string pattern = 5;
+}
+
+// Bounds a specialist that never collects its fields. Without it a caller who
+// will not answer keeps the turn forever.
+message SpecialistFailurePolicy {
+  int32 max_attempts = 1;
+  int32 timeout_ms = 2;
+  string on_failure = 3 [
+    (buf.validate.field).string.in = "return_to_supervisor",
+    (buf.validate.field).string.in = "transfer_to_human",
+    (buf.validate.field).string.in = "end_call"
+  ];
+}
+
+// Mounted as AgentSession-level tools so they stay callable while a specialist
+// holds the turn — a caller can ask for a human or hang up mid-step.
+message AgentGlobalActions {
+  TransferToHumanAction transfer_to_human = 1;
+  EndCallAction end_call = 2;
+}
+
+message TransferToHumanAction {
+  bool enabled = 1;
+  // Empty when disabled. SIP destination for the warm transfer.
+  string sip_call_to = 2;
+  string hold_phrase = 3;
+  int32 ringing_timeout_ms = 4;
+}
+
+message EndCallAction {
+  bool enabled = 1;
+  string closing_phrase = 2;
+  // Ask once before hanging up instead of ending immediately.
+  bool confirm = 3;
+}
+
+// Session-scoped agent identity resolved by the API. The worker owns no prompt
+// configuration of its own; every value here comes from the caller's agent.
+message AgentPersona {
+  string display_name = 1 [(buf.validate.field).string.min_len = 1];
+  string system_prompt = 2 [(buf.validate.field).string.min_len = 1];
+  string greeting = 3;
+  string voice_id = 4;
+  string language = 5;
 }
 
 message McpServerRuntime {
