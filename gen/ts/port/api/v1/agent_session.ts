@@ -58,6 +58,25 @@ export interface BootstrapResponse {
     | undefined;
   /** Empty when the call ran the live draft rather than a published version. */
   agentVersionId: string;
+  /**
+   * Absent when the agent runs the plain supervisor. 1.2.3 carried this
+   * snapshot as field 10, which this release line reused for agent_id, so it
+   * returns under a fresh number.
+   */
+  workflow?: WorkflowSnapshot | undefined;
+}
+
+/**
+ * Compiled at publish time by the API from the xyflow editor graph. The worker
+ * validates and freezes it per session; compiled_graph_json is the canonical
+ * execution graph, never xyflow editor state, and must not carry MCP URLs,
+ * headers, or provider secrets.
+ */
+export interface WorkflowSnapshot {
+  workflowId: string;
+  workflowVersion: string;
+  schemaVersion: string;
+  compiledGraphJson: string;
 }
 
 /**
@@ -437,6 +456,7 @@ function createBaseBootstrapResponse(): BootstrapResponse {
     specialists: [],
     globalActions: undefined,
     agentVersionId: "",
+    workflow: undefined,
   };
 }
 
@@ -483,6 +503,9 @@ export const BootstrapResponse: MessageFns<BootstrapResponse> = {
     }
     if (message.agentVersionId !== "") {
       writer.uint32(130).string(message.agentVersionId);
+    }
+    if (message.workflow !== undefined) {
+      WorkflowSnapshot.encode(message.workflow, writer.uint32(138).fork()).join();
     }
     return writer;
   },
@@ -606,6 +629,14 @@ export const BootstrapResponse: MessageFns<BootstrapResponse> = {
           message.agentVersionId = reader.string();
           continue;
         }
+        case 17: {
+          if (tag !== 138) {
+            break;
+          }
+
+          message.workflow = WorkflowSnapshot.decode(reader, reader.uint32());
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -665,6 +696,7 @@ export const BootstrapResponse: MessageFns<BootstrapResponse> = {
         : isSet(object.agent_version_id)
         ? globalThis.String(object.agent_version_id)
         : "",
+      workflow: isSet(object.workflow) ? WorkflowSnapshot.fromJSON(object.workflow) : undefined,
     };
   },
 
@@ -712,6 +744,9 @@ export const BootstrapResponse: MessageFns<BootstrapResponse> = {
     if (message.agentVersionId !== "") {
       obj.agentVersionId = message.agentVersionId;
     }
+    if (message.workflow !== undefined) {
+      obj.workflow = WorkflowSnapshot.toJSON(message.workflow);
+    }
     return obj;
   },
 
@@ -738,6 +773,133 @@ export const BootstrapResponse: MessageFns<BootstrapResponse> = {
       ? AgentGlobalActions.fromPartial(object.globalActions)
       : undefined;
     message.agentVersionId = object.agentVersionId ?? "";
+    message.workflow = (object.workflow !== undefined && object.workflow !== null)
+      ? WorkflowSnapshot.fromPartial(object.workflow)
+      : undefined;
+    return message;
+  },
+};
+
+function createBaseWorkflowSnapshot(): WorkflowSnapshot {
+  return { workflowId: "", workflowVersion: "", schemaVersion: "", compiledGraphJson: "" };
+}
+
+export const WorkflowSnapshot: MessageFns<WorkflowSnapshot> = {
+  encode(message: WorkflowSnapshot, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.workflowId !== "") {
+      writer.uint32(10).string(message.workflowId);
+    }
+    if (message.workflowVersion !== "") {
+      writer.uint32(18).string(message.workflowVersion);
+    }
+    if (message.schemaVersion !== "") {
+      writer.uint32(26).string(message.schemaVersion);
+    }
+    if (message.compiledGraphJson !== "") {
+      writer.uint32(34).string(message.compiledGraphJson);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): WorkflowSnapshot {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseWorkflowSnapshot();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.workflowId = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.workflowVersion = reader.string();
+          continue;
+        }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.schemaVersion = reader.string();
+          continue;
+        }
+        case 4: {
+          if (tag !== 34) {
+            break;
+          }
+
+          message.compiledGraphJson = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): WorkflowSnapshot {
+    return {
+      workflowId: isSet(object.workflowId)
+        ? globalThis.String(object.workflowId)
+        : isSet(object.workflow_id)
+        ? globalThis.String(object.workflow_id)
+        : "",
+      workflowVersion: isSet(object.workflowVersion)
+        ? globalThis.String(object.workflowVersion)
+        : isSet(object.workflow_version)
+        ? globalThis.String(object.workflow_version)
+        : "",
+      schemaVersion: isSet(object.schemaVersion)
+        ? globalThis.String(object.schemaVersion)
+        : isSet(object.schema_version)
+        ? globalThis.String(object.schema_version)
+        : "",
+      compiledGraphJson: isSet(object.compiledGraphJson)
+        ? globalThis.String(object.compiledGraphJson)
+        : isSet(object.compiled_graph_json)
+        ? globalThis.String(object.compiled_graph_json)
+        : "",
+    };
+  },
+
+  toJSON(message: WorkflowSnapshot): unknown {
+    const obj: any = {};
+    if (message.workflowId !== "") {
+      obj.workflowId = message.workflowId;
+    }
+    if (message.workflowVersion !== "") {
+      obj.workflowVersion = message.workflowVersion;
+    }
+    if (message.schemaVersion !== "") {
+      obj.schemaVersion = message.schemaVersion;
+    }
+    if (message.compiledGraphJson !== "") {
+      obj.compiledGraphJson = message.compiledGraphJson;
+    }
+    return obj;
+  },
+
+  create(base?: DeepPartial<WorkflowSnapshot>): WorkflowSnapshot {
+    return WorkflowSnapshot.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<WorkflowSnapshot>): WorkflowSnapshot {
+    const message = createBaseWorkflowSnapshot();
+    message.workflowId = object.workflowId ?? "";
+    message.workflowVersion = object.workflowVersion ?? "";
+    message.schemaVersion = object.schemaVersion ?? "";
+    message.compiledGraphJson = object.compiledGraphJson ?? "";
     return message;
   },
 };

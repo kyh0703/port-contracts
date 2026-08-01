@@ -35,7 +35,7 @@ class SipBootstrapContext(_message.Message):
     def __init__(self, job_id: _Optional[str] = ..., dispatch_id: _Optional[str] = ..., room_name: _Optional[str] = ..., participant_identity: _Optional[str] = ..., trunk_id: _Optional[str] = ..., trunk_phone_number: _Optional[str] = ..., call_id_full: _Optional[str] = ...) -> None: ...
 
 class BootstrapResponse(_message.Message):
-    __slots__ = ("conversation_id", "session_id", "source", "room_name", "agent_tool_snapshot_id", "stt", "llm", "tts", "mcp_servers", "agent_id", "persona", "specialists", "global_actions", "agent_version_id")
+    __slots__ = ("conversation_id", "session_id", "source", "room_name", "agent_tool_snapshot_id", "stt", "llm", "tts", "mcp_servers", "agent_id", "persona", "specialists", "global_actions", "agent_version_id", "workflow")
     CONVERSATION_ID_FIELD_NUMBER: _ClassVar[int]
     SESSION_ID_FIELD_NUMBER: _ClassVar[int]
     SOURCE_FIELD_NUMBER: _ClassVar[int]
@@ -50,6 +50,7 @@ class BootstrapResponse(_message.Message):
     SPECIALISTS_FIELD_NUMBER: _ClassVar[int]
     GLOBAL_ACTIONS_FIELD_NUMBER: _ClassVar[int]
     AGENT_VERSION_ID_FIELD_NUMBER: _ClassVar[int]
+    WORKFLOW_FIELD_NUMBER: _ClassVar[int]
     conversation_id: str
     session_id: str
     source: str
@@ -64,7 +65,20 @@ class BootstrapResponse(_message.Message):
     specialists: _containers.RepeatedCompositeFieldContainer[AgentSpecialist]
     global_actions: AgentGlobalActions
     agent_version_id: str
-    def __init__(self, conversation_id: _Optional[str] = ..., session_id: _Optional[str] = ..., source: _Optional[str] = ..., room_name: _Optional[str] = ..., agent_tool_snapshot_id: _Optional[str] = ..., stt: _Optional[_Union[_voice_runtime_pb2.SttRuntime, _Mapping]] = ..., llm: _Optional[_Union[_voice_runtime_pb2.LlmRuntime, _Mapping]] = ..., tts: _Optional[_Union[_voice_runtime_pb2.TtsRuntime, _Mapping]] = ..., mcp_servers: _Optional[_Iterable[_Union[McpServerRuntime, _Mapping]]] = ..., agent_id: _Optional[str] = ..., persona: _Optional[_Union[AgentPersona, _Mapping]] = ..., specialists: _Optional[_Iterable[_Union[AgentSpecialist, _Mapping]]] = ..., global_actions: _Optional[_Union[AgentGlobalActions, _Mapping]] = ..., agent_version_id: _Optional[str] = ...) -> None: ...
+    workflow: WorkflowSnapshot
+    def __init__(self, conversation_id: _Optional[str] = ..., session_id: _Optional[str] = ..., source: _Optional[str] = ..., room_name: _Optional[str] = ..., agent_tool_snapshot_id: _Optional[str] = ..., stt: _Optional[_Union[_voice_runtime_pb2.SttRuntime, _Mapping]] = ..., llm: _Optional[_Union[_voice_runtime_pb2.LlmRuntime, _Mapping]] = ..., tts: _Optional[_Union[_voice_runtime_pb2.TtsRuntime, _Mapping]] = ..., mcp_servers: _Optional[_Iterable[_Union[McpServerRuntime, _Mapping]]] = ..., agent_id: _Optional[str] = ..., persona: _Optional[_Union[AgentPersona, _Mapping]] = ..., specialists: _Optional[_Iterable[_Union[AgentSpecialist, _Mapping]]] = ..., global_actions: _Optional[_Union[AgentGlobalActions, _Mapping]] = ..., agent_version_id: _Optional[str] = ..., workflow: _Optional[_Union[WorkflowSnapshot, _Mapping]] = ...) -> None: ...
+
+class WorkflowSnapshot(_message.Message):
+    __slots__ = ("workflow_id", "workflow_version", "schema_version", "compiled_graph_json")
+    WORKFLOW_ID_FIELD_NUMBER: _ClassVar[int]
+    WORKFLOW_VERSION_FIELD_NUMBER: _ClassVar[int]
+    SCHEMA_VERSION_FIELD_NUMBER: _ClassVar[int]
+    COMPILED_GRAPH_JSON_FIELD_NUMBER: _ClassVar[int]
+    workflow_id: str
+    workflow_version: str
+    schema_version: str
+    compiled_graph_json: str
+    def __init__(self, workflow_id: _Optional[str] = ..., workflow_version: _Optional[str] = ..., schema_version: _Optional[str] = ..., compiled_graph_json: _Optional[str] = ...) -> None: ...
 
 class AgentSpecialist(_message.Message):
     __slots__ = ("specialist_id", "key", "display_name", "when_to_use", "instructions", "completion_fields", "failure_policy")

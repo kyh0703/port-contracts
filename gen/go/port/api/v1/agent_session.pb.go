@@ -214,8 +214,12 @@ type BootstrapResponse struct {
 	GlobalActions *AgentGlobalActions `protobuf:"bytes,15,opt,name=global_actions,json=globalActions,proto3" json:"global_actions,omitempty"`
 	// Empty when the call ran the live draft rather than a published version.
 	AgentVersionId string `protobuf:"bytes,16,opt,name=agent_version_id,json=agentVersionId,proto3" json:"agent_version_id,omitempty"`
-	unknownFields  protoimpl.UnknownFields
-	sizeCache      protoimpl.SizeCache
+	// Absent when the agent runs the plain supervisor. 1.2.3 carried this
+	// snapshot as field 10, which this release line reused for agent_id, so it
+	// returns under a fresh number.
+	Workflow      *WorkflowSnapshot `protobuf:"bytes,17,opt,name=workflow,proto3" json:"workflow,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
 }
 
 func (x *BootstrapResponse) Reset() {
@@ -346,6 +350,85 @@ func (x *BootstrapResponse) GetAgentVersionId() string {
 	return ""
 }
 
+func (x *BootstrapResponse) GetWorkflow() *WorkflowSnapshot {
+	if x != nil {
+		return x.Workflow
+	}
+	return nil
+}
+
+// Compiled at publish time by the API from the xyflow editor graph. The worker
+// validates and freezes it per session; compiled_graph_json is the canonical
+// execution graph, never xyflow editor state, and must not carry MCP URLs,
+// headers, or provider secrets.
+type WorkflowSnapshot struct {
+	state             protoimpl.MessageState `protogen:"open.v1"`
+	WorkflowId        string                 `protobuf:"bytes,1,opt,name=workflow_id,json=workflowId,proto3" json:"workflow_id,omitempty"`
+	WorkflowVersion   string                 `protobuf:"bytes,2,opt,name=workflow_version,json=workflowVersion,proto3" json:"workflow_version,omitempty"`
+	SchemaVersion     string                 `protobuf:"bytes,3,opt,name=schema_version,json=schemaVersion,proto3" json:"schema_version,omitempty"`
+	CompiledGraphJson string                 `protobuf:"bytes,4,opt,name=compiled_graph_json,json=compiledGraphJson,proto3" json:"compiled_graph_json,omitempty"`
+	unknownFields     protoimpl.UnknownFields
+	sizeCache         protoimpl.SizeCache
+}
+
+func (x *WorkflowSnapshot) Reset() {
+	*x = WorkflowSnapshot{}
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[3]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *WorkflowSnapshot) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*WorkflowSnapshot) ProtoMessage() {}
+
+func (x *WorkflowSnapshot) ProtoReflect() protoreflect.Message {
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[3]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use WorkflowSnapshot.ProtoReflect.Descriptor instead.
+func (*WorkflowSnapshot) Descriptor() ([]byte, []int) {
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{3}
+}
+
+func (x *WorkflowSnapshot) GetWorkflowId() string {
+	if x != nil {
+		return x.WorkflowId
+	}
+	return ""
+}
+
+func (x *WorkflowSnapshot) GetWorkflowVersion() string {
+	if x != nil {
+		return x.WorkflowVersion
+	}
+	return ""
+}
+
+func (x *WorkflowSnapshot) GetSchemaVersion() string {
+	if x != nil {
+		return x.SchemaVersion
+	}
+	return ""
+}
+
+func (x *WorkflowSnapshot) GetCompiledGraphJson() string {
+	if x != nil {
+		return x.CompiledGraphJson
+	}
+	return ""
+}
+
 // One delegation step the supervisor may hand the turn to. The worker builds an
 // AgentTask from this and exposes it to the supervisor as a single tool.
 type AgentSpecialist struct {
@@ -365,7 +448,7 @@ type AgentSpecialist struct {
 
 func (x *AgentSpecialist) Reset() {
 	*x = AgentSpecialist{}
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[3]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -377,7 +460,7 @@ func (x *AgentSpecialist) String() string {
 func (*AgentSpecialist) ProtoMessage() {}
 
 func (x *AgentSpecialist) ProtoReflect() protoreflect.Message {
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[3]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -390,7 +473,7 @@ func (x *AgentSpecialist) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AgentSpecialist.ProtoReflect.Descriptor instead.
 func (*AgentSpecialist) Descriptor() ([]byte, []int) {
-	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{3}
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *AgentSpecialist) GetSpecialistId() string {
@@ -458,7 +541,7 @@ type CompletionField struct {
 
 func (x *CompletionField) Reset() {
 	*x = CompletionField{}
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[4]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -470,7 +553,7 @@ func (x *CompletionField) String() string {
 func (*CompletionField) ProtoMessage() {}
 
 func (x *CompletionField) ProtoReflect() protoreflect.Message {
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[4]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -483,7 +566,7 @@ func (x *CompletionField) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CompletionField.ProtoReflect.Descriptor instead.
 func (*CompletionField) Descriptor() ([]byte, []int) {
-	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{4}
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *CompletionField) GetName() string {
@@ -534,7 +617,7 @@ type SpecialistFailurePolicy struct {
 
 func (x *SpecialistFailurePolicy) Reset() {
 	*x = SpecialistFailurePolicy{}
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[5]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -546,7 +629,7 @@ func (x *SpecialistFailurePolicy) String() string {
 func (*SpecialistFailurePolicy) ProtoMessage() {}
 
 func (x *SpecialistFailurePolicy) ProtoReflect() protoreflect.Message {
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[5]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -559,7 +642,7 @@ func (x *SpecialistFailurePolicy) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SpecialistFailurePolicy.ProtoReflect.Descriptor instead.
 func (*SpecialistFailurePolicy) Descriptor() ([]byte, []int) {
-	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{5}
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *SpecialistFailurePolicy) GetMaxAttempts() int32 {
@@ -595,7 +678,7 @@ type AgentGlobalActions struct {
 
 func (x *AgentGlobalActions) Reset() {
 	*x = AgentGlobalActions{}
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[6]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -607,7 +690,7 @@ func (x *AgentGlobalActions) String() string {
 func (*AgentGlobalActions) ProtoMessage() {}
 
 func (x *AgentGlobalActions) ProtoReflect() protoreflect.Message {
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[6]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -620,7 +703,7 @@ func (x *AgentGlobalActions) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AgentGlobalActions.ProtoReflect.Descriptor instead.
 func (*AgentGlobalActions) Descriptor() ([]byte, []int) {
-	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{6}
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *AgentGlobalActions) GetTransferToHuman() *TransferToHumanAction {
@@ -650,7 +733,7 @@ type TransferToHumanAction struct {
 
 func (x *TransferToHumanAction) Reset() {
 	*x = TransferToHumanAction{}
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[7]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -662,7 +745,7 @@ func (x *TransferToHumanAction) String() string {
 func (*TransferToHumanAction) ProtoMessage() {}
 
 func (x *TransferToHumanAction) ProtoReflect() protoreflect.Message {
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[7]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -675,7 +758,7 @@ func (x *TransferToHumanAction) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TransferToHumanAction.ProtoReflect.Descriptor instead.
 func (*TransferToHumanAction) Descriptor() ([]byte, []int) {
-	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{7}
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *TransferToHumanAction) GetEnabled() bool {
@@ -718,7 +801,7 @@ type EndCallAction struct {
 
 func (x *EndCallAction) Reset() {
 	*x = EndCallAction{}
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[8]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -730,7 +813,7 @@ func (x *EndCallAction) String() string {
 func (*EndCallAction) ProtoMessage() {}
 
 func (x *EndCallAction) ProtoReflect() protoreflect.Message {
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[8]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -743,7 +826,7 @@ func (x *EndCallAction) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use EndCallAction.ProtoReflect.Descriptor instead.
 func (*EndCallAction) Descriptor() ([]byte, []int) {
-	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{8}
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *EndCallAction) GetEnabled() bool {
@@ -782,7 +865,7 @@ type AgentPersona struct {
 
 func (x *AgentPersona) Reset() {
 	*x = AgentPersona{}
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[9]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -794,7 +877,7 @@ func (x *AgentPersona) String() string {
 func (*AgentPersona) ProtoMessage() {}
 
 func (x *AgentPersona) ProtoReflect() protoreflect.Message {
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[9]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -807,7 +890,7 @@ func (x *AgentPersona) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AgentPersona.ProtoReflect.Descriptor instead.
 func (*AgentPersona) Descriptor() ([]byte, []int) {
-	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{9}
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *AgentPersona) GetDisplayName() string {
@@ -857,7 +940,7 @@ type McpServerRuntime struct {
 
 func (x *McpServerRuntime) Reset() {
 	*x = McpServerRuntime{}
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[10]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -869,7 +952,7 @@ func (x *McpServerRuntime) String() string {
 func (*McpServerRuntime) ProtoMessage() {}
 
 func (x *McpServerRuntime) ProtoReflect() protoreflect.Message {
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[10]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -882,7 +965,7 @@ func (x *McpServerRuntime) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use McpServerRuntime.ProtoReflect.Descriptor instead.
 func (*McpServerRuntime) Descriptor() ([]byte, []int) {
-	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{10}
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{11}
 }
 
 func (x *McpServerRuntime) GetName() string {
@@ -931,7 +1014,7 @@ const file_port_api_v1_agent_session_proto_rawDesc = "" +
 	"\btrunk_id\x18\x05 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\atrunkId\x125\n" +
 	"\x12trunk_phone_number\x18\x06 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x10trunkPhoneNumber\x12)\n" +
 	"\fcall_id_full\x18\a \x01(\tB\a\xbaH\x04r\x02\x10\x01R\n" +
-	"callIdFull\"\x8f\x06\n" +
+	"callIdFull\"\xca\x06\n" +
 	"\x11BootstrapResponse\x120\n" +
 	"\x0fconversation_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x0econversationId\x12&\n" +
 	"\n" +
@@ -949,7 +1032,14 @@ const file_port_api_v1_agent_session_proto_rawDesc = "" +
 	"\apersona\x18\r \x01(\v2\x19.port.api.v1.AgentPersonaB\x06\xbaH\x03\xc8\x01\x01R\apersona\x12>\n" +
 	"\vspecialists\x18\x0e \x03(\v2\x1c.port.api.v1.AgentSpecialistR\vspecialists\x12F\n" +
 	"\x0eglobal_actions\x18\x0f \x01(\v2\x1f.port.api.v1.AgentGlobalActionsR\rglobalActions\x12(\n" +
-	"\x10agent_version_id\x18\x10 \x01(\tR\x0eagentVersionIdJ\x04\b\v\x10\fJ\x04\b\f\x10\rR\aflow_idR\x0fflow_version_id\"\xeb\x02\n" +
+	"\x10agent_version_id\x18\x10 \x01(\tR\x0eagentVersionId\x129\n" +
+	"\bworkflow\x18\x11 \x01(\v2\x1d.port.api.v1.WorkflowSnapshotR\bworkflowJ\x04\b\v\x10\fJ\x04\b\f\x10\rR\aflow_idR\x0fflow_version_id\"\xb5\x01\n" +
+	"\x10WorkflowSnapshot\x12\x1f\n" +
+	"\vworkflow_id\x18\x01 \x01(\tR\n" +
+	"workflowId\x12)\n" +
+	"\x10workflow_version\x18\x02 \x01(\tR\x0fworkflowVersion\x12%\n" +
+	"\x0eschema_version\x18\x03 \x01(\tR\rschemaVersion\x12.\n" +
+	"\x13compiled_graph_json\x18\x04 \x01(\tR\x11compiledGraphJson\"\xeb\x02\n" +
 	"\x0fAgentSpecialist\x12,\n" +
 	"\rspecialist_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\fspecialistId\x12\x19\n" +
 	"\x03key\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x03key\x12!\n" +
@@ -1012,45 +1102,47 @@ func file_port_api_v1_agent_session_proto_rawDescGZIP() []byte {
 	return file_port_api_v1_agent_session_proto_rawDescData
 }
 
-var file_port_api_v1_agent_session_proto_msgTypes = make([]protoimpl.MessageInfo, 12)
+var file_port_api_v1_agent_session_proto_msgTypes = make([]protoimpl.MessageInfo, 13)
 var file_port_api_v1_agent_session_proto_goTypes = []any{
 	(*BootstrapRequest)(nil),        // 0: port.api.v1.BootstrapRequest
 	(*SipBootstrapContext)(nil),     // 1: port.api.v1.SipBootstrapContext
 	(*BootstrapResponse)(nil),       // 2: port.api.v1.BootstrapResponse
-	(*AgentSpecialist)(nil),         // 3: port.api.v1.AgentSpecialist
-	(*CompletionField)(nil),         // 4: port.api.v1.CompletionField
-	(*SpecialistFailurePolicy)(nil), // 5: port.api.v1.SpecialistFailurePolicy
-	(*AgentGlobalActions)(nil),      // 6: port.api.v1.AgentGlobalActions
-	(*TransferToHumanAction)(nil),   // 7: port.api.v1.TransferToHumanAction
-	(*EndCallAction)(nil),           // 8: port.api.v1.EndCallAction
-	(*AgentPersona)(nil),            // 9: port.api.v1.AgentPersona
-	(*McpServerRuntime)(nil),        // 10: port.api.v1.McpServerRuntime
-	nil,                             // 11: port.api.v1.McpServerRuntime.HeadersEntry
-	(*SttRuntime)(nil),              // 12: port.api.v1.SttRuntime
-	(*LlmRuntime)(nil),              // 13: port.api.v1.LlmRuntime
-	(*TtsRuntime)(nil),              // 14: port.api.v1.TtsRuntime
+	(*WorkflowSnapshot)(nil),        // 3: port.api.v1.WorkflowSnapshot
+	(*AgentSpecialist)(nil),         // 4: port.api.v1.AgentSpecialist
+	(*CompletionField)(nil),         // 5: port.api.v1.CompletionField
+	(*SpecialistFailurePolicy)(nil), // 6: port.api.v1.SpecialistFailurePolicy
+	(*AgentGlobalActions)(nil),      // 7: port.api.v1.AgentGlobalActions
+	(*TransferToHumanAction)(nil),   // 8: port.api.v1.TransferToHumanAction
+	(*EndCallAction)(nil),           // 9: port.api.v1.EndCallAction
+	(*AgentPersona)(nil),            // 10: port.api.v1.AgentPersona
+	(*McpServerRuntime)(nil),        // 11: port.api.v1.McpServerRuntime
+	nil,                             // 12: port.api.v1.McpServerRuntime.HeadersEntry
+	(*SttRuntime)(nil),              // 13: port.api.v1.SttRuntime
+	(*LlmRuntime)(nil),              // 14: port.api.v1.LlmRuntime
+	(*TtsRuntime)(nil),              // 15: port.api.v1.TtsRuntime
 }
 var file_port_api_v1_agent_session_proto_depIdxs = []int32{
 	1,  // 0: port.api.v1.BootstrapRequest.sip:type_name -> port.api.v1.SipBootstrapContext
-	12, // 1: port.api.v1.BootstrapResponse.stt:type_name -> port.api.v1.SttRuntime
-	13, // 2: port.api.v1.BootstrapResponse.llm:type_name -> port.api.v1.LlmRuntime
-	14, // 3: port.api.v1.BootstrapResponse.tts:type_name -> port.api.v1.TtsRuntime
-	10, // 4: port.api.v1.BootstrapResponse.mcp_servers:type_name -> port.api.v1.McpServerRuntime
-	9,  // 5: port.api.v1.BootstrapResponse.persona:type_name -> port.api.v1.AgentPersona
-	3,  // 6: port.api.v1.BootstrapResponse.specialists:type_name -> port.api.v1.AgentSpecialist
-	6,  // 7: port.api.v1.BootstrapResponse.global_actions:type_name -> port.api.v1.AgentGlobalActions
-	4,  // 8: port.api.v1.AgentSpecialist.completion_fields:type_name -> port.api.v1.CompletionField
-	5,  // 9: port.api.v1.AgentSpecialist.failure_policy:type_name -> port.api.v1.SpecialistFailurePolicy
-	7,  // 10: port.api.v1.AgentGlobalActions.transfer_to_human:type_name -> port.api.v1.TransferToHumanAction
-	8,  // 11: port.api.v1.AgentGlobalActions.end_call:type_name -> port.api.v1.EndCallAction
-	11, // 12: port.api.v1.McpServerRuntime.headers:type_name -> port.api.v1.McpServerRuntime.HeadersEntry
-	0,  // 13: port.api.v1.AgentSessionService.Bootstrap:input_type -> port.api.v1.BootstrapRequest
-	2,  // 14: port.api.v1.AgentSessionService.Bootstrap:output_type -> port.api.v1.BootstrapResponse
-	14, // [14:15] is the sub-list for method output_type
-	13, // [13:14] is the sub-list for method input_type
-	13, // [13:13] is the sub-list for extension type_name
-	13, // [13:13] is the sub-list for extension extendee
-	0,  // [0:13] is the sub-list for field type_name
+	13, // 1: port.api.v1.BootstrapResponse.stt:type_name -> port.api.v1.SttRuntime
+	14, // 2: port.api.v1.BootstrapResponse.llm:type_name -> port.api.v1.LlmRuntime
+	15, // 3: port.api.v1.BootstrapResponse.tts:type_name -> port.api.v1.TtsRuntime
+	11, // 4: port.api.v1.BootstrapResponse.mcp_servers:type_name -> port.api.v1.McpServerRuntime
+	10, // 5: port.api.v1.BootstrapResponse.persona:type_name -> port.api.v1.AgentPersona
+	4,  // 6: port.api.v1.BootstrapResponse.specialists:type_name -> port.api.v1.AgentSpecialist
+	7,  // 7: port.api.v1.BootstrapResponse.global_actions:type_name -> port.api.v1.AgentGlobalActions
+	3,  // 8: port.api.v1.BootstrapResponse.workflow:type_name -> port.api.v1.WorkflowSnapshot
+	5,  // 9: port.api.v1.AgentSpecialist.completion_fields:type_name -> port.api.v1.CompletionField
+	6,  // 10: port.api.v1.AgentSpecialist.failure_policy:type_name -> port.api.v1.SpecialistFailurePolicy
+	8,  // 11: port.api.v1.AgentGlobalActions.transfer_to_human:type_name -> port.api.v1.TransferToHumanAction
+	9,  // 12: port.api.v1.AgentGlobalActions.end_call:type_name -> port.api.v1.EndCallAction
+	12, // 13: port.api.v1.McpServerRuntime.headers:type_name -> port.api.v1.McpServerRuntime.HeadersEntry
+	0,  // 14: port.api.v1.AgentSessionService.Bootstrap:input_type -> port.api.v1.BootstrapRequest
+	2,  // 15: port.api.v1.AgentSessionService.Bootstrap:output_type -> port.api.v1.BootstrapResponse
+	15, // [15:16] is the sub-list for method output_type
+	14, // [14:15] is the sub-list for method input_type
+	14, // [14:14] is the sub-list for extension type_name
+	14, // [14:14] is the sub-list for extension extendee
+	0,  // [0:14] is the sub-list for field type_name
 }
 
 func init() { file_port_api_v1_agent_session_proto_init() }
@@ -1069,7 +1161,7 @@ func file_port_api_v1_agent_session_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_port_api_v1_agent_session_proto_rawDesc), len(file_port_api_v1_agent_session_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   12,
+			NumMessages:   13,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

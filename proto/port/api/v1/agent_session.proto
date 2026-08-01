@@ -51,6 +51,21 @@ message BootstrapResponse {
   AgentGlobalActions global_actions = 15;
   // Empty when the call ran the live draft rather than a published version.
   string agent_version_id = 16;
+  // Absent when the agent runs the plain supervisor. 1.2.3 carried this
+  // snapshot as field 10, which this release line reused for agent_id, so it
+  // returns under a fresh number.
+  WorkflowSnapshot workflow = 17;
+}
+
+// Compiled at publish time by the API from the xyflow editor graph. The worker
+// validates and freezes it per session; compiled_graph_json is the canonical
+// execution graph, never xyflow editor state, and must not carry MCP URLs,
+// headers, or provider secrets.
+message WorkflowSnapshot {
+  string workflow_id = 1;
+  string workflow_version = 2;
+  string schema_version = 3;
+  string compiled_graph_json = 4;
 }
 
 // One delegation step the supervisor may hand the turn to. The worker builds an
