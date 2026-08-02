@@ -32,7 +32,7 @@ message SipBootstrapContext {
 message BootstrapResponse {
   string conversation_id = 1 [(buf.validate.field).string.min_len = 1];
   string session_id = 2 [(buf.validate.field).string.min_len = 1];
-  string source = 3 [(buf.validate.field).string.in = "webrtc", (buf.validate.field).string.in = "sip"];
+  string source = 3 [(buf.validate.field).string.in = "webrtc", (buf.validate.field).string.in = "sip", (buf.validate.field).string.in = "text_stream"];
   string room_name = 4 [(buf.validate.field).string.min_len = 1];
   string agent_tool_snapshot_id = 5 [(buf.validate.field).string.min_len = 1];
   SttRuntime stt = 6 [(buf.validate.field).required = true];
