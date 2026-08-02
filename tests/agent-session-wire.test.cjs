@@ -9,7 +9,7 @@ test("supervisor/worker bootstrap fields survive protobuf wire round-trip", () =
   const source = BootstrapResponse.create({
     conversationId: "conversation-1",
     sessionId: "session-1",
-    source: "webrtc",
+    source: "text_stream",
     roomName: "room-1",
     agentToolSnapshotId: "legacy-tool-snapshot-1",
     agentId: "supervisor-1",
