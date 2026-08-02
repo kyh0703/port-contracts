@@ -208,18 +208,17 @@ type BootstrapResponse struct {
 	Tts                 *TtsRuntime            `protobuf:"bytes,8,opt,name=tts,proto3" json:"tts,omitempty"`
 	McpServers          []*McpServerRuntime    `protobuf:"bytes,9,rep,name=mcp_servers,json=mcpServers,proto3" json:"mcp_servers,omitempty"`
 	AgentId             string                 `protobuf:"bytes,10,opt,name=agent_id,json=agentId,proto3" json:"agent_id,omitempty"`
-	Persona             *AgentPersona          `protobuf:"bytes,13,opt,name=persona,proto3" json:"persona,omitempty"`
-	// Frozen at publish time. Empty means a supervisor with no delegation steps.
-	Specialists   []*AgentSpecialist  `protobuf:"bytes,14,rep,name=specialists,proto3" json:"specialists,omitempty"`
-	GlobalActions *AgentGlobalActions `protobuf:"bytes,15,opt,name=global_actions,json=globalActions,proto3" json:"global_actions,omitempty"`
-	// Empty when the call ran the live draft rather than a published version.
-	AgentVersionId string `protobuf:"bytes,16,opt,name=agent_version_id,json=agentVersionId,proto3" json:"agent_version_id,omitempty"`
-	// Absent when the agent runs the plain supervisor. 1.2.3 carried this
-	// snapshot as field 10, which this release line reused for agent_id, so it
-	// returns under a fresh number.
-	Workflow      *WorkflowSnapshot `protobuf:"bytes,17,opt,name=workflow,proto3" json:"workflow,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	SupervisorId        string                 `protobuf:"bytes,18,opt,name=supervisor_id,json=supervisorId,proto3" json:"supervisor_id,omitempty"`
+	SupervisorVersionId string                 `protobuf:"bytes,19,opt,name=supervisor_version_id,json=supervisorVersionId,proto3" json:"supervisor_version_id,omitempty"`
+	SupervisorPersona   *SupervisorPersona     `protobuf:"bytes,20,opt,name=supervisor_persona,json=supervisorPersona,proto3" json:"supervisor_persona,omitempty"`
+	SupervisorConfig    *SupervisorConfig      `protobuf:"bytes,21,opt,name=supervisor_config,json=supervisorConfig,proto3" json:"supervisor_config,omitempty"`
+	Workers             []*WorkerSnapshot      `protobuf:"bytes,22,rep,name=workers,proto3" json:"workers,omitempty"`
+	Canvas              *CanvasSnapshot        `protobuf:"bytes,23,opt,name=canvas,proto3" json:"canvas,omitempty"`
+	WorkerToolSnapshots []*WorkerToolSnapshot  `protobuf:"bytes,24,rep,name=worker_tool_snapshots,json=workerToolSnapshots,proto3" json:"worker_tool_snapshots,omitempty"`
+	BootstrapSnapshotId string                 `protobuf:"bytes,25,opt,name=bootstrap_snapshot_id,json=bootstrapSnapshotId,proto3" json:"bootstrap_snapshot_id,omitempty"`
+	ApiToolRuntimes     []*ApiToolRuntime      `protobuf:"bytes,26,rep,name=api_tool_runtimes,json=apiToolRuntimes,proto3" json:"api_tool_runtimes,omitempty"`
+	unknownFields       protoimpl.UnknownFields
+	sizeCache           protoimpl.SizeCache
 }
 
 func (x *BootstrapResponse) Reset() {
@@ -322,69 +321,93 @@ func (x *BootstrapResponse) GetAgentId() string {
 	return ""
 }
 
-func (x *BootstrapResponse) GetPersona() *AgentPersona {
+func (x *BootstrapResponse) GetSupervisorId() string {
 	if x != nil {
-		return x.Persona
-	}
-	return nil
-}
-
-func (x *BootstrapResponse) GetSpecialists() []*AgentSpecialist {
-	if x != nil {
-		return x.Specialists
-	}
-	return nil
-}
-
-func (x *BootstrapResponse) GetGlobalActions() *AgentGlobalActions {
-	if x != nil {
-		return x.GlobalActions
-	}
-	return nil
-}
-
-func (x *BootstrapResponse) GetAgentVersionId() string {
-	if x != nil {
-		return x.AgentVersionId
+		return x.SupervisorId
 	}
 	return ""
 }
 
-func (x *BootstrapResponse) GetWorkflow() *WorkflowSnapshot {
+func (x *BootstrapResponse) GetSupervisorVersionId() string {
 	if x != nil {
-		return x.Workflow
+		return x.SupervisorVersionId
+	}
+	return ""
+}
+
+func (x *BootstrapResponse) GetSupervisorPersona() *SupervisorPersona {
+	if x != nil {
+		return x.SupervisorPersona
 	}
 	return nil
 }
 
-// Compiled at publish time by the API from the xyflow editor graph. The worker
-// validates and freezes it per session; compiled_graph_json is the canonical
-// execution graph, never xyflow editor state, and must not carry MCP URLs,
-// headers, or provider secrets.
-type WorkflowSnapshot struct {
-	state             protoimpl.MessageState `protogen:"open.v1"`
-	WorkflowId        string                 `protobuf:"bytes,1,opt,name=workflow_id,json=workflowId,proto3" json:"workflow_id,omitempty"`
-	WorkflowVersion   string                 `protobuf:"bytes,2,opt,name=workflow_version,json=workflowVersion,proto3" json:"workflow_version,omitempty"`
-	SchemaVersion     string                 `protobuf:"bytes,3,opt,name=schema_version,json=schemaVersion,proto3" json:"schema_version,omitempty"`
-	CompiledGraphJson string                 `protobuf:"bytes,4,opt,name=compiled_graph_json,json=compiledGraphJson,proto3" json:"compiled_graph_json,omitempty"`
-	unknownFields     protoimpl.UnknownFields
-	sizeCache         protoimpl.SizeCache
+func (x *BootstrapResponse) GetSupervisorConfig() *SupervisorConfig {
+	if x != nil {
+		return x.SupervisorConfig
+	}
+	return nil
 }
 
-func (x *WorkflowSnapshot) Reset() {
-	*x = WorkflowSnapshot{}
+func (x *BootstrapResponse) GetWorkers() []*WorkerSnapshot {
+	if x != nil {
+		return x.Workers
+	}
+	return nil
+}
+
+func (x *BootstrapResponse) GetCanvas() *CanvasSnapshot {
+	if x != nil {
+		return x.Canvas
+	}
+	return nil
+}
+
+func (x *BootstrapResponse) GetWorkerToolSnapshots() []*WorkerToolSnapshot {
+	if x != nil {
+		return x.WorkerToolSnapshots
+	}
+	return nil
+}
+
+func (x *BootstrapResponse) GetBootstrapSnapshotId() string {
+	if x != nil {
+		return x.BootstrapSnapshotId
+	}
+	return ""
+}
+
+func (x *BootstrapResponse) GetApiToolRuntimes() []*ApiToolRuntime {
+	if x != nil {
+		return x.ApiToolRuntimes
+	}
+	return nil
+}
+
+type SupervisorPersona struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	DisplayName   string                 `protobuf:"bytes,1,opt,name=display_name,json=displayName,proto3" json:"display_name,omitempty"`
+	SystemPrompt  string                 `protobuf:"bytes,2,opt,name=system_prompt,json=systemPrompt,proto3" json:"system_prompt,omitempty"`
+	VoiceId       string                 `protobuf:"bytes,3,opt,name=voice_id,json=voiceId,proto3" json:"voice_id,omitempty"`
+	Language      string                 `protobuf:"bytes,4,opt,name=language,proto3" json:"language,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SupervisorPersona) Reset() {
+	*x = SupervisorPersona{}
 	mi := &file_port_api_v1_agent_session_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *WorkflowSnapshot) String() string {
+func (x *SupervisorPersona) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*WorkflowSnapshot) ProtoMessage() {}
+func (*SupervisorPersona) ProtoMessage() {}
 
-func (x *WorkflowSnapshot) ProtoReflect() protoreflect.Message {
+func (x *SupervisorPersona) ProtoReflect() protoreflect.Message {
 	mi := &file_port_api_v1_agent_session_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -396,163 +419,129 @@ func (x *WorkflowSnapshot) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use WorkflowSnapshot.ProtoReflect.Descriptor instead.
-func (*WorkflowSnapshot) Descriptor() ([]byte, []int) {
+// Deprecated: Use SupervisorPersona.ProtoReflect.Descriptor instead.
+func (*SupervisorPersona) Descriptor() ([]byte, []int) {
 	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{3}
 }
 
-func (x *WorkflowSnapshot) GetWorkflowId() string {
-	if x != nil {
-		return x.WorkflowId
-	}
-	return ""
-}
-
-func (x *WorkflowSnapshot) GetWorkflowVersion() string {
-	if x != nil {
-		return x.WorkflowVersion
-	}
-	return ""
-}
-
-func (x *WorkflowSnapshot) GetSchemaVersion() string {
-	if x != nil {
-		return x.SchemaVersion
-	}
-	return ""
-}
-
-func (x *WorkflowSnapshot) GetCompiledGraphJson() string {
-	if x != nil {
-		return x.CompiledGraphJson
-	}
-	return ""
-}
-
-// One delegation step the supervisor may hand the turn to. The worker builds an
-// AgentTask from this and exposes it to the supervisor as a single tool.
-type AgentSpecialist struct {
-	state        protoimpl.MessageState `protogen:"open.v1"`
-	SpecialistId string                 `protobuf:"bytes,1,opt,name=specialist_id,json=specialistId,proto3" json:"specialist_id,omitempty"`
-	// Becomes the tool name, so it must already be a valid LLM function name.
-	Key         string `protobuf:"bytes,2,opt,name=key,proto3" json:"key,omitempty"`
-	DisplayName string `protobuf:"bytes,3,opt,name=display_name,json=displayName,proto3" json:"display_name,omitempty"`
-	// Becomes the tool description — this is what actually routes the call.
-	WhenToUse        string                   `protobuf:"bytes,4,opt,name=when_to_use,json=whenToUse,proto3" json:"when_to_use,omitempty"`
-	Instructions     string                   `protobuf:"bytes,5,opt,name=instructions,proto3" json:"instructions,omitempty"`
-	CompletionFields []*CompletionField       `protobuf:"bytes,6,rep,name=completion_fields,json=completionFields,proto3" json:"completion_fields,omitempty"`
-	FailurePolicy    *SpecialistFailurePolicy `protobuf:"bytes,7,opt,name=failure_policy,json=failurePolicy,proto3" json:"failure_policy,omitempty"`
-	unknownFields    protoimpl.UnknownFields
-	sizeCache        protoimpl.SizeCache
-}
-
-func (x *AgentSpecialist) Reset() {
-	*x = AgentSpecialist{}
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[4]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *AgentSpecialist) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*AgentSpecialist) ProtoMessage() {}
-
-func (x *AgentSpecialist) ProtoReflect() protoreflect.Message {
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[4]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use AgentSpecialist.ProtoReflect.Descriptor instead.
-func (*AgentSpecialist) Descriptor() ([]byte, []int) {
-	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{4}
-}
-
-func (x *AgentSpecialist) GetSpecialistId() string {
-	if x != nil {
-		return x.SpecialistId
-	}
-	return ""
-}
-
-func (x *AgentSpecialist) GetKey() string {
-	if x != nil {
-		return x.Key
-	}
-	return ""
-}
-
-func (x *AgentSpecialist) GetDisplayName() string {
+func (x *SupervisorPersona) GetDisplayName() string {
 	if x != nil {
 		return x.DisplayName
 	}
 	return ""
 }
 
-func (x *AgentSpecialist) GetWhenToUse() string {
+func (x *SupervisorPersona) GetSystemPrompt() string {
 	if x != nil {
-		return x.WhenToUse
+		return x.SystemPrompt
 	}
 	return ""
 }
 
-func (x *AgentSpecialist) GetInstructions() string {
+func (x *SupervisorPersona) GetVoiceId() string {
 	if x != nil {
-		return x.Instructions
+		return x.VoiceId
 	}
 	return ""
 }
 
-func (x *AgentSpecialist) GetCompletionFields() []*CompletionField {
+func (x *SupervisorPersona) GetLanguage() string {
 	if x != nil {
-		return x.CompletionFields
+		return x.Language
+	}
+	return ""
+}
+
+type SupervisorConfig struct {
+	state               protoimpl.MessageState `protogen:"open.v1"`
+	RoutingInstructions string                 `protobuf:"bytes,1,opt,name=routing_instructions,json=routingInstructions,proto3" json:"routing_instructions,omitempty"`
+	MaxHandoffDepth     uint32                 `protobuf:"varint,2,opt,name=max_handoff_depth,json=maxHandoffDepth,proto3" json:"max_handoff_depth,omitempty"`
+	GlobalActions       *AgentGlobalActions    `protobuf:"bytes,3,opt,name=global_actions,json=globalActions,proto3" json:"global_actions,omitempty"`
+	unknownFields       protoimpl.UnknownFields
+	sizeCache           protoimpl.SizeCache
+}
+
+func (x *SupervisorConfig) Reset() {
+	*x = SupervisorConfig{}
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[4]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SupervisorConfig) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SupervisorConfig) ProtoMessage() {}
+
+func (x *SupervisorConfig) ProtoReflect() protoreflect.Message {
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[4]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SupervisorConfig.ProtoReflect.Descriptor instead.
+func (*SupervisorConfig) Descriptor() ([]byte, []int) {
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{4}
+}
+
+func (x *SupervisorConfig) GetRoutingInstructions() string {
+	if x != nil {
+		return x.RoutingInstructions
+	}
+	return ""
+}
+
+func (x *SupervisorConfig) GetMaxHandoffDepth() uint32 {
+	if x != nil {
+		return x.MaxHandoffDepth
+	}
+	return 0
+}
+
+func (x *SupervisorConfig) GetGlobalActions() *AgentGlobalActions {
+	if x != nil {
+		return x.GlobalActions
 	}
 	return nil
 }
 
-func (x *AgentSpecialist) GetFailurePolicy() *SpecialistFailurePolicy {
-	if x != nil {
-		return x.FailurePolicy
-	}
-	return nil
+// Frozen at publish time. The worker uses routing_text to decide when a
+// supervisor should hand a turn to this worker; description is display text.
+type WorkerSnapshot struct {
+	state           protoimpl.MessageState `protogen:"open.v1"`
+	WorkerId        string                 `protobuf:"bytes,1,opt,name=worker_id,json=workerId,proto3" json:"worker_id,omitempty"`
+	VersionId       string                 `protobuf:"bytes,2,opt,name=version_id,json=versionId,proto3" json:"version_id,omitempty"`
+	Description     string                 `protobuf:"bytes,3,opt,name=description,proto3" json:"description,omitempty"`
+	RoutingText     string                 `protobuf:"bytes,4,opt,name=routing_text,json=routingText,proto3" json:"routing_text,omitempty"`
+	Persona         *WorkerPersona         `protobuf:"bytes,5,opt,name=persona,proto3" json:"persona,omitempty"`
+	Role            string                 `protobuf:"bytes,6,opt,name=role,proto3" json:"role,omitempty"`
+	RuntimeIdentity string                 `protobuf:"bytes,7,opt,name=runtime_identity,json=runtimeIdentity,proto3" json:"runtime_identity,omitempty"`
+	ToolSnapshotId  string                 `protobuf:"bytes,8,opt,name=tool_snapshot_id,json=toolSnapshotId,proto3" json:"tool_snapshot_id,omitempty"`
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
 }
 
-// Becomes a JSON Schema property of the specialist's completion tool. A required
-// field is what stops the model from ending the step before collecting it.
-type CompletionField struct {
-	state       protoimpl.MessageState `protogen:"open.v1"`
-	Name        string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
-	Type        string                 `protobuf:"bytes,2,opt,name=type,proto3" json:"type,omitempty"`
-	Description string                 `protobuf:"bytes,3,opt,name=description,proto3" json:"description,omitempty"`
-	Required    bool                   `protobuf:"varint,4,opt,name=required,proto3" json:"required,omitempty"`
-	// Empty means no pattern check.
-	Pattern       string `protobuf:"bytes,5,opt,name=pattern,proto3" json:"pattern,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *CompletionField) Reset() {
-	*x = CompletionField{}
+func (x *WorkerSnapshot) Reset() {
+	*x = WorkerSnapshot{}
 	mi := &file_port_api_v1_agent_session_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *CompletionField) String() string {
+func (x *WorkerSnapshot) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*CompletionField) ProtoMessage() {}
+func (*WorkerSnapshot) ProtoMessage() {}
 
-func (x *CompletionField) ProtoReflect() protoreflect.Message {
+func (x *WorkerSnapshot) ProtoReflect() protoreflect.Message {
 	mi := &file_port_api_v1_agent_session_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -564,71 +553,92 @@ func (x *CompletionField) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use CompletionField.ProtoReflect.Descriptor instead.
-func (*CompletionField) Descriptor() ([]byte, []int) {
+// Deprecated: Use WorkerSnapshot.ProtoReflect.Descriptor instead.
+func (*WorkerSnapshot) Descriptor() ([]byte, []int) {
 	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{5}
 }
 
-func (x *CompletionField) GetName() string {
+func (x *WorkerSnapshot) GetWorkerId() string {
 	if x != nil {
-		return x.Name
+		return x.WorkerId
 	}
 	return ""
 }
 
-func (x *CompletionField) GetType() string {
+func (x *WorkerSnapshot) GetVersionId() string {
 	if x != nil {
-		return x.Type
+		return x.VersionId
 	}
 	return ""
 }
 
-func (x *CompletionField) GetDescription() string {
+func (x *WorkerSnapshot) GetDescription() string {
 	if x != nil {
 		return x.Description
 	}
 	return ""
 }
 
-func (x *CompletionField) GetRequired() bool {
+func (x *WorkerSnapshot) GetRoutingText() string {
 	if x != nil {
-		return x.Required
-	}
-	return false
-}
-
-func (x *CompletionField) GetPattern() string {
-	if x != nil {
-		return x.Pattern
+		return x.RoutingText
 	}
 	return ""
 }
 
-// Bounds a specialist that never collects its fields. Without it a caller who
-// will not answer keeps the turn forever.
-type SpecialistFailurePolicy struct {
+func (x *WorkerSnapshot) GetPersona() *WorkerPersona {
+	if x != nil {
+		return x.Persona
+	}
+	return nil
+}
+
+func (x *WorkerSnapshot) GetRole() string {
+	if x != nil {
+		return x.Role
+	}
+	return ""
+}
+
+func (x *WorkerSnapshot) GetRuntimeIdentity() string {
+	if x != nil {
+		return x.RuntimeIdentity
+	}
+	return ""
+}
+
+func (x *WorkerSnapshot) GetToolSnapshotId() string {
+	if x != nil {
+		return x.ToolSnapshotId
+	}
+	return ""
+}
+
+type WorkerPersona struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	MaxAttempts   int32                  `protobuf:"varint,1,opt,name=max_attempts,json=maxAttempts,proto3" json:"max_attempts,omitempty"`
-	TimeoutMs     int32                  `protobuf:"varint,2,opt,name=timeout_ms,json=timeoutMs,proto3" json:"timeout_ms,omitempty"`
-	OnFailure     string                 `protobuf:"bytes,3,opt,name=on_failure,json=onFailure,proto3" json:"on_failure,omitempty"`
+	DisplayName   string                 `protobuf:"bytes,1,opt,name=display_name,json=displayName,proto3" json:"display_name,omitempty"`
+	SystemPrompt  string                 `protobuf:"bytes,2,opt,name=system_prompt,json=systemPrompt,proto3" json:"system_prompt,omitempty"`
+	Greeting      string                 `protobuf:"bytes,3,opt,name=greeting,proto3" json:"greeting,omitempty"`
+	VoiceId       string                 `protobuf:"bytes,4,opt,name=voice_id,json=voiceId,proto3" json:"voice_id,omitempty"`
+	Language      string                 `protobuf:"bytes,5,opt,name=language,proto3" json:"language,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *SpecialistFailurePolicy) Reset() {
-	*x = SpecialistFailurePolicy{}
+func (x *WorkerPersona) Reset() {
+	*x = WorkerPersona{}
 	mi := &file_port_api_v1_agent_session_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *SpecialistFailurePolicy) String() string {
+func (x *WorkerPersona) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*SpecialistFailurePolicy) ProtoMessage() {}
+func (*WorkerPersona) ProtoMessage() {}
 
-func (x *SpecialistFailurePolicy) ProtoReflect() protoreflect.Message {
+func (x *WorkerPersona) ProtoReflect() protoreflect.Message {
 	mi := &file_port_api_v1_agent_session_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -640,33 +650,798 @@ func (x *SpecialistFailurePolicy) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use SpecialistFailurePolicy.ProtoReflect.Descriptor instead.
-func (*SpecialistFailurePolicy) Descriptor() ([]byte, []int) {
+// Deprecated: Use WorkerPersona.ProtoReflect.Descriptor instead.
+func (*WorkerPersona) Descriptor() ([]byte, []int) {
 	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{6}
 }
 
-func (x *SpecialistFailurePolicy) GetMaxAttempts() int32 {
+func (x *WorkerPersona) GetDisplayName() string {
 	if x != nil {
-		return x.MaxAttempts
-	}
-	return 0
-}
-
-func (x *SpecialistFailurePolicy) GetTimeoutMs() int32 {
-	if x != nil {
-		return x.TimeoutMs
-	}
-	return 0
-}
-
-func (x *SpecialistFailurePolicy) GetOnFailure() string {
-	if x != nil {
-		return x.OnFailure
+		return x.DisplayName
 	}
 	return ""
 }
 
-// Mounted as AgentSession-level tools so they stay callable while a specialist
+func (x *WorkerPersona) GetSystemPrompt() string {
+	if x != nil {
+		return x.SystemPrompt
+	}
+	return ""
+}
+
+func (x *WorkerPersona) GetGreeting() string {
+	if x != nil {
+		return x.Greeting
+	}
+	return ""
+}
+
+func (x *WorkerPersona) GetVoiceId() string {
+	if x != nil {
+		return x.VoiceId
+	}
+	return ""
+}
+
+func (x *WorkerPersona) GetLanguage() string {
+	if x != nil {
+		return x.Language
+	}
+	return ""
+}
+
+// Immutable xyflow placement snapshot. parent_node_id points to another group
+// node, and an empty value means the node is at the canvas root.
+type CanvasSnapshot struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	SnapshotId    string                 `protobuf:"bytes,1,opt,name=snapshot_id,json=snapshotId,proto3" json:"snapshot_id,omitempty"`
+	VersionId     string                 `protobuf:"bytes,2,opt,name=version_id,json=versionId,proto3" json:"version_id,omitempty"`
+	SchemaVersion string                 `protobuf:"bytes,3,opt,name=schema_version,json=schemaVersion,proto3" json:"schema_version,omitempty"`
+	Nodes         []*CanvasNodeSnapshot  `protobuf:"bytes,4,rep,name=nodes,proto3" json:"nodes,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CanvasSnapshot) Reset() {
+	*x = CanvasSnapshot{}
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[7]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CanvasSnapshot) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CanvasSnapshot) ProtoMessage() {}
+
+func (x *CanvasSnapshot) ProtoReflect() protoreflect.Message {
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[7]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CanvasSnapshot.ProtoReflect.Descriptor instead.
+func (*CanvasSnapshot) Descriptor() ([]byte, []int) {
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{7}
+}
+
+func (x *CanvasSnapshot) GetSnapshotId() string {
+	if x != nil {
+		return x.SnapshotId
+	}
+	return ""
+}
+
+func (x *CanvasSnapshot) GetVersionId() string {
+	if x != nil {
+		return x.VersionId
+	}
+	return ""
+}
+
+func (x *CanvasSnapshot) GetSchemaVersion() string {
+	if x != nil {
+		return x.SchemaVersion
+	}
+	return ""
+}
+
+func (x *CanvasSnapshot) GetNodes() []*CanvasNodeSnapshot {
+	if x != nil {
+		return x.Nodes
+	}
+	return nil
+}
+
+type CanvasNodeSnapshot struct {
+	state        protoimpl.MessageState `protogen:"open.v1"`
+	NodeId       string                 `protobuf:"bytes,1,opt,name=node_id,json=nodeId,proto3" json:"node_id,omitempty"`
+	ParentNodeId string                 `protobuf:"bytes,2,opt,name=parent_node_id,json=parentNodeId,proto3" json:"parent_node_id,omitempty"`
+	Position     *CanvasPosition        `protobuf:"bytes,3,opt,name=position,proto3" json:"position,omitempty"`
+	Size         *CanvasSize            `protobuf:"bytes,4,opt,name=size,proto3" json:"size,omitempty"`
+	IsEntry      bool                   `protobuf:"varint,5,opt,name=is_entry,json=isEntry,proto3" json:"is_entry,omitempty"`
+	// Types that are valid to be assigned to Placement:
+	//
+	//	*CanvasNodeSnapshot_Group
+	//	*CanvasNodeSnapshot_Agent
+	Placement     isCanvasNodeSnapshot_Placement `protobuf_oneof:"placement"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CanvasNodeSnapshot) Reset() {
+	*x = CanvasNodeSnapshot{}
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[8]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CanvasNodeSnapshot) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CanvasNodeSnapshot) ProtoMessage() {}
+
+func (x *CanvasNodeSnapshot) ProtoReflect() protoreflect.Message {
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[8]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CanvasNodeSnapshot.ProtoReflect.Descriptor instead.
+func (*CanvasNodeSnapshot) Descriptor() ([]byte, []int) {
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{8}
+}
+
+func (x *CanvasNodeSnapshot) GetNodeId() string {
+	if x != nil {
+		return x.NodeId
+	}
+	return ""
+}
+
+func (x *CanvasNodeSnapshot) GetParentNodeId() string {
+	if x != nil {
+		return x.ParentNodeId
+	}
+	return ""
+}
+
+func (x *CanvasNodeSnapshot) GetPosition() *CanvasPosition {
+	if x != nil {
+		return x.Position
+	}
+	return nil
+}
+
+func (x *CanvasNodeSnapshot) GetSize() *CanvasSize {
+	if x != nil {
+		return x.Size
+	}
+	return nil
+}
+
+func (x *CanvasNodeSnapshot) GetIsEntry() bool {
+	if x != nil {
+		return x.IsEntry
+	}
+	return false
+}
+
+func (x *CanvasNodeSnapshot) GetPlacement() isCanvasNodeSnapshot_Placement {
+	if x != nil {
+		return x.Placement
+	}
+	return nil
+}
+
+func (x *CanvasNodeSnapshot) GetGroup() *CanvasGroupPlacement {
+	if x != nil {
+		if x, ok := x.Placement.(*CanvasNodeSnapshot_Group); ok {
+			return x.Group
+		}
+	}
+	return nil
+}
+
+func (x *CanvasNodeSnapshot) GetAgent() *CanvasAgentPlacement {
+	if x != nil {
+		if x, ok := x.Placement.(*CanvasNodeSnapshot_Agent); ok {
+			return x.Agent
+		}
+	}
+	return nil
+}
+
+type isCanvasNodeSnapshot_Placement interface {
+	isCanvasNodeSnapshot_Placement()
+}
+
+type CanvasNodeSnapshot_Group struct {
+	Group *CanvasGroupPlacement `protobuf:"bytes,6,opt,name=group,proto3,oneof"`
+}
+
+type CanvasNodeSnapshot_Agent struct {
+	Agent *CanvasAgentPlacement `protobuf:"bytes,7,opt,name=agent,proto3,oneof"`
+}
+
+func (*CanvasNodeSnapshot_Group) isCanvasNodeSnapshot_Placement() {}
+
+func (*CanvasNodeSnapshot_Agent) isCanvasNodeSnapshot_Placement() {}
+
+type CanvasGroupPlacement struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Label         string                 `protobuf:"bytes,1,opt,name=label,proto3" json:"label,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CanvasGroupPlacement) Reset() {
+	*x = CanvasGroupPlacement{}
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[9]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CanvasGroupPlacement) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CanvasGroupPlacement) ProtoMessage() {}
+
+func (x *CanvasGroupPlacement) ProtoReflect() protoreflect.Message {
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[9]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CanvasGroupPlacement.ProtoReflect.Descriptor instead.
+func (*CanvasGroupPlacement) Descriptor() ([]byte, []int) {
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{9}
+}
+
+func (x *CanvasGroupPlacement) GetLabel() string {
+	if x != nil {
+		return x.Label
+	}
+	return ""
+}
+
+type CanvasAgentPlacement struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	AgentId       string                 `protobuf:"bytes,1,opt,name=agent_id,json=agentId,proto3" json:"agent_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CanvasAgentPlacement) Reset() {
+	*x = CanvasAgentPlacement{}
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[10]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CanvasAgentPlacement) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CanvasAgentPlacement) ProtoMessage() {}
+
+func (x *CanvasAgentPlacement) ProtoReflect() protoreflect.Message {
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[10]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CanvasAgentPlacement.ProtoReflect.Descriptor instead.
+func (*CanvasAgentPlacement) Descriptor() ([]byte, []int) {
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{10}
+}
+
+func (x *CanvasAgentPlacement) GetAgentId() string {
+	if x != nil {
+		return x.AgentId
+	}
+	return ""
+}
+
+type CanvasPosition struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	X             float64                `protobuf:"fixed64,1,opt,name=x,proto3" json:"x,omitempty"`
+	Y             float64                `protobuf:"fixed64,2,opt,name=y,proto3" json:"y,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CanvasPosition) Reset() {
+	*x = CanvasPosition{}
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[11]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CanvasPosition) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CanvasPosition) ProtoMessage() {}
+
+func (x *CanvasPosition) ProtoReflect() protoreflect.Message {
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[11]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CanvasPosition.ProtoReflect.Descriptor instead.
+func (*CanvasPosition) Descriptor() ([]byte, []int) {
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{11}
+}
+
+func (x *CanvasPosition) GetX() float64 {
+	if x != nil {
+		return x.X
+	}
+	return 0
+}
+
+func (x *CanvasPosition) GetY() float64 {
+	if x != nil {
+		return x.Y
+	}
+	return 0
+}
+
+type CanvasSize struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Width         float64                `protobuf:"fixed64,1,opt,name=width,proto3" json:"width,omitempty"`
+	Height        float64                `protobuf:"fixed64,2,opt,name=height,proto3" json:"height,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CanvasSize) Reset() {
+	*x = CanvasSize{}
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[12]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CanvasSize) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CanvasSize) ProtoMessage() {}
+
+func (x *CanvasSize) ProtoReflect() protoreflect.Message {
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[12]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CanvasSize.ProtoReflect.Descriptor instead.
+func (*CanvasSize) Descriptor() ([]byte, []int) {
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{12}
+}
+
+func (x *CanvasSize) GetWidth() float64 {
+	if x != nil {
+		return x.Width
+	}
+	return 0
+}
+
+func (x *CanvasSize) GetHeight() float64 {
+	if x != nil {
+		return x.Height
+	}
+	return 0
+}
+
+// Tool metadata is scoped to a Worker. URLs and schemas describe the mounted
+// tool; credentials and provider secrets must never be included in this
+// snapshot.
+type WorkerToolSnapshot struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	SnapshotId    string                 `protobuf:"bytes,1,opt,name=snapshot_id,json=snapshotId,proto3" json:"snapshot_id,omitempty"`
+	VersionId     string                 `protobuf:"bytes,2,opt,name=version_id,json=versionId,proto3" json:"version_id,omitempty"`
+	WorkerId      string                 `protobuf:"bytes,3,opt,name=worker_id,json=workerId,proto3" json:"worker_id,omitempty"`
+	Tools         []*WorkerToolMetadata  `protobuf:"bytes,4,rep,name=tools,proto3" json:"tools,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *WorkerToolSnapshot) Reset() {
+	*x = WorkerToolSnapshot{}
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[13]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *WorkerToolSnapshot) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*WorkerToolSnapshot) ProtoMessage() {}
+
+func (x *WorkerToolSnapshot) ProtoReflect() protoreflect.Message {
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[13]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use WorkerToolSnapshot.ProtoReflect.Descriptor instead.
+func (*WorkerToolSnapshot) Descriptor() ([]byte, []int) {
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{13}
+}
+
+func (x *WorkerToolSnapshot) GetSnapshotId() string {
+	if x != nil {
+		return x.SnapshotId
+	}
+	return ""
+}
+
+func (x *WorkerToolSnapshot) GetVersionId() string {
+	if x != nil {
+		return x.VersionId
+	}
+	return ""
+}
+
+func (x *WorkerToolSnapshot) GetWorkerId() string {
+	if x != nil {
+		return x.WorkerId
+	}
+	return ""
+}
+
+func (x *WorkerToolSnapshot) GetTools() []*WorkerToolMetadata {
+	if x != nil {
+		return x.Tools
+	}
+	return nil
+}
+
+type WorkerToolMetadata struct {
+	state       protoimpl.MessageState `protogen:"open.v1"`
+	ToolId      string                 `protobuf:"bytes,1,opt,name=tool_id,json=toolId,proto3" json:"tool_id,omitempty"`
+	Kind        string                 `protobuf:"bytes,2,opt,name=kind,proto3" json:"kind,omitempty"`
+	Name        string                 `protobuf:"bytes,3,opt,name=name,proto3" json:"name,omitempty"`
+	Description string                 `protobuf:"bytes,4,opt,name=description,proto3" json:"description,omitempty"`
+	// Types that are valid to be assigned to Metadata:
+	//
+	//	*WorkerToolMetadata_Mcp
+	//	*WorkerToolMetadata_Api
+	Metadata      isWorkerToolMetadata_Metadata `protobuf_oneof:"metadata"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *WorkerToolMetadata) Reset() {
+	*x = WorkerToolMetadata{}
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[14]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *WorkerToolMetadata) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*WorkerToolMetadata) ProtoMessage() {}
+
+func (x *WorkerToolMetadata) ProtoReflect() protoreflect.Message {
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[14]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use WorkerToolMetadata.ProtoReflect.Descriptor instead.
+func (*WorkerToolMetadata) Descriptor() ([]byte, []int) {
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{14}
+}
+
+func (x *WorkerToolMetadata) GetToolId() string {
+	if x != nil {
+		return x.ToolId
+	}
+	return ""
+}
+
+func (x *WorkerToolMetadata) GetKind() string {
+	if x != nil {
+		return x.Kind
+	}
+	return ""
+}
+
+func (x *WorkerToolMetadata) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *WorkerToolMetadata) GetDescription() string {
+	if x != nil {
+		return x.Description
+	}
+	return ""
+}
+
+func (x *WorkerToolMetadata) GetMetadata() isWorkerToolMetadata_Metadata {
+	if x != nil {
+		return x.Metadata
+	}
+	return nil
+}
+
+func (x *WorkerToolMetadata) GetMcp() *McpToolMetadata {
+	if x != nil {
+		if x, ok := x.Metadata.(*WorkerToolMetadata_Mcp); ok {
+			return x.Mcp
+		}
+	}
+	return nil
+}
+
+func (x *WorkerToolMetadata) GetApi() *ApiToolMetadata {
+	if x != nil {
+		if x, ok := x.Metadata.(*WorkerToolMetadata_Api); ok {
+			return x.Api
+		}
+	}
+	return nil
+}
+
+type isWorkerToolMetadata_Metadata interface {
+	isWorkerToolMetadata_Metadata()
+}
+
+type WorkerToolMetadata_Mcp struct {
+	Mcp *McpToolMetadata `protobuf:"bytes,5,opt,name=mcp,proto3,oneof"`
+}
+
+type WorkerToolMetadata_Api struct {
+	Api *ApiToolMetadata `protobuf:"bytes,6,opt,name=api,proto3,oneof"`
+}
+
+func (*WorkerToolMetadata_Mcp) isWorkerToolMetadata_Metadata() {}
+
+func (*WorkerToolMetadata_Api) isWorkerToolMetadata_Metadata() {}
+
+type McpToolMetadata struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	ServerName    string                 `protobuf:"bytes,1,opt,name=server_name,json=serverName,proto3" json:"server_name,omitempty"`
+	Transport     string                 `protobuf:"bytes,2,opt,name=transport,proto3" json:"transport,omitempty"`
+	Url           string                 `protobuf:"bytes,3,opt,name=url,proto3" json:"url,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *McpToolMetadata) Reset() {
+	*x = McpToolMetadata{}
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[15]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *McpToolMetadata) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*McpToolMetadata) ProtoMessage() {}
+
+func (x *McpToolMetadata) ProtoReflect() protoreflect.Message {
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[15]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use McpToolMetadata.ProtoReflect.Descriptor instead.
+func (*McpToolMetadata) Descriptor() ([]byte, []int) {
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{15}
+}
+
+func (x *McpToolMetadata) GetServerName() string {
+	if x != nil {
+		return x.ServerName
+	}
+	return ""
+}
+
+func (x *McpToolMetadata) GetTransport() string {
+	if x != nil {
+		return x.Transport
+	}
+	return ""
+}
+
+func (x *McpToolMetadata) GetUrl() string {
+	if x != nil {
+		return x.Url
+	}
+	return ""
+}
+
+type ApiToolMetadata struct {
+	state              protoimpl.MessageState `protogen:"open.v1"`
+	Method             string                 `protobuf:"bytes,1,opt,name=method,proto3" json:"method,omitempty"`
+	Url                string                 `protobuf:"bytes,2,opt,name=url,proto3" json:"url,omitempty"`
+	RequestSchemaJson  string                 `protobuf:"bytes,3,opt,name=request_schema_json,json=requestSchemaJson,proto3" json:"request_schema_json,omitempty"`
+	ResponseSchemaJson string                 `protobuf:"bytes,4,opt,name=response_schema_json,json=responseSchemaJson,proto3" json:"response_schema_json,omitempty"`
+	unknownFields      protoimpl.UnknownFields
+	sizeCache          protoimpl.SizeCache
+}
+
+func (x *ApiToolMetadata) Reset() {
+	*x = ApiToolMetadata{}
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[16]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ApiToolMetadata) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ApiToolMetadata) ProtoMessage() {}
+
+func (x *ApiToolMetadata) ProtoReflect() protoreflect.Message {
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[16]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ApiToolMetadata.ProtoReflect.Descriptor instead.
+func (*ApiToolMetadata) Descriptor() ([]byte, []int) {
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{16}
+}
+
+func (x *ApiToolMetadata) GetMethod() string {
+	if x != nil {
+		return x.Method
+	}
+	return ""
+}
+
+func (x *ApiToolMetadata) GetUrl() string {
+	if x != nil {
+		return x.Url
+	}
+	return ""
+}
+
+func (x *ApiToolMetadata) GetRequestSchemaJson() string {
+	if x != nil {
+		return x.RequestSchemaJson
+	}
+	return ""
+}
+
+func (x *ApiToolMetadata) GetResponseSchemaJson() string {
+	if x != nil {
+		return x.ResponseSchemaJson
+	}
+	return ""
+}
+
+// Short-lived execution credentials for API tools. These are not part of the
+// immutable WorkerToolSnapshot and are scoped to the bootstrap lease.
+type ApiToolRuntime struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	ToolId        string                 `protobuf:"bytes,1,opt,name=tool_id,json=toolId,proto3" json:"tool_id,omitempty"`
+	Headers       map[string]string      `protobuf:"bytes,2,rep,name=headers,proto3" json:"headers,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ApiToolRuntime) Reset() {
+	*x = ApiToolRuntime{}
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[17]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ApiToolRuntime) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ApiToolRuntime) ProtoMessage() {}
+
+func (x *ApiToolRuntime) ProtoReflect() protoreflect.Message {
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[17]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ApiToolRuntime.ProtoReflect.Descriptor instead.
+func (*ApiToolRuntime) Descriptor() ([]byte, []int) {
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{17}
+}
+
+func (x *ApiToolRuntime) GetToolId() string {
+	if x != nil {
+		return x.ToolId
+	}
+	return ""
+}
+
+func (x *ApiToolRuntime) GetHeaders() map[string]string {
+	if x != nil {
+		return x.Headers
+	}
+	return nil
+}
+
+// Mounted as AgentSession-level tools so they stay callable while a Worker
 // holds the turn — a caller can ask for a human or hang up mid-step.
 type AgentGlobalActions struct {
 	state           protoimpl.MessageState `protogen:"open.v1"`
@@ -678,7 +1453,7 @@ type AgentGlobalActions struct {
 
 func (x *AgentGlobalActions) Reset() {
 	*x = AgentGlobalActions{}
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[7]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[18]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -690,7 +1465,7 @@ func (x *AgentGlobalActions) String() string {
 func (*AgentGlobalActions) ProtoMessage() {}
 
 func (x *AgentGlobalActions) ProtoReflect() protoreflect.Message {
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[7]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[18]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -703,7 +1478,7 @@ func (x *AgentGlobalActions) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AgentGlobalActions.ProtoReflect.Descriptor instead.
 func (*AgentGlobalActions) Descriptor() ([]byte, []int) {
-	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{7}
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{18}
 }
 
 func (x *AgentGlobalActions) GetTransferToHuman() *TransferToHumanAction {
@@ -733,7 +1508,7 @@ type TransferToHumanAction struct {
 
 func (x *TransferToHumanAction) Reset() {
 	*x = TransferToHumanAction{}
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[8]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[19]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -745,7 +1520,7 @@ func (x *TransferToHumanAction) String() string {
 func (*TransferToHumanAction) ProtoMessage() {}
 
 func (x *TransferToHumanAction) ProtoReflect() protoreflect.Message {
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[8]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[19]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -758,7 +1533,7 @@ func (x *TransferToHumanAction) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TransferToHumanAction.ProtoReflect.Descriptor instead.
 func (*TransferToHumanAction) Descriptor() ([]byte, []int) {
-	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{8}
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{19}
 }
 
 func (x *TransferToHumanAction) GetEnabled() bool {
@@ -801,7 +1576,7 @@ type EndCallAction struct {
 
 func (x *EndCallAction) Reset() {
 	*x = EndCallAction{}
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[9]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[20]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -813,7 +1588,7 @@ func (x *EndCallAction) String() string {
 func (*EndCallAction) ProtoMessage() {}
 
 func (x *EndCallAction) ProtoReflect() protoreflect.Message {
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[9]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[20]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -826,7 +1601,7 @@ func (x *EndCallAction) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use EndCallAction.ProtoReflect.Descriptor instead.
 func (*EndCallAction) Descriptor() ([]byte, []int) {
-	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{9}
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{20}
 }
 
 func (x *EndCallAction) GetEnabled() bool {
@@ -850,84 +1625,6 @@ func (x *EndCallAction) GetConfirm() bool {
 	return false
 }
 
-// Session-scoped agent identity resolved by the API. The worker owns no prompt
-// configuration of its own; every value here comes from the caller's agent.
-type AgentPersona struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	DisplayName   string                 `protobuf:"bytes,1,opt,name=display_name,json=displayName,proto3" json:"display_name,omitempty"`
-	SystemPrompt  string                 `protobuf:"bytes,2,opt,name=system_prompt,json=systemPrompt,proto3" json:"system_prompt,omitempty"`
-	Greeting      string                 `protobuf:"bytes,3,opt,name=greeting,proto3" json:"greeting,omitempty"`
-	VoiceId       string                 `protobuf:"bytes,4,opt,name=voice_id,json=voiceId,proto3" json:"voice_id,omitempty"`
-	Language      string                 `protobuf:"bytes,5,opt,name=language,proto3" json:"language,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *AgentPersona) Reset() {
-	*x = AgentPersona{}
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[10]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *AgentPersona) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*AgentPersona) ProtoMessage() {}
-
-func (x *AgentPersona) ProtoReflect() protoreflect.Message {
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[10]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use AgentPersona.ProtoReflect.Descriptor instead.
-func (*AgentPersona) Descriptor() ([]byte, []int) {
-	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{10}
-}
-
-func (x *AgentPersona) GetDisplayName() string {
-	if x != nil {
-		return x.DisplayName
-	}
-	return ""
-}
-
-func (x *AgentPersona) GetSystemPrompt() string {
-	if x != nil {
-		return x.SystemPrompt
-	}
-	return ""
-}
-
-func (x *AgentPersona) GetGreeting() string {
-	if x != nil {
-		return x.Greeting
-	}
-	return ""
-}
-
-func (x *AgentPersona) GetVoiceId() string {
-	if x != nil {
-		return x.VoiceId
-	}
-	return ""
-}
-
-func (x *AgentPersona) GetLanguage() string {
-	if x != nil {
-		return x.Language
-	}
-	return ""
-}
-
 type McpServerRuntime struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Name          string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
@@ -940,7 +1637,7 @@ type McpServerRuntime struct {
 
 func (x *McpServerRuntime) Reset() {
 	*x = McpServerRuntime{}
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[11]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[21]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -952,7 +1649,7 @@ func (x *McpServerRuntime) String() string {
 func (*McpServerRuntime) ProtoMessage() {}
 
 func (x *McpServerRuntime) ProtoReflect() protoreflect.Message {
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[11]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[21]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -965,7 +1662,7 @@ func (x *McpServerRuntime) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use McpServerRuntime.ProtoReflect.Descriptor instead.
 func (*McpServerRuntime) Descriptor() ([]byte, []int) {
-	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{11}
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{21}
 }
 
 func (x *McpServerRuntime) GetName() string {
@@ -1014,7 +1711,7 @@ const file_port_api_v1_agent_session_proto_rawDesc = "" +
 	"\btrunk_id\x18\x05 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\atrunkId\x125\n" +
 	"\x12trunk_phone_number\x18\x06 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x10trunkPhoneNumber\x12)\n" +
 	"\fcall_id_full\x18\a \x01(\tB\a\xbaH\x04r\x02\x10\x01R\n" +
-	"callIdFull\"\xca\x06\n" +
+	"callIdFull\"\xe5\t\n" +
 	"\x11BootstrapResponse\x120\n" +
 	"\x0fconversation_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x0econversationId\x12&\n" +
 	"\n" +
@@ -1028,38 +1725,102 @@ const file_port_api_v1_agent_session_proto_rawDesc = "" +
 	"\vmcp_servers\x18\t \x03(\v2\x1d.port.api.v1.McpServerRuntimeR\n" +
 	"mcpServers\x12\"\n" +
 	"\bagent_id\x18\n" +
-	" \x01(\tB\a\xbaH\x04r\x02\x10\x01R\aagentId\x12;\n" +
-	"\apersona\x18\r \x01(\v2\x19.port.api.v1.AgentPersonaB\x06\xbaH\x03\xc8\x01\x01R\apersona\x12>\n" +
-	"\vspecialists\x18\x0e \x03(\v2\x1c.port.api.v1.AgentSpecialistR\vspecialists\x12F\n" +
-	"\x0eglobal_actions\x18\x0f \x01(\v2\x1f.port.api.v1.AgentGlobalActionsR\rglobalActions\x12(\n" +
-	"\x10agent_version_id\x18\x10 \x01(\tR\x0eagentVersionId\x129\n" +
-	"\bworkflow\x18\x11 \x01(\v2\x1d.port.api.v1.WorkflowSnapshotR\bworkflowJ\x04\b\v\x10\fJ\x04\b\f\x10\rR\aflow_idR\x0fflow_version_id\"\xb5\x01\n" +
-	"\x10WorkflowSnapshot\x12\x1f\n" +
-	"\vworkflow_id\x18\x01 \x01(\tR\n" +
-	"workflowId\x12)\n" +
-	"\x10workflow_version\x18\x02 \x01(\tR\x0fworkflowVersion\x12%\n" +
-	"\x0eschema_version\x18\x03 \x01(\tR\rschemaVersion\x12.\n" +
-	"\x13compiled_graph_json\x18\x04 \x01(\tR\x11compiledGraphJson\"\xeb\x02\n" +
-	"\x0fAgentSpecialist\x12,\n" +
-	"\rspecialist_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\fspecialistId\x12\x19\n" +
-	"\x03key\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x03key\x12!\n" +
-	"\fdisplay_name\x18\x03 \x01(\tR\vdisplayName\x12'\n" +
-	"\vwhen_to_use\x18\x04 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\twhenToUse\x12+\n" +
-	"\finstructions\x18\x05 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\finstructions\x12I\n" +
-	"\x11completion_fields\x18\x06 \x03(\v2\x1c.port.api.v1.CompletionFieldR\x10completionFields\x12K\n" +
-	"\x0efailure_policy\x18\a \x01(\v2$.port.api.v1.SpecialistFailurePolicyR\rfailurePolicy\"\xc3\x01\n" +
-	"\x0fCompletionField\x12\x1b\n" +
-	"\x04name\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x04name\x122\n" +
-	"\x04type\x18\x02 \x01(\tB\x1e\xbaH\x1br\x19R\x06stringR\x06numberR\abooleanR\x04type\x12)\n" +
-	"\vdescription\x18\x03 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\vdescription\x12\x1a\n" +
-	"\brequired\x18\x04 \x01(\bR\brequired\x12\x18\n" +
-	"\apattern\x18\x05 \x01(\tR\apattern\"\xb4\x01\n" +
-	"\x17SpecialistFailurePolicy\x12!\n" +
-	"\fmax_attempts\x18\x01 \x01(\x05R\vmaxAttempts\x12\x1d\n" +
+	" \x01(\tB\a\xbaH\x04r\x02\x10\x01R\aagentId\x12,\n" +
+	"\rsupervisor_id\x18\x12 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\fsupervisorId\x12;\n" +
+	"\x15supervisor_version_id\x18\x13 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x13supervisorVersionId\x12U\n" +
+	"\x12supervisor_persona\x18\x14 \x01(\v2\x1e.port.api.v1.SupervisorPersonaB\x06\xbaH\x03\xc8\x01\x01R\x11supervisorPersona\x12R\n" +
+	"\x11supervisor_config\x18\x15 \x01(\v2\x1d.port.api.v1.SupervisorConfigB\x06\xbaH\x03\xc8\x01\x01R\x10supervisorConfig\x125\n" +
+	"\aworkers\x18\x16 \x03(\v2\x1b.port.api.v1.WorkerSnapshotR\aworkers\x12;\n" +
+	"\x06canvas\x18\x17 \x01(\v2\x1b.port.api.v1.CanvasSnapshotB\x06\xbaH\x03\xc8\x01\x01R\x06canvas\x12S\n" +
+	"\x15worker_tool_snapshots\x18\x18 \x03(\v2\x1f.port.api.v1.WorkerToolSnapshotR\x13workerToolSnapshots\x12;\n" +
+	"\x15bootstrap_snapshot_id\x18\x19 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x13bootstrapSnapshotId\x12G\n" +
+	"\x11api_tool_runtimes\x18\x1a \x03(\v2\x1b.port.api.v1.ApiToolRuntimeR\x0fapiToolRuntimesJ\x04\b\v\x10\fJ\x04\b\f\x10\rJ\x04\b\r\x10\x0eJ\x04\b\x0e\x10\x0fJ\x04\b\x0f\x10\x10J\x04\b\x10\x10\x11J\x04\b\x11\x10\x12R\aflow_idR\x0fflow_version_idR\apersonaR\vspecialistsR\x0eglobal_actionsR\x10agent_version_idR\bworkflow\"\xa4\x01\n" +
+	"\x11SupervisorPersona\x12*\n" +
+	"\fdisplay_name\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\vdisplayName\x12,\n" +
+	"\rsystem_prompt\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\fsystemPrompt\x12\x19\n" +
+	"\bvoice_id\x18\x03 \x01(\tR\avoiceId\x12\x1a\n" +
+	"\blanguage\x18\x04 \x01(\tR\blanguage\"\xb9\x01\n" +
+	"\x10SupervisorConfig\x121\n" +
+	"\x14routing_instructions\x18\x01 \x01(\tR\x13routingInstructions\x12*\n" +
+	"\x11max_handoff_depth\x18\x02 \x01(\rR\x0fmaxHandoffDepth\x12F\n" +
+	"\x0eglobal_actions\x18\x03 \x01(\v2\x1f.port.api.v1.AgentGlobalActionsR\rglobalActions\"\xeb\x02\n" +
+	"\x0eWorkerSnapshot\x12$\n" +
+	"\tworker_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\bworkerId\x12&\n" +
 	"\n" +
-	"timeout_ms\x18\x02 \x01(\x05R\ttimeoutMs\x12W\n" +
+	"version_id\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\tversionId\x12 \n" +
+	"\vdescription\x18\x03 \x01(\tR\vdescription\x12*\n" +
+	"\frouting_text\x18\x04 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\vroutingText\x12<\n" +
+	"\apersona\x18\x05 \x01(\v2\x1a.port.api.v1.WorkerPersonaB\x06\xbaH\x03\xc8\x01\x01R\apersona\x12!\n" +
+	"\x04role\x18\x06 \x01(\tB\r\xbaH\n" +
+	"r\bR\x06workerR\x04role\x122\n" +
+	"\x10runtime_identity\x18\a \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x0fruntimeIdentity\x12(\n" +
+	"\x10tool_snapshot_id\x18\b \x01(\tR\x0etoolSnapshotId\"\xbc\x01\n" +
+	"\rWorkerPersona\x12*\n" +
+	"\fdisplay_name\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\vdisplayName\x12,\n" +
+	"\rsystem_prompt\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\fsystemPrompt\x12\x1a\n" +
+	"\bgreeting\x18\x03 \x01(\tR\bgreeting\x12\x19\n" +
+	"\bvoice_id\x18\x04 \x01(\tR\avoiceId\x12\x1a\n" +
+	"\blanguage\x18\x05 \x01(\tR\blanguage\"\xc9\x01\n" +
+	"\x0eCanvasSnapshot\x12(\n" +
+	"\vsnapshot_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\n" +
+	"snapshotId\x12&\n" +
 	"\n" +
-	"on_failure\x18\x03 \x01(\tB8\xbaH5r3R\x14return_to_supervisorR\x11transfer_to_humanR\bend_callR\tonFailure\"\x9b\x01\n" +
+	"version_id\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\tversionId\x12.\n" +
+	"\x0eschema_version\x18\x03 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\rschemaVersion\x125\n" +
+	"\x05nodes\x18\x04 \x03(\v2\x1f.port.api.v1.CanvasNodeSnapshotR\x05nodes\"\xf0\x02\n" +
+	"\x12CanvasNodeSnapshot\x12 \n" +
+	"\anode_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x06nodeId\x12$\n" +
+	"\x0eparent_node_id\x18\x02 \x01(\tR\fparentNodeId\x12?\n" +
+	"\bposition\x18\x03 \x01(\v2\x1b.port.api.v1.CanvasPositionB\x06\xbaH\x03\xc8\x01\x01R\bposition\x123\n" +
+	"\x04size\x18\x04 \x01(\v2\x17.port.api.v1.CanvasSizeB\x06\xbaH\x03\xc8\x01\x01R\x04size\x12\x19\n" +
+	"\bis_entry\x18\x05 \x01(\bR\aisEntry\x129\n" +
+	"\x05group\x18\x06 \x01(\v2!.port.api.v1.CanvasGroupPlacementH\x00R\x05group\x129\n" +
+	"\x05agent\x18\a \x01(\v2!.port.api.v1.CanvasAgentPlacementH\x00R\x05agentB\v\n" +
+	"\tplacement\",\n" +
+	"\x14CanvasGroupPlacement\x12\x14\n" +
+	"\x05label\x18\x01 \x01(\tR\x05label\":\n" +
+	"\x14CanvasAgentPlacement\x12\"\n" +
+	"\bagent_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\aagentId\",\n" +
+	"\x0eCanvasPosition\x12\f\n" +
+	"\x01x\x18\x01 \x01(\x01R\x01x\x12\f\n" +
+	"\x01y\x18\x02 \x01(\x01R\x01y\":\n" +
+	"\n" +
+	"CanvasSize\x12\x14\n" +
+	"\x05width\x18\x01 \x01(\x01R\x05width\x12\x16\n" +
+	"\x06height\x18\x02 \x01(\x01R\x06height\"\xc3\x01\n" +
+	"\x12WorkerToolSnapshot\x12(\n" +
+	"\vsnapshot_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\n" +
+	"snapshotId\x12&\n" +
+	"\n" +
+	"version_id\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\tversionId\x12$\n" +
+	"\tworker_id\x18\x03 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\bworkerId\x125\n" +
+	"\x05tools\x18\x04 \x03(\v2\x1f.port.api.v1.WorkerToolMetadataR\x05tools\"\x8a\x02\n" +
+	"\x12WorkerToolMetadata\x12 \n" +
+	"\atool_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x06toolId\x12#\n" +
+	"\x04kind\x18\x02 \x01(\tB\x0f\xbaH\fr\n" +
+	"R\x03mcpR\x03apiR\x04kind\x12\x1b\n" +
+	"\x04name\x18\x03 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x04name\x12 \n" +
+	"\vdescription\x18\x04 \x01(\tR\vdescription\x120\n" +
+	"\x03mcp\x18\x05 \x01(\v2\x1c.port.api.v1.McpToolMetadataH\x00R\x03mcp\x120\n" +
+	"\x03api\x18\x06 \x01(\v2\x1c.port.api.v1.ApiToolMetadataH\x00R\x03apiB\n" +
+	"\n" +
+	"\bmetadata\"\x91\x01\n" +
+	"\x0fMcpToolMetadata\x12(\n" +
+	"\vserver_name\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\n" +
+	"serverName\x129\n" +
+	"\ttransport\x18\x02 \x01(\tB\x1b\xbaH\x18r\x16R\x03sseR\x0fstreamable-httpR\ttransport\x12\x19\n" +
+	"\x03url\x18\x03 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x03url\"\xaf\x01\n" +
+	"\x0fApiToolMetadata\x12\x1f\n" +
+	"\x06method\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x06method\x12\x19\n" +
+	"\x03url\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x03url\x12.\n" +
+	"\x13request_schema_json\x18\x03 \x01(\tR\x11requestSchemaJson\x120\n" +
+	"\x14response_schema_json\x18\x04 \x01(\tR\x12responseSchemaJson\"\xb2\x01\n" +
+	"\x0eApiToolRuntime\x12 \n" +
+	"\atool_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x06toolId\x12B\n" +
+	"\aheaders\x18\x02 \x03(\v2(.port.api.v1.ApiToolRuntime.HeadersEntryR\aheaders\x1a:\n" +
+	"\fHeadersEntry\x12\x10\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
+	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"\x9b\x01\n" +
 	"\x12AgentGlobalActions\x12N\n" +
 	"\x11transfer_to_human\x18\x01 \x01(\v2\".port.api.v1.TransferToHumanActionR\x0ftransferToHuman\x125\n" +
 	"\bend_call\x18\x02 \x01(\v2\x1a.port.api.v1.EndCallActionR\aendCall\"\xa0\x01\n" +
@@ -1072,13 +1833,7 @@ const file_port_api_v1_agent_session_proto_rawDesc = "" +
 	"\rEndCallAction\x12\x18\n" +
 	"\aenabled\x18\x01 \x01(\bR\aenabled\x12%\n" +
 	"\x0eclosing_phrase\x18\x02 \x01(\tR\rclosingPhrase\x12\x18\n" +
-	"\aconfirm\x18\x03 \x01(\bR\aconfirm\"\xbb\x01\n" +
-	"\fAgentPersona\x12*\n" +
-	"\fdisplay_name\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\vdisplayName\x12,\n" +
-	"\rsystem_prompt\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\fsystemPrompt\x12\x1a\n" +
-	"\bgreeting\x18\x03 \x01(\tR\bgreeting\x12\x19\n" +
-	"\bvoice_id\x18\x04 \x01(\tR\avoiceId\x12\x1a\n" +
-	"\blanguage\x18\x05 \x01(\tR\blanguage\"\x87\x02\n" +
+	"\aconfirm\x18\x03 \x01(\bR\aconfirm\"\x87\x02\n" +
 	"\x10McpServerRuntime\x12\x1b\n" +
 	"\x04name\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x04name\x129\n" +
 	"\ttransport\x18\x02 \x01(\tB\x1b\xbaH\x18r\x16R\x03sseR\x0fstreamable-httpR\ttransport\x12\x19\n" +
@@ -1102,47 +1857,69 @@ func file_port_api_v1_agent_session_proto_rawDescGZIP() []byte {
 	return file_port_api_v1_agent_session_proto_rawDescData
 }
 
-var file_port_api_v1_agent_session_proto_msgTypes = make([]protoimpl.MessageInfo, 13)
+var file_port_api_v1_agent_session_proto_msgTypes = make([]protoimpl.MessageInfo, 24)
 var file_port_api_v1_agent_session_proto_goTypes = []any{
-	(*BootstrapRequest)(nil),        // 0: port.api.v1.BootstrapRequest
-	(*SipBootstrapContext)(nil),     // 1: port.api.v1.SipBootstrapContext
-	(*BootstrapResponse)(nil),       // 2: port.api.v1.BootstrapResponse
-	(*WorkflowSnapshot)(nil),        // 3: port.api.v1.WorkflowSnapshot
-	(*AgentSpecialist)(nil),         // 4: port.api.v1.AgentSpecialist
-	(*CompletionField)(nil),         // 5: port.api.v1.CompletionField
-	(*SpecialistFailurePolicy)(nil), // 6: port.api.v1.SpecialistFailurePolicy
-	(*AgentGlobalActions)(nil),      // 7: port.api.v1.AgentGlobalActions
-	(*TransferToHumanAction)(nil),   // 8: port.api.v1.TransferToHumanAction
-	(*EndCallAction)(nil),           // 9: port.api.v1.EndCallAction
-	(*AgentPersona)(nil),            // 10: port.api.v1.AgentPersona
-	(*McpServerRuntime)(nil),        // 11: port.api.v1.McpServerRuntime
-	nil,                             // 12: port.api.v1.McpServerRuntime.HeadersEntry
-	(*SttRuntime)(nil),              // 13: port.api.v1.SttRuntime
-	(*LlmRuntime)(nil),              // 14: port.api.v1.LlmRuntime
-	(*TtsRuntime)(nil),              // 15: port.api.v1.TtsRuntime
+	(*BootstrapRequest)(nil),      // 0: port.api.v1.BootstrapRequest
+	(*SipBootstrapContext)(nil),   // 1: port.api.v1.SipBootstrapContext
+	(*BootstrapResponse)(nil),     // 2: port.api.v1.BootstrapResponse
+	(*SupervisorPersona)(nil),     // 3: port.api.v1.SupervisorPersona
+	(*SupervisorConfig)(nil),      // 4: port.api.v1.SupervisorConfig
+	(*WorkerSnapshot)(nil),        // 5: port.api.v1.WorkerSnapshot
+	(*WorkerPersona)(nil),         // 6: port.api.v1.WorkerPersona
+	(*CanvasSnapshot)(nil),        // 7: port.api.v1.CanvasSnapshot
+	(*CanvasNodeSnapshot)(nil),    // 8: port.api.v1.CanvasNodeSnapshot
+	(*CanvasGroupPlacement)(nil),  // 9: port.api.v1.CanvasGroupPlacement
+	(*CanvasAgentPlacement)(nil),  // 10: port.api.v1.CanvasAgentPlacement
+	(*CanvasPosition)(nil),        // 11: port.api.v1.CanvasPosition
+	(*CanvasSize)(nil),            // 12: port.api.v1.CanvasSize
+	(*WorkerToolSnapshot)(nil),    // 13: port.api.v1.WorkerToolSnapshot
+	(*WorkerToolMetadata)(nil),    // 14: port.api.v1.WorkerToolMetadata
+	(*McpToolMetadata)(nil),       // 15: port.api.v1.McpToolMetadata
+	(*ApiToolMetadata)(nil),       // 16: port.api.v1.ApiToolMetadata
+	(*ApiToolRuntime)(nil),        // 17: port.api.v1.ApiToolRuntime
+	(*AgentGlobalActions)(nil),    // 18: port.api.v1.AgentGlobalActions
+	(*TransferToHumanAction)(nil), // 19: port.api.v1.TransferToHumanAction
+	(*EndCallAction)(nil),         // 20: port.api.v1.EndCallAction
+	(*McpServerRuntime)(nil),      // 21: port.api.v1.McpServerRuntime
+	nil,                           // 22: port.api.v1.ApiToolRuntime.HeadersEntry
+	nil,                           // 23: port.api.v1.McpServerRuntime.HeadersEntry
+	(*SttRuntime)(nil),            // 24: port.api.v1.SttRuntime
+	(*LlmRuntime)(nil),            // 25: port.api.v1.LlmRuntime
+	(*TtsRuntime)(nil),            // 26: port.api.v1.TtsRuntime
 }
 var file_port_api_v1_agent_session_proto_depIdxs = []int32{
 	1,  // 0: port.api.v1.BootstrapRequest.sip:type_name -> port.api.v1.SipBootstrapContext
-	13, // 1: port.api.v1.BootstrapResponse.stt:type_name -> port.api.v1.SttRuntime
-	14, // 2: port.api.v1.BootstrapResponse.llm:type_name -> port.api.v1.LlmRuntime
-	15, // 3: port.api.v1.BootstrapResponse.tts:type_name -> port.api.v1.TtsRuntime
-	11, // 4: port.api.v1.BootstrapResponse.mcp_servers:type_name -> port.api.v1.McpServerRuntime
-	10, // 5: port.api.v1.BootstrapResponse.persona:type_name -> port.api.v1.AgentPersona
-	4,  // 6: port.api.v1.BootstrapResponse.specialists:type_name -> port.api.v1.AgentSpecialist
-	7,  // 7: port.api.v1.BootstrapResponse.global_actions:type_name -> port.api.v1.AgentGlobalActions
-	3,  // 8: port.api.v1.BootstrapResponse.workflow:type_name -> port.api.v1.WorkflowSnapshot
-	5,  // 9: port.api.v1.AgentSpecialist.completion_fields:type_name -> port.api.v1.CompletionField
-	6,  // 10: port.api.v1.AgentSpecialist.failure_policy:type_name -> port.api.v1.SpecialistFailurePolicy
-	8,  // 11: port.api.v1.AgentGlobalActions.transfer_to_human:type_name -> port.api.v1.TransferToHumanAction
-	9,  // 12: port.api.v1.AgentGlobalActions.end_call:type_name -> port.api.v1.EndCallAction
-	12, // 13: port.api.v1.McpServerRuntime.headers:type_name -> port.api.v1.McpServerRuntime.HeadersEntry
-	0,  // 14: port.api.v1.AgentSessionService.Bootstrap:input_type -> port.api.v1.BootstrapRequest
-	2,  // 15: port.api.v1.AgentSessionService.Bootstrap:output_type -> port.api.v1.BootstrapResponse
-	15, // [15:16] is the sub-list for method output_type
-	14, // [14:15] is the sub-list for method input_type
-	14, // [14:14] is the sub-list for extension type_name
-	14, // [14:14] is the sub-list for extension extendee
-	0,  // [0:14] is the sub-list for field type_name
+	24, // 1: port.api.v1.BootstrapResponse.stt:type_name -> port.api.v1.SttRuntime
+	25, // 2: port.api.v1.BootstrapResponse.llm:type_name -> port.api.v1.LlmRuntime
+	26, // 3: port.api.v1.BootstrapResponse.tts:type_name -> port.api.v1.TtsRuntime
+	21, // 4: port.api.v1.BootstrapResponse.mcp_servers:type_name -> port.api.v1.McpServerRuntime
+	3,  // 5: port.api.v1.BootstrapResponse.supervisor_persona:type_name -> port.api.v1.SupervisorPersona
+	4,  // 6: port.api.v1.BootstrapResponse.supervisor_config:type_name -> port.api.v1.SupervisorConfig
+	5,  // 7: port.api.v1.BootstrapResponse.workers:type_name -> port.api.v1.WorkerSnapshot
+	7,  // 8: port.api.v1.BootstrapResponse.canvas:type_name -> port.api.v1.CanvasSnapshot
+	13, // 9: port.api.v1.BootstrapResponse.worker_tool_snapshots:type_name -> port.api.v1.WorkerToolSnapshot
+	17, // 10: port.api.v1.BootstrapResponse.api_tool_runtimes:type_name -> port.api.v1.ApiToolRuntime
+	18, // 11: port.api.v1.SupervisorConfig.global_actions:type_name -> port.api.v1.AgentGlobalActions
+	6,  // 12: port.api.v1.WorkerSnapshot.persona:type_name -> port.api.v1.WorkerPersona
+	8,  // 13: port.api.v1.CanvasSnapshot.nodes:type_name -> port.api.v1.CanvasNodeSnapshot
+	11, // 14: port.api.v1.CanvasNodeSnapshot.position:type_name -> port.api.v1.CanvasPosition
+	12, // 15: port.api.v1.CanvasNodeSnapshot.size:type_name -> port.api.v1.CanvasSize
+	9,  // 16: port.api.v1.CanvasNodeSnapshot.group:type_name -> port.api.v1.CanvasGroupPlacement
+	10, // 17: port.api.v1.CanvasNodeSnapshot.agent:type_name -> port.api.v1.CanvasAgentPlacement
+	14, // 18: port.api.v1.WorkerToolSnapshot.tools:type_name -> port.api.v1.WorkerToolMetadata
+	15, // 19: port.api.v1.WorkerToolMetadata.mcp:type_name -> port.api.v1.McpToolMetadata
+	16, // 20: port.api.v1.WorkerToolMetadata.api:type_name -> port.api.v1.ApiToolMetadata
+	22, // 21: port.api.v1.ApiToolRuntime.headers:type_name -> port.api.v1.ApiToolRuntime.HeadersEntry
+	19, // 22: port.api.v1.AgentGlobalActions.transfer_to_human:type_name -> port.api.v1.TransferToHumanAction
+	20, // 23: port.api.v1.AgentGlobalActions.end_call:type_name -> port.api.v1.EndCallAction
+	23, // 24: port.api.v1.McpServerRuntime.headers:type_name -> port.api.v1.McpServerRuntime.HeadersEntry
+	0,  // 25: port.api.v1.AgentSessionService.Bootstrap:input_type -> port.api.v1.BootstrapRequest
+	2,  // 26: port.api.v1.AgentSessionService.Bootstrap:output_type -> port.api.v1.BootstrapResponse
+	26, // [26:27] is the sub-list for method output_type
+	25, // [25:26] is the sub-list for method input_type
+	25, // [25:25] is the sub-list for extension type_name
+	25, // [25:25] is the sub-list for extension extendee
+	0,  // [0:25] is the sub-list for field type_name
 }
 
 func init() { file_port_api_v1_agent_session_proto_init() }
@@ -1155,13 +1932,21 @@ func file_port_api_v1_agent_session_proto_init() {
 		(*BootstrapRequest_WebrtcTicket)(nil),
 		(*BootstrapRequest_Sip)(nil),
 	}
+	file_port_api_v1_agent_session_proto_msgTypes[8].OneofWrappers = []any{
+		(*CanvasNodeSnapshot_Group)(nil),
+		(*CanvasNodeSnapshot_Agent)(nil),
+	}
+	file_port_api_v1_agent_session_proto_msgTypes[14].OneofWrappers = []any{
+		(*WorkerToolMetadata_Mcp)(nil),
+		(*WorkerToolMetadata_Api)(nil),
+	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_port_api_v1_agent_session_proto_rawDesc), len(file_port_api_v1_agent_session_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   13,
+			NumMessages:   24,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

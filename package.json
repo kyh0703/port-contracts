@@ -1,6 +1,6 @@
 {
   "name": "@overthinker1127/port-contracts",
-  "version": "1.6.0",
+  "version": "1.7.0",
   "description": "Shared protobuf contracts for port services.",
   "private": false,
   "license": "UNLICENSED",
@@ -15,7 +15,8 @@
     "build": "tsc -p tsconfig.json",
     "prepack": "npm run build",
     "lint:proto": "buf lint",
-    "check": "npm run lint:proto && npm run generate && npm run build"
+    "test:wire": "npm run build && node --test tests/*.test.cjs",
+    "check": "npm run lint:proto && npm run generate && npm run build && node --test tests/*.test.cjs"
   },
   "exports": {
     "./gen/ts/*": {

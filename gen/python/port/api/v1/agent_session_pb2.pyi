@@ -35,7 +35,7 @@ class SipBootstrapContext(_message.Message):
     def __init__(self, job_id: _Optional[str] = ..., dispatch_id: _Optional[str] = ..., room_name: _Optional[str] = ..., participant_identity: _Optional[str] = ..., trunk_id: _Optional[str] = ..., trunk_phone_number: _Optional[str] = ..., call_id_full: _Optional[str] = ...) -> None: ...
 
 class BootstrapResponse(_message.Message):
-    __slots__ = ("conversation_id", "session_id", "source", "room_name", "agent_tool_snapshot_id", "stt", "llm", "tts", "mcp_servers", "agent_id", "persona", "specialists", "global_actions", "agent_version_id", "workflow")
+    __slots__ = ("conversation_id", "session_id", "source", "room_name", "agent_tool_snapshot_id", "stt", "llm", "tts", "mcp_servers", "agent_id", "supervisor_id", "supervisor_version_id", "supervisor_persona", "supervisor_config", "workers", "canvas", "worker_tool_snapshots", "bootstrap_snapshot_id", "api_tool_runtimes")
     CONVERSATION_ID_FIELD_NUMBER: _ClassVar[int]
     SESSION_ID_FIELD_NUMBER: _ClassVar[int]
     SOURCE_FIELD_NUMBER: _ClassVar[int]
@@ -46,11 +46,15 @@ class BootstrapResponse(_message.Message):
     TTS_FIELD_NUMBER: _ClassVar[int]
     MCP_SERVERS_FIELD_NUMBER: _ClassVar[int]
     AGENT_ID_FIELD_NUMBER: _ClassVar[int]
-    PERSONA_FIELD_NUMBER: _ClassVar[int]
-    SPECIALISTS_FIELD_NUMBER: _ClassVar[int]
-    GLOBAL_ACTIONS_FIELD_NUMBER: _ClassVar[int]
-    AGENT_VERSION_ID_FIELD_NUMBER: _ClassVar[int]
-    WORKFLOW_FIELD_NUMBER: _ClassVar[int]
+    SUPERVISOR_ID_FIELD_NUMBER: _ClassVar[int]
+    SUPERVISOR_VERSION_ID_FIELD_NUMBER: _ClassVar[int]
+    SUPERVISOR_PERSONA_FIELD_NUMBER: _ClassVar[int]
+    SUPERVISOR_CONFIG_FIELD_NUMBER: _ClassVar[int]
+    WORKERS_FIELD_NUMBER: _ClassVar[int]
+    CANVAS_FIELD_NUMBER: _ClassVar[int]
+    WORKER_TOOL_SNAPSHOTS_FIELD_NUMBER: _ClassVar[int]
+    BOOTSTRAP_SNAPSHOT_ID_FIELD_NUMBER: _ClassVar[int]
+    API_TOOL_RUNTIMES_FIELD_NUMBER: _ClassVar[int]
     conversation_id: str
     session_id: str
     source: str
@@ -61,66 +65,195 @@ class BootstrapResponse(_message.Message):
     tts: _voice_runtime_pb2.TtsRuntime
     mcp_servers: _containers.RepeatedCompositeFieldContainer[McpServerRuntime]
     agent_id: str
-    persona: AgentPersona
-    specialists: _containers.RepeatedCompositeFieldContainer[AgentSpecialist]
-    global_actions: AgentGlobalActions
-    agent_version_id: str
-    workflow: WorkflowSnapshot
-    def __init__(self, conversation_id: _Optional[str] = ..., session_id: _Optional[str] = ..., source: _Optional[str] = ..., room_name: _Optional[str] = ..., agent_tool_snapshot_id: _Optional[str] = ..., stt: _Optional[_Union[_voice_runtime_pb2.SttRuntime, _Mapping]] = ..., llm: _Optional[_Union[_voice_runtime_pb2.LlmRuntime, _Mapping]] = ..., tts: _Optional[_Union[_voice_runtime_pb2.TtsRuntime, _Mapping]] = ..., mcp_servers: _Optional[_Iterable[_Union[McpServerRuntime, _Mapping]]] = ..., agent_id: _Optional[str] = ..., persona: _Optional[_Union[AgentPersona, _Mapping]] = ..., specialists: _Optional[_Iterable[_Union[AgentSpecialist, _Mapping]]] = ..., global_actions: _Optional[_Union[AgentGlobalActions, _Mapping]] = ..., agent_version_id: _Optional[str] = ..., workflow: _Optional[_Union[WorkflowSnapshot, _Mapping]] = ...) -> None: ...
+    supervisor_id: str
+    supervisor_version_id: str
+    supervisor_persona: SupervisorPersona
+    supervisor_config: SupervisorConfig
+    workers: _containers.RepeatedCompositeFieldContainer[WorkerSnapshot]
+    canvas: CanvasSnapshot
+    worker_tool_snapshots: _containers.RepeatedCompositeFieldContainer[WorkerToolSnapshot]
+    bootstrap_snapshot_id: str
+    api_tool_runtimes: _containers.RepeatedCompositeFieldContainer[ApiToolRuntime]
+    def __init__(self, conversation_id: _Optional[str] = ..., session_id: _Optional[str] = ..., source: _Optional[str] = ..., room_name: _Optional[str] = ..., agent_tool_snapshot_id: _Optional[str] = ..., stt: _Optional[_Union[_voice_runtime_pb2.SttRuntime, _Mapping]] = ..., llm: _Optional[_Union[_voice_runtime_pb2.LlmRuntime, _Mapping]] = ..., tts: _Optional[_Union[_voice_runtime_pb2.TtsRuntime, _Mapping]] = ..., mcp_servers: _Optional[_Iterable[_Union[McpServerRuntime, _Mapping]]] = ..., agent_id: _Optional[str] = ..., supervisor_id: _Optional[str] = ..., supervisor_version_id: _Optional[str] = ..., supervisor_persona: _Optional[_Union[SupervisorPersona, _Mapping]] = ..., supervisor_config: _Optional[_Union[SupervisorConfig, _Mapping]] = ..., workers: _Optional[_Iterable[_Union[WorkerSnapshot, _Mapping]]] = ..., canvas: _Optional[_Union[CanvasSnapshot, _Mapping]] = ..., worker_tool_snapshots: _Optional[_Iterable[_Union[WorkerToolSnapshot, _Mapping]]] = ..., bootstrap_snapshot_id: _Optional[str] = ..., api_tool_runtimes: _Optional[_Iterable[_Union[ApiToolRuntime, _Mapping]]] = ...) -> None: ...
 
-class WorkflowSnapshot(_message.Message):
-    __slots__ = ("workflow_id", "workflow_version", "schema_version", "compiled_graph_json")
-    WORKFLOW_ID_FIELD_NUMBER: _ClassVar[int]
-    WORKFLOW_VERSION_FIELD_NUMBER: _ClassVar[int]
-    SCHEMA_VERSION_FIELD_NUMBER: _ClassVar[int]
-    COMPILED_GRAPH_JSON_FIELD_NUMBER: _ClassVar[int]
-    workflow_id: str
-    workflow_version: str
-    schema_version: str
-    compiled_graph_json: str
-    def __init__(self, workflow_id: _Optional[str] = ..., workflow_version: _Optional[str] = ..., schema_version: _Optional[str] = ..., compiled_graph_json: _Optional[str] = ...) -> None: ...
-
-class AgentSpecialist(_message.Message):
-    __slots__ = ("specialist_id", "key", "display_name", "when_to_use", "instructions", "completion_fields", "failure_policy")
-    SPECIALIST_ID_FIELD_NUMBER: _ClassVar[int]
-    KEY_FIELD_NUMBER: _ClassVar[int]
+class SupervisorPersona(_message.Message):
+    __slots__ = ("display_name", "system_prompt", "voice_id", "language")
     DISPLAY_NAME_FIELD_NUMBER: _ClassVar[int]
-    WHEN_TO_USE_FIELD_NUMBER: _ClassVar[int]
-    INSTRUCTIONS_FIELD_NUMBER: _ClassVar[int]
-    COMPLETION_FIELDS_FIELD_NUMBER: _ClassVar[int]
-    FAILURE_POLICY_FIELD_NUMBER: _ClassVar[int]
-    specialist_id: str
-    key: str
+    SYSTEM_PROMPT_FIELD_NUMBER: _ClassVar[int]
+    VOICE_ID_FIELD_NUMBER: _ClassVar[int]
+    LANGUAGE_FIELD_NUMBER: _ClassVar[int]
     display_name: str
-    when_to_use: str
-    instructions: str
-    completion_fields: _containers.RepeatedCompositeFieldContainer[CompletionField]
-    failure_policy: SpecialistFailurePolicy
-    def __init__(self, specialist_id: _Optional[str] = ..., key: _Optional[str] = ..., display_name: _Optional[str] = ..., when_to_use: _Optional[str] = ..., instructions: _Optional[str] = ..., completion_fields: _Optional[_Iterable[_Union[CompletionField, _Mapping]]] = ..., failure_policy: _Optional[_Union[SpecialistFailurePolicy, _Mapping]] = ...) -> None: ...
+    system_prompt: str
+    voice_id: str
+    language: str
+    def __init__(self, display_name: _Optional[str] = ..., system_prompt: _Optional[str] = ..., voice_id: _Optional[str] = ..., language: _Optional[str] = ...) -> None: ...
 
-class CompletionField(_message.Message):
-    __slots__ = ("name", "type", "description", "required", "pattern")
-    NAME_FIELD_NUMBER: _ClassVar[int]
-    TYPE_FIELD_NUMBER: _ClassVar[int]
+class SupervisorConfig(_message.Message):
+    __slots__ = ("routing_instructions", "max_handoff_depth", "global_actions")
+    ROUTING_INSTRUCTIONS_FIELD_NUMBER: _ClassVar[int]
+    MAX_HANDOFF_DEPTH_FIELD_NUMBER: _ClassVar[int]
+    GLOBAL_ACTIONS_FIELD_NUMBER: _ClassVar[int]
+    routing_instructions: str
+    max_handoff_depth: int
+    global_actions: AgentGlobalActions
+    def __init__(self, routing_instructions: _Optional[str] = ..., max_handoff_depth: _Optional[int] = ..., global_actions: _Optional[_Union[AgentGlobalActions, _Mapping]] = ...) -> None: ...
+
+class WorkerSnapshot(_message.Message):
+    __slots__ = ("worker_id", "version_id", "description", "routing_text", "persona", "role", "runtime_identity", "tool_snapshot_id")
+    WORKER_ID_FIELD_NUMBER: _ClassVar[int]
+    VERSION_ID_FIELD_NUMBER: _ClassVar[int]
     DESCRIPTION_FIELD_NUMBER: _ClassVar[int]
-    REQUIRED_FIELD_NUMBER: _ClassVar[int]
-    PATTERN_FIELD_NUMBER: _ClassVar[int]
-    name: str
-    type: str
+    ROUTING_TEXT_FIELD_NUMBER: _ClassVar[int]
+    PERSONA_FIELD_NUMBER: _ClassVar[int]
+    ROLE_FIELD_NUMBER: _ClassVar[int]
+    RUNTIME_IDENTITY_FIELD_NUMBER: _ClassVar[int]
+    TOOL_SNAPSHOT_ID_FIELD_NUMBER: _ClassVar[int]
+    worker_id: str
+    version_id: str
     description: str
-    required: bool
-    pattern: str
-    def __init__(self, name: _Optional[str] = ..., type: _Optional[str] = ..., description: _Optional[str] = ..., required: _Optional[bool] = ..., pattern: _Optional[str] = ...) -> None: ...
+    routing_text: str
+    persona: WorkerPersona
+    role: str
+    runtime_identity: str
+    tool_snapshot_id: str
+    def __init__(self, worker_id: _Optional[str] = ..., version_id: _Optional[str] = ..., description: _Optional[str] = ..., routing_text: _Optional[str] = ..., persona: _Optional[_Union[WorkerPersona, _Mapping]] = ..., role: _Optional[str] = ..., runtime_identity: _Optional[str] = ..., tool_snapshot_id: _Optional[str] = ...) -> None: ...
 
-class SpecialistFailurePolicy(_message.Message):
-    __slots__ = ("max_attempts", "timeout_ms", "on_failure")
-    MAX_ATTEMPTS_FIELD_NUMBER: _ClassVar[int]
-    TIMEOUT_MS_FIELD_NUMBER: _ClassVar[int]
-    ON_FAILURE_FIELD_NUMBER: _ClassVar[int]
-    max_attempts: int
-    timeout_ms: int
-    on_failure: str
-    def __init__(self, max_attempts: _Optional[int] = ..., timeout_ms: _Optional[int] = ..., on_failure: _Optional[str] = ...) -> None: ...
+class WorkerPersona(_message.Message):
+    __slots__ = ("display_name", "system_prompt", "greeting", "voice_id", "language")
+    DISPLAY_NAME_FIELD_NUMBER: _ClassVar[int]
+    SYSTEM_PROMPT_FIELD_NUMBER: _ClassVar[int]
+    GREETING_FIELD_NUMBER: _ClassVar[int]
+    VOICE_ID_FIELD_NUMBER: _ClassVar[int]
+    LANGUAGE_FIELD_NUMBER: _ClassVar[int]
+    display_name: str
+    system_prompt: str
+    greeting: str
+    voice_id: str
+    language: str
+    def __init__(self, display_name: _Optional[str] = ..., system_prompt: _Optional[str] = ..., greeting: _Optional[str] = ..., voice_id: _Optional[str] = ..., language: _Optional[str] = ...) -> None: ...
+
+class CanvasSnapshot(_message.Message):
+    __slots__ = ("snapshot_id", "version_id", "schema_version", "nodes")
+    SNAPSHOT_ID_FIELD_NUMBER: _ClassVar[int]
+    VERSION_ID_FIELD_NUMBER: _ClassVar[int]
+    SCHEMA_VERSION_FIELD_NUMBER: _ClassVar[int]
+    NODES_FIELD_NUMBER: _ClassVar[int]
+    snapshot_id: str
+    version_id: str
+    schema_version: str
+    nodes: _containers.RepeatedCompositeFieldContainer[CanvasNodeSnapshot]
+    def __init__(self, snapshot_id: _Optional[str] = ..., version_id: _Optional[str] = ..., schema_version: _Optional[str] = ..., nodes: _Optional[_Iterable[_Union[CanvasNodeSnapshot, _Mapping]]] = ...) -> None: ...
+
+class CanvasNodeSnapshot(_message.Message):
+    __slots__ = ("node_id", "parent_node_id", "position", "size", "is_entry", "group", "agent")
+    NODE_ID_FIELD_NUMBER: _ClassVar[int]
+    PARENT_NODE_ID_FIELD_NUMBER: _ClassVar[int]
+    POSITION_FIELD_NUMBER: _ClassVar[int]
+    SIZE_FIELD_NUMBER: _ClassVar[int]
+    IS_ENTRY_FIELD_NUMBER: _ClassVar[int]
+    GROUP_FIELD_NUMBER: _ClassVar[int]
+    AGENT_FIELD_NUMBER: _ClassVar[int]
+    node_id: str
+    parent_node_id: str
+    position: CanvasPosition
+    size: CanvasSize
+    is_entry: bool
+    group: CanvasGroupPlacement
+    agent: CanvasAgentPlacement
+    def __init__(self, node_id: _Optional[str] = ..., parent_node_id: _Optional[str] = ..., position: _Optional[_Union[CanvasPosition, _Mapping]] = ..., size: _Optional[_Union[CanvasSize, _Mapping]] = ..., is_entry: _Optional[bool] = ..., group: _Optional[_Union[CanvasGroupPlacement, _Mapping]] = ..., agent: _Optional[_Union[CanvasAgentPlacement, _Mapping]] = ...) -> None: ...
+
+class CanvasGroupPlacement(_message.Message):
+    __slots__ = ("label",)
+    LABEL_FIELD_NUMBER: _ClassVar[int]
+    label: str
+    def __init__(self, label: _Optional[str] = ...) -> None: ...
+
+class CanvasAgentPlacement(_message.Message):
+    __slots__ = ("agent_id",)
+    AGENT_ID_FIELD_NUMBER: _ClassVar[int]
+    agent_id: str
+    def __init__(self, agent_id: _Optional[str] = ...) -> None: ...
+
+class CanvasPosition(_message.Message):
+    __slots__ = ("x", "y")
+    X_FIELD_NUMBER: _ClassVar[int]
+    Y_FIELD_NUMBER: _ClassVar[int]
+    x: float
+    y: float
+    def __init__(self, x: _Optional[float] = ..., y: _Optional[float] = ...) -> None: ...
+
+class CanvasSize(_message.Message):
+    __slots__ = ("width", "height")
+    WIDTH_FIELD_NUMBER: _ClassVar[int]
+    HEIGHT_FIELD_NUMBER: _ClassVar[int]
+    width: float
+    height: float
+    def __init__(self, width: _Optional[float] = ..., height: _Optional[float] = ...) -> None: ...
+
+class WorkerToolSnapshot(_message.Message):
+    __slots__ = ("snapshot_id", "version_id", "worker_id", "tools")
+    SNAPSHOT_ID_FIELD_NUMBER: _ClassVar[int]
+    VERSION_ID_FIELD_NUMBER: _ClassVar[int]
+    WORKER_ID_FIELD_NUMBER: _ClassVar[int]
+    TOOLS_FIELD_NUMBER: _ClassVar[int]
+    snapshot_id: str
+    version_id: str
+    worker_id: str
+    tools: _containers.RepeatedCompositeFieldContainer[WorkerToolMetadata]
+    def __init__(self, snapshot_id: _Optional[str] = ..., version_id: _Optional[str] = ..., worker_id: _Optional[str] = ..., tools: _Optional[_Iterable[_Union[WorkerToolMetadata, _Mapping]]] = ...) -> None: ...
+
+class WorkerToolMetadata(_message.Message):
+    __slots__ = ("tool_id", "kind", "name", "description", "mcp", "api")
+    TOOL_ID_FIELD_NUMBER: _ClassVar[int]
+    KIND_FIELD_NUMBER: _ClassVar[int]
+    NAME_FIELD_NUMBER: _ClassVar[int]
+    DESCRIPTION_FIELD_NUMBER: _ClassVar[int]
+    MCP_FIELD_NUMBER: _ClassVar[int]
+    API_FIELD_NUMBER: _ClassVar[int]
+    tool_id: str
+    kind: str
+    name: str
+    description: str
+    mcp: McpToolMetadata
+    api: ApiToolMetadata
+    def __init__(self, tool_id: _Optional[str] = ..., kind: _Optional[str] = ..., name: _Optional[str] = ..., description: _Optional[str] = ..., mcp: _Optional[_Union[McpToolMetadata, _Mapping]] = ..., api: _Optional[_Union[ApiToolMetadata, _Mapping]] = ...) -> None: ...
+
+class McpToolMetadata(_message.Message):
+    __slots__ = ("server_name", "transport", "url")
+    SERVER_NAME_FIELD_NUMBER: _ClassVar[int]
+    TRANSPORT_FIELD_NUMBER: _ClassVar[int]
+    URL_FIELD_NUMBER: _ClassVar[int]
+    server_name: str
+    transport: str
+    url: str
+    def __init__(self, server_name: _Optional[str] = ..., transport: _Optional[str] = ..., url: _Optional[str] = ...) -> None: ...
+
+class ApiToolMetadata(_message.Message):
+    __slots__ = ("method", "url", "request_schema_json", "response_schema_json")
+    METHOD_FIELD_NUMBER: _ClassVar[int]
+    URL_FIELD_NUMBER: _ClassVar[int]
+    REQUEST_SCHEMA_JSON_FIELD_NUMBER: _ClassVar[int]
+    RESPONSE_SCHEMA_JSON_FIELD_NUMBER: _ClassVar[int]
+    method: str
+    url: str
+    request_schema_json: str
+    response_schema_json: str
+    def __init__(self, method: _Optional[str] = ..., url: _Optional[str] = ..., request_schema_json: _Optional[str] = ..., response_schema_json: _Optional[str] = ...) -> None: ...
+
+class ApiToolRuntime(_message.Message):
+    __slots__ = ("tool_id", "headers")
+    class HeadersEntry(_message.Message):
+        __slots__ = ("key", "value")
+        KEY_FIELD_NUMBER: _ClassVar[int]
+        VALUE_FIELD_NUMBER: _ClassVar[int]
+        key: str
+        value: str
+        def __init__(self, key: _Optional[str] = ..., value: _Optional[str] = ...) -> None: ...
+    TOOL_ID_FIELD_NUMBER: _ClassVar[int]
+    HEADERS_FIELD_NUMBER: _ClassVar[int]
+    tool_id: str
+    headers: _containers.ScalarMap[str, str]
+    def __init__(self, tool_id: _Optional[str] = ..., headers: _Optional[_Mapping[str, str]] = ...) -> None: ...
 
 class AgentGlobalActions(_message.Message):
     __slots__ = ("transfer_to_human", "end_call")
@@ -151,20 +284,6 @@ class EndCallAction(_message.Message):
     closing_phrase: str
     confirm: bool
     def __init__(self, enabled: _Optional[bool] = ..., closing_phrase: _Optional[str] = ..., confirm: _Optional[bool] = ...) -> None: ...
-
-class AgentPersona(_message.Message):
-    __slots__ = ("display_name", "system_prompt", "greeting", "voice_id", "language")
-    DISPLAY_NAME_FIELD_NUMBER: _ClassVar[int]
-    SYSTEM_PROMPT_FIELD_NUMBER: _ClassVar[int]
-    GREETING_FIELD_NUMBER: _ClassVar[int]
-    VOICE_ID_FIELD_NUMBER: _ClassVar[int]
-    LANGUAGE_FIELD_NUMBER: _ClassVar[int]
-    display_name: str
-    system_prompt: str
-    greeting: str
-    voice_id: str
-    language: str
-    def __init__(self, display_name: _Optional[str] = ..., system_prompt: _Optional[str] = ..., greeting: _Optional[str] = ..., voice_id: _Optional[str] = ..., language: _Optional[str] = ...) -> None: ...
 
 class McpServerRuntime(_message.Message):
     __slots__ = ("name", "transport", "url", "headers")

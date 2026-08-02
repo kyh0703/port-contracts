@@ -45,71 +45,143 @@ message BootstrapResponse {
   // client still running that release.
   reserved 11, 12;
   reserved "flow_id", "flow_version_id";
-  AgentPersona persona = 13 [(buf.validate.field).required = true];
-  // Frozen at publish time. Empty means a supervisor with no delegation steps.
-  repeated AgentSpecialist specialists = 14;
-  AgentGlobalActions global_actions = 15;
-  // Empty when the call ran the live draft rather than a published version.
-  string agent_version_id = 16;
-  // Absent when the agent runs the plain supervisor. 1.2.3 carried this
-  // snapshot as field 10, which this release line reused for agent_id, so it
-  // returns under a fresh number.
-  WorkflowSnapshot workflow = 17;
+  // Specialist/workflow fields shipped in earlier releases. Keep their wire
+  // numbers unavailable; the supervisor/worker snapshot starts at 18.
+  reserved 13, 14, 15, 16, 17;
+  reserved "persona", "specialists", "global_actions", "agent_version_id", "workflow";
+
+  string supervisor_id = 18 [(buf.validate.field).string.min_len = 1];
+  string supervisor_version_id = 19 [(buf.validate.field).string.min_len = 1];
+  SupervisorPersona supervisor_persona = 20 [(buf.validate.field).required = true];
+  SupervisorConfig supervisor_config = 21 [(buf.validate.field).required = true];
+  repeated WorkerSnapshot workers = 22;
+  CanvasSnapshot canvas = 23 [(buf.validate.field).required = true];
+  repeated WorkerToolSnapshot worker_tool_snapshots = 24;
+  string bootstrap_snapshot_id = 25 [(buf.validate.field).string.min_len = 1];
+  repeated ApiToolRuntime api_tool_runtimes = 26;
 }
 
-// Compiled at publish time by the API from the xyflow editor graph. The worker
-// validates and freezes it per session; compiled_graph_json is the canonical
-// execution graph, never xyflow editor state, and must not carry MCP URLs,
-// headers, or provider secrets.
-message WorkflowSnapshot {
-  string workflow_id = 1;
-  string workflow_version = 2;
-  string schema_version = 3;
-  string compiled_graph_json = 4;
+message SupervisorPersona {
+  string display_name = 1 [(buf.validate.field).string.min_len = 1];
+  string system_prompt = 2 [(buf.validate.field).string.min_len = 1];
+  string voice_id = 3;
+  string language = 4;
 }
 
-// One delegation step the supervisor may hand the turn to. The worker builds an
-// AgentTask from this and exposes it to the supervisor as a single tool.
-message AgentSpecialist {
-  string specialist_id = 1 [(buf.validate.field).string.min_len = 1];
-  // Becomes the tool name, so it must already be a valid LLM function name.
-  string key = 2 [(buf.validate.field).string.min_len = 1];
-  string display_name = 3;
-  // Becomes the tool description — this is what actually routes the call.
-  string when_to_use = 4 [(buf.validate.field).string.min_len = 1];
-  string instructions = 5 [(buf.validate.field).string.min_len = 1];
-  repeated CompletionField completion_fields = 6;
-  SpecialistFailurePolicy failure_policy = 7;
+message SupervisorConfig {
+  string routing_instructions = 1;
+  uint32 max_handoff_depth = 2;
+  AgentGlobalActions global_actions = 3;
 }
 
-// Becomes a JSON Schema property of the specialist's completion tool. A required
-// field is what stops the model from ending the step before collecting it.
-message CompletionField {
-  string name = 1 [(buf.validate.field).string.min_len = 1];
-  string type = 2 [
-    (buf.validate.field).string.in = "string",
-    (buf.validate.field).string.in = "number",
-    (buf.validate.field).string.in = "boolean"
+// Frozen at publish time. The worker uses routing_text to decide when a
+// supervisor should hand a turn to this worker; description is display text.
+message WorkerSnapshot {
+  string worker_id = 1 [(buf.validate.field).string.min_len = 1];
+  string version_id = 2 [(buf.validate.field).string.min_len = 1];
+  string description = 3;
+  string routing_text = 4 [(buf.validate.field).string.min_len = 1];
+  WorkerPersona persona = 5 [(buf.validate.field).required = true];
+  string role = 6 [(buf.validate.field).string.in = "worker"];
+  string runtime_identity = 7 [(buf.validate.field).string.min_len = 1];
+  string tool_snapshot_id = 8;
+}
+
+message WorkerPersona {
+  string display_name = 1 [(buf.validate.field).string.min_len = 1];
+  string system_prompt = 2 [(buf.validate.field).string.min_len = 1];
+  string greeting = 3;
+  string voice_id = 4;
+  string language = 5;
+}
+
+// Immutable xyflow placement snapshot. parent_node_id points to another group
+// node, and an empty value means the node is at the canvas root.
+message CanvasSnapshot {
+  string snapshot_id = 1 [(buf.validate.field).string.min_len = 1];
+  string version_id = 2 [(buf.validate.field).string.min_len = 1];
+  string schema_version = 3 [(buf.validate.field).string.min_len = 1];
+  repeated CanvasNodeSnapshot nodes = 4;
+}
+
+message CanvasNodeSnapshot {
+  string node_id = 1 [(buf.validate.field).string.min_len = 1];
+  string parent_node_id = 2;
+  CanvasPosition position = 3 [(buf.validate.field).required = true];
+  CanvasSize size = 4 [(buf.validate.field).required = true];
+  bool is_entry = 5;
+  oneof placement {
+    CanvasGroupPlacement group = 6;
+    CanvasAgentPlacement agent = 7;
+  }
+}
+
+message CanvasGroupPlacement {
+  string label = 1;
+}
+
+message CanvasAgentPlacement {
+  string agent_id = 1 [(buf.validate.field).string.min_len = 1];
+}
+
+message CanvasPosition {
+  double x = 1;
+  double y = 2;
+}
+
+message CanvasSize {
+  double width = 1;
+  double height = 2;
+}
+
+// Tool metadata is scoped to a Worker. URLs and schemas describe the mounted
+// tool; credentials and provider secrets must never be included in this
+// snapshot.
+message WorkerToolSnapshot {
+  string snapshot_id = 1 [(buf.validate.field).string.min_len = 1];
+  string version_id = 2 [(buf.validate.field).string.min_len = 1];
+  string worker_id = 3 [(buf.validate.field).string.min_len = 1];
+  repeated WorkerToolMetadata tools = 4;
+}
+
+message WorkerToolMetadata {
+  string tool_id = 1 [(buf.validate.field).string.min_len = 1];
+  string kind = 2 [
+    (buf.validate.field).string.in = "mcp",
+    (buf.validate.field).string.in = "api"
   ];
-  string description = 3 [(buf.validate.field).string.min_len = 1];
-  bool required = 4;
-  // Empty means no pattern check.
-  string pattern = 5;
+  string name = 3 [(buf.validate.field).string.min_len = 1];
+  string description = 4;
+  oneof metadata {
+    McpToolMetadata mcp = 5;
+    ApiToolMetadata api = 6;
+  }
 }
 
-// Bounds a specialist that never collects its fields. Without it a caller who
-// will not answer keeps the turn forever.
-message SpecialistFailurePolicy {
-  int32 max_attempts = 1;
-  int32 timeout_ms = 2;
-  string on_failure = 3 [
-    (buf.validate.field).string.in = "return_to_supervisor",
-    (buf.validate.field).string.in = "transfer_to_human",
-    (buf.validate.field).string.in = "end_call"
+message McpToolMetadata {
+  string server_name = 1 [(buf.validate.field).string.min_len = 1];
+  string transport = 2 [
+    (buf.validate.field).string.in = "sse",
+    (buf.validate.field).string.in = "streamable-http"
   ];
+  string url = 3 [(buf.validate.field).string.min_len = 1];
 }
 
-// Mounted as AgentSession-level tools so they stay callable while a specialist
+message ApiToolMetadata {
+  string method = 1 [(buf.validate.field).string.min_len = 1];
+  string url = 2 [(buf.validate.field).string.min_len = 1];
+  string request_schema_json = 3;
+  string response_schema_json = 4;
+}
+
+// Short-lived execution credentials for API tools. These are not part of the
+// immutable WorkerToolSnapshot and are scoped to the bootstrap lease.
+message ApiToolRuntime {
+  string tool_id = 1 [(buf.validate.field).string.min_len = 1];
+  map<string, string> headers = 2;
+}
+
+// Mounted as AgentSession-level tools so they stay callable while a Worker
 // holds the turn — a caller can ask for a human or hang up mid-step.
 message AgentGlobalActions {
   TransferToHumanAction transfer_to_human = 1;
@@ -129,16 +201,6 @@ message EndCallAction {
   string closing_phrase = 2;
   // Ask once before hanging up instead of ending immediately.
   bool confirm = 3;
-}
-
-// Session-scoped agent identity resolved by the API. The worker owns no prompt
-// configuration of its own; every value here comes from the caller's agent.
-message AgentPersona {
-  string display_name = 1 [(buf.validate.field).string.min_len = 1];
-  string system_prompt = 2 [(buf.validate.field).string.min_len = 1];
-  string greeting = 3;
-  string voice_id = 4;
-  string language = 5;
 }
 
 message McpServerRuntime {

@@ -48,78 +48,142 @@ export interface BootstrapResponse {
   tts?: TtsRuntime | undefined;
   mcpServers: McpServerRuntime[];
   agentId: string;
-  persona?:
-    | AgentPersona
-    | undefined;
-  /** Frozen at publish time. Empty means a supervisor with no delegation steps. */
-  specialists: AgentSpecialist[];
-  globalActions?:
-    | AgentGlobalActions
-    | undefined;
-  /** Empty when the call ran the live draft rather than a published version. */
-  agentVersionId: string;
-  /**
-   * Absent when the agent runs the plain supervisor. 1.2.3 carried this
-   * snapshot as field 10, which this release line reused for agent_id, so it
-   * returns under a fresh number.
-   */
-  workflow?: WorkflowSnapshot | undefined;
+  supervisorId: string;
+  supervisorVersionId: string;
+  supervisorPersona?: SupervisorPersona | undefined;
+  supervisorConfig?: SupervisorConfig | undefined;
+  workers: WorkerSnapshot[];
+  canvas?: CanvasSnapshot | undefined;
+  workerToolSnapshots: WorkerToolSnapshot[];
+  bootstrapSnapshotId: string;
+  apiToolRuntimes: ApiToolRuntime[];
 }
 
-/**
- * Compiled at publish time by the API from the xyflow editor graph. The worker
- * validates and freezes it per session; compiled_graph_json is the canonical
- * execution graph, never xyflow editor state, and must not carry MCP URLs,
- * headers, or provider secrets.
- */
-export interface WorkflowSnapshot {
-  workflowId: string;
-  workflowVersion: string;
-  schemaVersion: string;
-  compiledGraphJson: string;
-}
-
-/**
- * One delegation step the supervisor may hand the turn to. The worker builds an
- * AgentTask from this and exposes it to the supervisor as a single tool.
- */
-export interface AgentSpecialist {
-  specialistId: string;
-  /** Becomes the tool name, so it must already be a valid LLM function name. */
-  key: string;
+export interface SupervisorPersona {
   displayName: string;
-  /** Becomes the tool description — this is what actually routes the call. */
-  whenToUse: string;
-  instructions: string;
-  completionFields: CompletionField[];
-  failurePolicy?: SpecialistFailurePolicy | undefined;
+  systemPrompt: string;
+  voiceId: string;
+  language: string;
+}
+
+export interface SupervisorConfig {
+  routingInstructions: string;
+  maxHandoffDepth: number;
+  globalActions?: AgentGlobalActions | undefined;
 }
 
 /**
- * Becomes a JSON Schema property of the specialist's completion tool. A required
- * field is what stops the model from ending the step before collecting it.
+ * Frozen at publish time. The worker uses routing_text to decide when a
+ * supervisor should hand a turn to this worker; description is display text.
  */
-export interface CompletionField {
-  name: string;
-  type: string;
+export interface WorkerSnapshot {
+  workerId: string;
+  versionId: string;
   description: string;
-  required: boolean;
-  /** Empty means no pattern check. */
-  pattern: string;
+  routingText: string;
+  persona?: WorkerPersona | undefined;
+  role: string;
+  runtimeIdentity: string;
+  toolSnapshotId: string;
+}
+
+export interface WorkerPersona {
+  displayName: string;
+  systemPrompt: string;
+  greeting: string;
+  voiceId: string;
+  language: string;
 }
 
 /**
- * Bounds a specialist that never collects its fields. Without it a caller who
- * will not answer keeps the turn forever.
+ * Immutable xyflow placement snapshot. parent_node_id points to another group
+ * node, and an empty value means the node is at the canvas root.
  */
-export interface SpecialistFailurePolicy {
-  maxAttempts: number;
-  timeoutMs: number;
-  onFailure: string;
+export interface CanvasSnapshot {
+  snapshotId: string;
+  versionId: string;
+  schemaVersion: string;
+  nodes: CanvasNodeSnapshot[];
+}
+
+export interface CanvasNodeSnapshot {
+  nodeId: string;
+  parentNodeId: string;
+  position?: CanvasPosition | undefined;
+  size?: CanvasSize | undefined;
+  isEntry: boolean;
+  group?: CanvasGroupPlacement | undefined;
+  agent?: CanvasAgentPlacement | undefined;
+}
+
+export interface CanvasGroupPlacement {
+  label: string;
+}
+
+export interface CanvasAgentPlacement {
+  agentId: string;
+}
+
+export interface CanvasPosition {
+  x: number;
+  y: number;
+}
+
+export interface CanvasSize {
+  width: number;
+  height: number;
 }
 
 /**
- * Mounted as AgentSession-level tools so they stay callable while a specialist
+ * Tool metadata is scoped to a Worker. URLs and schemas describe the mounted
+ * tool; credentials and provider secrets must never be included in this
+ * snapshot.
+ */
+export interface WorkerToolSnapshot {
+  snapshotId: string;
+  versionId: string;
+  workerId: string;
+  tools: WorkerToolMetadata[];
+}
+
+export interface WorkerToolMetadata {
+  toolId: string;
+  kind: string;
+  name: string;
+  description: string;
+  mcp?: McpToolMetadata | undefined;
+  api?: ApiToolMetadata | undefined;
+}
+
+export interface McpToolMetadata {
+  serverName: string;
+  transport: string;
+  url: string;
+}
+
+export interface ApiToolMetadata {
+  method: string;
+  url: string;
+  requestSchemaJson: string;
+  responseSchemaJson: string;
+}
+
+/**
+ * Short-lived execution credentials for API tools. These are not part of the
+ * immutable WorkerToolSnapshot and are scoped to the bootstrap lease.
+ */
+export interface ApiToolRuntime {
+  toolId: string;
+  headers: { [key: string]: string };
+}
+
+export interface ApiToolRuntime_HeadersEntry {
+  key: string;
+  value: string;
+}
+
+/**
+ * Mounted as AgentSession-level tools so they stay callable while a Worker
  * holds the turn — a caller can ask for a human or hang up mid-step.
  */
 export interface AgentGlobalActions {
@@ -140,18 +204,6 @@ export interface EndCallAction {
   closingPhrase: string;
   /** Ask once before hanging up instead of ending immediately. */
   confirm: boolean;
-}
-
-/**
- * Session-scoped agent identity resolved by the API. The worker owns no prompt
- * configuration of its own; every value here comes from the caller's agent.
- */
-export interface AgentPersona {
-  displayName: string;
-  systemPrompt: string;
-  greeting: string;
-  voiceId: string;
-  language: string;
 }
 
 export interface McpServerRuntime {
@@ -452,11 +504,15 @@ function createBaseBootstrapResponse(): BootstrapResponse {
     tts: undefined,
     mcpServers: [],
     agentId: "",
-    persona: undefined,
-    specialists: [],
-    globalActions: undefined,
-    agentVersionId: "",
-    workflow: undefined,
+    supervisorId: "",
+    supervisorVersionId: "",
+    supervisorPersona: undefined,
+    supervisorConfig: undefined,
+    workers: [],
+    canvas: undefined,
+    workerToolSnapshots: [],
+    bootstrapSnapshotId: "",
+    apiToolRuntimes: [],
   };
 }
 
@@ -492,20 +548,32 @@ export const BootstrapResponse: MessageFns<BootstrapResponse> = {
     if (message.agentId !== "") {
       writer.uint32(82).string(message.agentId);
     }
-    if (message.persona !== undefined) {
-      AgentPersona.encode(message.persona, writer.uint32(106).fork()).join();
+    if (message.supervisorId !== "") {
+      writer.uint32(146).string(message.supervisorId);
     }
-    for (const v of message.specialists) {
-      AgentSpecialist.encode(v!, writer.uint32(114).fork()).join();
+    if (message.supervisorVersionId !== "") {
+      writer.uint32(154).string(message.supervisorVersionId);
     }
-    if (message.globalActions !== undefined) {
-      AgentGlobalActions.encode(message.globalActions, writer.uint32(122).fork()).join();
+    if (message.supervisorPersona !== undefined) {
+      SupervisorPersona.encode(message.supervisorPersona, writer.uint32(162).fork()).join();
     }
-    if (message.agentVersionId !== "") {
-      writer.uint32(130).string(message.agentVersionId);
+    if (message.supervisorConfig !== undefined) {
+      SupervisorConfig.encode(message.supervisorConfig, writer.uint32(170).fork()).join();
     }
-    if (message.workflow !== undefined) {
-      WorkflowSnapshot.encode(message.workflow, writer.uint32(138).fork()).join();
+    for (const v of message.workers) {
+      WorkerSnapshot.encode(v!, writer.uint32(178).fork()).join();
+    }
+    if (message.canvas !== undefined) {
+      CanvasSnapshot.encode(message.canvas, writer.uint32(186).fork()).join();
+    }
+    for (const v of message.workerToolSnapshots) {
+      WorkerToolSnapshot.encode(v!, writer.uint32(194).fork()).join();
+    }
+    if (message.bootstrapSnapshotId !== "") {
+      writer.uint32(202).string(message.bootstrapSnapshotId);
+    }
+    for (const v of message.apiToolRuntimes) {
+      ApiToolRuntime.encode(v!, writer.uint32(210).fork()).join();
     }
     return writer;
   },
@@ -597,44 +665,76 @@ export const BootstrapResponse: MessageFns<BootstrapResponse> = {
           message.agentId = reader.string();
           continue;
         }
-        case 13: {
-          if (tag !== 106) {
+        case 18: {
+          if (tag !== 146) {
             break;
           }
 
-          message.persona = AgentPersona.decode(reader, reader.uint32());
+          message.supervisorId = reader.string();
           continue;
         }
-        case 14: {
-          if (tag !== 114) {
+        case 19: {
+          if (tag !== 154) {
             break;
           }
 
-          message.specialists.push(AgentSpecialist.decode(reader, reader.uint32()));
+          message.supervisorVersionId = reader.string();
           continue;
         }
-        case 15: {
-          if (tag !== 122) {
+        case 20: {
+          if (tag !== 162) {
             break;
           }
 
-          message.globalActions = AgentGlobalActions.decode(reader, reader.uint32());
+          message.supervisorPersona = SupervisorPersona.decode(reader, reader.uint32());
           continue;
         }
-        case 16: {
-          if (tag !== 130) {
+        case 21: {
+          if (tag !== 170) {
             break;
           }
 
-          message.agentVersionId = reader.string();
+          message.supervisorConfig = SupervisorConfig.decode(reader, reader.uint32());
           continue;
         }
-        case 17: {
-          if (tag !== 138) {
+        case 22: {
+          if (tag !== 178) {
             break;
           }
 
-          message.workflow = WorkflowSnapshot.decode(reader, reader.uint32());
+          message.workers.push(WorkerSnapshot.decode(reader, reader.uint32()));
+          continue;
+        }
+        case 23: {
+          if (tag !== 186) {
+            break;
+          }
+
+          message.canvas = CanvasSnapshot.decode(reader, reader.uint32());
+          continue;
+        }
+        case 24: {
+          if (tag !== 194) {
+            break;
+          }
+
+          message.workerToolSnapshots.push(WorkerToolSnapshot.decode(reader, reader.uint32()));
+          continue;
+        }
+        case 25: {
+          if (tag !== 202) {
+            break;
+          }
+
+          message.bootstrapSnapshotId = reader.string();
+          continue;
+        }
+        case 26: {
+          if (tag !== 210) {
+            break;
+          }
+
+          message.apiToolRuntimes.push(ApiToolRuntime.decode(reader, reader.uint32()));
           continue;
         }
       }
@@ -682,21 +782,45 @@ export const BootstrapResponse: MessageFns<BootstrapResponse> = {
         : isSet(object.agent_id)
         ? globalThis.String(object.agent_id)
         : "",
-      persona: isSet(object.persona) ? AgentPersona.fromJSON(object.persona) : undefined,
-      specialists: globalThis.Array.isArray(object?.specialists)
-        ? object.specialists.map((e: any) => AgentSpecialist.fromJSON(e))
-        : [],
-      globalActions: isSet(object.globalActions)
-        ? AgentGlobalActions.fromJSON(object.globalActions)
-        : isSet(object.global_actions)
-        ? AgentGlobalActions.fromJSON(object.global_actions)
-        : undefined,
-      agentVersionId: isSet(object.agentVersionId)
-        ? globalThis.String(object.agentVersionId)
-        : isSet(object.agent_version_id)
-        ? globalThis.String(object.agent_version_id)
+      supervisorId: isSet(object.supervisorId)
+        ? globalThis.String(object.supervisorId)
+        : isSet(object.supervisor_id)
+        ? globalThis.String(object.supervisor_id)
         : "",
-      workflow: isSet(object.workflow) ? WorkflowSnapshot.fromJSON(object.workflow) : undefined,
+      supervisorVersionId: isSet(object.supervisorVersionId)
+        ? globalThis.String(object.supervisorVersionId)
+        : isSet(object.supervisor_version_id)
+        ? globalThis.String(object.supervisor_version_id)
+        : "",
+      supervisorPersona: isSet(object.supervisorPersona)
+        ? SupervisorPersona.fromJSON(object.supervisorPersona)
+        : isSet(object.supervisor_persona)
+        ? SupervisorPersona.fromJSON(object.supervisor_persona)
+        : undefined,
+      supervisorConfig: isSet(object.supervisorConfig)
+        ? SupervisorConfig.fromJSON(object.supervisorConfig)
+        : isSet(object.supervisor_config)
+        ? SupervisorConfig.fromJSON(object.supervisor_config)
+        : undefined,
+      workers: globalThis.Array.isArray(object?.workers)
+        ? object.workers.map((e: any) => WorkerSnapshot.fromJSON(e))
+        : [],
+      canvas: isSet(object.canvas) ? CanvasSnapshot.fromJSON(object.canvas) : undefined,
+      workerToolSnapshots: globalThis.Array.isArray(object?.workerToolSnapshots)
+        ? object.workerToolSnapshots.map((e: any) => WorkerToolSnapshot.fromJSON(e))
+        : globalThis.Array.isArray(object?.worker_tool_snapshots)
+        ? object.worker_tool_snapshots.map((e: any) => WorkerToolSnapshot.fromJSON(e))
+        : [],
+      bootstrapSnapshotId: isSet(object.bootstrapSnapshotId)
+        ? globalThis.String(object.bootstrapSnapshotId)
+        : isSet(object.bootstrap_snapshot_id)
+        ? globalThis.String(object.bootstrap_snapshot_id)
+        : "",
+      apiToolRuntimes: globalThis.Array.isArray(object?.apiToolRuntimes)
+        ? object.apiToolRuntimes.map((e: any) => ApiToolRuntime.fromJSON(e))
+        : globalThis.Array.isArray(object?.api_tool_runtimes)
+        ? object.api_tool_runtimes.map((e: any) => ApiToolRuntime.fromJSON(e))
+        : [],
     };
   },
 
@@ -732,20 +856,32 @@ export const BootstrapResponse: MessageFns<BootstrapResponse> = {
     if (message.agentId !== "") {
       obj.agentId = message.agentId;
     }
-    if (message.persona !== undefined) {
-      obj.persona = AgentPersona.toJSON(message.persona);
+    if (message.supervisorId !== "") {
+      obj.supervisorId = message.supervisorId;
     }
-    if (message.specialists?.length) {
-      obj.specialists = message.specialists.map((e) => AgentSpecialist.toJSON(e));
+    if (message.supervisorVersionId !== "") {
+      obj.supervisorVersionId = message.supervisorVersionId;
     }
-    if (message.globalActions !== undefined) {
-      obj.globalActions = AgentGlobalActions.toJSON(message.globalActions);
+    if (message.supervisorPersona !== undefined) {
+      obj.supervisorPersona = SupervisorPersona.toJSON(message.supervisorPersona);
     }
-    if (message.agentVersionId !== "") {
-      obj.agentVersionId = message.agentVersionId;
+    if (message.supervisorConfig !== undefined) {
+      obj.supervisorConfig = SupervisorConfig.toJSON(message.supervisorConfig);
     }
-    if (message.workflow !== undefined) {
-      obj.workflow = WorkflowSnapshot.toJSON(message.workflow);
+    if (message.workers?.length) {
+      obj.workers = message.workers.map((e) => WorkerSnapshot.toJSON(e));
+    }
+    if (message.canvas !== undefined) {
+      obj.canvas = CanvasSnapshot.toJSON(message.canvas);
+    }
+    if (message.workerToolSnapshots?.length) {
+      obj.workerToolSnapshots = message.workerToolSnapshots.map((e) => WorkerToolSnapshot.toJSON(e));
+    }
+    if (message.bootstrapSnapshotId !== "") {
+      obj.bootstrapSnapshotId = message.bootstrapSnapshotId;
+    }
+    if (message.apiToolRuntimes?.length) {
+      obj.apiToolRuntimes = message.apiToolRuntimes.map((e) => ApiToolRuntime.toJSON(e));
     }
     return obj;
   },
@@ -765,46 +901,50 @@ export const BootstrapResponse: MessageFns<BootstrapResponse> = {
     message.tts = (object.tts !== undefined && object.tts !== null) ? TtsRuntime.fromPartial(object.tts) : undefined;
     message.mcpServers = object.mcpServers?.map((e) => McpServerRuntime.fromPartial(e)) || [];
     message.agentId = object.agentId ?? "";
-    message.persona = (object.persona !== undefined && object.persona !== null)
-      ? AgentPersona.fromPartial(object.persona)
+    message.supervisorId = object.supervisorId ?? "";
+    message.supervisorVersionId = object.supervisorVersionId ?? "";
+    message.supervisorPersona = (object.supervisorPersona !== undefined && object.supervisorPersona !== null)
+      ? SupervisorPersona.fromPartial(object.supervisorPersona)
       : undefined;
-    message.specialists = object.specialists?.map((e) => AgentSpecialist.fromPartial(e)) || [];
-    message.globalActions = (object.globalActions !== undefined && object.globalActions !== null)
-      ? AgentGlobalActions.fromPartial(object.globalActions)
+    message.supervisorConfig = (object.supervisorConfig !== undefined && object.supervisorConfig !== null)
+      ? SupervisorConfig.fromPartial(object.supervisorConfig)
       : undefined;
-    message.agentVersionId = object.agentVersionId ?? "";
-    message.workflow = (object.workflow !== undefined && object.workflow !== null)
-      ? WorkflowSnapshot.fromPartial(object.workflow)
+    message.workers = object.workers?.map((e) => WorkerSnapshot.fromPartial(e)) || [];
+    message.canvas = (object.canvas !== undefined && object.canvas !== null)
+      ? CanvasSnapshot.fromPartial(object.canvas)
       : undefined;
+    message.workerToolSnapshots = object.workerToolSnapshots?.map((e) => WorkerToolSnapshot.fromPartial(e)) || [];
+    message.bootstrapSnapshotId = object.bootstrapSnapshotId ?? "";
+    message.apiToolRuntimes = object.apiToolRuntimes?.map((e) => ApiToolRuntime.fromPartial(e)) || [];
     return message;
   },
 };
 
-function createBaseWorkflowSnapshot(): WorkflowSnapshot {
-  return { workflowId: "", workflowVersion: "", schemaVersion: "", compiledGraphJson: "" };
+function createBaseSupervisorPersona(): SupervisorPersona {
+  return { displayName: "", systemPrompt: "", voiceId: "", language: "" };
 }
 
-export const WorkflowSnapshot: MessageFns<WorkflowSnapshot> = {
-  encode(message: WorkflowSnapshot, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
-    if (message.workflowId !== "") {
-      writer.uint32(10).string(message.workflowId);
+export const SupervisorPersona: MessageFns<SupervisorPersona> = {
+  encode(message: SupervisorPersona, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.displayName !== "") {
+      writer.uint32(10).string(message.displayName);
     }
-    if (message.workflowVersion !== "") {
-      writer.uint32(18).string(message.workflowVersion);
+    if (message.systemPrompt !== "") {
+      writer.uint32(18).string(message.systemPrompt);
     }
-    if (message.schemaVersion !== "") {
-      writer.uint32(26).string(message.schemaVersion);
+    if (message.voiceId !== "") {
+      writer.uint32(26).string(message.voiceId);
     }
-    if (message.compiledGraphJson !== "") {
-      writer.uint32(34).string(message.compiledGraphJson);
+    if (message.language !== "") {
+      writer.uint32(34).string(message.language);
     }
     return writer;
   },
 
-  decode(input: BinaryReader | Uint8Array, length?: number): WorkflowSnapshot {
+  decode(input: BinaryReader | Uint8Array, length?: number): SupervisorPersona {
     const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
     const end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBaseWorkflowSnapshot();
+    const message = createBaseSupervisorPersona();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
@@ -813,7 +953,7 @@ export const WorkflowSnapshot: MessageFns<WorkflowSnapshot> = {
             break;
           }
 
-          message.workflowId = reader.string();
+          message.displayName = reader.string();
           continue;
         }
         case 2: {
@@ -821,7 +961,572 @@ export const WorkflowSnapshot: MessageFns<WorkflowSnapshot> = {
             break;
           }
 
-          message.workflowVersion = reader.string();
+          message.systemPrompt = reader.string();
+          continue;
+        }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.voiceId = reader.string();
+          continue;
+        }
+        case 4: {
+          if (tag !== 34) {
+            break;
+          }
+
+          message.language = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): SupervisorPersona {
+    return {
+      displayName: isSet(object.displayName)
+        ? globalThis.String(object.displayName)
+        : isSet(object.display_name)
+        ? globalThis.String(object.display_name)
+        : "",
+      systemPrompt: isSet(object.systemPrompt)
+        ? globalThis.String(object.systemPrompt)
+        : isSet(object.system_prompt)
+        ? globalThis.String(object.system_prompt)
+        : "",
+      voiceId: isSet(object.voiceId)
+        ? globalThis.String(object.voiceId)
+        : isSet(object.voice_id)
+        ? globalThis.String(object.voice_id)
+        : "",
+      language: isSet(object.language) ? globalThis.String(object.language) : "",
+    };
+  },
+
+  toJSON(message: SupervisorPersona): unknown {
+    const obj: any = {};
+    if (message.displayName !== "") {
+      obj.displayName = message.displayName;
+    }
+    if (message.systemPrompt !== "") {
+      obj.systemPrompt = message.systemPrompt;
+    }
+    if (message.voiceId !== "") {
+      obj.voiceId = message.voiceId;
+    }
+    if (message.language !== "") {
+      obj.language = message.language;
+    }
+    return obj;
+  },
+
+  create(base?: DeepPartial<SupervisorPersona>): SupervisorPersona {
+    return SupervisorPersona.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<SupervisorPersona>): SupervisorPersona {
+    const message = createBaseSupervisorPersona();
+    message.displayName = object.displayName ?? "";
+    message.systemPrompt = object.systemPrompt ?? "";
+    message.voiceId = object.voiceId ?? "";
+    message.language = object.language ?? "";
+    return message;
+  },
+};
+
+function createBaseSupervisorConfig(): SupervisorConfig {
+  return { routingInstructions: "", maxHandoffDepth: 0, globalActions: undefined };
+}
+
+export const SupervisorConfig: MessageFns<SupervisorConfig> = {
+  encode(message: SupervisorConfig, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.routingInstructions !== "") {
+      writer.uint32(10).string(message.routingInstructions);
+    }
+    if (message.maxHandoffDepth !== 0) {
+      writer.uint32(16).uint32(message.maxHandoffDepth);
+    }
+    if (message.globalActions !== undefined) {
+      AgentGlobalActions.encode(message.globalActions, writer.uint32(26).fork()).join();
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): SupervisorConfig {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseSupervisorConfig();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.routingInstructions = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 16) {
+            break;
+          }
+
+          message.maxHandoffDepth = reader.uint32();
+          continue;
+        }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.globalActions = AgentGlobalActions.decode(reader, reader.uint32());
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): SupervisorConfig {
+    return {
+      routingInstructions: isSet(object.routingInstructions)
+        ? globalThis.String(object.routingInstructions)
+        : isSet(object.routing_instructions)
+        ? globalThis.String(object.routing_instructions)
+        : "",
+      maxHandoffDepth: isSet(object.maxHandoffDepth)
+        ? globalThis.Number(object.maxHandoffDepth)
+        : isSet(object.max_handoff_depth)
+        ? globalThis.Number(object.max_handoff_depth)
+        : 0,
+      globalActions: isSet(object.globalActions)
+        ? AgentGlobalActions.fromJSON(object.globalActions)
+        : isSet(object.global_actions)
+        ? AgentGlobalActions.fromJSON(object.global_actions)
+        : undefined,
+    };
+  },
+
+  toJSON(message: SupervisorConfig): unknown {
+    const obj: any = {};
+    if (message.routingInstructions !== "") {
+      obj.routingInstructions = message.routingInstructions;
+    }
+    if (message.maxHandoffDepth !== 0) {
+      obj.maxHandoffDepth = Math.round(message.maxHandoffDepth);
+    }
+    if (message.globalActions !== undefined) {
+      obj.globalActions = AgentGlobalActions.toJSON(message.globalActions);
+    }
+    return obj;
+  },
+
+  create(base?: DeepPartial<SupervisorConfig>): SupervisorConfig {
+    return SupervisorConfig.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<SupervisorConfig>): SupervisorConfig {
+    const message = createBaseSupervisorConfig();
+    message.routingInstructions = object.routingInstructions ?? "";
+    message.maxHandoffDepth = object.maxHandoffDepth ?? 0;
+    message.globalActions = (object.globalActions !== undefined && object.globalActions !== null)
+      ? AgentGlobalActions.fromPartial(object.globalActions)
+      : undefined;
+    return message;
+  },
+};
+
+function createBaseWorkerSnapshot(): WorkerSnapshot {
+  return {
+    workerId: "",
+    versionId: "",
+    description: "",
+    routingText: "",
+    persona: undefined,
+    role: "",
+    runtimeIdentity: "",
+    toolSnapshotId: "",
+  };
+}
+
+export const WorkerSnapshot: MessageFns<WorkerSnapshot> = {
+  encode(message: WorkerSnapshot, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.workerId !== "") {
+      writer.uint32(10).string(message.workerId);
+    }
+    if (message.versionId !== "") {
+      writer.uint32(18).string(message.versionId);
+    }
+    if (message.description !== "") {
+      writer.uint32(26).string(message.description);
+    }
+    if (message.routingText !== "") {
+      writer.uint32(34).string(message.routingText);
+    }
+    if (message.persona !== undefined) {
+      WorkerPersona.encode(message.persona, writer.uint32(42).fork()).join();
+    }
+    if (message.role !== "") {
+      writer.uint32(50).string(message.role);
+    }
+    if (message.runtimeIdentity !== "") {
+      writer.uint32(58).string(message.runtimeIdentity);
+    }
+    if (message.toolSnapshotId !== "") {
+      writer.uint32(66).string(message.toolSnapshotId);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): WorkerSnapshot {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseWorkerSnapshot();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.workerId = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.versionId = reader.string();
+          continue;
+        }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.description = reader.string();
+          continue;
+        }
+        case 4: {
+          if (tag !== 34) {
+            break;
+          }
+
+          message.routingText = reader.string();
+          continue;
+        }
+        case 5: {
+          if (tag !== 42) {
+            break;
+          }
+
+          message.persona = WorkerPersona.decode(reader, reader.uint32());
+          continue;
+        }
+        case 6: {
+          if (tag !== 50) {
+            break;
+          }
+
+          message.role = reader.string();
+          continue;
+        }
+        case 7: {
+          if (tag !== 58) {
+            break;
+          }
+
+          message.runtimeIdentity = reader.string();
+          continue;
+        }
+        case 8: {
+          if (tag !== 66) {
+            break;
+          }
+
+          message.toolSnapshotId = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): WorkerSnapshot {
+    return {
+      workerId: isSet(object.workerId)
+        ? globalThis.String(object.workerId)
+        : isSet(object.worker_id)
+        ? globalThis.String(object.worker_id)
+        : "",
+      versionId: isSet(object.versionId)
+        ? globalThis.String(object.versionId)
+        : isSet(object.version_id)
+        ? globalThis.String(object.version_id)
+        : "",
+      description: isSet(object.description) ? globalThis.String(object.description) : "",
+      routingText: isSet(object.routingText)
+        ? globalThis.String(object.routingText)
+        : isSet(object.routing_text)
+        ? globalThis.String(object.routing_text)
+        : "",
+      persona: isSet(object.persona) ? WorkerPersona.fromJSON(object.persona) : undefined,
+      role: isSet(object.role) ? globalThis.String(object.role) : "",
+      runtimeIdentity: isSet(object.runtimeIdentity)
+        ? globalThis.String(object.runtimeIdentity)
+        : isSet(object.runtime_identity)
+        ? globalThis.String(object.runtime_identity)
+        : "",
+      toolSnapshotId: isSet(object.toolSnapshotId)
+        ? globalThis.String(object.toolSnapshotId)
+        : isSet(object.tool_snapshot_id)
+        ? globalThis.String(object.tool_snapshot_id)
+        : "",
+    };
+  },
+
+  toJSON(message: WorkerSnapshot): unknown {
+    const obj: any = {};
+    if (message.workerId !== "") {
+      obj.workerId = message.workerId;
+    }
+    if (message.versionId !== "") {
+      obj.versionId = message.versionId;
+    }
+    if (message.description !== "") {
+      obj.description = message.description;
+    }
+    if (message.routingText !== "") {
+      obj.routingText = message.routingText;
+    }
+    if (message.persona !== undefined) {
+      obj.persona = WorkerPersona.toJSON(message.persona);
+    }
+    if (message.role !== "") {
+      obj.role = message.role;
+    }
+    if (message.runtimeIdentity !== "") {
+      obj.runtimeIdentity = message.runtimeIdentity;
+    }
+    if (message.toolSnapshotId !== "") {
+      obj.toolSnapshotId = message.toolSnapshotId;
+    }
+    return obj;
+  },
+
+  create(base?: DeepPartial<WorkerSnapshot>): WorkerSnapshot {
+    return WorkerSnapshot.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<WorkerSnapshot>): WorkerSnapshot {
+    const message = createBaseWorkerSnapshot();
+    message.workerId = object.workerId ?? "";
+    message.versionId = object.versionId ?? "";
+    message.description = object.description ?? "";
+    message.routingText = object.routingText ?? "";
+    message.persona = (object.persona !== undefined && object.persona !== null)
+      ? WorkerPersona.fromPartial(object.persona)
+      : undefined;
+    message.role = object.role ?? "";
+    message.runtimeIdentity = object.runtimeIdentity ?? "";
+    message.toolSnapshotId = object.toolSnapshotId ?? "";
+    return message;
+  },
+};
+
+function createBaseWorkerPersona(): WorkerPersona {
+  return { displayName: "", systemPrompt: "", greeting: "", voiceId: "", language: "" };
+}
+
+export const WorkerPersona: MessageFns<WorkerPersona> = {
+  encode(message: WorkerPersona, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.displayName !== "") {
+      writer.uint32(10).string(message.displayName);
+    }
+    if (message.systemPrompt !== "") {
+      writer.uint32(18).string(message.systemPrompt);
+    }
+    if (message.greeting !== "") {
+      writer.uint32(26).string(message.greeting);
+    }
+    if (message.voiceId !== "") {
+      writer.uint32(34).string(message.voiceId);
+    }
+    if (message.language !== "") {
+      writer.uint32(42).string(message.language);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): WorkerPersona {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseWorkerPersona();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.displayName = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.systemPrompt = reader.string();
+          continue;
+        }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.greeting = reader.string();
+          continue;
+        }
+        case 4: {
+          if (tag !== 34) {
+            break;
+          }
+
+          message.voiceId = reader.string();
+          continue;
+        }
+        case 5: {
+          if (tag !== 42) {
+            break;
+          }
+
+          message.language = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): WorkerPersona {
+    return {
+      displayName: isSet(object.displayName)
+        ? globalThis.String(object.displayName)
+        : isSet(object.display_name)
+        ? globalThis.String(object.display_name)
+        : "",
+      systemPrompt: isSet(object.systemPrompt)
+        ? globalThis.String(object.systemPrompt)
+        : isSet(object.system_prompt)
+        ? globalThis.String(object.system_prompt)
+        : "",
+      greeting: isSet(object.greeting) ? globalThis.String(object.greeting) : "",
+      voiceId: isSet(object.voiceId)
+        ? globalThis.String(object.voiceId)
+        : isSet(object.voice_id)
+        ? globalThis.String(object.voice_id)
+        : "",
+      language: isSet(object.language) ? globalThis.String(object.language) : "",
+    };
+  },
+
+  toJSON(message: WorkerPersona): unknown {
+    const obj: any = {};
+    if (message.displayName !== "") {
+      obj.displayName = message.displayName;
+    }
+    if (message.systemPrompt !== "") {
+      obj.systemPrompt = message.systemPrompt;
+    }
+    if (message.greeting !== "") {
+      obj.greeting = message.greeting;
+    }
+    if (message.voiceId !== "") {
+      obj.voiceId = message.voiceId;
+    }
+    if (message.language !== "") {
+      obj.language = message.language;
+    }
+    return obj;
+  },
+
+  create(base?: DeepPartial<WorkerPersona>): WorkerPersona {
+    return WorkerPersona.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<WorkerPersona>): WorkerPersona {
+    const message = createBaseWorkerPersona();
+    message.displayName = object.displayName ?? "";
+    message.systemPrompt = object.systemPrompt ?? "";
+    message.greeting = object.greeting ?? "";
+    message.voiceId = object.voiceId ?? "";
+    message.language = object.language ?? "";
+    return message;
+  },
+};
+
+function createBaseCanvasSnapshot(): CanvasSnapshot {
+  return { snapshotId: "", versionId: "", schemaVersion: "", nodes: [] };
+}
+
+export const CanvasSnapshot: MessageFns<CanvasSnapshot> = {
+  encode(message: CanvasSnapshot, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.snapshotId !== "") {
+      writer.uint32(10).string(message.snapshotId);
+    }
+    if (message.versionId !== "") {
+      writer.uint32(18).string(message.versionId);
+    }
+    if (message.schemaVersion !== "") {
+      writer.uint32(26).string(message.schemaVersion);
+    }
+    for (const v of message.nodes) {
+      CanvasNodeSnapshot.encode(v!, writer.uint32(34).fork()).join();
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): CanvasSnapshot {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseCanvasSnapshot();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.snapshotId = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.versionId = reader.string();
           continue;
         }
         case 3: {
@@ -837,7 +1542,7 @@ export const WorkflowSnapshot: MessageFns<WorkflowSnapshot> = {
             break;
           }
 
-          message.compiledGraphJson = reader.string();
+          message.nodes.push(CanvasNodeSnapshot.decode(reader, reader.uint32()));
           continue;
         }
       }
@@ -849,103 +1554,101 @@ export const WorkflowSnapshot: MessageFns<WorkflowSnapshot> = {
     return message;
   },
 
-  fromJSON(object: any): WorkflowSnapshot {
+  fromJSON(object: any): CanvasSnapshot {
     return {
-      workflowId: isSet(object.workflowId)
-        ? globalThis.String(object.workflowId)
-        : isSet(object.workflow_id)
-        ? globalThis.String(object.workflow_id)
+      snapshotId: isSet(object.snapshotId)
+        ? globalThis.String(object.snapshotId)
+        : isSet(object.snapshot_id)
+        ? globalThis.String(object.snapshot_id)
         : "",
-      workflowVersion: isSet(object.workflowVersion)
-        ? globalThis.String(object.workflowVersion)
-        : isSet(object.workflow_version)
-        ? globalThis.String(object.workflow_version)
+      versionId: isSet(object.versionId)
+        ? globalThis.String(object.versionId)
+        : isSet(object.version_id)
+        ? globalThis.String(object.version_id)
         : "",
       schemaVersion: isSet(object.schemaVersion)
         ? globalThis.String(object.schemaVersion)
         : isSet(object.schema_version)
         ? globalThis.String(object.schema_version)
         : "",
-      compiledGraphJson: isSet(object.compiledGraphJson)
-        ? globalThis.String(object.compiledGraphJson)
-        : isSet(object.compiled_graph_json)
-        ? globalThis.String(object.compiled_graph_json)
-        : "",
+      nodes: globalThis.Array.isArray(object?.nodes)
+        ? object.nodes.map((e: any) => CanvasNodeSnapshot.fromJSON(e))
+        : [],
     };
   },
 
-  toJSON(message: WorkflowSnapshot): unknown {
+  toJSON(message: CanvasSnapshot): unknown {
     const obj: any = {};
-    if (message.workflowId !== "") {
-      obj.workflowId = message.workflowId;
+    if (message.snapshotId !== "") {
+      obj.snapshotId = message.snapshotId;
     }
-    if (message.workflowVersion !== "") {
-      obj.workflowVersion = message.workflowVersion;
+    if (message.versionId !== "") {
+      obj.versionId = message.versionId;
     }
     if (message.schemaVersion !== "") {
       obj.schemaVersion = message.schemaVersion;
     }
-    if (message.compiledGraphJson !== "") {
-      obj.compiledGraphJson = message.compiledGraphJson;
+    if (message.nodes?.length) {
+      obj.nodes = message.nodes.map((e) => CanvasNodeSnapshot.toJSON(e));
     }
     return obj;
   },
 
-  create(base?: DeepPartial<WorkflowSnapshot>): WorkflowSnapshot {
-    return WorkflowSnapshot.fromPartial(base ?? {});
+  create(base?: DeepPartial<CanvasSnapshot>): CanvasSnapshot {
+    return CanvasSnapshot.fromPartial(base ?? {});
   },
-  fromPartial(object: DeepPartial<WorkflowSnapshot>): WorkflowSnapshot {
-    const message = createBaseWorkflowSnapshot();
-    message.workflowId = object.workflowId ?? "";
-    message.workflowVersion = object.workflowVersion ?? "";
+  fromPartial(object: DeepPartial<CanvasSnapshot>): CanvasSnapshot {
+    const message = createBaseCanvasSnapshot();
+    message.snapshotId = object.snapshotId ?? "";
+    message.versionId = object.versionId ?? "";
     message.schemaVersion = object.schemaVersion ?? "";
-    message.compiledGraphJson = object.compiledGraphJson ?? "";
+    message.nodes = object.nodes?.map((e) => CanvasNodeSnapshot.fromPartial(e)) || [];
     return message;
   },
 };
 
-function createBaseAgentSpecialist(): AgentSpecialist {
+function createBaseCanvasNodeSnapshot(): CanvasNodeSnapshot {
   return {
-    specialistId: "",
-    key: "",
-    displayName: "",
-    whenToUse: "",
-    instructions: "",
-    completionFields: [],
-    failurePolicy: undefined,
+    nodeId: "",
+    parentNodeId: "",
+    position: undefined,
+    size: undefined,
+    isEntry: false,
+    group: undefined,
+    agent: undefined,
   };
 }
 
-export const AgentSpecialist: MessageFns<AgentSpecialist> = {
-  encode(message: AgentSpecialist, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
-    if (message.specialistId !== "") {
-      writer.uint32(10).string(message.specialistId);
+export const CanvasNodeSnapshot: MessageFns<CanvasNodeSnapshot> = {
+  encode(message: CanvasNodeSnapshot, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.nodeId !== "") {
+      writer.uint32(10).string(message.nodeId);
     }
-    if (message.key !== "") {
-      writer.uint32(18).string(message.key);
+    if (message.parentNodeId !== "") {
+      writer.uint32(18).string(message.parentNodeId);
     }
-    if (message.displayName !== "") {
-      writer.uint32(26).string(message.displayName);
+    if (message.position !== undefined) {
+      CanvasPosition.encode(message.position, writer.uint32(26).fork()).join();
     }
-    if (message.whenToUse !== "") {
-      writer.uint32(34).string(message.whenToUse);
+    if (message.size !== undefined) {
+      CanvasSize.encode(message.size, writer.uint32(34).fork()).join();
     }
-    if (message.instructions !== "") {
-      writer.uint32(42).string(message.instructions);
+    if (message.isEntry !== false) {
+      writer.uint32(40).bool(message.isEntry);
     }
-    for (const v of message.completionFields) {
-      CompletionField.encode(v!, writer.uint32(50).fork()).join();
+    if (message.group !== undefined) {
+      CanvasGroupPlacement.encode(message.group, writer.uint32(50).fork()).join();
     }
-    if (message.failurePolicy !== undefined) {
-      SpecialistFailurePolicy.encode(message.failurePolicy, writer.uint32(58).fork()).join();
+    if (message.agent !== undefined) {
+      CanvasAgentPlacement.encode(message.agent, writer.uint32(58).fork()).join();
     }
     return writer;
   },
 
-  decode(input: BinaryReader | Uint8Array, length?: number): AgentSpecialist {
+  decode(input: BinaryReader | Uint8Array, length?: number): CanvasNodeSnapshot {
     const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
     const end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBaseAgentSpecialist();
+    const message = createBaseCanvasNodeSnapshot();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
@@ -954,7 +1657,7 @@ export const AgentSpecialist: MessageFns<AgentSpecialist> = {
             break;
           }
 
-          message.specialistId = reader.string();
+          message.nodeId = reader.string();
           continue;
         }
         case 2: {
@@ -962,7 +1665,7 @@ export const AgentSpecialist: MessageFns<AgentSpecialist> = {
             break;
           }
 
-          message.key = reader.string();
+          message.parentNodeId = reader.string();
           continue;
         }
         case 3: {
@@ -970,7 +1673,7 @@ export const AgentSpecialist: MessageFns<AgentSpecialist> = {
             break;
           }
 
-          message.displayName = reader.string();
+          message.position = CanvasPosition.decode(reader, reader.uint32());
           continue;
         }
         case 4: {
@@ -978,15 +1681,15 @@ export const AgentSpecialist: MessageFns<AgentSpecialist> = {
             break;
           }
 
-          message.whenToUse = reader.string();
+          message.size = CanvasSize.decode(reader, reader.uint32());
           continue;
         }
         case 5: {
-          if (tag !== 42) {
+          if (tag !== 40) {
             break;
           }
 
-          message.instructions = reader.string();
+          message.isEntry = reader.bool();
           continue;
         }
         case 6: {
@@ -994,7 +1697,7 @@ export const AgentSpecialist: MessageFns<AgentSpecialist> = {
             break;
           }
 
-          message.completionFields.push(CompletionField.decode(reader, reader.uint32()));
+          message.group = CanvasGroupPlacement.decode(reader, reader.uint32());
           continue;
         }
         case 7: {
@@ -1002,7 +1705,7 @@ export const AgentSpecialist: MessageFns<AgentSpecialist> = {
             break;
           }
 
-          message.failurePolicy = SpecialistFailurePolicy.decode(reader, reader.uint32());
+          message.agent = CanvasAgentPlacement.decode(reader, reader.uint32());
           continue;
         }
       }
@@ -1014,110 +1717,96 @@ export const AgentSpecialist: MessageFns<AgentSpecialist> = {
     return message;
   },
 
-  fromJSON(object: any): AgentSpecialist {
+  fromJSON(object: any): CanvasNodeSnapshot {
     return {
-      specialistId: isSet(object.specialistId)
-        ? globalThis.String(object.specialistId)
-        : isSet(object.specialist_id)
-        ? globalThis.String(object.specialist_id)
+      nodeId: isSet(object.nodeId)
+        ? globalThis.String(object.nodeId)
+        : isSet(object.node_id)
+        ? globalThis.String(object.node_id)
         : "",
-      key: isSet(object.key) ? globalThis.String(object.key) : "",
-      displayName: isSet(object.displayName)
-        ? globalThis.String(object.displayName)
-        : isSet(object.display_name)
-        ? globalThis.String(object.display_name)
+      parentNodeId: isSet(object.parentNodeId)
+        ? globalThis.String(object.parentNodeId)
+        : isSet(object.parent_node_id)
+        ? globalThis.String(object.parent_node_id)
         : "",
-      whenToUse: isSet(object.whenToUse)
-        ? globalThis.String(object.whenToUse)
-        : isSet(object.when_to_use)
-        ? globalThis.String(object.when_to_use)
-        : "",
-      instructions: isSet(object.instructions) ? globalThis.String(object.instructions) : "",
-      completionFields: globalThis.Array.isArray(object?.completionFields)
-        ? object.completionFields.map((e: any) => CompletionField.fromJSON(e))
-        : globalThis.Array.isArray(object?.completion_fields)
-        ? object.completion_fields.map((e: any) => CompletionField.fromJSON(e))
-        : [],
-      failurePolicy: isSet(object.failurePolicy)
-        ? SpecialistFailurePolicy.fromJSON(object.failurePolicy)
-        : isSet(object.failure_policy)
-        ? SpecialistFailurePolicy.fromJSON(object.failure_policy)
-        : undefined,
+      position: isSet(object.position) ? CanvasPosition.fromJSON(object.position) : undefined,
+      size: isSet(object.size) ? CanvasSize.fromJSON(object.size) : undefined,
+      isEntry: isSet(object.isEntry)
+        ? globalThis.Boolean(object.isEntry)
+        : isSet(object.is_entry)
+        ? globalThis.Boolean(object.is_entry)
+        : false,
+      group: isSet(object.group) ? CanvasGroupPlacement.fromJSON(object.group) : undefined,
+      agent: isSet(object.agent) ? CanvasAgentPlacement.fromJSON(object.agent) : undefined,
     };
   },
 
-  toJSON(message: AgentSpecialist): unknown {
+  toJSON(message: CanvasNodeSnapshot): unknown {
     const obj: any = {};
-    if (message.specialistId !== "") {
-      obj.specialistId = message.specialistId;
+    if (message.nodeId !== "") {
+      obj.nodeId = message.nodeId;
     }
-    if (message.key !== "") {
-      obj.key = message.key;
+    if (message.parentNodeId !== "") {
+      obj.parentNodeId = message.parentNodeId;
     }
-    if (message.displayName !== "") {
-      obj.displayName = message.displayName;
+    if (message.position !== undefined) {
+      obj.position = CanvasPosition.toJSON(message.position);
     }
-    if (message.whenToUse !== "") {
-      obj.whenToUse = message.whenToUse;
+    if (message.size !== undefined) {
+      obj.size = CanvasSize.toJSON(message.size);
     }
-    if (message.instructions !== "") {
-      obj.instructions = message.instructions;
+    if (message.isEntry !== false) {
+      obj.isEntry = message.isEntry;
     }
-    if (message.completionFields?.length) {
-      obj.completionFields = message.completionFields.map((e) => CompletionField.toJSON(e));
+    if (message.group !== undefined) {
+      obj.group = CanvasGroupPlacement.toJSON(message.group);
     }
-    if (message.failurePolicy !== undefined) {
-      obj.failurePolicy = SpecialistFailurePolicy.toJSON(message.failurePolicy);
+    if (message.agent !== undefined) {
+      obj.agent = CanvasAgentPlacement.toJSON(message.agent);
     }
     return obj;
   },
 
-  create(base?: DeepPartial<AgentSpecialist>): AgentSpecialist {
-    return AgentSpecialist.fromPartial(base ?? {});
+  create(base?: DeepPartial<CanvasNodeSnapshot>): CanvasNodeSnapshot {
+    return CanvasNodeSnapshot.fromPartial(base ?? {});
   },
-  fromPartial(object: DeepPartial<AgentSpecialist>): AgentSpecialist {
-    const message = createBaseAgentSpecialist();
-    message.specialistId = object.specialistId ?? "";
-    message.key = object.key ?? "";
-    message.displayName = object.displayName ?? "";
-    message.whenToUse = object.whenToUse ?? "";
-    message.instructions = object.instructions ?? "";
-    message.completionFields = object.completionFields?.map((e) => CompletionField.fromPartial(e)) || [];
-    message.failurePolicy = (object.failurePolicy !== undefined && object.failurePolicy !== null)
-      ? SpecialistFailurePolicy.fromPartial(object.failurePolicy)
+  fromPartial(object: DeepPartial<CanvasNodeSnapshot>): CanvasNodeSnapshot {
+    const message = createBaseCanvasNodeSnapshot();
+    message.nodeId = object.nodeId ?? "";
+    message.parentNodeId = object.parentNodeId ?? "";
+    message.position = (object.position !== undefined && object.position !== null)
+      ? CanvasPosition.fromPartial(object.position)
+      : undefined;
+    message.size = (object.size !== undefined && object.size !== null)
+      ? CanvasSize.fromPartial(object.size)
+      : undefined;
+    message.isEntry = object.isEntry ?? false;
+    message.group = (object.group !== undefined && object.group !== null)
+      ? CanvasGroupPlacement.fromPartial(object.group)
+      : undefined;
+    message.agent = (object.agent !== undefined && object.agent !== null)
+      ? CanvasAgentPlacement.fromPartial(object.agent)
       : undefined;
     return message;
   },
 };
 
-function createBaseCompletionField(): CompletionField {
-  return { name: "", type: "", description: "", required: false, pattern: "" };
+function createBaseCanvasGroupPlacement(): CanvasGroupPlacement {
+  return { label: "" };
 }
 
-export const CompletionField: MessageFns<CompletionField> = {
-  encode(message: CompletionField, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
-    if (message.name !== "") {
-      writer.uint32(10).string(message.name);
-    }
-    if (message.type !== "") {
-      writer.uint32(18).string(message.type);
-    }
-    if (message.description !== "") {
-      writer.uint32(26).string(message.description);
-    }
-    if (message.required !== false) {
-      writer.uint32(32).bool(message.required);
-    }
-    if (message.pattern !== "") {
-      writer.uint32(42).string(message.pattern);
+export const CanvasGroupPlacement: MessageFns<CanvasGroupPlacement> = {
+  encode(message: CanvasGroupPlacement, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.label !== "") {
+      writer.uint32(10).string(message.label);
     }
     return writer;
   },
 
-  decode(input: BinaryReader | Uint8Array, length?: number): CompletionField {
+  decode(input: BinaryReader | Uint8Array, length?: number): CanvasGroupPlacement {
     const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
     const end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBaseCompletionField();
+    const message = createBaseCanvasGroupPlacement();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
@@ -1126,7 +1815,290 @@ export const CompletionField: MessageFns<CompletionField> = {
             break;
           }
 
-          message.name = reader.string();
+          message.label = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): CanvasGroupPlacement {
+    return { label: isSet(object.label) ? globalThis.String(object.label) : "" };
+  },
+
+  toJSON(message: CanvasGroupPlacement): unknown {
+    const obj: any = {};
+    if (message.label !== "") {
+      obj.label = message.label;
+    }
+    return obj;
+  },
+
+  create(base?: DeepPartial<CanvasGroupPlacement>): CanvasGroupPlacement {
+    return CanvasGroupPlacement.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<CanvasGroupPlacement>): CanvasGroupPlacement {
+    const message = createBaseCanvasGroupPlacement();
+    message.label = object.label ?? "";
+    return message;
+  },
+};
+
+function createBaseCanvasAgentPlacement(): CanvasAgentPlacement {
+  return { agentId: "" };
+}
+
+export const CanvasAgentPlacement: MessageFns<CanvasAgentPlacement> = {
+  encode(message: CanvasAgentPlacement, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.agentId !== "") {
+      writer.uint32(10).string(message.agentId);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): CanvasAgentPlacement {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseCanvasAgentPlacement();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.agentId = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): CanvasAgentPlacement {
+    return {
+      agentId: isSet(object.agentId)
+        ? globalThis.String(object.agentId)
+        : isSet(object.agent_id)
+        ? globalThis.String(object.agent_id)
+        : "",
+    };
+  },
+
+  toJSON(message: CanvasAgentPlacement): unknown {
+    const obj: any = {};
+    if (message.agentId !== "") {
+      obj.agentId = message.agentId;
+    }
+    return obj;
+  },
+
+  create(base?: DeepPartial<CanvasAgentPlacement>): CanvasAgentPlacement {
+    return CanvasAgentPlacement.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<CanvasAgentPlacement>): CanvasAgentPlacement {
+    const message = createBaseCanvasAgentPlacement();
+    message.agentId = object.agentId ?? "";
+    return message;
+  },
+};
+
+function createBaseCanvasPosition(): CanvasPosition {
+  return { x: 0, y: 0 };
+}
+
+export const CanvasPosition: MessageFns<CanvasPosition> = {
+  encode(message: CanvasPosition, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.x !== 0) {
+      writer.uint32(9).double(message.x);
+    }
+    if (message.y !== 0) {
+      writer.uint32(17).double(message.y);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): CanvasPosition {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseCanvasPosition();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 9) {
+            break;
+          }
+
+          message.x = reader.double();
+          continue;
+        }
+        case 2: {
+          if (tag !== 17) {
+            break;
+          }
+
+          message.y = reader.double();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): CanvasPosition {
+    return {
+      x: isSet(object.x) ? globalThis.Number(object.x) : 0,
+      y: isSet(object.y) ? globalThis.Number(object.y) : 0,
+    };
+  },
+
+  toJSON(message: CanvasPosition): unknown {
+    const obj: any = {};
+    if (message.x !== 0) {
+      obj.x = message.x;
+    }
+    if (message.y !== 0) {
+      obj.y = message.y;
+    }
+    return obj;
+  },
+
+  create(base?: DeepPartial<CanvasPosition>): CanvasPosition {
+    return CanvasPosition.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<CanvasPosition>): CanvasPosition {
+    const message = createBaseCanvasPosition();
+    message.x = object.x ?? 0;
+    message.y = object.y ?? 0;
+    return message;
+  },
+};
+
+function createBaseCanvasSize(): CanvasSize {
+  return { width: 0, height: 0 };
+}
+
+export const CanvasSize: MessageFns<CanvasSize> = {
+  encode(message: CanvasSize, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.width !== 0) {
+      writer.uint32(9).double(message.width);
+    }
+    if (message.height !== 0) {
+      writer.uint32(17).double(message.height);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): CanvasSize {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseCanvasSize();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 9) {
+            break;
+          }
+
+          message.width = reader.double();
+          continue;
+        }
+        case 2: {
+          if (tag !== 17) {
+            break;
+          }
+
+          message.height = reader.double();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): CanvasSize {
+    return {
+      width: isSet(object.width) ? globalThis.Number(object.width) : 0,
+      height: isSet(object.height) ? globalThis.Number(object.height) : 0,
+    };
+  },
+
+  toJSON(message: CanvasSize): unknown {
+    const obj: any = {};
+    if (message.width !== 0) {
+      obj.width = message.width;
+    }
+    if (message.height !== 0) {
+      obj.height = message.height;
+    }
+    return obj;
+  },
+
+  create(base?: DeepPartial<CanvasSize>): CanvasSize {
+    return CanvasSize.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<CanvasSize>): CanvasSize {
+    const message = createBaseCanvasSize();
+    message.width = object.width ?? 0;
+    message.height = object.height ?? 0;
+    return message;
+  },
+};
+
+function createBaseWorkerToolSnapshot(): WorkerToolSnapshot {
+  return { snapshotId: "", versionId: "", workerId: "", tools: [] };
+}
+
+export const WorkerToolSnapshot: MessageFns<WorkerToolSnapshot> = {
+  encode(message: WorkerToolSnapshot, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.snapshotId !== "") {
+      writer.uint32(10).string(message.snapshotId);
+    }
+    if (message.versionId !== "") {
+      writer.uint32(18).string(message.versionId);
+    }
+    if (message.workerId !== "") {
+      writer.uint32(26).string(message.workerId);
+    }
+    for (const v of message.tools) {
+      WorkerToolMetadata.encode(v!, writer.uint32(34).fork()).join();
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): WorkerToolSnapshot {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseWorkerToolSnapshot();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.snapshotId = reader.string();
           continue;
         }
         case 2: {
@@ -1134,7 +2106,7 @@ export const CompletionField: MessageFns<CompletionField> = {
             break;
           }
 
-          message.type = reader.string();
+          message.versionId = reader.string();
           continue;
         }
         case 3: {
@@ -1142,15 +2114,143 @@ export const CompletionField: MessageFns<CompletionField> = {
             break;
           }
 
-          message.description = reader.string();
+          message.workerId = reader.string();
           continue;
         }
         case 4: {
-          if (tag !== 32) {
+          if (tag !== 34) {
             break;
           }
 
-          message.required = reader.bool();
+          message.tools.push(WorkerToolMetadata.decode(reader, reader.uint32()));
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): WorkerToolSnapshot {
+    return {
+      snapshotId: isSet(object.snapshotId)
+        ? globalThis.String(object.snapshotId)
+        : isSet(object.snapshot_id)
+        ? globalThis.String(object.snapshot_id)
+        : "",
+      versionId: isSet(object.versionId)
+        ? globalThis.String(object.versionId)
+        : isSet(object.version_id)
+        ? globalThis.String(object.version_id)
+        : "",
+      workerId: isSet(object.workerId)
+        ? globalThis.String(object.workerId)
+        : isSet(object.worker_id)
+        ? globalThis.String(object.worker_id)
+        : "",
+      tools: globalThis.Array.isArray(object?.tools)
+        ? object.tools.map((e: any) => WorkerToolMetadata.fromJSON(e))
+        : [],
+    };
+  },
+
+  toJSON(message: WorkerToolSnapshot): unknown {
+    const obj: any = {};
+    if (message.snapshotId !== "") {
+      obj.snapshotId = message.snapshotId;
+    }
+    if (message.versionId !== "") {
+      obj.versionId = message.versionId;
+    }
+    if (message.workerId !== "") {
+      obj.workerId = message.workerId;
+    }
+    if (message.tools?.length) {
+      obj.tools = message.tools.map((e) => WorkerToolMetadata.toJSON(e));
+    }
+    return obj;
+  },
+
+  create(base?: DeepPartial<WorkerToolSnapshot>): WorkerToolSnapshot {
+    return WorkerToolSnapshot.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<WorkerToolSnapshot>): WorkerToolSnapshot {
+    const message = createBaseWorkerToolSnapshot();
+    message.snapshotId = object.snapshotId ?? "";
+    message.versionId = object.versionId ?? "";
+    message.workerId = object.workerId ?? "";
+    message.tools = object.tools?.map((e) => WorkerToolMetadata.fromPartial(e)) || [];
+    return message;
+  },
+};
+
+function createBaseWorkerToolMetadata(): WorkerToolMetadata {
+  return { toolId: "", kind: "", name: "", description: "", mcp: undefined, api: undefined };
+}
+
+export const WorkerToolMetadata: MessageFns<WorkerToolMetadata> = {
+  encode(message: WorkerToolMetadata, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.toolId !== "") {
+      writer.uint32(10).string(message.toolId);
+    }
+    if (message.kind !== "") {
+      writer.uint32(18).string(message.kind);
+    }
+    if (message.name !== "") {
+      writer.uint32(26).string(message.name);
+    }
+    if (message.description !== "") {
+      writer.uint32(34).string(message.description);
+    }
+    if (message.mcp !== undefined) {
+      McpToolMetadata.encode(message.mcp, writer.uint32(42).fork()).join();
+    }
+    if (message.api !== undefined) {
+      ApiToolMetadata.encode(message.api, writer.uint32(50).fork()).join();
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): WorkerToolMetadata {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseWorkerToolMetadata();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.toolId = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.kind = reader.string();
+          continue;
+        }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.name = reader.string();
+          continue;
+        }
+        case 4: {
+          if (tag !== 34) {
+            break;
+          }
+
+          message.description = reader.string();
           continue;
         }
         case 5: {
@@ -1158,7 +2258,15 @@ export const CompletionField: MessageFns<CompletionField> = {
             break;
           }
 
-          message.pattern = reader.string();
+          message.mcp = McpToolMetadata.decode(reader, reader.uint32());
+          continue;
+        }
+        case 6: {
+          if (tag !== 50) {
+            break;
+          }
+
+          message.api = ApiToolMetadata.decode(reader, reader.uint32());
           continue;
         }
       }
@@ -1170,89 +2278,102 @@ export const CompletionField: MessageFns<CompletionField> = {
     return message;
   },
 
-  fromJSON(object: any): CompletionField {
+  fromJSON(object: any): WorkerToolMetadata {
     return {
+      toolId: isSet(object.toolId)
+        ? globalThis.String(object.toolId)
+        : isSet(object.tool_id)
+        ? globalThis.String(object.tool_id)
+        : "",
+      kind: isSet(object.kind) ? globalThis.String(object.kind) : "",
       name: isSet(object.name) ? globalThis.String(object.name) : "",
-      type: isSet(object.type) ? globalThis.String(object.type) : "",
       description: isSet(object.description) ? globalThis.String(object.description) : "",
-      required: isSet(object.required) ? globalThis.Boolean(object.required) : false,
-      pattern: isSet(object.pattern) ? globalThis.String(object.pattern) : "",
+      mcp: isSet(object.mcp) ? McpToolMetadata.fromJSON(object.mcp) : undefined,
+      api: isSet(object.api) ? ApiToolMetadata.fromJSON(object.api) : undefined,
     };
   },
 
-  toJSON(message: CompletionField): unknown {
+  toJSON(message: WorkerToolMetadata): unknown {
     const obj: any = {};
+    if (message.toolId !== "") {
+      obj.toolId = message.toolId;
+    }
+    if (message.kind !== "") {
+      obj.kind = message.kind;
+    }
     if (message.name !== "") {
       obj.name = message.name;
-    }
-    if (message.type !== "") {
-      obj.type = message.type;
     }
     if (message.description !== "") {
       obj.description = message.description;
     }
-    if (message.required !== false) {
-      obj.required = message.required;
+    if (message.mcp !== undefined) {
+      obj.mcp = McpToolMetadata.toJSON(message.mcp);
     }
-    if (message.pattern !== "") {
-      obj.pattern = message.pattern;
+    if (message.api !== undefined) {
+      obj.api = ApiToolMetadata.toJSON(message.api);
     }
     return obj;
   },
 
-  create(base?: DeepPartial<CompletionField>): CompletionField {
-    return CompletionField.fromPartial(base ?? {});
+  create(base?: DeepPartial<WorkerToolMetadata>): WorkerToolMetadata {
+    return WorkerToolMetadata.fromPartial(base ?? {});
   },
-  fromPartial(object: DeepPartial<CompletionField>): CompletionField {
-    const message = createBaseCompletionField();
+  fromPartial(object: DeepPartial<WorkerToolMetadata>): WorkerToolMetadata {
+    const message = createBaseWorkerToolMetadata();
+    message.toolId = object.toolId ?? "";
+    message.kind = object.kind ?? "";
     message.name = object.name ?? "";
-    message.type = object.type ?? "";
     message.description = object.description ?? "";
-    message.required = object.required ?? false;
-    message.pattern = object.pattern ?? "";
+    message.mcp = (object.mcp !== undefined && object.mcp !== null)
+      ? McpToolMetadata.fromPartial(object.mcp)
+      : undefined;
+    message.api = (object.api !== undefined && object.api !== null)
+      ? ApiToolMetadata.fromPartial(object.api)
+      : undefined;
     return message;
   },
 };
 
-function createBaseSpecialistFailurePolicy(): SpecialistFailurePolicy {
-  return { maxAttempts: 0, timeoutMs: 0, onFailure: "" };
+function createBaseMcpToolMetadata(): McpToolMetadata {
+  return { serverName: "", transport: "", url: "" };
 }
 
-export const SpecialistFailurePolicy: MessageFns<SpecialistFailurePolicy> = {
-  encode(message: SpecialistFailurePolicy, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
-    if (message.maxAttempts !== 0) {
-      writer.uint32(8).int32(message.maxAttempts);
+export const McpToolMetadata: MessageFns<McpToolMetadata> = {
+  encode(message: McpToolMetadata, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.serverName !== "") {
+      writer.uint32(10).string(message.serverName);
     }
-    if (message.timeoutMs !== 0) {
-      writer.uint32(16).int32(message.timeoutMs);
+    if (message.transport !== "") {
+      writer.uint32(18).string(message.transport);
     }
-    if (message.onFailure !== "") {
-      writer.uint32(26).string(message.onFailure);
+    if (message.url !== "") {
+      writer.uint32(26).string(message.url);
     }
     return writer;
   },
 
-  decode(input: BinaryReader | Uint8Array, length?: number): SpecialistFailurePolicy {
+  decode(input: BinaryReader | Uint8Array, length?: number): McpToolMetadata {
     const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
     const end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBaseSpecialistFailurePolicy();
+    const message = createBaseMcpToolMetadata();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
         case 1: {
-          if (tag !== 8) {
+          if (tag !== 10) {
             break;
           }
 
-          message.maxAttempts = reader.int32();
+          message.serverName = reader.string();
           continue;
         }
         case 2: {
-          if (tag !== 16) {
+          if (tag !== 18) {
             break;
           }
 
-          message.timeoutMs = reader.int32();
+          message.transport = reader.string();
           continue;
         }
         case 3: {
@@ -1260,7 +2381,7 @@ export const SpecialistFailurePolicy: MessageFns<SpecialistFailurePolicy> = {
             break;
           }
 
-          message.onFailure = reader.string();
+          message.url = reader.string();
           continue;
         }
       }
@@ -1272,48 +2393,337 @@ export const SpecialistFailurePolicy: MessageFns<SpecialistFailurePolicy> = {
     return message;
   },
 
-  fromJSON(object: any): SpecialistFailurePolicy {
+  fromJSON(object: any): McpToolMetadata {
     return {
-      maxAttempts: isSet(object.maxAttempts)
-        ? globalThis.Number(object.maxAttempts)
-        : isSet(object.max_attempts)
-        ? globalThis.Number(object.max_attempts)
-        : 0,
-      timeoutMs: isSet(object.timeoutMs)
-        ? globalThis.Number(object.timeoutMs)
-        : isSet(object.timeout_ms)
-        ? globalThis.Number(object.timeout_ms)
-        : 0,
-      onFailure: isSet(object.onFailure)
-        ? globalThis.String(object.onFailure)
-        : isSet(object.on_failure)
-        ? globalThis.String(object.on_failure)
+      serverName: isSet(object.serverName)
+        ? globalThis.String(object.serverName)
+        : isSet(object.server_name)
+        ? globalThis.String(object.server_name)
         : "",
+      transport: isSet(object.transport) ? globalThis.String(object.transport) : "",
+      url: isSet(object.url) ? globalThis.String(object.url) : "",
     };
   },
 
-  toJSON(message: SpecialistFailurePolicy): unknown {
+  toJSON(message: McpToolMetadata): unknown {
     const obj: any = {};
-    if (message.maxAttempts !== 0) {
-      obj.maxAttempts = Math.round(message.maxAttempts);
+    if (message.serverName !== "") {
+      obj.serverName = message.serverName;
     }
-    if (message.timeoutMs !== 0) {
-      obj.timeoutMs = Math.round(message.timeoutMs);
+    if (message.transport !== "") {
+      obj.transport = message.transport;
     }
-    if (message.onFailure !== "") {
-      obj.onFailure = message.onFailure;
+    if (message.url !== "") {
+      obj.url = message.url;
     }
     return obj;
   },
 
-  create(base?: DeepPartial<SpecialistFailurePolicy>): SpecialistFailurePolicy {
-    return SpecialistFailurePolicy.fromPartial(base ?? {});
+  create(base?: DeepPartial<McpToolMetadata>): McpToolMetadata {
+    return McpToolMetadata.fromPartial(base ?? {});
   },
-  fromPartial(object: DeepPartial<SpecialistFailurePolicy>): SpecialistFailurePolicy {
-    const message = createBaseSpecialistFailurePolicy();
-    message.maxAttempts = object.maxAttempts ?? 0;
-    message.timeoutMs = object.timeoutMs ?? 0;
-    message.onFailure = object.onFailure ?? "";
+  fromPartial(object: DeepPartial<McpToolMetadata>): McpToolMetadata {
+    const message = createBaseMcpToolMetadata();
+    message.serverName = object.serverName ?? "";
+    message.transport = object.transport ?? "";
+    message.url = object.url ?? "";
+    return message;
+  },
+};
+
+function createBaseApiToolMetadata(): ApiToolMetadata {
+  return { method: "", url: "", requestSchemaJson: "", responseSchemaJson: "" };
+}
+
+export const ApiToolMetadata: MessageFns<ApiToolMetadata> = {
+  encode(message: ApiToolMetadata, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.method !== "") {
+      writer.uint32(10).string(message.method);
+    }
+    if (message.url !== "") {
+      writer.uint32(18).string(message.url);
+    }
+    if (message.requestSchemaJson !== "") {
+      writer.uint32(26).string(message.requestSchemaJson);
+    }
+    if (message.responseSchemaJson !== "") {
+      writer.uint32(34).string(message.responseSchemaJson);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): ApiToolMetadata {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseApiToolMetadata();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.method = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.url = reader.string();
+          continue;
+        }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.requestSchemaJson = reader.string();
+          continue;
+        }
+        case 4: {
+          if (tag !== 34) {
+            break;
+          }
+
+          message.responseSchemaJson = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): ApiToolMetadata {
+    return {
+      method: isSet(object.method) ? globalThis.String(object.method) : "",
+      url: isSet(object.url) ? globalThis.String(object.url) : "",
+      requestSchemaJson: isSet(object.requestSchemaJson)
+        ? globalThis.String(object.requestSchemaJson)
+        : isSet(object.request_schema_json)
+        ? globalThis.String(object.request_schema_json)
+        : "",
+      responseSchemaJson: isSet(object.responseSchemaJson)
+        ? globalThis.String(object.responseSchemaJson)
+        : isSet(object.response_schema_json)
+        ? globalThis.String(object.response_schema_json)
+        : "",
+    };
+  },
+
+  toJSON(message: ApiToolMetadata): unknown {
+    const obj: any = {};
+    if (message.method !== "") {
+      obj.method = message.method;
+    }
+    if (message.url !== "") {
+      obj.url = message.url;
+    }
+    if (message.requestSchemaJson !== "") {
+      obj.requestSchemaJson = message.requestSchemaJson;
+    }
+    if (message.responseSchemaJson !== "") {
+      obj.responseSchemaJson = message.responseSchemaJson;
+    }
+    return obj;
+  },
+
+  create(base?: DeepPartial<ApiToolMetadata>): ApiToolMetadata {
+    return ApiToolMetadata.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<ApiToolMetadata>): ApiToolMetadata {
+    const message = createBaseApiToolMetadata();
+    message.method = object.method ?? "";
+    message.url = object.url ?? "";
+    message.requestSchemaJson = object.requestSchemaJson ?? "";
+    message.responseSchemaJson = object.responseSchemaJson ?? "";
+    return message;
+  },
+};
+
+function createBaseApiToolRuntime(): ApiToolRuntime {
+  return { toolId: "", headers: {} };
+}
+
+export const ApiToolRuntime: MessageFns<ApiToolRuntime> = {
+  encode(message: ApiToolRuntime, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.toolId !== "") {
+      writer.uint32(10).string(message.toolId);
+    }
+    globalThis.Object.entries(message.headers).forEach(([key, value]: [string, string]) => {
+      ApiToolRuntime_HeadersEntry.encode({ key: key as any, value }, writer.uint32(18).fork()).join();
+    });
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): ApiToolRuntime {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseApiToolRuntime();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.toolId = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          const entry2 = ApiToolRuntime_HeadersEntry.decode(reader, reader.uint32());
+          if (entry2.value !== undefined) {
+            message.headers[entry2.key] = entry2.value;
+          }
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): ApiToolRuntime {
+    return {
+      toolId: isSet(object.toolId)
+        ? globalThis.String(object.toolId)
+        : isSet(object.tool_id)
+        ? globalThis.String(object.tool_id)
+        : "",
+      headers: isObject(object.headers)
+        ? (globalThis.Object.entries(object.headers) as [string, any][]).reduce(
+          (acc: { [key: string]: string }, [key, value]: [string, any]) => {
+            acc[key] = globalThis.String(value);
+            return acc;
+          },
+          {},
+        )
+        : {},
+    };
+  },
+
+  toJSON(message: ApiToolRuntime): unknown {
+    const obj: any = {};
+    if (message.toolId !== "") {
+      obj.toolId = message.toolId;
+    }
+    if (message.headers) {
+      const entries = globalThis.Object.entries(message.headers) as [string, string][];
+      if (entries.length > 0) {
+        obj.headers = {};
+        entries.forEach(([k, v]) => {
+          obj.headers[k] = v;
+        });
+      }
+    }
+    return obj;
+  },
+
+  create(base?: DeepPartial<ApiToolRuntime>): ApiToolRuntime {
+    return ApiToolRuntime.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<ApiToolRuntime>): ApiToolRuntime {
+    const message = createBaseApiToolRuntime();
+    message.toolId = object.toolId ?? "";
+    message.headers = (globalThis.Object.entries(object.headers ?? {}) as [string, string][]).reduce(
+      (acc: { [key: string]: string }, [key, value]: [string, string]) => {
+        if (value !== undefined) {
+          acc[key] = globalThis.String(value);
+        }
+        return acc;
+      },
+      {},
+    );
+    return message;
+  },
+};
+
+function createBaseApiToolRuntime_HeadersEntry(): ApiToolRuntime_HeadersEntry {
+  return { key: "", value: "" };
+}
+
+export const ApiToolRuntime_HeadersEntry: MessageFns<ApiToolRuntime_HeadersEntry> = {
+  encode(message: ApiToolRuntime_HeadersEntry, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.key !== "") {
+      writer.uint32(10).string(message.key);
+    }
+    if (message.value !== "") {
+      writer.uint32(18).string(message.value);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): ApiToolRuntime_HeadersEntry {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseApiToolRuntime_HeadersEntry();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.key = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.value = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): ApiToolRuntime_HeadersEntry {
+    return {
+      key: isSet(object.key) ? globalThis.String(object.key) : "",
+      value: isSet(object.value) ? globalThis.String(object.value) : "",
+    };
+  },
+
+  toJSON(message: ApiToolRuntime_HeadersEntry): unknown {
+    const obj: any = {};
+    if (message.key !== "") {
+      obj.key = message.key;
+    }
+    if (message.value !== "") {
+      obj.value = message.value;
+    }
+    return obj;
+  },
+
+  create(base?: DeepPartial<ApiToolRuntime_HeadersEntry>): ApiToolRuntime_HeadersEntry {
+    return ApiToolRuntime_HeadersEntry.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<ApiToolRuntime_HeadersEntry>): ApiToolRuntime_HeadersEntry {
+    const message = createBaseApiToolRuntime_HeadersEntry();
+    message.key = object.key ?? "";
+    message.value = object.value ?? "";
     return message;
   },
 };
@@ -1618,142 +3028,6 @@ export const EndCallAction: MessageFns<EndCallAction> = {
     message.enabled = object.enabled ?? false;
     message.closingPhrase = object.closingPhrase ?? "";
     message.confirm = object.confirm ?? false;
-    return message;
-  },
-};
-
-function createBaseAgentPersona(): AgentPersona {
-  return { displayName: "", systemPrompt: "", greeting: "", voiceId: "", language: "" };
-}
-
-export const AgentPersona: MessageFns<AgentPersona> = {
-  encode(message: AgentPersona, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
-    if (message.displayName !== "") {
-      writer.uint32(10).string(message.displayName);
-    }
-    if (message.systemPrompt !== "") {
-      writer.uint32(18).string(message.systemPrompt);
-    }
-    if (message.greeting !== "") {
-      writer.uint32(26).string(message.greeting);
-    }
-    if (message.voiceId !== "") {
-      writer.uint32(34).string(message.voiceId);
-    }
-    if (message.language !== "") {
-      writer.uint32(42).string(message.language);
-    }
-    return writer;
-  },
-
-  decode(input: BinaryReader | Uint8Array, length?: number): AgentPersona {
-    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
-    const end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBaseAgentPersona();
-    while (reader.pos < end) {
-      const tag = reader.uint32();
-      switch (tag >>> 3) {
-        case 1: {
-          if (tag !== 10) {
-            break;
-          }
-
-          message.displayName = reader.string();
-          continue;
-        }
-        case 2: {
-          if (tag !== 18) {
-            break;
-          }
-
-          message.systemPrompt = reader.string();
-          continue;
-        }
-        case 3: {
-          if (tag !== 26) {
-            break;
-          }
-
-          message.greeting = reader.string();
-          continue;
-        }
-        case 4: {
-          if (tag !== 34) {
-            break;
-          }
-
-          message.voiceId = reader.string();
-          continue;
-        }
-        case 5: {
-          if (tag !== 42) {
-            break;
-          }
-
-          message.language = reader.string();
-          continue;
-        }
-      }
-      if ((tag & 7) === 4 || tag === 0) {
-        break;
-      }
-      reader.skip(tag & 7);
-    }
-    return message;
-  },
-
-  fromJSON(object: any): AgentPersona {
-    return {
-      displayName: isSet(object.displayName)
-        ? globalThis.String(object.displayName)
-        : isSet(object.display_name)
-        ? globalThis.String(object.display_name)
-        : "",
-      systemPrompt: isSet(object.systemPrompt)
-        ? globalThis.String(object.systemPrompt)
-        : isSet(object.system_prompt)
-        ? globalThis.String(object.system_prompt)
-        : "",
-      greeting: isSet(object.greeting) ? globalThis.String(object.greeting) : "",
-      voiceId: isSet(object.voiceId)
-        ? globalThis.String(object.voiceId)
-        : isSet(object.voice_id)
-        ? globalThis.String(object.voice_id)
-        : "",
-      language: isSet(object.language) ? globalThis.String(object.language) : "",
-    };
-  },
-
-  toJSON(message: AgentPersona): unknown {
-    const obj: any = {};
-    if (message.displayName !== "") {
-      obj.displayName = message.displayName;
-    }
-    if (message.systemPrompt !== "") {
-      obj.systemPrompt = message.systemPrompt;
-    }
-    if (message.greeting !== "") {
-      obj.greeting = message.greeting;
-    }
-    if (message.voiceId !== "") {
-      obj.voiceId = message.voiceId;
-    }
-    if (message.language !== "") {
-      obj.language = message.language;
-    }
-    return obj;
-  },
-
-  create(base?: DeepPartial<AgentPersona>): AgentPersona {
-    return AgentPersona.fromPartial(base ?? {});
-  },
-  fromPartial(object: DeepPartial<AgentPersona>): AgentPersona {
-    const message = createBaseAgentPersona();
-    message.displayName = object.displayName ?? "";
-    message.systemPrompt = object.systemPrompt ?? "";
-    message.greeting = object.greeting ?? "";
-    message.voiceId = object.voiceId ?? "";
-    message.language = object.language ?? "";
     return message;
   },
 };
