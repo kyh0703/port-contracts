@@ -22,6 +22,129 @@ import { LlmRuntime, SttRuntime, TtsRuntime } from "./voice_runtime";
 
 export const protobufPackage = "port.api.v1";
 
+export enum NodeKind {
+  NODE_KIND_UNSPECIFIED = 0,
+  NODE_KIND_AGENT = 1,
+  NODE_KIND_TASK = 2,
+  NODE_KIND_GROUP = 3,
+  UNRECOGNIZED = -1,
+}
+
+export function nodeKindFromJSON(object: any): NodeKind {
+  switch (object) {
+    case 0:
+    case "NODE_KIND_UNSPECIFIED":
+      return NodeKind.NODE_KIND_UNSPECIFIED;
+    case 1:
+    case "NODE_KIND_AGENT":
+      return NodeKind.NODE_KIND_AGENT;
+    case 2:
+    case "NODE_KIND_TASK":
+      return NodeKind.NODE_KIND_TASK;
+    case 3:
+    case "NODE_KIND_GROUP":
+      return NodeKind.NODE_KIND_GROUP;
+    case -1:
+    case "UNRECOGNIZED":
+    default:
+      return NodeKind.UNRECOGNIZED;
+  }
+}
+
+export function nodeKindToJSON(object: NodeKind): string {
+  switch (object) {
+    case NodeKind.NODE_KIND_UNSPECIFIED:
+      return "NODE_KIND_UNSPECIFIED";
+    case NodeKind.NODE_KIND_AGENT:
+      return "NODE_KIND_AGENT";
+    case NodeKind.NODE_KIND_TASK:
+      return "NODE_KIND_TASK";
+    case NodeKind.NODE_KIND_GROUP:
+      return "NODE_KIND_GROUP";
+    case NodeKind.UNRECOGNIZED:
+    default:
+      return "UNRECOGNIZED";
+  }
+}
+
+export enum TransitionKind {
+  TRANSITION_KIND_UNSPECIFIED = 0,
+  TRANSITION_KIND_DELEGATE = 1,
+  TRANSITION_KIND_HANDOFF = 2,
+  UNRECOGNIZED = -1,
+}
+
+export function transitionKindFromJSON(object: any): TransitionKind {
+  switch (object) {
+    case 0:
+    case "TRANSITION_KIND_UNSPECIFIED":
+      return TransitionKind.TRANSITION_KIND_UNSPECIFIED;
+    case 1:
+    case "TRANSITION_KIND_DELEGATE":
+      return TransitionKind.TRANSITION_KIND_DELEGATE;
+    case 2:
+    case "TRANSITION_KIND_HANDOFF":
+      return TransitionKind.TRANSITION_KIND_HANDOFF;
+    case -1:
+    case "UNRECOGNIZED":
+    default:
+      return TransitionKind.UNRECOGNIZED;
+  }
+}
+
+export function transitionKindToJSON(object: TransitionKind): string {
+  switch (object) {
+    case TransitionKind.TRANSITION_KIND_UNSPECIFIED:
+      return "TRANSITION_KIND_UNSPECIFIED";
+    case TransitionKind.TRANSITION_KIND_DELEGATE:
+      return "TRANSITION_KIND_DELEGATE";
+    case TransitionKind.TRANSITION_KIND_HANDOFF:
+      return "TRANSITION_KIND_HANDOFF";
+    case TransitionKind.UNRECOGNIZED:
+    default:
+      return "UNRECOGNIZED";
+  }
+}
+
+export enum ContextPolicy {
+  CONTEXT_POLICY_UNSPECIFIED = 0,
+  CONTEXT_POLICY_NONE = 1,
+  CONTEXT_POLICY_CONVERSATION = 2,
+  UNRECOGNIZED = -1,
+}
+
+export function contextPolicyFromJSON(object: any): ContextPolicy {
+  switch (object) {
+    case 0:
+    case "CONTEXT_POLICY_UNSPECIFIED":
+      return ContextPolicy.CONTEXT_POLICY_UNSPECIFIED;
+    case 1:
+    case "CONTEXT_POLICY_NONE":
+      return ContextPolicy.CONTEXT_POLICY_NONE;
+    case 2:
+    case "CONTEXT_POLICY_CONVERSATION":
+      return ContextPolicy.CONTEXT_POLICY_CONVERSATION;
+    case -1:
+    case "UNRECOGNIZED":
+    default:
+      return ContextPolicy.UNRECOGNIZED;
+  }
+}
+
+export function contextPolicyToJSON(object: ContextPolicy): string {
+  switch (object) {
+    case ContextPolicy.CONTEXT_POLICY_UNSPECIFIED:
+      return "CONTEXT_POLICY_UNSPECIFIED";
+    case ContextPolicy.CONTEXT_POLICY_NONE:
+      return "CONTEXT_POLICY_NONE";
+    case ContextPolicy.CONTEXT_POLICY_CONVERSATION:
+      return "CONTEXT_POLICY_CONVERSATION";
+    case ContextPolicy.UNRECOGNIZED:
+    default:
+      return "UNRECOGNIZED";
+  }
+}
+
 export interface BootstrapRequest {
   webrtcTicket?: string | undefined;
   sip?: SipBootstrapContext | undefined;
@@ -57,6 +180,88 @@ export interface BootstrapResponse {
   workerToolSnapshots: WorkerToolSnapshot[];
   bootstrapSnapshotId: string;
   apiToolRuntimes: ApiToolRuntime[];
+  orchestrationGraph?: OrchestrationGraphSnapshot | undefined;
+}
+
+export interface OrchestrationGraphSnapshot {
+  snapshotId: string;
+  versionId: string;
+  schemaVersion: string;
+  entryNodeId: string;
+  maxHandoffDepth: number;
+  nodes: OrchestrationNode[];
+  transitions: OrchestrationTransition[];
+  nodeToolSnapshots: NodeToolSnapshot[];
+}
+
+export interface OrchestrationNode {
+  nodeId: string;
+  kind: NodeKind;
+  parentNodeId: string;
+  position?: CanvasPosition | undefined;
+  size?: CanvasSize | undefined;
+  agent?: OrchestrationAgent | undefined;
+  task?: OrchestrationTask | undefined;
+  group?: OrchestrationGroup | undefined;
+}
+
+export interface OrchestrationAgent {
+  agentId: string;
+  agentVersionId: string;
+  persona?: OrchestrationAgentPersona | undefined;
+  executionProfile?: OrchestrationExecutionProfile | undefined;
+  toolSnapshotId: string;
+}
+
+export interface OrchestrationTask {
+  name: string;
+  instructions: string;
+  completionInstructions: string;
+  executionProfile?: OrchestrationExecutionProfile | undefined;
+  toolSnapshotId: string;
+}
+
+export interface OrchestrationGroup {
+  label: string;
+}
+
+export interface OrchestrationAgentPersona {
+  displayName: string;
+  systemPrompt: string;
+  greeting: string;
+}
+
+export interface OrchestrationExecutionProfile {
+  llmModel: string;
+  ttsModel: string;
+  voiceId: string;
+  language: string;
+}
+
+export interface NodeToolSnapshot {
+  snapshotId: string;
+  versionId: string;
+  nodeId: string;
+  tools: NodeToolMetadata[];
+}
+
+export interface NodeToolMetadata {
+  toolId: string;
+  kind: string;
+  name: string;
+  description: string;
+  mcp?: McpToolMetadata | undefined;
+  api?: ApiToolMetadata | undefined;
+}
+
+export interface OrchestrationTransition {
+  transitionId: string;
+  sourceNodeId: string;
+  targetNodeId: string;
+  kind: TransitionKind;
+  description: string;
+  contextPolicy: ContextPolicy;
+  announcement: string;
 }
 
 export interface SupervisorPersona {
@@ -513,6 +718,7 @@ function createBaseBootstrapResponse(): BootstrapResponse {
     workerToolSnapshots: [],
     bootstrapSnapshotId: "",
     apiToolRuntimes: [],
+    orchestrationGraph: undefined,
   };
 }
 
@@ -574,6 +780,9 @@ export const BootstrapResponse: MessageFns<BootstrapResponse> = {
     }
     for (const v of message.apiToolRuntimes) {
       ApiToolRuntime.encode(v!, writer.uint32(210).fork()).join();
+    }
+    if (message.orchestrationGraph !== undefined) {
+      OrchestrationGraphSnapshot.encode(message.orchestrationGraph, writer.uint32(218).fork()).join();
     }
     return writer;
   },
@@ -737,6 +946,14 @@ export const BootstrapResponse: MessageFns<BootstrapResponse> = {
           message.apiToolRuntimes.push(ApiToolRuntime.decode(reader, reader.uint32()));
           continue;
         }
+        case 27: {
+          if (tag !== 218) {
+            break;
+          }
+
+          message.orchestrationGraph = OrchestrationGraphSnapshot.decode(reader, reader.uint32());
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -821,6 +1038,11 @@ export const BootstrapResponse: MessageFns<BootstrapResponse> = {
         : globalThis.Array.isArray(object?.api_tool_runtimes)
         ? object.api_tool_runtimes.map((e: any) => ApiToolRuntime.fromJSON(e))
         : [],
+      orchestrationGraph: isSet(object.orchestrationGraph)
+        ? OrchestrationGraphSnapshot.fromJSON(object.orchestrationGraph)
+        : isSet(object.orchestration_graph)
+        ? OrchestrationGraphSnapshot.fromJSON(object.orchestration_graph)
+        : undefined,
     };
   },
 
@@ -883,6 +1105,9 @@ export const BootstrapResponse: MessageFns<BootstrapResponse> = {
     if (message.apiToolRuntimes?.length) {
       obj.apiToolRuntimes = message.apiToolRuntimes.map((e) => ApiToolRuntime.toJSON(e));
     }
+    if (message.orchestrationGraph !== undefined) {
+      obj.orchestrationGraph = OrchestrationGraphSnapshot.toJSON(message.orchestrationGraph);
+    }
     return obj;
   },
 
@@ -916,6 +1141,1425 @@ export const BootstrapResponse: MessageFns<BootstrapResponse> = {
     message.workerToolSnapshots = object.workerToolSnapshots?.map((e) => WorkerToolSnapshot.fromPartial(e)) || [];
     message.bootstrapSnapshotId = object.bootstrapSnapshotId ?? "";
     message.apiToolRuntimes = object.apiToolRuntimes?.map((e) => ApiToolRuntime.fromPartial(e)) || [];
+    message.orchestrationGraph = (object.orchestrationGraph !== undefined && object.orchestrationGraph !== null)
+      ? OrchestrationGraphSnapshot.fromPartial(object.orchestrationGraph)
+      : undefined;
+    return message;
+  },
+};
+
+function createBaseOrchestrationGraphSnapshot(): OrchestrationGraphSnapshot {
+  return {
+    snapshotId: "",
+    versionId: "",
+    schemaVersion: "",
+    entryNodeId: "",
+    maxHandoffDepth: 0,
+    nodes: [],
+    transitions: [],
+    nodeToolSnapshots: [],
+  };
+}
+
+export const OrchestrationGraphSnapshot: MessageFns<OrchestrationGraphSnapshot> = {
+  encode(message: OrchestrationGraphSnapshot, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.snapshotId !== "") {
+      writer.uint32(10).string(message.snapshotId);
+    }
+    if (message.versionId !== "") {
+      writer.uint32(18).string(message.versionId);
+    }
+    if (message.schemaVersion !== "") {
+      writer.uint32(26).string(message.schemaVersion);
+    }
+    if (message.entryNodeId !== "") {
+      writer.uint32(34).string(message.entryNodeId);
+    }
+    if (message.maxHandoffDepth !== 0) {
+      writer.uint32(40).uint32(message.maxHandoffDepth);
+    }
+    for (const v of message.nodes) {
+      OrchestrationNode.encode(v!, writer.uint32(50).fork()).join();
+    }
+    for (const v of message.transitions) {
+      OrchestrationTransition.encode(v!, writer.uint32(58).fork()).join();
+    }
+    for (const v of message.nodeToolSnapshots) {
+      NodeToolSnapshot.encode(v!, writer.uint32(66).fork()).join();
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): OrchestrationGraphSnapshot {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseOrchestrationGraphSnapshot();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.snapshotId = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.versionId = reader.string();
+          continue;
+        }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.schemaVersion = reader.string();
+          continue;
+        }
+        case 4: {
+          if (tag !== 34) {
+            break;
+          }
+
+          message.entryNodeId = reader.string();
+          continue;
+        }
+        case 5: {
+          if (tag !== 40) {
+            break;
+          }
+
+          message.maxHandoffDepth = reader.uint32();
+          continue;
+        }
+        case 6: {
+          if (tag !== 50) {
+            break;
+          }
+
+          message.nodes.push(OrchestrationNode.decode(reader, reader.uint32()));
+          continue;
+        }
+        case 7: {
+          if (tag !== 58) {
+            break;
+          }
+
+          message.transitions.push(OrchestrationTransition.decode(reader, reader.uint32()));
+          continue;
+        }
+        case 8: {
+          if (tag !== 66) {
+            break;
+          }
+
+          message.nodeToolSnapshots.push(NodeToolSnapshot.decode(reader, reader.uint32()));
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): OrchestrationGraphSnapshot {
+    return {
+      snapshotId: isSet(object.snapshotId)
+        ? globalThis.String(object.snapshotId)
+        : isSet(object.snapshot_id)
+        ? globalThis.String(object.snapshot_id)
+        : "",
+      versionId: isSet(object.versionId)
+        ? globalThis.String(object.versionId)
+        : isSet(object.version_id)
+        ? globalThis.String(object.version_id)
+        : "",
+      schemaVersion: isSet(object.schemaVersion)
+        ? globalThis.String(object.schemaVersion)
+        : isSet(object.schema_version)
+        ? globalThis.String(object.schema_version)
+        : "",
+      entryNodeId: isSet(object.entryNodeId)
+        ? globalThis.String(object.entryNodeId)
+        : isSet(object.entry_node_id)
+        ? globalThis.String(object.entry_node_id)
+        : "",
+      maxHandoffDepth: isSet(object.maxHandoffDepth)
+        ? globalThis.Number(object.maxHandoffDepth)
+        : isSet(object.max_handoff_depth)
+        ? globalThis.Number(object.max_handoff_depth)
+        : 0,
+      nodes: globalThis.Array.isArray(object?.nodes)
+        ? object.nodes.map((e: any) => OrchestrationNode.fromJSON(e))
+        : [],
+      transitions: globalThis.Array.isArray(object?.transitions)
+        ? object.transitions.map((e: any) => OrchestrationTransition.fromJSON(e))
+        : [],
+      nodeToolSnapshots: globalThis.Array.isArray(object?.nodeToolSnapshots)
+        ? object.nodeToolSnapshots.map((e: any) => NodeToolSnapshot.fromJSON(e))
+        : globalThis.Array.isArray(object?.node_tool_snapshots)
+        ? object.node_tool_snapshots.map((e: any) => NodeToolSnapshot.fromJSON(e))
+        : [],
+    };
+  },
+
+  toJSON(message: OrchestrationGraphSnapshot): unknown {
+    const obj: any = {};
+    if (message.snapshotId !== "") {
+      obj.snapshotId = message.snapshotId;
+    }
+    if (message.versionId !== "") {
+      obj.versionId = message.versionId;
+    }
+    if (message.schemaVersion !== "") {
+      obj.schemaVersion = message.schemaVersion;
+    }
+    if (message.entryNodeId !== "") {
+      obj.entryNodeId = message.entryNodeId;
+    }
+    if (message.maxHandoffDepth !== 0) {
+      obj.maxHandoffDepth = Math.round(message.maxHandoffDepth);
+    }
+    if (message.nodes?.length) {
+      obj.nodes = message.nodes.map((e) => OrchestrationNode.toJSON(e));
+    }
+    if (message.transitions?.length) {
+      obj.transitions = message.transitions.map((e) => OrchestrationTransition.toJSON(e));
+    }
+    if (message.nodeToolSnapshots?.length) {
+      obj.nodeToolSnapshots = message.nodeToolSnapshots.map((e) => NodeToolSnapshot.toJSON(e));
+    }
+    return obj;
+  },
+
+  create(base?: DeepPartial<OrchestrationGraphSnapshot>): OrchestrationGraphSnapshot {
+    return OrchestrationGraphSnapshot.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<OrchestrationGraphSnapshot>): OrchestrationGraphSnapshot {
+    const message = createBaseOrchestrationGraphSnapshot();
+    message.snapshotId = object.snapshotId ?? "";
+    message.versionId = object.versionId ?? "";
+    message.schemaVersion = object.schemaVersion ?? "";
+    message.entryNodeId = object.entryNodeId ?? "";
+    message.maxHandoffDepth = object.maxHandoffDepth ?? 0;
+    message.nodes = object.nodes?.map((e) => OrchestrationNode.fromPartial(e)) || [];
+    message.transitions = object.transitions?.map((e) => OrchestrationTransition.fromPartial(e)) || [];
+    message.nodeToolSnapshots = object.nodeToolSnapshots?.map((e) => NodeToolSnapshot.fromPartial(e)) || [];
+    return message;
+  },
+};
+
+function createBaseOrchestrationNode(): OrchestrationNode {
+  return {
+    nodeId: "",
+    kind: 0,
+    parentNodeId: "",
+    position: undefined,
+    size: undefined,
+    agent: undefined,
+    task: undefined,
+    group: undefined,
+  };
+}
+
+export const OrchestrationNode: MessageFns<OrchestrationNode> = {
+  encode(message: OrchestrationNode, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.nodeId !== "") {
+      writer.uint32(10).string(message.nodeId);
+    }
+    if (message.kind !== 0) {
+      writer.uint32(16).int32(message.kind);
+    }
+    if (message.parentNodeId !== "") {
+      writer.uint32(26).string(message.parentNodeId);
+    }
+    if (message.position !== undefined) {
+      CanvasPosition.encode(message.position, writer.uint32(34).fork()).join();
+    }
+    if (message.size !== undefined) {
+      CanvasSize.encode(message.size, writer.uint32(42).fork()).join();
+    }
+    if (message.agent !== undefined) {
+      OrchestrationAgent.encode(message.agent, writer.uint32(50).fork()).join();
+    }
+    if (message.task !== undefined) {
+      OrchestrationTask.encode(message.task, writer.uint32(58).fork()).join();
+    }
+    if (message.group !== undefined) {
+      OrchestrationGroup.encode(message.group, writer.uint32(66).fork()).join();
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): OrchestrationNode {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseOrchestrationNode();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.nodeId = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 16) {
+            break;
+          }
+
+          message.kind = reader.int32() as any;
+          continue;
+        }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.parentNodeId = reader.string();
+          continue;
+        }
+        case 4: {
+          if (tag !== 34) {
+            break;
+          }
+
+          message.position = CanvasPosition.decode(reader, reader.uint32());
+          continue;
+        }
+        case 5: {
+          if (tag !== 42) {
+            break;
+          }
+
+          message.size = CanvasSize.decode(reader, reader.uint32());
+          continue;
+        }
+        case 6: {
+          if (tag !== 50) {
+            break;
+          }
+
+          message.agent = OrchestrationAgent.decode(reader, reader.uint32());
+          continue;
+        }
+        case 7: {
+          if (tag !== 58) {
+            break;
+          }
+
+          message.task = OrchestrationTask.decode(reader, reader.uint32());
+          continue;
+        }
+        case 8: {
+          if (tag !== 66) {
+            break;
+          }
+
+          message.group = OrchestrationGroup.decode(reader, reader.uint32());
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): OrchestrationNode {
+    return {
+      nodeId: isSet(object.nodeId)
+        ? globalThis.String(object.nodeId)
+        : isSet(object.node_id)
+        ? globalThis.String(object.node_id)
+        : "",
+      kind: isSet(object.kind) ? nodeKindFromJSON(object.kind) : 0,
+      parentNodeId: isSet(object.parentNodeId)
+        ? globalThis.String(object.parentNodeId)
+        : isSet(object.parent_node_id)
+        ? globalThis.String(object.parent_node_id)
+        : "",
+      position: isSet(object.position) ? CanvasPosition.fromJSON(object.position) : undefined,
+      size: isSet(object.size) ? CanvasSize.fromJSON(object.size) : undefined,
+      agent: isSet(object.agent) ? OrchestrationAgent.fromJSON(object.agent) : undefined,
+      task: isSet(object.task) ? OrchestrationTask.fromJSON(object.task) : undefined,
+      group: isSet(object.group) ? OrchestrationGroup.fromJSON(object.group) : undefined,
+    };
+  },
+
+  toJSON(message: OrchestrationNode): unknown {
+    const obj: any = {};
+    if (message.nodeId !== "") {
+      obj.nodeId = message.nodeId;
+    }
+    if (message.kind !== 0) {
+      obj.kind = nodeKindToJSON(message.kind);
+    }
+    if (message.parentNodeId !== "") {
+      obj.parentNodeId = message.parentNodeId;
+    }
+    if (message.position !== undefined) {
+      obj.position = CanvasPosition.toJSON(message.position);
+    }
+    if (message.size !== undefined) {
+      obj.size = CanvasSize.toJSON(message.size);
+    }
+    if (message.agent !== undefined) {
+      obj.agent = OrchestrationAgent.toJSON(message.agent);
+    }
+    if (message.task !== undefined) {
+      obj.task = OrchestrationTask.toJSON(message.task);
+    }
+    if (message.group !== undefined) {
+      obj.group = OrchestrationGroup.toJSON(message.group);
+    }
+    return obj;
+  },
+
+  create(base?: DeepPartial<OrchestrationNode>): OrchestrationNode {
+    return OrchestrationNode.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<OrchestrationNode>): OrchestrationNode {
+    const message = createBaseOrchestrationNode();
+    message.nodeId = object.nodeId ?? "";
+    message.kind = object.kind ?? 0;
+    message.parentNodeId = object.parentNodeId ?? "";
+    message.position = (object.position !== undefined && object.position !== null)
+      ? CanvasPosition.fromPartial(object.position)
+      : undefined;
+    message.size = (object.size !== undefined && object.size !== null)
+      ? CanvasSize.fromPartial(object.size)
+      : undefined;
+    message.agent = (object.agent !== undefined && object.agent !== null)
+      ? OrchestrationAgent.fromPartial(object.agent)
+      : undefined;
+    message.task = (object.task !== undefined && object.task !== null)
+      ? OrchestrationTask.fromPartial(object.task)
+      : undefined;
+    message.group = (object.group !== undefined && object.group !== null)
+      ? OrchestrationGroup.fromPartial(object.group)
+      : undefined;
+    return message;
+  },
+};
+
+function createBaseOrchestrationAgent(): OrchestrationAgent {
+  return { agentId: "", agentVersionId: "", persona: undefined, executionProfile: undefined, toolSnapshotId: "" };
+}
+
+export const OrchestrationAgent: MessageFns<OrchestrationAgent> = {
+  encode(message: OrchestrationAgent, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.agentId !== "") {
+      writer.uint32(10).string(message.agentId);
+    }
+    if (message.agentVersionId !== "") {
+      writer.uint32(18).string(message.agentVersionId);
+    }
+    if (message.persona !== undefined) {
+      OrchestrationAgentPersona.encode(message.persona, writer.uint32(26).fork()).join();
+    }
+    if (message.executionProfile !== undefined) {
+      OrchestrationExecutionProfile.encode(message.executionProfile, writer.uint32(34).fork()).join();
+    }
+    if (message.toolSnapshotId !== "") {
+      writer.uint32(42).string(message.toolSnapshotId);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): OrchestrationAgent {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseOrchestrationAgent();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.agentId = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.agentVersionId = reader.string();
+          continue;
+        }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.persona = OrchestrationAgentPersona.decode(reader, reader.uint32());
+          continue;
+        }
+        case 4: {
+          if (tag !== 34) {
+            break;
+          }
+
+          message.executionProfile = OrchestrationExecutionProfile.decode(reader, reader.uint32());
+          continue;
+        }
+        case 5: {
+          if (tag !== 42) {
+            break;
+          }
+
+          message.toolSnapshotId = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): OrchestrationAgent {
+    return {
+      agentId: isSet(object.agentId)
+        ? globalThis.String(object.agentId)
+        : isSet(object.agent_id)
+        ? globalThis.String(object.agent_id)
+        : "",
+      agentVersionId: isSet(object.agentVersionId)
+        ? globalThis.String(object.agentVersionId)
+        : isSet(object.agent_version_id)
+        ? globalThis.String(object.agent_version_id)
+        : "",
+      persona: isSet(object.persona) ? OrchestrationAgentPersona.fromJSON(object.persona) : undefined,
+      executionProfile: isSet(object.executionProfile)
+        ? OrchestrationExecutionProfile.fromJSON(object.executionProfile)
+        : isSet(object.execution_profile)
+        ? OrchestrationExecutionProfile.fromJSON(object.execution_profile)
+        : undefined,
+      toolSnapshotId: isSet(object.toolSnapshotId)
+        ? globalThis.String(object.toolSnapshotId)
+        : isSet(object.tool_snapshot_id)
+        ? globalThis.String(object.tool_snapshot_id)
+        : "",
+    };
+  },
+
+  toJSON(message: OrchestrationAgent): unknown {
+    const obj: any = {};
+    if (message.agentId !== "") {
+      obj.agentId = message.agentId;
+    }
+    if (message.agentVersionId !== "") {
+      obj.agentVersionId = message.agentVersionId;
+    }
+    if (message.persona !== undefined) {
+      obj.persona = OrchestrationAgentPersona.toJSON(message.persona);
+    }
+    if (message.executionProfile !== undefined) {
+      obj.executionProfile = OrchestrationExecutionProfile.toJSON(message.executionProfile);
+    }
+    if (message.toolSnapshotId !== "") {
+      obj.toolSnapshotId = message.toolSnapshotId;
+    }
+    return obj;
+  },
+
+  create(base?: DeepPartial<OrchestrationAgent>): OrchestrationAgent {
+    return OrchestrationAgent.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<OrchestrationAgent>): OrchestrationAgent {
+    const message = createBaseOrchestrationAgent();
+    message.agentId = object.agentId ?? "";
+    message.agentVersionId = object.agentVersionId ?? "";
+    message.persona = (object.persona !== undefined && object.persona !== null)
+      ? OrchestrationAgentPersona.fromPartial(object.persona)
+      : undefined;
+    message.executionProfile = (object.executionProfile !== undefined && object.executionProfile !== null)
+      ? OrchestrationExecutionProfile.fromPartial(object.executionProfile)
+      : undefined;
+    message.toolSnapshotId = object.toolSnapshotId ?? "";
+    return message;
+  },
+};
+
+function createBaseOrchestrationTask(): OrchestrationTask {
+  return { name: "", instructions: "", completionInstructions: "", executionProfile: undefined, toolSnapshotId: "" };
+}
+
+export const OrchestrationTask: MessageFns<OrchestrationTask> = {
+  encode(message: OrchestrationTask, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.name !== "") {
+      writer.uint32(10).string(message.name);
+    }
+    if (message.instructions !== "") {
+      writer.uint32(18).string(message.instructions);
+    }
+    if (message.completionInstructions !== "") {
+      writer.uint32(26).string(message.completionInstructions);
+    }
+    if (message.executionProfile !== undefined) {
+      OrchestrationExecutionProfile.encode(message.executionProfile, writer.uint32(34).fork()).join();
+    }
+    if (message.toolSnapshotId !== "") {
+      writer.uint32(42).string(message.toolSnapshotId);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): OrchestrationTask {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseOrchestrationTask();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.name = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.instructions = reader.string();
+          continue;
+        }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.completionInstructions = reader.string();
+          continue;
+        }
+        case 4: {
+          if (tag !== 34) {
+            break;
+          }
+
+          message.executionProfile = OrchestrationExecutionProfile.decode(reader, reader.uint32());
+          continue;
+        }
+        case 5: {
+          if (tag !== 42) {
+            break;
+          }
+
+          message.toolSnapshotId = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): OrchestrationTask {
+    return {
+      name: isSet(object.name) ? globalThis.String(object.name) : "",
+      instructions: isSet(object.instructions) ? globalThis.String(object.instructions) : "",
+      completionInstructions: isSet(object.completionInstructions)
+        ? globalThis.String(object.completionInstructions)
+        : isSet(object.completion_instructions)
+        ? globalThis.String(object.completion_instructions)
+        : "",
+      executionProfile: isSet(object.executionProfile)
+        ? OrchestrationExecutionProfile.fromJSON(object.executionProfile)
+        : isSet(object.execution_profile)
+        ? OrchestrationExecutionProfile.fromJSON(object.execution_profile)
+        : undefined,
+      toolSnapshotId: isSet(object.toolSnapshotId)
+        ? globalThis.String(object.toolSnapshotId)
+        : isSet(object.tool_snapshot_id)
+        ? globalThis.String(object.tool_snapshot_id)
+        : "",
+    };
+  },
+
+  toJSON(message: OrchestrationTask): unknown {
+    const obj: any = {};
+    if (message.name !== "") {
+      obj.name = message.name;
+    }
+    if (message.instructions !== "") {
+      obj.instructions = message.instructions;
+    }
+    if (message.completionInstructions !== "") {
+      obj.completionInstructions = message.completionInstructions;
+    }
+    if (message.executionProfile !== undefined) {
+      obj.executionProfile = OrchestrationExecutionProfile.toJSON(message.executionProfile);
+    }
+    if (message.toolSnapshotId !== "") {
+      obj.toolSnapshotId = message.toolSnapshotId;
+    }
+    return obj;
+  },
+
+  create(base?: DeepPartial<OrchestrationTask>): OrchestrationTask {
+    return OrchestrationTask.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<OrchestrationTask>): OrchestrationTask {
+    const message = createBaseOrchestrationTask();
+    message.name = object.name ?? "";
+    message.instructions = object.instructions ?? "";
+    message.completionInstructions = object.completionInstructions ?? "";
+    message.executionProfile = (object.executionProfile !== undefined && object.executionProfile !== null)
+      ? OrchestrationExecutionProfile.fromPartial(object.executionProfile)
+      : undefined;
+    message.toolSnapshotId = object.toolSnapshotId ?? "";
+    return message;
+  },
+};
+
+function createBaseOrchestrationGroup(): OrchestrationGroup {
+  return { label: "" };
+}
+
+export const OrchestrationGroup: MessageFns<OrchestrationGroup> = {
+  encode(message: OrchestrationGroup, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.label !== "") {
+      writer.uint32(10).string(message.label);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): OrchestrationGroup {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseOrchestrationGroup();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.label = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): OrchestrationGroup {
+    return { label: isSet(object.label) ? globalThis.String(object.label) : "" };
+  },
+
+  toJSON(message: OrchestrationGroup): unknown {
+    const obj: any = {};
+    if (message.label !== "") {
+      obj.label = message.label;
+    }
+    return obj;
+  },
+
+  create(base?: DeepPartial<OrchestrationGroup>): OrchestrationGroup {
+    return OrchestrationGroup.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<OrchestrationGroup>): OrchestrationGroup {
+    const message = createBaseOrchestrationGroup();
+    message.label = object.label ?? "";
+    return message;
+  },
+};
+
+function createBaseOrchestrationAgentPersona(): OrchestrationAgentPersona {
+  return { displayName: "", systemPrompt: "", greeting: "" };
+}
+
+export const OrchestrationAgentPersona: MessageFns<OrchestrationAgentPersona> = {
+  encode(message: OrchestrationAgentPersona, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.displayName !== "") {
+      writer.uint32(10).string(message.displayName);
+    }
+    if (message.systemPrompt !== "") {
+      writer.uint32(18).string(message.systemPrompt);
+    }
+    if (message.greeting !== "") {
+      writer.uint32(26).string(message.greeting);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): OrchestrationAgentPersona {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseOrchestrationAgentPersona();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.displayName = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.systemPrompt = reader.string();
+          continue;
+        }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.greeting = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): OrchestrationAgentPersona {
+    return {
+      displayName: isSet(object.displayName)
+        ? globalThis.String(object.displayName)
+        : isSet(object.display_name)
+        ? globalThis.String(object.display_name)
+        : "",
+      systemPrompt: isSet(object.systemPrompt)
+        ? globalThis.String(object.systemPrompt)
+        : isSet(object.system_prompt)
+        ? globalThis.String(object.system_prompt)
+        : "",
+      greeting: isSet(object.greeting) ? globalThis.String(object.greeting) : "",
+    };
+  },
+
+  toJSON(message: OrchestrationAgentPersona): unknown {
+    const obj: any = {};
+    if (message.displayName !== "") {
+      obj.displayName = message.displayName;
+    }
+    if (message.systemPrompt !== "") {
+      obj.systemPrompt = message.systemPrompt;
+    }
+    if (message.greeting !== "") {
+      obj.greeting = message.greeting;
+    }
+    return obj;
+  },
+
+  create(base?: DeepPartial<OrchestrationAgentPersona>): OrchestrationAgentPersona {
+    return OrchestrationAgentPersona.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<OrchestrationAgentPersona>): OrchestrationAgentPersona {
+    const message = createBaseOrchestrationAgentPersona();
+    message.displayName = object.displayName ?? "";
+    message.systemPrompt = object.systemPrompt ?? "";
+    message.greeting = object.greeting ?? "";
+    return message;
+  },
+};
+
+function createBaseOrchestrationExecutionProfile(): OrchestrationExecutionProfile {
+  return { llmModel: "", ttsModel: "", voiceId: "", language: "" };
+}
+
+export const OrchestrationExecutionProfile: MessageFns<OrchestrationExecutionProfile> = {
+  encode(message: OrchestrationExecutionProfile, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.llmModel !== "") {
+      writer.uint32(10).string(message.llmModel);
+    }
+    if (message.ttsModel !== "") {
+      writer.uint32(18).string(message.ttsModel);
+    }
+    if (message.voiceId !== "") {
+      writer.uint32(26).string(message.voiceId);
+    }
+    if (message.language !== "") {
+      writer.uint32(34).string(message.language);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): OrchestrationExecutionProfile {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseOrchestrationExecutionProfile();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.llmModel = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.ttsModel = reader.string();
+          continue;
+        }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.voiceId = reader.string();
+          continue;
+        }
+        case 4: {
+          if (tag !== 34) {
+            break;
+          }
+
+          message.language = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): OrchestrationExecutionProfile {
+    return {
+      llmModel: isSet(object.llmModel)
+        ? globalThis.String(object.llmModel)
+        : isSet(object.llm_model)
+        ? globalThis.String(object.llm_model)
+        : "",
+      ttsModel: isSet(object.ttsModel)
+        ? globalThis.String(object.ttsModel)
+        : isSet(object.tts_model)
+        ? globalThis.String(object.tts_model)
+        : "",
+      voiceId: isSet(object.voiceId)
+        ? globalThis.String(object.voiceId)
+        : isSet(object.voice_id)
+        ? globalThis.String(object.voice_id)
+        : "",
+      language: isSet(object.language) ? globalThis.String(object.language) : "",
+    };
+  },
+
+  toJSON(message: OrchestrationExecutionProfile): unknown {
+    const obj: any = {};
+    if (message.llmModel !== "") {
+      obj.llmModel = message.llmModel;
+    }
+    if (message.ttsModel !== "") {
+      obj.ttsModel = message.ttsModel;
+    }
+    if (message.voiceId !== "") {
+      obj.voiceId = message.voiceId;
+    }
+    if (message.language !== "") {
+      obj.language = message.language;
+    }
+    return obj;
+  },
+
+  create(base?: DeepPartial<OrchestrationExecutionProfile>): OrchestrationExecutionProfile {
+    return OrchestrationExecutionProfile.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<OrchestrationExecutionProfile>): OrchestrationExecutionProfile {
+    const message = createBaseOrchestrationExecutionProfile();
+    message.llmModel = object.llmModel ?? "";
+    message.ttsModel = object.ttsModel ?? "";
+    message.voiceId = object.voiceId ?? "";
+    message.language = object.language ?? "";
+    return message;
+  },
+};
+
+function createBaseNodeToolSnapshot(): NodeToolSnapshot {
+  return { snapshotId: "", versionId: "", nodeId: "", tools: [] };
+}
+
+export const NodeToolSnapshot: MessageFns<NodeToolSnapshot> = {
+  encode(message: NodeToolSnapshot, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.snapshotId !== "") {
+      writer.uint32(10).string(message.snapshotId);
+    }
+    if (message.versionId !== "") {
+      writer.uint32(18).string(message.versionId);
+    }
+    if (message.nodeId !== "") {
+      writer.uint32(26).string(message.nodeId);
+    }
+    for (const v of message.tools) {
+      NodeToolMetadata.encode(v!, writer.uint32(34).fork()).join();
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): NodeToolSnapshot {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseNodeToolSnapshot();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.snapshotId = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.versionId = reader.string();
+          continue;
+        }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.nodeId = reader.string();
+          continue;
+        }
+        case 4: {
+          if (tag !== 34) {
+            break;
+          }
+
+          message.tools.push(NodeToolMetadata.decode(reader, reader.uint32()));
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): NodeToolSnapshot {
+    return {
+      snapshotId: isSet(object.snapshotId)
+        ? globalThis.String(object.snapshotId)
+        : isSet(object.snapshot_id)
+        ? globalThis.String(object.snapshot_id)
+        : "",
+      versionId: isSet(object.versionId)
+        ? globalThis.String(object.versionId)
+        : isSet(object.version_id)
+        ? globalThis.String(object.version_id)
+        : "",
+      nodeId: isSet(object.nodeId)
+        ? globalThis.String(object.nodeId)
+        : isSet(object.node_id)
+        ? globalThis.String(object.node_id)
+        : "",
+      tools: globalThis.Array.isArray(object?.tools) ? object.tools.map((e: any) => NodeToolMetadata.fromJSON(e)) : [],
+    };
+  },
+
+  toJSON(message: NodeToolSnapshot): unknown {
+    const obj: any = {};
+    if (message.snapshotId !== "") {
+      obj.snapshotId = message.snapshotId;
+    }
+    if (message.versionId !== "") {
+      obj.versionId = message.versionId;
+    }
+    if (message.nodeId !== "") {
+      obj.nodeId = message.nodeId;
+    }
+    if (message.tools?.length) {
+      obj.tools = message.tools.map((e) => NodeToolMetadata.toJSON(e));
+    }
+    return obj;
+  },
+
+  create(base?: DeepPartial<NodeToolSnapshot>): NodeToolSnapshot {
+    return NodeToolSnapshot.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<NodeToolSnapshot>): NodeToolSnapshot {
+    const message = createBaseNodeToolSnapshot();
+    message.snapshotId = object.snapshotId ?? "";
+    message.versionId = object.versionId ?? "";
+    message.nodeId = object.nodeId ?? "";
+    message.tools = object.tools?.map((e) => NodeToolMetadata.fromPartial(e)) || [];
+    return message;
+  },
+};
+
+function createBaseNodeToolMetadata(): NodeToolMetadata {
+  return { toolId: "", kind: "", name: "", description: "", mcp: undefined, api: undefined };
+}
+
+export const NodeToolMetadata: MessageFns<NodeToolMetadata> = {
+  encode(message: NodeToolMetadata, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.toolId !== "") {
+      writer.uint32(10).string(message.toolId);
+    }
+    if (message.kind !== "") {
+      writer.uint32(18).string(message.kind);
+    }
+    if (message.name !== "") {
+      writer.uint32(26).string(message.name);
+    }
+    if (message.description !== "") {
+      writer.uint32(34).string(message.description);
+    }
+    if (message.mcp !== undefined) {
+      McpToolMetadata.encode(message.mcp, writer.uint32(42).fork()).join();
+    }
+    if (message.api !== undefined) {
+      ApiToolMetadata.encode(message.api, writer.uint32(50).fork()).join();
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): NodeToolMetadata {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseNodeToolMetadata();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.toolId = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.kind = reader.string();
+          continue;
+        }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.name = reader.string();
+          continue;
+        }
+        case 4: {
+          if (tag !== 34) {
+            break;
+          }
+
+          message.description = reader.string();
+          continue;
+        }
+        case 5: {
+          if (tag !== 42) {
+            break;
+          }
+
+          message.mcp = McpToolMetadata.decode(reader, reader.uint32());
+          continue;
+        }
+        case 6: {
+          if (tag !== 50) {
+            break;
+          }
+
+          message.api = ApiToolMetadata.decode(reader, reader.uint32());
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): NodeToolMetadata {
+    return {
+      toolId: isSet(object.toolId)
+        ? globalThis.String(object.toolId)
+        : isSet(object.tool_id)
+        ? globalThis.String(object.tool_id)
+        : "",
+      kind: isSet(object.kind) ? globalThis.String(object.kind) : "",
+      name: isSet(object.name) ? globalThis.String(object.name) : "",
+      description: isSet(object.description) ? globalThis.String(object.description) : "",
+      mcp: isSet(object.mcp) ? McpToolMetadata.fromJSON(object.mcp) : undefined,
+      api: isSet(object.api) ? ApiToolMetadata.fromJSON(object.api) : undefined,
+    };
+  },
+
+  toJSON(message: NodeToolMetadata): unknown {
+    const obj: any = {};
+    if (message.toolId !== "") {
+      obj.toolId = message.toolId;
+    }
+    if (message.kind !== "") {
+      obj.kind = message.kind;
+    }
+    if (message.name !== "") {
+      obj.name = message.name;
+    }
+    if (message.description !== "") {
+      obj.description = message.description;
+    }
+    if (message.mcp !== undefined) {
+      obj.mcp = McpToolMetadata.toJSON(message.mcp);
+    }
+    if (message.api !== undefined) {
+      obj.api = ApiToolMetadata.toJSON(message.api);
+    }
+    return obj;
+  },
+
+  create(base?: DeepPartial<NodeToolMetadata>): NodeToolMetadata {
+    return NodeToolMetadata.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<NodeToolMetadata>): NodeToolMetadata {
+    const message = createBaseNodeToolMetadata();
+    message.toolId = object.toolId ?? "";
+    message.kind = object.kind ?? "";
+    message.name = object.name ?? "";
+    message.description = object.description ?? "";
+    message.mcp = (object.mcp !== undefined && object.mcp !== null)
+      ? McpToolMetadata.fromPartial(object.mcp)
+      : undefined;
+    message.api = (object.api !== undefined && object.api !== null)
+      ? ApiToolMetadata.fromPartial(object.api)
+      : undefined;
+    return message;
+  },
+};
+
+function createBaseOrchestrationTransition(): OrchestrationTransition {
+  return {
+    transitionId: "",
+    sourceNodeId: "",
+    targetNodeId: "",
+    kind: 0,
+    description: "",
+    contextPolicy: 0,
+    announcement: "",
+  };
+}
+
+export const OrchestrationTransition: MessageFns<OrchestrationTransition> = {
+  encode(message: OrchestrationTransition, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.transitionId !== "") {
+      writer.uint32(10).string(message.transitionId);
+    }
+    if (message.sourceNodeId !== "") {
+      writer.uint32(18).string(message.sourceNodeId);
+    }
+    if (message.targetNodeId !== "") {
+      writer.uint32(26).string(message.targetNodeId);
+    }
+    if (message.kind !== 0) {
+      writer.uint32(32).int32(message.kind);
+    }
+    if (message.description !== "") {
+      writer.uint32(42).string(message.description);
+    }
+    if (message.contextPolicy !== 0) {
+      writer.uint32(48).int32(message.contextPolicy);
+    }
+    if (message.announcement !== "") {
+      writer.uint32(58).string(message.announcement);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): OrchestrationTransition {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseOrchestrationTransition();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.transitionId = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.sourceNodeId = reader.string();
+          continue;
+        }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.targetNodeId = reader.string();
+          continue;
+        }
+        case 4: {
+          if (tag !== 32) {
+            break;
+          }
+
+          message.kind = reader.int32() as any;
+          continue;
+        }
+        case 5: {
+          if (tag !== 42) {
+            break;
+          }
+
+          message.description = reader.string();
+          continue;
+        }
+        case 6: {
+          if (tag !== 48) {
+            break;
+          }
+
+          message.contextPolicy = reader.int32() as any;
+          continue;
+        }
+        case 7: {
+          if (tag !== 58) {
+            break;
+          }
+
+          message.announcement = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): OrchestrationTransition {
+    return {
+      transitionId: isSet(object.transitionId)
+        ? globalThis.String(object.transitionId)
+        : isSet(object.transition_id)
+        ? globalThis.String(object.transition_id)
+        : "",
+      sourceNodeId: isSet(object.sourceNodeId)
+        ? globalThis.String(object.sourceNodeId)
+        : isSet(object.source_node_id)
+        ? globalThis.String(object.source_node_id)
+        : "",
+      targetNodeId: isSet(object.targetNodeId)
+        ? globalThis.String(object.targetNodeId)
+        : isSet(object.target_node_id)
+        ? globalThis.String(object.target_node_id)
+        : "",
+      kind: isSet(object.kind) ? transitionKindFromJSON(object.kind) : 0,
+      description: isSet(object.description) ? globalThis.String(object.description) : "",
+      contextPolicy: isSet(object.contextPolicy)
+        ? contextPolicyFromJSON(object.contextPolicy)
+        : isSet(object.context_policy)
+        ? contextPolicyFromJSON(object.context_policy)
+        : 0,
+      announcement: isSet(object.announcement) ? globalThis.String(object.announcement) : "",
+    };
+  },
+
+  toJSON(message: OrchestrationTransition): unknown {
+    const obj: any = {};
+    if (message.transitionId !== "") {
+      obj.transitionId = message.transitionId;
+    }
+    if (message.sourceNodeId !== "") {
+      obj.sourceNodeId = message.sourceNodeId;
+    }
+    if (message.targetNodeId !== "") {
+      obj.targetNodeId = message.targetNodeId;
+    }
+    if (message.kind !== 0) {
+      obj.kind = transitionKindToJSON(message.kind);
+    }
+    if (message.description !== "") {
+      obj.description = message.description;
+    }
+    if (message.contextPolicy !== 0) {
+      obj.contextPolicy = contextPolicyToJSON(message.contextPolicy);
+    }
+    if (message.announcement !== "") {
+      obj.announcement = message.announcement;
+    }
+    return obj;
+  },
+
+  create(base?: DeepPartial<OrchestrationTransition>): OrchestrationTransition {
+    return OrchestrationTransition.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<OrchestrationTransition>): OrchestrationTransition {
+    const message = createBaseOrchestrationTransition();
+    message.transitionId = object.transitionId ?? "";
+    message.sourceNodeId = object.sourceNodeId ?? "";
+    message.targetNodeId = object.targetNodeId ?? "";
+    message.kind = object.kind ?? 0;
+    message.description = object.description ?? "";
+    message.contextPolicy = object.contextPolicy ?? 0;
+    message.announcement = object.announcement ?? "";
     return message;
   },
 };

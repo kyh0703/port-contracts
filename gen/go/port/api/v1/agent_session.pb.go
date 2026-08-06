@@ -22,6 +22,156 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+type NodeKind int32
+
+const (
+	NodeKind_NODE_KIND_UNSPECIFIED NodeKind = 0
+	NodeKind_NODE_KIND_AGENT       NodeKind = 1
+	NodeKind_NODE_KIND_TASK        NodeKind = 2
+	NodeKind_NODE_KIND_GROUP       NodeKind = 3
+)
+
+// Enum value maps for NodeKind.
+var (
+	NodeKind_name = map[int32]string{
+		0: "NODE_KIND_UNSPECIFIED",
+		1: "NODE_KIND_AGENT",
+		2: "NODE_KIND_TASK",
+		3: "NODE_KIND_GROUP",
+	}
+	NodeKind_value = map[string]int32{
+		"NODE_KIND_UNSPECIFIED": 0,
+		"NODE_KIND_AGENT":       1,
+		"NODE_KIND_TASK":        2,
+		"NODE_KIND_GROUP":       3,
+	}
+)
+
+func (x NodeKind) Enum() *NodeKind {
+	p := new(NodeKind)
+	*p = x
+	return p
+}
+
+func (x NodeKind) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (NodeKind) Descriptor() protoreflect.EnumDescriptor {
+	return file_port_api_v1_agent_session_proto_enumTypes[0].Descriptor()
+}
+
+func (NodeKind) Type() protoreflect.EnumType {
+	return &file_port_api_v1_agent_session_proto_enumTypes[0]
+}
+
+func (x NodeKind) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use NodeKind.Descriptor instead.
+func (NodeKind) EnumDescriptor() ([]byte, []int) {
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{0}
+}
+
+type TransitionKind int32
+
+const (
+	TransitionKind_TRANSITION_KIND_UNSPECIFIED TransitionKind = 0
+	TransitionKind_TRANSITION_KIND_DELEGATE    TransitionKind = 1
+	TransitionKind_TRANSITION_KIND_HANDOFF     TransitionKind = 2
+)
+
+// Enum value maps for TransitionKind.
+var (
+	TransitionKind_name = map[int32]string{
+		0: "TRANSITION_KIND_UNSPECIFIED",
+		1: "TRANSITION_KIND_DELEGATE",
+		2: "TRANSITION_KIND_HANDOFF",
+	}
+	TransitionKind_value = map[string]int32{
+		"TRANSITION_KIND_UNSPECIFIED": 0,
+		"TRANSITION_KIND_DELEGATE":    1,
+		"TRANSITION_KIND_HANDOFF":     2,
+	}
+)
+
+func (x TransitionKind) Enum() *TransitionKind {
+	p := new(TransitionKind)
+	*p = x
+	return p
+}
+
+func (x TransitionKind) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (TransitionKind) Descriptor() protoreflect.EnumDescriptor {
+	return file_port_api_v1_agent_session_proto_enumTypes[1].Descriptor()
+}
+
+func (TransitionKind) Type() protoreflect.EnumType {
+	return &file_port_api_v1_agent_session_proto_enumTypes[1]
+}
+
+func (x TransitionKind) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use TransitionKind.Descriptor instead.
+func (TransitionKind) EnumDescriptor() ([]byte, []int) {
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{1}
+}
+
+type ContextPolicy int32
+
+const (
+	ContextPolicy_CONTEXT_POLICY_UNSPECIFIED  ContextPolicy = 0
+	ContextPolicy_CONTEXT_POLICY_NONE         ContextPolicy = 1
+	ContextPolicy_CONTEXT_POLICY_CONVERSATION ContextPolicy = 2
+)
+
+// Enum value maps for ContextPolicy.
+var (
+	ContextPolicy_name = map[int32]string{
+		0: "CONTEXT_POLICY_UNSPECIFIED",
+		1: "CONTEXT_POLICY_NONE",
+		2: "CONTEXT_POLICY_CONVERSATION",
+	}
+	ContextPolicy_value = map[string]int32{
+		"CONTEXT_POLICY_UNSPECIFIED":  0,
+		"CONTEXT_POLICY_NONE":         1,
+		"CONTEXT_POLICY_CONVERSATION": 2,
+	}
+)
+
+func (x ContextPolicy) Enum() *ContextPolicy {
+	p := new(ContextPolicy)
+	*p = x
+	return p
+}
+
+func (x ContextPolicy) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (ContextPolicy) Descriptor() protoreflect.EnumDescriptor {
+	return file_port_api_v1_agent_session_proto_enumTypes[2].Descriptor()
+}
+
+func (ContextPolicy) Type() protoreflect.EnumType {
+	return &file_port_api_v1_agent_session_proto_enumTypes[2]
+}
+
+func (x ContextPolicy) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use ContextPolicy.Descriptor instead.
+func (ContextPolicy) EnumDescriptor() ([]byte, []int) {
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{2}
+}
+
 type BootstrapRequest struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// Types that are valid to be assigned to Admission:
@@ -197,26 +347,27 @@ func (x *SipBootstrapContext) GetCallIdFull() string {
 }
 
 type BootstrapResponse struct {
-	state               protoimpl.MessageState `protogen:"open.v1"`
-	ConversationId      string                 `protobuf:"bytes,1,opt,name=conversation_id,json=conversationId,proto3" json:"conversation_id,omitempty"`
-	SessionId           string                 `protobuf:"bytes,2,opt,name=session_id,json=sessionId,proto3" json:"session_id,omitempty"`
-	Source              string                 `protobuf:"bytes,3,opt,name=source,proto3" json:"source,omitempty"`
-	RoomName            string                 `protobuf:"bytes,4,opt,name=room_name,json=roomName,proto3" json:"room_name,omitempty"`
-	AgentToolSnapshotId string                 `protobuf:"bytes,5,opt,name=agent_tool_snapshot_id,json=agentToolSnapshotId,proto3" json:"agent_tool_snapshot_id,omitempty"`
-	Stt                 *SttRuntime            `protobuf:"bytes,6,opt,name=stt,proto3" json:"stt,omitempty"`
-	Llm                 *LlmRuntime            `protobuf:"bytes,7,opt,name=llm,proto3" json:"llm,omitempty"`
-	Tts                 *TtsRuntime            `protobuf:"bytes,8,opt,name=tts,proto3" json:"tts,omitempty"`
-	McpServers          []*McpServerRuntime    `protobuf:"bytes,9,rep,name=mcp_servers,json=mcpServers,proto3" json:"mcp_servers,omitempty"`
-	AgentId             string                 `protobuf:"bytes,10,opt,name=agent_id,json=agentId,proto3" json:"agent_id,omitempty"`
-	SupervisorId        string                 `protobuf:"bytes,18,opt,name=supervisor_id,json=supervisorId,proto3" json:"supervisor_id,omitempty"`
-	SupervisorVersionId string                 `protobuf:"bytes,19,opt,name=supervisor_version_id,json=supervisorVersionId,proto3" json:"supervisor_version_id,omitempty"`
-	SupervisorPersona   *SupervisorPersona     `protobuf:"bytes,20,opt,name=supervisor_persona,json=supervisorPersona,proto3" json:"supervisor_persona,omitempty"`
-	SupervisorConfig    *SupervisorConfig      `protobuf:"bytes,21,opt,name=supervisor_config,json=supervisorConfig,proto3" json:"supervisor_config,omitempty"`
-	Workers             []*WorkerSnapshot      `protobuf:"bytes,22,rep,name=workers,proto3" json:"workers,omitempty"`
-	Canvas              *CanvasSnapshot        `protobuf:"bytes,23,opt,name=canvas,proto3" json:"canvas,omitempty"`
-	WorkerToolSnapshots []*WorkerToolSnapshot  `protobuf:"bytes,24,rep,name=worker_tool_snapshots,json=workerToolSnapshots,proto3" json:"worker_tool_snapshots,omitempty"`
-	BootstrapSnapshotId string                 `protobuf:"bytes,25,opt,name=bootstrap_snapshot_id,json=bootstrapSnapshotId,proto3" json:"bootstrap_snapshot_id,omitempty"`
-	ApiToolRuntimes     []*ApiToolRuntime      `protobuf:"bytes,26,rep,name=api_tool_runtimes,json=apiToolRuntimes,proto3" json:"api_tool_runtimes,omitempty"`
+	state               protoimpl.MessageState      `protogen:"open.v1"`
+	ConversationId      string                      `protobuf:"bytes,1,opt,name=conversation_id,json=conversationId,proto3" json:"conversation_id,omitempty"`
+	SessionId           string                      `protobuf:"bytes,2,opt,name=session_id,json=sessionId,proto3" json:"session_id,omitempty"`
+	Source              string                      `protobuf:"bytes,3,opt,name=source,proto3" json:"source,omitempty"`
+	RoomName            string                      `protobuf:"bytes,4,opt,name=room_name,json=roomName,proto3" json:"room_name,omitempty"`
+	AgentToolSnapshotId string                      `protobuf:"bytes,5,opt,name=agent_tool_snapshot_id,json=agentToolSnapshotId,proto3" json:"agent_tool_snapshot_id,omitempty"`
+	Stt                 *SttRuntime                 `protobuf:"bytes,6,opt,name=stt,proto3" json:"stt,omitempty"`
+	Llm                 *LlmRuntime                 `protobuf:"bytes,7,opt,name=llm,proto3" json:"llm,omitempty"`
+	Tts                 *TtsRuntime                 `protobuf:"bytes,8,opt,name=tts,proto3" json:"tts,omitempty"`
+	McpServers          []*McpServerRuntime         `protobuf:"bytes,9,rep,name=mcp_servers,json=mcpServers,proto3" json:"mcp_servers,omitempty"`
+	AgentId             string                      `protobuf:"bytes,10,opt,name=agent_id,json=agentId,proto3" json:"agent_id,omitempty"`
+	SupervisorId        string                      `protobuf:"bytes,18,opt,name=supervisor_id,json=supervisorId,proto3" json:"supervisor_id,omitempty"`
+	SupervisorVersionId string                      `protobuf:"bytes,19,opt,name=supervisor_version_id,json=supervisorVersionId,proto3" json:"supervisor_version_id,omitempty"`
+	SupervisorPersona   *SupervisorPersona          `protobuf:"bytes,20,opt,name=supervisor_persona,json=supervisorPersona,proto3" json:"supervisor_persona,omitempty"`
+	SupervisorConfig    *SupervisorConfig           `protobuf:"bytes,21,opt,name=supervisor_config,json=supervisorConfig,proto3" json:"supervisor_config,omitempty"`
+	Workers             []*WorkerSnapshot           `protobuf:"bytes,22,rep,name=workers,proto3" json:"workers,omitempty"`
+	Canvas              *CanvasSnapshot             `protobuf:"bytes,23,opt,name=canvas,proto3" json:"canvas,omitempty"`
+	WorkerToolSnapshots []*WorkerToolSnapshot       `protobuf:"bytes,24,rep,name=worker_tool_snapshots,json=workerToolSnapshots,proto3" json:"worker_tool_snapshots,omitempty"`
+	BootstrapSnapshotId string                      `protobuf:"bytes,25,opt,name=bootstrap_snapshot_id,json=bootstrapSnapshotId,proto3" json:"bootstrap_snapshot_id,omitempty"`
+	ApiToolRuntimes     []*ApiToolRuntime           `protobuf:"bytes,26,rep,name=api_tool_runtimes,json=apiToolRuntimes,proto3" json:"api_tool_runtimes,omitempty"`
+	OrchestrationGraph  *OrchestrationGraphSnapshot `protobuf:"bytes,27,opt,name=orchestration_graph,json=orchestrationGraph,proto3" json:"orchestration_graph,omitempty"`
 	unknownFields       protoimpl.UnknownFields
 	sizeCache           protoimpl.SizeCache
 }
@@ -384,6 +535,849 @@ func (x *BootstrapResponse) GetApiToolRuntimes() []*ApiToolRuntime {
 	return nil
 }
 
+func (x *BootstrapResponse) GetOrchestrationGraph() *OrchestrationGraphSnapshot {
+	if x != nil {
+		return x.OrchestrationGraph
+	}
+	return nil
+}
+
+type OrchestrationGraphSnapshot struct {
+	state             protoimpl.MessageState     `protogen:"open.v1"`
+	SnapshotId        string                     `protobuf:"bytes,1,opt,name=snapshot_id,json=snapshotId,proto3" json:"snapshot_id,omitempty"`
+	VersionId         string                     `protobuf:"bytes,2,opt,name=version_id,json=versionId,proto3" json:"version_id,omitempty"`
+	SchemaVersion     string                     `protobuf:"bytes,3,opt,name=schema_version,json=schemaVersion,proto3" json:"schema_version,omitempty"`
+	EntryNodeId       string                     `protobuf:"bytes,4,opt,name=entry_node_id,json=entryNodeId,proto3" json:"entry_node_id,omitempty"`
+	MaxHandoffDepth   uint32                     `protobuf:"varint,5,opt,name=max_handoff_depth,json=maxHandoffDepth,proto3" json:"max_handoff_depth,omitempty"`
+	Nodes             []*OrchestrationNode       `protobuf:"bytes,6,rep,name=nodes,proto3" json:"nodes,omitempty"`
+	Transitions       []*OrchestrationTransition `protobuf:"bytes,7,rep,name=transitions,proto3" json:"transitions,omitempty"`
+	NodeToolSnapshots []*NodeToolSnapshot        `protobuf:"bytes,8,rep,name=node_tool_snapshots,json=nodeToolSnapshots,proto3" json:"node_tool_snapshots,omitempty"`
+	unknownFields     protoimpl.UnknownFields
+	sizeCache         protoimpl.SizeCache
+}
+
+func (x *OrchestrationGraphSnapshot) Reset() {
+	*x = OrchestrationGraphSnapshot{}
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[3]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *OrchestrationGraphSnapshot) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*OrchestrationGraphSnapshot) ProtoMessage() {}
+
+func (x *OrchestrationGraphSnapshot) ProtoReflect() protoreflect.Message {
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[3]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use OrchestrationGraphSnapshot.ProtoReflect.Descriptor instead.
+func (*OrchestrationGraphSnapshot) Descriptor() ([]byte, []int) {
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{3}
+}
+
+func (x *OrchestrationGraphSnapshot) GetSnapshotId() string {
+	if x != nil {
+		return x.SnapshotId
+	}
+	return ""
+}
+
+func (x *OrchestrationGraphSnapshot) GetVersionId() string {
+	if x != nil {
+		return x.VersionId
+	}
+	return ""
+}
+
+func (x *OrchestrationGraphSnapshot) GetSchemaVersion() string {
+	if x != nil {
+		return x.SchemaVersion
+	}
+	return ""
+}
+
+func (x *OrchestrationGraphSnapshot) GetEntryNodeId() string {
+	if x != nil {
+		return x.EntryNodeId
+	}
+	return ""
+}
+
+func (x *OrchestrationGraphSnapshot) GetMaxHandoffDepth() uint32 {
+	if x != nil {
+		return x.MaxHandoffDepth
+	}
+	return 0
+}
+
+func (x *OrchestrationGraphSnapshot) GetNodes() []*OrchestrationNode {
+	if x != nil {
+		return x.Nodes
+	}
+	return nil
+}
+
+func (x *OrchestrationGraphSnapshot) GetTransitions() []*OrchestrationTransition {
+	if x != nil {
+		return x.Transitions
+	}
+	return nil
+}
+
+func (x *OrchestrationGraphSnapshot) GetNodeToolSnapshots() []*NodeToolSnapshot {
+	if x != nil {
+		return x.NodeToolSnapshots
+	}
+	return nil
+}
+
+type OrchestrationNode struct {
+	state        protoimpl.MessageState `protogen:"open.v1"`
+	NodeId       string                 `protobuf:"bytes,1,opt,name=node_id,json=nodeId,proto3" json:"node_id,omitempty"`
+	Kind         NodeKind               `protobuf:"varint,2,opt,name=kind,proto3,enum=port.api.v1.NodeKind" json:"kind,omitempty"`
+	ParentNodeId string                 `protobuf:"bytes,3,opt,name=parent_node_id,json=parentNodeId,proto3" json:"parent_node_id,omitempty"`
+	Position     *CanvasPosition        `protobuf:"bytes,4,opt,name=position,proto3" json:"position,omitempty"`
+	Size         *CanvasSize            `protobuf:"bytes,5,opt,name=size,proto3" json:"size,omitempty"`
+	// Types that are valid to be assigned to Payload:
+	//
+	//	*OrchestrationNode_Agent
+	//	*OrchestrationNode_Task
+	//	*OrchestrationNode_Group
+	Payload       isOrchestrationNode_Payload `protobuf_oneof:"payload"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *OrchestrationNode) Reset() {
+	*x = OrchestrationNode{}
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[4]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *OrchestrationNode) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*OrchestrationNode) ProtoMessage() {}
+
+func (x *OrchestrationNode) ProtoReflect() protoreflect.Message {
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[4]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use OrchestrationNode.ProtoReflect.Descriptor instead.
+func (*OrchestrationNode) Descriptor() ([]byte, []int) {
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{4}
+}
+
+func (x *OrchestrationNode) GetNodeId() string {
+	if x != nil {
+		return x.NodeId
+	}
+	return ""
+}
+
+func (x *OrchestrationNode) GetKind() NodeKind {
+	if x != nil {
+		return x.Kind
+	}
+	return NodeKind_NODE_KIND_UNSPECIFIED
+}
+
+func (x *OrchestrationNode) GetParentNodeId() string {
+	if x != nil {
+		return x.ParentNodeId
+	}
+	return ""
+}
+
+func (x *OrchestrationNode) GetPosition() *CanvasPosition {
+	if x != nil {
+		return x.Position
+	}
+	return nil
+}
+
+func (x *OrchestrationNode) GetSize() *CanvasSize {
+	if x != nil {
+		return x.Size
+	}
+	return nil
+}
+
+func (x *OrchestrationNode) GetPayload() isOrchestrationNode_Payload {
+	if x != nil {
+		return x.Payload
+	}
+	return nil
+}
+
+func (x *OrchestrationNode) GetAgent() *OrchestrationAgent {
+	if x != nil {
+		if x, ok := x.Payload.(*OrchestrationNode_Agent); ok {
+			return x.Agent
+		}
+	}
+	return nil
+}
+
+func (x *OrchestrationNode) GetTask() *OrchestrationTask {
+	if x != nil {
+		if x, ok := x.Payload.(*OrchestrationNode_Task); ok {
+			return x.Task
+		}
+	}
+	return nil
+}
+
+func (x *OrchestrationNode) GetGroup() *OrchestrationGroup {
+	if x != nil {
+		if x, ok := x.Payload.(*OrchestrationNode_Group); ok {
+			return x.Group
+		}
+	}
+	return nil
+}
+
+type isOrchestrationNode_Payload interface {
+	isOrchestrationNode_Payload()
+}
+
+type OrchestrationNode_Agent struct {
+	Agent *OrchestrationAgent `protobuf:"bytes,6,opt,name=agent,proto3,oneof"`
+}
+
+type OrchestrationNode_Task struct {
+	Task *OrchestrationTask `protobuf:"bytes,7,opt,name=task,proto3,oneof"`
+}
+
+type OrchestrationNode_Group struct {
+	Group *OrchestrationGroup `protobuf:"bytes,8,opt,name=group,proto3,oneof"`
+}
+
+func (*OrchestrationNode_Agent) isOrchestrationNode_Payload() {}
+
+func (*OrchestrationNode_Task) isOrchestrationNode_Payload() {}
+
+func (*OrchestrationNode_Group) isOrchestrationNode_Payload() {}
+
+type OrchestrationAgent struct {
+	state            protoimpl.MessageState         `protogen:"open.v1"`
+	AgentId          string                         `protobuf:"bytes,1,opt,name=agent_id,json=agentId,proto3" json:"agent_id,omitempty"`
+	AgentVersionId   string                         `protobuf:"bytes,2,opt,name=agent_version_id,json=agentVersionId,proto3" json:"agent_version_id,omitempty"`
+	Persona          *OrchestrationAgentPersona     `protobuf:"bytes,3,opt,name=persona,proto3" json:"persona,omitempty"`
+	ExecutionProfile *OrchestrationExecutionProfile `protobuf:"bytes,4,opt,name=execution_profile,json=executionProfile,proto3" json:"execution_profile,omitempty"`
+	ToolSnapshotId   string                         `protobuf:"bytes,5,opt,name=tool_snapshot_id,json=toolSnapshotId,proto3" json:"tool_snapshot_id,omitempty"`
+	unknownFields    protoimpl.UnknownFields
+	sizeCache        protoimpl.SizeCache
+}
+
+func (x *OrchestrationAgent) Reset() {
+	*x = OrchestrationAgent{}
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[5]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *OrchestrationAgent) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*OrchestrationAgent) ProtoMessage() {}
+
+func (x *OrchestrationAgent) ProtoReflect() protoreflect.Message {
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[5]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use OrchestrationAgent.ProtoReflect.Descriptor instead.
+func (*OrchestrationAgent) Descriptor() ([]byte, []int) {
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{5}
+}
+
+func (x *OrchestrationAgent) GetAgentId() string {
+	if x != nil {
+		return x.AgentId
+	}
+	return ""
+}
+
+func (x *OrchestrationAgent) GetAgentVersionId() string {
+	if x != nil {
+		return x.AgentVersionId
+	}
+	return ""
+}
+
+func (x *OrchestrationAgent) GetPersona() *OrchestrationAgentPersona {
+	if x != nil {
+		return x.Persona
+	}
+	return nil
+}
+
+func (x *OrchestrationAgent) GetExecutionProfile() *OrchestrationExecutionProfile {
+	if x != nil {
+		return x.ExecutionProfile
+	}
+	return nil
+}
+
+func (x *OrchestrationAgent) GetToolSnapshotId() string {
+	if x != nil {
+		return x.ToolSnapshotId
+	}
+	return ""
+}
+
+type OrchestrationTask struct {
+	state                  protoimpl.MessageState         `protogen:"open.v1"`
+	Name                   string                         `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	Instructions           string                         `protobuf:"bytes,2,opt,name=instructions,proto3" json:"instructions,omitempty"`
+	CompletionInstructions string                         `protobuf:"bytes,3,opt,name=completion_instructions,json=completionInstructions,proto3" json:"completion_instructions,omitempty"`
+	ExecutionProfile       *OrchestrationExecutionProfile `protobuf:"bytes,4,opt,name=execution_profile,json=executionProfile,proto3" json:"execution_profile,omitempty"`
+	ToolSnapshotId         string                         `protobuf:"bytes,5,opt,name=tool_snapshot_id,json=toolSnapshotId,proto3" json:"tool_snapshot_id,omitempty"`
+	unknownFields          protoimpl.UnknownFields
+	sizeCache              protoimpl.SizeCache
+}
+
+func (x *OrchestrationTask) Reset() {
+	*x = OrchestrationTask{}
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[6]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *OrchestrationTask) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*OrchestrationTask) ProtoMessage() {}
+
+func (x *OrchestrationTask) ProtoReflect() protoreflect.Message {
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[6]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use OrchestrationTask.ProtoReflect.Descriptor instead.
+func (*OrchestrationTask) Descriptor() ([]byte, []int) {
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{6}
+}
+
+func (x *OrchestrationTask) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *OrchestrationTask) GetInstructions() string {
+	if x != nil {
+		return x.Instructions
+	}
+	return ""
+}
+
+func (x *OrchestrationTask) GetCompletionInstructions() string {
+	if x != nil {
+		return x.CompletionInstructions
+	}
+	return ""
+}
+
+func (x *OrchestrationTask) GetExecutionProfile() *OrchestrationExecutionProfile {
+	if x != nil {
+		return x.ExecutionProfile
+	}
+	return nil
+}
+
+func (x *OrchestrationTask) GetToolSnapshotId() string {
+	if x != nil {
+		return x.ToolSnapshotId
+	}
+	return ""
+}
+
+type OrchestrationGroup struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Label         string                 `protobuf:"bytes,1,opt,name=label,proto3" json:"label,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *OrchestrationGroup) Reset() {
+	*x = OrchestrationGroup{}
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[7]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *OrchestrationGroup) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*OrchestrationGroup) ProtoMessage() {}
+
+func (x *OrchestrationGroup) ProtoReflect() protoreflect.Message {
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[7]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use OrchestrationGroup.ProtoReflect.Descriptor instead.
+func (*OrchestrationGroup) Descriptor() ([]byte, []int) {
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{7}
+}
+
+func (x *OrchestrationGroup) GetLabel() string {
+	if x != nil {
+		return x.Label
+	}
+	return ""
+}
+
+type OrchestrationAgentPersona struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	DisplayName   string                 `protobuf:"bytes,1,opt,name=display_name,json=displayName,proto3" json:"display_name,omitempty"`
+	SystemPrompt  string                 `protobuf:"bytes,2,opt,name=system_prompt,json=systemPrompt,proto3" json:"system_prompt,omitempty"`
+	Greeting      string                 `protobuf:"bytes,3,opt,name=greeting,proto3" json:"greeting,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *OrchestrationAgentPersona) Reset() {
+	*x = OrchestrationAgentPersona{}
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[8]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *OrchestrationAgentPersona) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*OrchestrationAgentPersona) ProtoMessage() {}
+
+func (x *OrchestrationAgentPersona) ProtoReflect() protoreflect.Message {
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[8]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use OrchestrationAgentPersona.ProtoReflect.Descriptor instead.
+func (*OrchestrationAgentPersona) Descriptor() ([]byte, []int) {
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{8}
+}
+
+func (x *OrchestrationAgentPersona) GetDisplayName() string {
+	if x != nil {
+		return x.DisplayName
+	}
+	return ""
+}
+
+func (x *OrchestrationAgentPersona) GetSystemPrompt() string {
+	if x != nil {
+		return x.SystemPrompt
+	}
+	return ""
+}
+
+func (x *OrchestrationAgentPersona) GetGreeting() string {
+	if x != nil {
+		return x.Greeting
+	}
+	return ""
+}
+
+type OrchestrationExecutionProfile struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	LlmModel      string                 `protobuf:"bytes,1,opt,name=llm_model,json=llmModel,proto3" json:"llm_model,omitempty"`
+	TtsModel      string                 `protobuf:"bytes,2,opt,name=tts_model,json=ttsModel,proto3" json:"tts_model,omitempty"`
+	VoiceId       string                 `protobuf:"bytes,3,opt,name=voice_id,json=voiceId,proto3" json:"voice_id,omitempty"`
+	Language      string                 `protobuf:"bytes,4,opt,name=language,proto3" json:"language,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *OrchestrationExecutionProfile) Reset() {
+	*x = OrchestrationExecutionProfile{}
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[9]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *OrchestrationExecutionProfile) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*OrchestrationExecutionProfile) ProtoMessage() {}
+
+func (x *OrchestrationExecutionProfile) ProtoReflect() protoreflect.Message {
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[9]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use OrchestrationExecutionProfile.ProtoReflect.Descriptor instead.
+func (*OrchestrationExecutionProfile) Descriptor() ([]byte, []int) {
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{9}
+}
+
+func (x *OrchestrationExecutionProfile) GetLlmModel() string {
+	if x != nil {
+		return x.LlmModel
+	}
+	return ""
+}
+
+func (x *OrchestrationExecutionProfile) GetTtsModel() string {
+	if x != nil {
+		return x.TtsModel
+	}
+	return ""
+}
+
+func (x *OrchestrationExecutionProfile) GetVoiceId() string {
+	if x != nil {
+		return x.VoiceId
+	}
+	return ""
+}
+
+func (x *OrchestrationExecutionProfile) GetLanguage() string {
+	if x != nil {
+		return x.Language
+	}
+	return ""
+}
+
+type NodeToolSnapshot struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	SnapshotId    string                 `protobuf:"bytes,1,opt,name=snapshot_id,json=snapshotId,proto3" json:"snapshot_id,omitempty"`
+	VersionId     string                 `protobuf:"bytes,2,opt,name=version_id,json=versionId,proto3" json:"version_id,omitempty"`
+	NodeId        string                 `protobuf:"bytes,3,opt,name=node_id,json=nodeId,proto3" json:"node_id,omitempty"`
+	Tools         []*NodeToolMetadata    `protobuf:"bytes,4,rep,name=tools,proto3" json:"tools,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *NodeToolSnapshot) Reset() {
+	*x = NodeToolSnapshot{}
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[10]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *NodeToolSnapshot) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*NodeToolSnapshot) ProtoMessage() {}
+
+func (x *NodeToolSnapshot) ProtoReflect() protoreflect.Message {
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[10]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use NodeToolSnapshot.ProtoReflect.Descriptor instead.
+func (*NodeToolSnapshot) Descriptor() ([]byte, []int) {
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{10}
+}
+
+func (x *NodeToolSnapshot) GetSnapshotId() string {
+	if x != nil {
+		return x.SnapshotId
+	}
+	return ""
+}
+
+func (x *NodeToolSnapshot) GetVersionId() string {
+	if x != nil {
+		return x.VersionId
+	}
+	return ""
+}
+
+func (x *NodeToolSnapshot) GetNodeId() string {
+	if x != nil {
+		return x.NodeId
+	}
+	return ""
+}
+
+func (x *NodeToolSnapshot) GetTools() []*NodeToolMetadata {
+	if x != nil {
+		return x.Tools
+	}
+	return nil
+}
+
+type NodeToolMetadata struct {
+	state       protoimpl.MessageState `protogen:"open.v1"`
+	ToolId      string                 `protobuf:"bytes,1,opt,name=tool_id,json=toolId,proto3" json:"tool_id,omitempty"`
+	Kind        string                 `protobuf:"bytes,2,opt,name=kind,proto3" json:"kind,omitempty"`
+	Name        string                 `protobuf:"bytes,3,opt,name=name,proto3" json:"name,omitempty"`
+	Description string                 `protobuf:"bytes,4,opt,name=description,proto3" json:"description,omitempty"`
+	// Types that are valid to be assigned to Metadata:
+	//
+	//	*NodeToolMetadata_Mcp
+	//	*NodeToolMetadata_Api
+	Metadata      isNodeToolMetadata_Metadata `protobuf_oneof:"metadata"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *NodeToolMetadata) Reset() {
+	*x = NodeToolMetadata{}
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[11]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *NodeToolMetadata) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*NodeToolMetadata) ProtoMessage() {}
+
+func (x *NodeToolMetadata) ProtoReflect() protoreflect.Message {
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[11]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use NodeToolMetadata.ProtoReflect.Descriptor instead.
+func (*NodeToolMetadata) Descriptor() ([]byte, []int) {
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{11}
+}
+
+func (x *NodeToolMetadata) GetToolId() string {
+	if x != nil {
+		return x.ToolId
+	}
+	return ""
+}
+
+func (x *NodeToolMetadata) GetKind() string {
+	if x != nil {
+		return x.Kind
+	}
+	return ""
+}
+
+func (x *NodeToolMetadata) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *NodeToolMetadata) GetDescription() string {
+	if x != nil {
+		return x.Description
+	}
+	return ""
+}
+
+func (x *NodeToolMetadata) GetMetadata() isNodeToolMetadata_Metadata {
+	if x != nil {
+		return x.Metadata
+	}
+	return nil
+}
+
+func (x *NodeToolMetadata) GetMcp() *McpToolMetadata {
+	if x != nil {
+		if x, ok := x.Metadata.(*NodeToolMetadata_Mcp); ok {
+			return x.Mcp
+		}
+	}
+	return nil
+}
+
+func (x *NodeToolMetadata) GetApi() *ApiToolMetadata {
+	if x != nil {
+		if x, ok := x.Metadata.(*NodeToolMetadata_Api); ok {
+			return x.Api
+		}
+	}
+	return nil
+}
+
+type isNodeToolMetadata_Metadata interface {
+	isNodeToolMetadata_Metadata()
+}
+
+type NodeToolMetadata_Mcp struct {
+	Mcp *McpToolMetadata `protobuf:"bytes,5,opt,name=mcp,proto3,oneof"`
+}
+
+type NodeToolMetadata_Api struct {
+	Api *ApiToolMetadata `protobuf:"bytes,6,opt,name=api,proto3,oneof"`
+}
+
+func (*NodeToolMetadata_Mcp) isNodeToolMetadata_Metadata() {}
+
+func (*NodeToolMetadata_Api) isNodeToolMetadata_Metadata() {}
+
+type OrchestrationTransition struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	TransitionId  string                 `protobuf:"bytes,1,opt,name=transition_id,json=transitionId,proto3" json:"transition_id,omitempty"`
+	SourceNodeId  string                 `protobuf:"bytes,2,opt,name=source_node_id,json=sourceNodeId,proto3" json:"source_node_id,omitempty"`
+	TargetNodeId  string                 `protobuf:"bytes,3,opt,name=target_node_id,json=targetNodeId,proto3" json:"target_node_id,omitempty"`
+	Kind          TransitionKind         `protobuf:"varint,4,opt,name=kind,proto3,enum=port.api.v1.TransitionKind" json:"kind,omitempty"`
+	Description   string                 `protobuf:"bytes,5,opt,name=description,proto3" json:"description,omitempty"`
+	ContextPolicy ContextPolicy          `protobuf:"varint,6,opt,name=context_policy,json=contextPolicy,proto3,enum=port.api.v1.ContextPolicy" json:"context_policy,omitempty"`
+	Announcement  string                 `protobuf:"bytes,7,opt,name=announcement,proto3" json:"announcement,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *OrchestrationTransition) Reset() {
+	*x = OrchestrationTransition{}
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[12]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *OrchestrationTransition) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*OrchestrationTransition) ProtoMessage() {}
+
+func (x *OrchestrationTransition) ProtoReflect() protoreflect.Message {
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[12]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use OrchestrationTransition.ProtoReflect.Descriptor instead.
+func (*OrchestrationTransition) Descriptor() ([]byte, []int) {
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{12}
+}
+
+func (x *OrchestrationTransition) GetTransitionId() string {
+	if x != nil {
+		return x.TransitionId
+	}
+	return ""
+}
+
+func (x *OrchestrationTransition) GetSourceNodeId() string {
+	if x != nil {
+		return x.SourceNodeId
+	}
+	return ""
+}
+
+func (x *OrchestrationTransition) GetTargetNodeId() string {
+	if x != nil {
+		return x.TargetNodeId
+	}
+	return ""
+}
+
+func (x *OrchestrationTransition) GetKind() TransitionKind {
+	if x != nil {
+		return x.Kind
+	}
+	return TransitionKind_TRANSITION_KIND_UNSPECIFIED
+}
+
+func (x *OrchestrationTransition) GetDescription() string {
+	if x != nil {
+		return x.Description
+	}
+	return ""
+}
+
+func (x *OrchestrationTransition) GetContextPolicy() ContextPolicy {
+	if x != nil {
+		return x.ContextPolicy
+	}
+	return ContextPolicy_CONTEXT_POLICY_UNSPECIFIED
+}
+
+func (x *OrchestrationTransition) GetAnnouncement() string {
+	if x != nil {
+		return x.Announcement
+	}
+	return ""
+}
+
 type SupervisorPersona struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	DisplayName   string                 `protobuf:"bytes,1,opt,name=display_name,json=displayName,proto3" json:"display_name,omitempty"`
@@ -396,7 +1390,7 @@ type SupervisorPersona struct {
 
 func (x *SupervisorPersona) Reset() {
 	*x = SupervisorPersona{}
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[3]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[13]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -408,7 +1402,7 @@ func (x *SupervisorPersona) String() string {
 func (*SupervisorPersona) ProtoMessage() {}
 
 func (x *SupervisorPersona) ProtoReflect() protoreflect.Message {
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[3]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[13]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -421,7 +1415,7 @@ func (x *SupervisorPersona) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SupervisorPersona.ProtoReflect.Descriptor instead.
 func (*SupervisorPersona) Descriptor() ([]byte, []int) {
-	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{3}
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{13}
 }
 
 func (x *SupervisorPersona) GetDisplayName() string {
@@ -463,7 +1457,7 @@ type SupervisorConfig struct {
 
 func (x *SupervisorConfig) Reset() {
 	*x = SupervisorConfig{}
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[4]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[14]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -475,7 +1469,7 @@ func (x *SupervisorConfig) String() string {
 func (*SupervisorConfig) ProtoMessage() {}
 
 func (x *SupervisorConfig) ProtoReflect() protoreflect.Message {
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[4]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[14]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -488,7 +1482,7 @@ func (x *SupervisorConfig) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SupervisorConfig.ProtoReflect.Descriptor instead.
 func (*SupervisorConfig) Descriptor() ([]byte, []int) {
-	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{4}
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{14}
 }
 
 func (x *SupervisorConfig) GetRoutingInstructions() string {
@@ -530,7 +1524,7 @@ type WorkerSnapshot struct {
 
 func (x *WorkerSnapshot) Reset() {
 	*x = WorkerSnapshot{}
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[5]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[15]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -542,7 +1536,7 @@ func (x *WorkerSnapshot) String() string {
 func (*WorkerSnapshot) ProtoMessage() {}
 
 func (x *WorkerSnapshot) ProtoReflect() protoreflect.Message {
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[5]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[15]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -555,7 +1549,7 @@ func (x *WorkerSnapshot) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use WorkerSnapshot.ProtoReflect.Descriptor instead.
 func (*WorkerSnapshot) Descriptor() ([]byte, []int) {
-	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{5}
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{15}
 }
 
 func (x *WorkerSnapshot) GetWorkerId() string {
@@ -627,7 +1621,7 @@ type WorkerPersona struct {
 
 func (x *WorkerPersona) Reset() {
 	*x = WorkerPersona{}
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[6]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[16]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -639,7 +1633,7 @@ func (x *WorkerPersona) String() string {
 func (*WorkerPersona) ProtoMessage() {}
 
 func (x *WorkerPersona) ProtoReflect() protoreflect.Message {
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[6]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[16]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -652,7 +1646,7 @@ func (x *WorkerPersona) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use WorkerPersona.ProtoReflect.Descriptor instead.
 func (*WorkerPersona) Descriptor() ([]byte, []int) {
-	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{6}
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{16}
 }
 
 func (x *WorkerPersona) GetDisplayName() string {
@@ -704,7 +1698,7 @@ type CanvasSnapshot struct {
 
 func (x *CanvasSnapshot) Reset() {
 	*x = CanvasSnapshot{}
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[7]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[17]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -716,7 +1710,7 @@ func (x *CanvasSnapshot) String() string {
 func (*CanvasSnapshot) ProtoMessage() {}
 
 func (x *CanvasSnapshot) ProtoReflect() protoreflect.Message {
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[7]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[17]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -729,7 +1723,7 @@ func (x *CanvasSnapshot) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CanvasSnapshot.ProtoReflect.Descriptor instead.
 func (*CanvasSnapshot) Descriptor() ([]byte, []int) {
-	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{7}
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{17}
 }
 
 func (x *CanvasSnapshot) GetSnapshotId() string {
@@ -778,7 +1772,7 @@ type CanvasNodeSnapshot struct {
 
 func (x *CanvasNodeSnapshot) Reset() {
 	*x = CanvasNodeSnapshot{}
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[8]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[18]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -790,7 +1784,7 @@ func (x *CanvasNodeSnapshot) String() string {
 func (*CanvasNodeSnapshot) ProtoMessage() {}
 
 func (x *CanvasNodeSnapshot) ProtoReflect() protoreflect.Message {
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[8]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[18]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -803,7 +1797,7 @@ func (x *CanvasNodeSnapshot) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CanvasNodeSnapshot.ProtoReflect.Descriptor instead.
 func (*CanvasNodeSnapshot) Descriptor() ([]byte, []int) {
-	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{8}
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{18}
 }
 
 func (x *CanvasNodeSnapshot) GetNodeId() string {
@@ -891,7 +1885,7 @@ type CanvasGroupPlacement struct {
 
 func (x *CanvasGroupPlacement) Reset() {
 	*x = CanvasGroupPlacement{}
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[9]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[19]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -903,7 +1897,7 @@ func (x *CanvasGroupPlacement) String() string {
 func (*CanvasGroupPlacement) ProtoMessage() {}
 
 func (x *CanvasGroupPlacement) ProtoReflect() protoreflect.Message {
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[9]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[19]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -916,7 +1910,7 @@ func (x *CanvasGroupPlacement) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CanvasGroupPlacement.ProtoReflect.Descriptor instead.
 func (*CanvasGroupPlacement) Descriptor() ([]byte, []int) {
-	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{9}
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{19}
 }
 
 func (x *CanvasGroupPlacement) GetLabel() string {
@@ -935,7 +1929,7 @@ type CanvasAgentPlacement struct {
 
 func (x *CanvasAgentPlacement) Reset() {
 	*x = CanvasAgentPlacement{}
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[10]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[20]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -947,7 +1941,7 @@ func (x *CanvasAgentPlacement) String() string {
 func (*CanvasAgentPlacement) ProtoMessage() {}
 
 func (x *CanvasAgentPlacement) ProtoReflect() protoreflect.Message {
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[10]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[20]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -960,7 +1954,7 @@ func (x *CanvasAgentPlacement) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CanvasAgentPlacement.ProtoReflect.Descriptor instead.
 func (*CanvasAgentPlacement) Descriptor() ([]byte, []int) {
-	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{10}
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{20}
 }
 
 func (x *CanvasAgentPlacement) GetAgentId() string {
@@ -980,7 +1974,7 @@ type CanvasPosition struct {
 
 func (x *CanvasPosition) Reset() {
 	*x = CanvasPosition{}
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[11]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[21]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -992,7 +1986,7 @@ func (x *CanvasPosition) String() string {
 func (*CanvasPosition) ProtoMessage() {}
 
 func (x *CanvasPosition) ProtoReflect() protoreflect.Message {
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[11]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[21]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1005,7 +1999,7 @@ func (x *CanvasPosition) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CanvasPosition.ProtoReflect.Descriptor instead.
 func (*CanvasPosition) Descriptor() ([]byte, []int) {
-	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{11}
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{21}
 }
 
 func (x *CanvasPosition) GetX() float64 {
@@ -1032,7 +2026,7 @@ type CanvasSize struct {
 
 func (x *CanvasSize) Reset() {
 	*x = CanvasSize{}
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[12]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[22]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1044,7 +2038,7 @@ func (x *CanvasSize) String() string {
 func (*CanvasSize) ProtoMessage() {}
 
 func (x *CanvasSize) ProtoReflect() protoreflect.Message {
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[12]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[22]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1057,7 +2051,7 @@ func (x *CanvasSize) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CanvasSize.ProtoReflect.Descriptor instead.
 func (*CanvasSize) Descriptor() ([]byte, []int) {
-	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{12}
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{22}
 }
 
 func (x *CanvasSize) GetWidth() float64 {
@@ -1089,7 +2083,7 @@ type WorkerToolSnapshot struct {
 
 func (x *WorkerToolSnapshot) Reset() {
 	*x = WorkerToolSnapshot{}
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[13]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[23]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1101,7 +2095,7 @@ func (x *WorkerToolSnapshot) String() string {
 func (*WorkerToolSnapshot) ProtoMessage() {}
 
 func (x *WorkerToolSnapshot) ProtoReflect() protoreflect.Message {
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[13]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[23]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1114,7 +2108,7 @@ func (x *WorkerToolSnapshot) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use WorkerToolSnapshot.ProtoReflect.Descriptor instead.
 func (*WorkerToolSnapshot) Descriptor() ([]byte, []int) {
-	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{13}
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{23}
 }
 
 func (x *WorkerToolSnapshot) GetSnapshotId() string {
@@ -1162,7 +2156,7 @@ type WorkerToolMetadata struct {
 
 func (x *WorkerToolMetadata) Reset() {
 	*x = WorkerToolMetadata{}
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[14]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[24]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1174,7 +2168,7 @@ func (x *WorkerToolMetadata) String() string {
 func (*WorkerToolMetadata) ProtoMessage() {}
 
 func (x *WorkerToolMetadata) ProtoReflect() protoreflect.Message {
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[14]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[24]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1187,7 +2181,7 @@ func (x *WorkerToolMetadata) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use WorkerToolMetadata.ProtoReflect.Descriptor instead.
 func (*WorkerToolMetadata) Descriptor() ([]byte, []int) {
-	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{14}
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{24}
 }
 
 func (x *WorkerToolMetadata) GetToolId() string {
@@ -1270,7 +2264,7 @@ type McpToolMetadata struct {
 
 func (x *McpToolMetadata) Reset() {
 	*x = McpToolMetadata{}
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[15]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[25]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1282,7 +2276,7 @@ func (x *McpToolMetadata) String() string {
 func (*McpToolMetadata) ProtoMessage() {}
 
 func (x *McpToolMetadata) ProtoReflect() protoreflect.Message {
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[15]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[25]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1295,7 +2289,7 @@ func (x *McpToolMetadata) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use McpToolMetadata.ProtoReflect.Descriptor instead.
 func (*McpToolMetadata) Descriptor() ([]byte, []int) {
-	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{15}
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{25}
 }
 
 func (x *McpToolMetadata) GetServerName() string {
@@ -1331,7 +2325,7 @@ type ApiToolMetadata struct {
 
 func (x *ApiToolMetadata) Reset() {
 	*x = ApiToolMetadata{}
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[16]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[26]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1343,7 +2337,7 @@ func (x *ApiToolMetadata) String() string {
 func (*ApiToolMetadata) ProtoMessage() {}
 
 func (x *ApiToolMetadata) ProtoReflect() protoreflect.Message {
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[16]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[26]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1356,7 +2350,7 @@ func (x *ApiToolMetadata) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ApiToolMetadata.ProtoReflect.Descriptor instead.
 func (*ApiToolMetadata) Descriptor() ([]byte, []int) {
-	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{16}
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{26}
 }
 
 func (x *ApiToolMetadata) GetMethod() string {
@@ -1399,7 +2393,7 @@ type ApiToolRuntime struct {
 
 func (x *ApiToolRuntime) Reset() {
 	*x = ApiToolRuntime{}
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[17]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[27]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1411,7 +2405,7 @@ func (x *ApiToolRuntime) String() string {
 func (*ApiToolRuntime) ProtoMessage() {}
 
 func (x *ApiToolRuntime) ProtoReflect() protoreflect.Message {
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[17]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[27]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1424,7 +2418,7 @@ func (x *ApiToolRuntime) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ApiToolRuntime.ProtoReflect.Descriptor instead.
 func (*ApiToolRuntime) Descriptor() ([]byte, []int) {
-	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{17}
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{27}
 }
 
 func (x *ApiToolRuntime) GetToolId() string {
@@ -1453,7 +2447,7 @@ type AgentGlobalActions struct {
 
 func (x *AgentGlobalActions) Reset() {
 	*x = AgentGlobalActions{}
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[18]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[28]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1465,7 +2459,7 @@ func (x *AgentGlobalActions) String() string {
 func (*AgentGlobalActions) ProtoMessage() {}
 
 func (x *AgentGlobalActions) ProtoReflect() protoreflect.Message {
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[18]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[28]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1478,7 +2472,7 @@ func (x *AgentGlobalActions) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AgentGlobalActions.ProtoReflect.Descriptor instead.
 func (*AgentGlobalActions) Descriptor() ([]byte, []int) {
-	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{18}
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{28}
 }
 
 func (x *AgentGlobalActions) GetTransferToHuman() *TransferToHumanAction {
@@ -1508,7 +2502,7 @@ type TransferToHumanAction struct {
 
 func (x *TransferToHumanAction) Reset() {
 	*x = TransferToHumanAction{}
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[19]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[29]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1520,7 +2514,7 @@ func (x *TransferToHumanAction) String() string {
 func (*TransferToHumanAction) ProtoMessage() {}
 
 func (x *TransferToHumanAction) ProtoReflect() protoreflect.Message {
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[19]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[29]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1533,7 +2527,7 @@ func (x *TransferToHumanAction) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TransferToHumanAction.ProtoReflect.Descriptor instead.
 func (*TransferToHumanAction) Descriptor() ([]byte, []int) {
-	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{19}
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{29}
 }
 
 func (x *TransferToHumanAction) GetEnabled() bool {
@@ -1576,7 +2570,7 @@ type EndCallAction struct {
 
 func (x *EndCallAction) Reset() {
 	*x = EndCallAction{}
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[20]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[30]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1588,7 +2582,7 @@ func (x *EndCallAction) String() string {
 func (*EndCallAction) ProtoMessage() {}
 
 func (x *EndCallAction) ProtoReflect() protoreflect.Message {
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[20]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[30]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1601,7 +2595,7 @@ func (x *EndCallAction) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use EndCallAction.ProtoReflect.Descriptor instead.
 func (*EndCallAction) Descriptor() ([]byte, []int) {
-	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{20}
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{30}
 }
 
 func (x *EndCallAction) GetEnabled() bool {
@@ -1637,7 +2631,7 @@ type McpServerRuntime struct {
 
 func (x *McpServerRuntime) Reset() {
 	*x = McpServerRuntime{}
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[21]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[31]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1649,7 +2643,7 @@ func (x *McpServerRuntime) String() string {
 func (*McpServerRuntime) ProtoMessage() {}
 
 func (x *McpServerRuntime) ProtoReflect() protoreflect.Message {
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[21]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[31]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1662,7 +2656,7 @@ func (x *McpServerRuntime) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use McpServerRuntime.ProtoReflect.Descriptor instead.
 func (*McpServerRuntime) Descriptor() ([]byte, []int) {
-	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{21}
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{31}
 }
 
 func (x *McpServerRuntime) GetName() string {
@@ -1711,7 +2705,8 @@ const file_port_api_v1_agent_session_proto_rawDesc = "" +
 	"\btrunk_id\x18\x05 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\atrunkId\x125\n" +
 	"\x12trunk_phone_number\x18\x06 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x10trunkPhoneNumber\x12)\n" +
 	"\fcall_id_full\x18\a \x01(\tB\a\xbaH\x04r\x02\x10\x01R\n" +
-	"callIdFull\"\xf2\t\n" +
+	"callIdFull\"\xcc\n" +
+	"\n" +
 	"\x11BootstrapResponse\x120\n" +
 	"\x0fconversation_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x0econversationId\x12&\n" +
 	"\n" +
@@ -1734,7 +2729,81 @@ const file_port_api_v1_agent_session_proto_rawDesc = "" +
 	"\x06canvas\x18\x17 \x01(\v2\x1b.port.api.v1.CanvasSnapshotB\x06\xbaH\x03\xc8\x01\x01R\x06canvas\x12S\n" +
 	"\x15worker_tool_snapshots\x18\x18 \x03(\v2\x1f.port.api.v1.WorkerToolSnapshotR\x13workerToolSnapshots\x12;\n" +
 	"\x15bootstrap_snapshot_id\x18\x19 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x13bootstrapSnapshotId\x12G\n" +
-	"\x11api_tool_runtimes\x18\x1a \x03(\v2\x1b.port.api.v1.ApiToolRuntimeR\x0fapiToolRuntimesJ\x04\b\v\x10\fJ\x04\b\f\x10\rJ\x04\b\r\x10\x0eJ\x04\b\x0e\x10\x0fJ\x04\b\x0f\x10\x10J\x04\b\x10\x10\x11J\x04\b\x11\x10\x12R\aflow_idR\x0fflow_version_idR\apersonaR\vspecialistsR\x0eglobal_actionsR\x10agent_version_idR\bworkflow\"\xa4\x01\n" +
+	"\x11api_tool_runtimes\x18\x1a \x03(\v2\x1b.port.api.v1.ApiToolRuntimeR\x0fapiToolRuntimes\x12X\n" +
+	"\x13orchestration_graph\x18\x1b \x01(\v2'.port.api.v1.OrchestrationGraphSnapshotR\x12orchestrationGraphJ\x04\b\v\x10\fJ\x04\b\f\x10\rJ\x04\b\r\x10\x0eJ\x04\b\x0e\x10\x0fJ\x04\b\x0f\x10\x10J\x04\b\x10\x10\x11J\x04\b\x11\x10\x12R\aflow_idR\x0fflow_version_idR\apersonaR\vspecialistsR\x0eglobal_actionsR\x10agent_version_idR\bworkflow\"\xe3\x03\n" +
+	"\x1aOrchestrationGraphSnapshot\x12(\n" +
+	"\vsnapshot_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\n" +
+	"snapshotId\x12&\n" +
+	"\n" +
+	"version_id\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\tversionId\x12D\n" +
+	"\x0eschema_version\x18\x03 \x01(\tB\x1d\xbaH\x1ar\x18\n" +
+	"\x16agent.orchestration.v1R\rschemaVersion\x12+\n" +
+	"\rentry_node_id\x18\x04 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\ventryNodeId\x123\n" +
+	"\x11max_handoff_depth\x18\x05 \x01(\rB\a\xbaH\x04*\x02 \x00R\x0fmaxHandoffDepth\x124\n" +
+	"\x05nodes\x18\x06 \x03(\v2\x1e.port.api.v1.OrchestrationNodeR\x05nodes\x12F\n" +
+	"\vtransitions\x18\a \x03(\v2$.port.api.v1.OrchestrationTransitionR\vtransitions\x12M\n" +
+	"\x13node_tool_snapshots\x18\b \x03(\v2\x1d.port.api.v1.NodeToolSnapshotR\x11nodeToolSnapshots\"\xbb\x03\n" +
+	"\x11OrchestrationNode\x12 \n" +
+	"\anode_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x06nodeId\x125\n" +
+	"\x04kind\x18\x02 \x01(\x0e2\x15.port.api.v1.NodeKindB\n" +
+	"\xbaH\a\x82\x01\x04\x10\x01 \x00R\x04kind\x12$\n" +
+	"\x0eparent_node_id\x18\x03 \x01(\tR\fparentNodeId\x12?\n" +
+	"\bposition\x18\x04 \x01(\v2\x1b.port.api.v1.CanvasPositionB\x06\xbaH\x03\xc8\x01\x01R\bposition\x123\n" +
+	"\x04size\x18\x05 \x01(\v2\x17.port.api.v1.CanvasSizeB\x06\xbaH\x03\xc8\x01\x01R\x04size\x127\n" +
+	"\x05agent\x18\x06 \x01(\v2\x1f.port.api.v1.OrchestrationAgentH\x00R\x05agent\x124\n" +
+	"\x04task\x18\a \x01(\v2\x1e.port.api.v1.OrchestrationTaskH\x00R\x04task\x127\n" +
+	"\x05group\x18\b \x01(\v2\x1f.port.api.v1.OrchestrationGroupH\x00R\x05groupB\t\n" +
+	"\apayload\"\xc9\x02\n" +
+	"\x12OrchestrationAgent\x12\"\n" +
+	"\bagent_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\aagentId\x121\n" +
+	"\x10agent_version_id\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x0eagentVersionId\x12H\n" +
+	"\apersona\x18\x03 \x01(\v2&.port.api.v1.OrchestrationAgentPersonaB\x06\xbaH\x03\xc8\x01\x01R\apersona\x12_\n" +
+	"\x11execution_profile\x18\x04 \x01(\v2*.port.api.v1.OrchestrationExecutionProfileB\x06\xbaH\x03\xc8\x01\x01R\x10executionProfile\x121\n" +
+	"\x10tool_snapshot_id\x18\x05 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x0etoolSnapshotId\"\xab\x02\n" +
+	"\x11OrchestrationTask\x12\x1b\n" +
+	"\x04name\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x04name\x12+\n" +
+	"\finstructions\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\finstructions\x12@\n" +
+	"\x17completion_instructions\x18\x03 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x16completionInstructions\x12W\n" +
+	"\x11execution_profile\x18\x04 \x01(\v2*.port.api.v1.OrchestrationExecutionProfileR\x10executionProfile\x121\n" +
+	"\x10tool_snapshot_id\x18\x05 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x0etoolSnapshotId\"*\n" +
+	"\x12OrchestrationGroup\x12\x14\n" +
+	"\x05label\x18\x01 \x01(\tR\x05label\"\x91\x01\n" +
+	"\x19OrchestrationAgentPersona\x12*\n" +
+	"\fdisplay_name\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\vdisplayName\x12,\n" +
+	"\rsystem_prompt\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\fsystemPrompt\x12\x1a\n" +
+	"\bgreeting\x18\x03 \x01(\tR\bgreeting\"\x90\x01\n" +
+	"\x1dOrchestrationExecutionProfile\x12\x1b\n" +
+	"\tllm_model\x18\x01 \x01(\tR\bllmModel\x12\x1b\n" +
+	"\ttts_model\x18\x02 \x01(\tR\bttsModel\x12\x19\n" +
+	"\bvoice_id\x18\x03 \x01(\tR\avoiceId\x12\x1a\n" +
+	"\blanguage\x18\x04 \x01(\tR\blanguage\"\xbb\x01\n" +
+	"\x10NodeToolSnapshot\x12(\n" +
+	"\vsnapshot_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\n" +
+	"snapshotId\x12&\n" +
+	"\n" +
+	"version_id\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\tversionId\x12 \n" +
+	"\anode_id\x18\x03 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x06nodeId\x123\n" +
+	"\x05tools\x18\x04 \x03(\v2\x1d.port.api.v1.NodeToolMetadataR\x05tools\"\x88\x02\n" +
+	"\x10NodeToolMetadata\x12 \n" +
+	"\atool_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x06toolId\x12#\n" +
+	"\x04kind\x18\x02 \x01(\tB\x0f\xbaH\fr\n" +
+	"R\x03mcpR\x03apiR\x04kind\x12\x1b\n" +
+	"\x04name\x18\x03 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x04name\x12 \n" +
+	"\vdescription\x18\x04 \x01(\tR\vdescription\x120\n" +
+	"\x03mcp\x18\x05 \x01(\v2\x1c.port.api.v1.McpToolMetadataH\x00R\x03mcp\x120\n" +
+	"\x03api\x18\x06 \x01(\v2\x1c.port.api.v1.ApiToolMetadataH\x00R\x03apiB\n" +
+	"\n" +
+	"\bmetadata\"\x80\x03\n" +
+	"\x17OrchestrationTransition\x12,\n" +
+	"\rtransition_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\ftransitionId\x12-\n" +
+	"\x0esource_node_id\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\fsourceNodeId\x12-\n" +
+	"\x0etarget_node_id\x18\x03 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\ftargetNodeId\x12;\n" +
+	"\x04kind\x18\x04 \x01(\x0e2\x1b.port.api.v1.TransitionKindB\n" +
+	"\xbaH\a\x82\x01\x04\x10\x01 \x00R\x04kind\x12)\n" +
+	"\vdescription\x18\x05 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\vdescription\x12M\n" +
+	"\x0econtext_policy\x18\x06 \x01(\x0e2\x1a.port.api.v1.ContextPolicyB\n" +
+	"\xbaH\a\x82\x01\x04\x10\x01 \x00R\rcontextPolicy\x12\"\n" +
+	"\fannouncement\x18\a \x01(\tR\fannouncement\"\xa4\x01\n" +
 	"\x11SupervisorPersona\x12*\n" +
 	"\fdisplay_name\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\vdisplayName\x12,\n" +
 	"\rsystem_prompt\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\fsystemPrompt\x12\x19\n" +
@@ -1841,7 +2910,20 @@ const file_port_api_v1_agent_session_proto_rawDesc = "" +
 	"\aheaders\x18\x04 \x03(\v2*.port.api.v1.McpServerRuntime.HeadersEntryR\aheaders\x1a:\n" +
 	"\fHeadersEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
-	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x012a\n" +
+	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01*c\n" +
+	"\bNodeKind\x12\x19\n" +
+	"\x15NODE_KIND_UNSPECIFIED\x10\x00\x12\x13\n" +
+	"\x0fNODE_KIND_AGENT\x10\x01\x12\x12\n" +
+	"\x0eNODE_KIND_TASK\x10\x02\x12\x13\n" +
+	"\x0fNODE_KIND_GROUP\x10\x03*l\n" +
+	"\x0eTransitionKind\x12\x1f\n" +
+	"\x1bTRANSITION_KIND_UNSPECIFIED\x10\x00\x12\x1c\n" +
+	"\x18TRANSITION_KIND_DELEGATE\x10\x01\x12\x1b\n" +
+	"\x17TRANSITION_KIND_HANDOFF\x10\x02*i\n" +
+	"\rContextPolicy\x12\x1e\n" +
+	"\x1aCONTEXT_POLICY_UNSPECIFIED\x10\x00\x12\x17\n" +
+	"\x13CONTEXT_POLICY_NONE\x10\x01\x12\x1f\n" +
+	"\x1bCONTEXT_POLICY_CONVERSATION\x10\x022a\n" +
 	"\x13AgentSessionService\x12J\n" +
 	"\tBootstrap\x12\x1d.port.api.v1.BootstrapRequest\x1a\x1e.port.api.v1.BootstrapResponseB<Z:github.com/kyh0703/port-contracts/gen/go/port/api/v1;apiv1b\x06proto3"
 
@@ -1857,69 +2939,101 @@ func file_port_api_v1_agent_session_proto_rawDescGZIP() []byte {
 	return file_port_api_v1_agent_session_proto_rawDescData
 }
 
-var file_port_api_v1_agent_session_proto_msgTypes = make([]protoimpl.MessageInfo, 24)
+var file_port_api_v1_agent_session_proto_enumTypes = make([]protoimpl.EnumInfo, 3)
+var file_port_api_v1_agent_session_proto_msgTypes = make([]protoimpl.MessageInfo, 34)
 var file_port_api_v1_agent_session_proto_goTypes = []any{
-	(*BootstrapRequest)(nil),      // 0: port.api.v1.BootstrapRequest
-	(*SipBootstrapContext)(nil),   // 1: port.api.v1.SipBootstrapContext
-	(*BootstrapResponse)(nil),     // 2: port.api.v1.BootstrapResponse
-	(*SupervisorPersona)(nil),     // 3: port.api.v1.SupervisorPersona
-	(*SupervisorConfig)(nil),      // 4: port.api.v1.SupervisorConfig
-	(*WorkerSnapshot)(nil),        // 5: port.api.v1.WorkerSnapshot
-	(*WorkerPersona)(nil),         // 6: port.api.v1.WorkerPersona
-	(*CanvasSnapshot)(nil),        // 7: port.api.v1.CanvasSnapshot
-	(*CanvasNodeSnapshot)(nil),    // 8: port.api.v1.CanvasNodeSnapshot
-	(*CanvasGroupPlacement)(nil),  // 9: port.api.v1.CanvasGroupPlacement
-	(*CanvasAgentPlacement)(nil),  // 10: port.api.v1.CanvasAgentPlacement
-	(*CanvasPosition)(nil),        // 11: port.api.v1.CanvasPosition
-	(*CanvasSize)(nil),            // 12: port.api.v1.CanvasSize
-	(*WorkerToolSnapshot)(nil),    // 13: port.api.v1.WorkerToolSnapshot
-	(*WorkerToolMetadata)(nil),    // 14: port.api.v1.WorkerToolMetadata
-	(*McpToolMetadata)(nil),       // 15: port.api.v1.McpToolMetadata
-	(*ApiToolMetadata)(nil),       // 16: port.api.v1.ApiToolMetadata
-	(*ApiToolRuntime)(nil),        // 17: port.api.v1.ApiToolRuntime
-	(*AgentGlobalActions)(nil),    // 18: port.api.v1.AgentGlobalActions
-	(*TransferToHumanAction)(nil), // 19: port.api.v1.TransferToHumanAction
-	(*EndCallAction)(nil),         // 20: port.api.v1.EndCallAction
-	(*McpServerRuntime)(nil),      // 21: port.api.v1.McpServerRuntime
-	nil,                           // 22: port.api.v1.ApiToolRuntime.HeadersEntry
-	nil,                           // 23: port.api.v1.McpServerRuntime.HeadersEntry
-	(*SttRuntime)(nil),            // 24: port.api.v1.SttRuntime
-	(*LlmRuntime)(nil),            // 25: port.api.v1.LlmRuntime
-	(*TtsRuntime)(nil),            // 26: port.api.v1.TtsRuntime
+	(NodeKind)(0),                         // 0: port.api.v1.NodeKind
+	(TransitionKind)(0),                   // 1: port.api.v1.TransitionKind
+	(ContextPolicy)(0),                    // 2: port.api.v1.ContextPolicy
+	(*BootstrapRequest)(nil),              // 3: port.api.v1.BootstrapRequest
+	(*SipBootstrapContext)(nil),           // 4: port.api.v1.SipBootstrapContext
+	(*BootstrapResponse)(nil),             // 5: port.api.v1.BootstrapResponse
+	(*OrchestrationGraphSnapshot)(nil),    // 6: port.api.v1.OrchestrationGraphSnapshot
+	(*OrchestrationNode)(nil),             // 7: port.api.v1.OrchestrationNode
+	(*OrchestrationAgent)(nil),            // 8: port.api.v1.OrchestrationAgent
+	(*OrchestrationTask)(nil),             // 9: port.api.v1.OrchestrationTask
+	(*OrchestrationGroup)(nil),            // 10: port.api.v1.OrchestrationGroup
+	(*OrchestrationAgentPersona)(nil),     // 11: port.api.v1.OrchestrationAgentPersona
+	(*OrchestrationExecutionProfile)(nil), // 12: port.api.v1.OrchestrationExecutionProfile
+	(*NodeToolSnapshot)(nil),              // 13: port.api.v1.NodeToolSnapshot
+	(*NodeToolMetadata)(nil),              // 14: port.api.v1.NodeToolMetadata
+	(*OrchestrationTransition)(nil),       // 15: port.api.v1.OrchestrationTransition
+	(*SupervisorPersona)(nil),             // 16: port.api.v1.SupervisorPersona
+	(*SupervisorConfig)(nil),              // 17: port.api.v1.SupervisorConfig
+	(*WorkerSnapshot)(nil),                // 18: port.api.v1.WorkerSnapshot
+	(*WorkerPersona)(nil),                 // 19: port.api.v1.WorkerPersona
+	(*CanvasSnapshot)(nil),                // 20: port.api.v1.CanvasSnapshot
+	(*CanvasNodeSnapshot)(nil),            // 21: port.api.v1.CanvasNodeSnapshot
+	(*CanvasGroupPlacement)(nil),          // 22: port.api.v1.CanvasGroupPlacement
+	(*CanvasAgentPlacement)(nil),          // 23: port.api.v1.CanvasAgentPlacement
+	(*CanvasPosition)(nil),                // 24: port.api.v1.CanvasPosition
+	(*CanvasSize)(nil),                    // 25: port.api.v1.CanvasSize
+	(*WorkerToolSnapshot)(nil),            // 26: port.api.v1.WorkerToolSnapshot
+	(*WorkerToolMetadata)(nil),            // 27: port.api.v1.WorkerToolMetadata
+	(*McpToolMetadata)(nil),               // 28: port.api.v1.McpToolMetadata
+	(*ApiToolMetadata)(nil),               // 29: port.api.v1.ApiToolMetadata
+	(*ApiToolRuntime)(nil),                // 30: port.api.v1.ApiToolRuntime
+	(*AgentGlobalActions)(nil),            // 31: port.api.v1.AgentGlobalActions
+	(*TransferToHumanAction)(nil),         // 32: port.api.v1.TransferToHumanAction
+	(*EndCallAction)(nil),                 // 33: port.api.v1.EndCallAction
+	(*McpServerRuntime)(nil),              // 34: port.api.v1.McpServerRuntime
+	nil,                                   // 35: port.api.v1.ApiToolRuntime.HeadersEntry
+	nil,                                   // 36: port.api.v1.McpServerRuntime.HeadersEntry
+	(*SttRuntime)(nil),                    // 37: port.api.v1.SttRuntime
+	(*LlmRuntime)(nil),                    // 38: port.api.v1.LlmRuntime
+	(*TtsRuntime)(nil),                    // 39: port.api.v1.TtsRuntime
 }
 var file_port_api_v1_agent_session_proto_depIdxs = []int32{
-	1,  // 0: port.api.v1.BootstrapRequest.sip:type_name -> port.api.v1.SipBootstrapContext
-	24, // 1: port.api.v1.BootstrapResponse.stt:type_name -> port.api.v1.SttRuntime
-	25, // 2: port.api.v1.BootstrapResponse.llm:type_name -> port.api.v1.LlmRuntime
-	26, // 3: port.api.v1.BootstrapResponse.tts:type_name -> port.api.v1.TtsRuntime
-	21, // 4: port.api.v1.BootstrapResponse.mcp_servers:type_name -> port.api.v1.McpServerRuntime
-	3,  // 5: port.api.v1.BootstrapResponse.supervisor_persona:type_name -> port.api.v1.SupervisorPersona
-	4,  // 6: port.api.v1.BootstrapResponse.supervisor_config:type_name -> port.api.v1.SupervisorConfig
-	5,  // 7: port.api.v1.BootstrapResponse.workers:type_name -> port.api.v1.WorkerSnapshot
-	7,  // 8: port.api.v1.BootstrapResponse.canvas:type_name -> port.api.v1.CanvasSnapshot
-	13, // 9: port.api.v1.BootstrapResponse.worker_tool_snapshots:type_name -> port.api.v1.WorkerToolSnapshot
-	17, // 10: port.api.v1.BootstrapResponse.api_tool_runtimes:type_name -> port.api.v1.ApiToolRuntime
-	18, // 11: port.api.v1.SupervisorConfig.global_actions:type_name -> port.api.v1.AgentGlobalActions
-	6,  // 12: port.api.v1.WorkerSnapshot.persona:type_name -> port.api.v1.WorkerPersona
-	8,  // 13: port.api.v1.CanvasSnapshot.nodes:type_name -> port.api.v1.CanvasNodeSnapshot
-	11, // 14: port.api.v1.CanvasNodeSnapshot.position:type_name -> port.api.v1.CanvasPosition
-	12, // 15: port.api.v1.CanvasNodeSnapshot.size:type_name -> port.api.v1.CanvasSize
-	9,  // 16: port.api.v1.CanvasNodeSnapshot.group:type_name -> port.api.v1.CanvasGroupPlacement
-	10, // 17: port.api.v1.CanvasNodeSnapshot.agent:type_name -> port.api.v1.CanvasAgentPlacement
-	14, // 18: port.api.v1.WorkerToolSnapshot.tools:type_name -> port.api.v1.WorkerToolMetadata
-	15, // 19: port.api.v1.WorkerToolMetadata.mcp:type_name -> port.api.v1.McpToolMetadata
-	16, // 20: port.api.v1.WorkerToolMetadata.api:type_name -> port.api.v1.ApiToolMetadata
-	22, // 21: port.api.v1.ApiToolRuntime.headers:type_name -> port.api.v1.ApiToolRuntime.HeadersEntry
-	19, // 22: port.api.v1.AgentGlobalActions.transfer_to_human:type_name -> port.api.v1.TransferToHumanAction
-	20, // 23: port.api.v1.AgentGlobalActions.end_call:type_name -> port.api.v1.EndCallAction
-	23, // 24: port.api.v1.McpServerRuntime.headers:type_name -> port.api.v1.McpServerRuntime.HeadersEntry
-	0,  // 25: port.api.v1.AgentSessionService.Bootstrap:input_type -> port.api.v1.BootstrapRequest
-	2,  // 26: port.api.v1.AgentSessionService.Bootstrap:output_type -> port.api.v1.BootstrapResponse
-	26, // [26:27] is the sub-list for method output_type
-	25, // [25:26] is the sub-list for method input_type
-	25, // [25:25] is the sub-list for extension type_name
-	25, // [25:25] is the sub-list for extension extendee
-	0,  // [0:25] is the sub-list for field type_name
+	4,  // 0: port.api.v1.BootstrapRequest.sip:type_name -> port.api.v1.SipBootstrapContext
+	37, // 1: port.api.v1.BootstrapResponse.stt:type_name -> port.api.v1.SttRuntime
+	38, // 2: port.api.v1.BootstrapResponse.llm:type_name -> port.api.v1.LlmRuntime
+	39, // 3: port.api.v1.BootstrapResponse.tts:type_name -> port.api.v1.TtsRuntime
+	34, // 4: port.api.v1.BootstrapResponse.mcp_servers:type_name -> port.api.v1.McpServerRuntime
+	16, // 5: port.api.v1.BootstrapResponse.supervisor_persona:type_name -> port.api.v1.SupervisorPersona
+	17, // 6: port.api.v1.BootstrapResponse.supervisor_config:type_name -> port.api.v1.SupervisorConfig
+	18, // 7: port.api.v1.BootstrapResponse.workers:type_name -> port.api.v1.WorkerSnapshot
+	20, // 8: port.api.v1.BootstrapResponse.canvas:type_name -> port.api.v1.CanvasSnapshot
+	26, // 9: port.api.v1.BootstrapResponse.worker_tool_snapshots:type_name -> port.api.v1.WorkerToolSnapshot
+	30, // 10: port.api.v1.BootstrapResponse.api_tool_runtimes:type_name -> port.api.v1.ApiToolRuntime
+	6,  // 11: port.api.v1.BootstrapResponse.orchestration_graph:type_name -> port.api.v1.OrchestrationGraphSnapshot
+	7,  // 12: port.api.v1.OrchestrationGraphSnapshot.nodes:type_name -> port.api.v1.OrchestrationNode
+	15, // 13: port.api.v1.OrchestrationGraphSnapshot.transitions:type_name -> port.api.v1.OrchestrationTransition
+	13, // 14: port.api.v1.OrchestrationGraphSnapshot.node_tool_snapshots:type_name -> port.api.v1.NodeToolSnapshot
+	0,  // 15: port.api.v1.OrchestrationNode.kind:type_name -> port.api.v1.NodeKind
+	24, // 16: port.api.v1.OrchestrationNode.position:type_name -> port.api.v1.CanvasPosition
+	25, // 17: port.api.v1.OrchestrationNode.size:type_name -> port.api.v1.CanvasSize
+	8,  // 18: port.api.v1.OrchestrationNode.agent:type_name -> port.api.v1.OrchestrationAgent
+	9,  // 19: port.api.v1.OrchestrationNode.task:type_name -> port.api.v1.OrchestrationTask
+	10, // 20: port.api.v1.OrchestrationNode.group:type_name -> port.api.v1.OrchestrationGroup
+	11, // 21: port.api.v1.OrchestrationAgent.persona:type_name -> port.api.v1.OrchestrationAgentPersona
+	12, // 22: port.api.v1.OrchestrationAgent.execution_profile:type_name -> port.api.v1.OrchestrationExecutionProfile
+	12, // 23: port.api.v1.OrchestrationTask.execution_profile:type_name -> port.api.v1.OrchestrationExecutionProfile
+	14, // 24: port.api.v1.NodeToolSnapshot.tools:type_name -> port.api.v1.NodeToolMetadata
+	28, // 25: port.api.v1.NodeToolMetadata.mcp:type_name -> port.api.v1.McpToolMetadata
+	29, // 26: port.api.v1.NodeToolMetadata.api:type_name -> port.api.v1.ApiToolMetadata
+	1,  // 27: port.api.v1.OrchestrationTransition.kind:type_name -> port.api.v1.TransitionKind
+	2,  // 28: port.api.v1.OrchestrationTransition.context_policy:type_name -> port.api.v1.ContextPolicy
+	31, // 29: port.api.v1.SupervisorConfig.global_actions:type_name -> port.api.v1.AgentGlobalActions
+	19, // 30: port.api.v1.WorkerSnapshot.persona:type_name -> port.api.v1.WorkerPersona
+	21, // 31: port.api.v1.CanvasSnapshot.nodes:type_name -> port.api.v1.CanvasNodeSnapshot
+	24, // 32: port.api.v1.CanvasNodeSnapshot.position:type_name -> port.api.v1.CanvasPosition
+	25, // 33: port.api.v1.CanvasNodeSnapshot.size:type_name -> port.api.v1.CanvasSize
+	22, // 34: port.api.v1.CanvasNodeSnapshot.group:type_name -> port.api.v1.CanvasGroupPlacement
+	23, // 35: port.api.v1.CanvasNodeSnapshot.agent:type_name -> port.api.v1.CanvasAgentPlacement
+	27, // 36: port.api.v1.WorkerToolSnapshot.tools:type_name -> port.api.v1.WorkerToolMetadata
+	28, // 37: port.api.v1.WorkerToolMetadata.mcp:type_name -> port.api.v1.McpToolMetadata
+	29, // 38: port.api.v1.WorkerToolMetadata.api:type_name -> port.api.v1.ApiToolMetadata
+	35, // 39: port.api.v1.ApiToolRuntime.headers:type_name -> port.api.v1.ApiToolRuntime.HeadersEntry
+	32, // 40: port.api.v1.AgentGlobalActions.transfer_to_human:type_name -> port.api.v1.TransferToHumanAction
+	33, // 41: port.api.v1.AgentGlobalActions.end_call:type_name -> port.api.v1.EndCallAction
+	36, // 42: port.api.v1.McpServerRuntime.headers:type_name -> port.api.v1.McpServerRuntime.HeadersEntry
+	3,  // 43: port.api.v1.AgentSessionService.Bootstrap:input_type -> port.api.v1.BootstrapRequest
+	5,  // 44: port.api.v1.AgentSessionService.Bootstrap:output_type -> port.api.v1.BootstrapResponse
+	44, // [44:45] is the sub-list for method output_type
+	43, // [43:44] is the sub-list for method input_type
+	43, // [43:43] is the sub-list for extension type_name
+	43, // [43:43] is the sub-list for extension extendee
+	0,  // [0:43] is the sub-list for field type_name
 }
 
 func init() { file_port_api_v1_agent_session_proto_init() }
@@ -1932,11 +3046,20 @@ func file_port_api_v1_agent_session_proto_init() {
 		(*BootstrapRequest_WebrtcTicket)(nil),
 		(*BootstrapRequest_Sip)(nil),
 	}
-	file_port_api_v1_agent_session_proto_msgTypes[8].OneofWrappers = []any{
+	file_port_api_v1_agent_session_proto_msgTypes[4].OneofWrappers = []any{
+		(*OrchestrationNode_Agent)(nil),
+		(*OrchestrationNode_Task)(nil),
+		(*OrchestrationNode_Group)(nil),
+	}
+	file_port_api_v1_agent_session_proto_msgTypes[11].OneofWrappers = []any{
+		(*NodeToolMetadata_Mcp)(nil),
+		(*NodeToolMetadata_Api)(nil),
+	}
+	file_port_api_v1_agent_session_proto_msgTypes[18].OneofWrappers = []any{
 		(*CanvasNodeSnapshot_Group)(nil),
 		(*CanvasNodeSnapshot_Agent)(nil),
 	}
-	file_port_api_v1_agent_session_proto_msgTypes[14].OneofWrappers = []any{
+	file_port_api_v1_agent_session_proto_msgTypes[24].OneofWrappers = []any{
 		(*WorkerToolMetadata_Mcp)(nil),
 		(*WorkerToolMetadata_Api)(nil),
 	}
@@ -1945,13 +3068,14 @@ func file_port_api_v1_agent_session_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_port_api_v1_agent_session_proto_rawDesc), len(file_port_api_v1_agent_session_proto_rawDesc)),
-			NumEnums:      0,
-			NumMessages:   24,
+			NumEnums:      3,
+			NumMessages:   34,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
 		GoTypes:           file_port_api_v1_agent_session_proto_goTypes,
 		DependencyIndexes: file_port_api_v1_agent_session_proto_depIdxs,
+		EnumInfos:         file_port_api_v1_agent_session_proto_enumTypes,
 		MessageInfos:      file_port_api_v1_agent_session_proto_msgTypes,
 	}.Build()
 	File_port_api_v1_agent_session_proto = out.File

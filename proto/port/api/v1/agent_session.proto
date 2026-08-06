@@ -59,6 +59,114 @@ message BootstrapResponse {
   repeated WorkerToolSnapshot worker_tool_snapshots = 24;
   string bootstrap_snapshot_id = 25 [(buf.validate.field).string.min_len = 1];
   repeated ApiToolRuntime api_tool_runtimes = 26;
+  OrchestrationGraphSnapshot orchestration_graph = 27;
+}
+
+message OrchestrationGraphSnapshot {
+  string snapshot_id = 1 [(buf.validate.field).string.min_len = 1];
+  string version_id = 2 [(buf.validate.field).string.min_len = 1];
+  string schema_version = 3 [(buf.validate.field).string.const = "agent.orchestration.v1"];
+  string entry_node_id = 4 [(buf.validate.field).string.min_len = 1];
+  uint32 max_handoff_depth = 5 [(buf.validate.field).uint32.gt = 0];
+  repeated OrchestrationNode nodes = 6;
+  repeated OrchestrationTransition transitions = 7;
+  repeated NodeToolSnapshot node_tool_snapshots = 8;
+}
+
+message OrchestrationNode {
+  string node_id = 1 [(buf.validate.field).string.min_len = 1];
+  NodeKind kind = 2 [(buf.validate.field).enum = {defined_only: true not_in: 0}];
+  string parent_node_id = 3;
+  CanvasPosition position = 4 [(buf.validate.field).required = true];
+  CanvasSize size = 5 [(buf.validate.field).required = true];
+  oneof payload {
+    OrchestrationAgent agent = 6;
+    OrchestrationTask task = 7;
+    OrchestrationGroup group = 8;
+  }
+}
+
+message OrchestrationAgent {
+  string agent_id = 1 [(buf.validate.field).string.min_len = 1];
+  string agent_version_id = 2 [(buf.validate.field).string.min_len = 1];
+  OrchestrationAgentPersona persona = 3 [(buf.validate.field).required = true];
+  OrchestrationExecutionProfile execution_profile = 4 [(buf.validate.field).required = true];
+  string tool_snapshot_id = 5 [(buf.validate.field).string.min_len = 1];
+}
+
+message OrchestrationTask {
+  string name = 1 [(buf.validate.field).string.min_len = 1];
+  string instructions = 2 [(buf.validate.field).string.min_len = 1];
+  string completion_instructions = 3 [(buf.validate.field).string.min_len = 1];
+  OrchestrationExecutionProfile execution_profile = 4;
+  string tool_snapshot_id = 5 [(buf.validate.field).string.min_len = 1];
+}
+
+message OrchestrationGroup {
+  string label = 1;
+}
+
+message OrchestrationAgentPersona {
+  string display_name = 1 [(buf.validate.field).string.min_len = 1];
+  string system_prompt = 2 [(buf.validate.field).string.min_len = 1];
+  string greeting = 3;
+}
+
+message OrchestrationExecutionProfile {
+  string llm_model = 1;
+  string tts_model = 2;
+  string voice_id = 3;
+  string language = 4;
+}
+
+message NodeToolSnapshot {
+  string snapshot_id = 1 [(buf.validate.field).string.min_len = 1];
+  string version_id = 2 [(buf.validate.field).string.min_len = 1];
+  string node_id = 3 [(buf.validate.field).string.min_len = 1];
+  repeated NodeToolMetadata tools = 4;
+}
+
+message NodeToolMetadata {
+  string tool_id = 1 [(buf.validate.field).string.min_len = 1];
+  string kind = 2 [
+    (buf.validate.field).string.in = "mcp",
+    (buf.validate.field).string.in = "api"
+  ];
+  string name = 3 [(buf.validate.field).string.min_len = 1];
+  string description = 4;
+  oneof metadata {
+    McpToolMetadata mcp = 5;
+    ApiToolMetadata api = 6;
+  }
+}
+
+message OrchestrationTransition {
+  string transition_id = 1 [(buf.validate.field).string.min_len = 1];
+  string source_node_id = 2 [(buf.validate.field).string.min_len = 1];
+  string target_node_id = 3 [(buf.validate.field).string.min_len = 1];
+  TransitionKind kind = 4 [(buf.validate.field).enum = {defined_only: true not_in: 0}];
+  string description = 5 [(buf.validate.field).string.min_len = 1];
+  ContextPolicy context_policy = 6 [(buf.validate.field).enum = {defined_only: true not_in: 0}];
+  string announcement = 7;
+}
+
+enum NodeKind {
+  NODE_KIND_UNSPECIFIED = 0;
+  NODE_KIND_AGENT = 1;
+  NODE_KIND_TASK = 2;
+  NODE_KIND_GROUP = 3;
+}
+
+enum TransitionKind {
+  TRANSITION_KIND_UNSPECIFIED = 0;
+  TRANSITION_KIND_DELEGATE = 1;
+  TRANSITION_KIND_HANDOFF = 2;
+}
+
+enum ContextPolicy {
+  CONTEXT_POLICY_UNSPECIFIED = 0;
+  CONTEXT_POLICY_NONE = 1;
+  CONTEXT_POLICY_CONVERSATION = 2;
 }
 
 message SupervisorPersona {
