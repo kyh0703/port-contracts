@@ -3,10 +3,27 @@ const test = require("node:test");
 
 const {
   BootstrapResponse,
+  BootstrapAgentResponse,
+  BootstrapOrchestrationResponse,
+  BackgroundAudioPreset,
+  DtmfInputRuntime,
+  OrchestrationMode,
   NodeKind,
   TransitionKind,
   ContextPolicy,
+  SttRuntime,
+  TtsRuntime,
 } = require("../dist/gen/ts/port/api/v1/agent_session.js");
+
+test("r4 generated symbols and service methods are exported", () => {
+  assert.equal(typeof BootstrapAgentResponse?.create, "function");
+  assert.equal(typeof BootstrapOrchestrationResponse?.create, "function");
+  assert.equal(typeof BackgroundAudioPreset, "object");
+  assert.equal(typeof DtmfInputRuntime?.create, "function");
+  const { AgentSessionServiceService } = require("../dist/gen/ts/port/api/v1/agent_session.js");
+  assert.equal(typeof AgentSessionServiceService?.bootstrapAgent, "object");
+  assert.equal(typeof AgentSessionServiceService?.bootstrapOrchestration, "object");
+});
 
 test("supervisor/worker bootstrap fields survive protobuf wire round-trip", () => {
   const source = BootstrapResponse.create({
@@ -94,6 +111,75 @@ test("supervisor/worker bootstrap fields survive protobuf wire round-trip", () =
   const decoded = BootstrapResponse.decode(BootstrapResponse.encode(source).finish());
 
   assert.deepEqual(decoded, source);
+});
+
+test("direct Agent response carries one pinned CallRuntime and AgentRuntime", () => {
+  const source = BootstrapAgentResponse.create({
+    contractRevision: "orchestration-2026-08-07-r4",
+    schemaVersion: "agent.orchestration.v1",
+    conversationId: "conversation-agent-1",
+    sessionId: "session-agent-1",
+    agentId: "agent-1",
+    agentVersionId: "agent-version-1",
+    callRuntime: {
+      stt: { apiKey: "stt-key", model: "stt-model", language: "ko" },
+      tts: { apiKey: "tts-key", model: "tts-model", language: "ko", voiceId: "voice-1" },
+      backgroundAudio: { preset: BackgroundAudioPreset.BACKGROUND_AUDIO_PRESET_CAFE, volume: 0 },
+      dtmf: DtmfInputRuntime.create({ timeoutSeconds: 1, endKey: "#" }),
+    },
+    agentRuntime: {
+      agentId: "agent-1",
+      agentVersionId: "agent-version-1",
+      llmWorker: { model: "model-1" },
+      instructions: { systemPrompt: "Help." },
+    },
+  });
+  const decoded = BootstrapAgentResponse.decode(BootstrapAgentResponse.encode(source).finish());
+  assert.deepEqual(decoded, source);
+  assert.equal(decoded.agentRuntime?.callRuntime, undefined);
+});
+
+test("supervisor and handoff responses carry exactly one mode snapshot", () => {
+  const runtime = {
+    stt: { apiKey: "stt-key", model: "stt-model", language: "ko" },
+    tts: { apiKey: "tts-key", model: "tts-model", language: "ko", voiceId: "voice-1" },
+    backgroundAudio: { preset: BackgroundAudioPreset.BACKGROUND_AUDIO_PRESET_CONTACT_CENTER, volume: 1 },
+    dtmf: DtmfInputRuntime.create({ timeoutSeconds: 10, endKey: "*" }),
+  };
+  const supervisor = BootstrapOrchestrationResponse.create({
+    contractRevision: "orchestration-2026-08-07-r4",
+    schemaVersion: "agent.orchestration.v1",
+    conversationId: "conversation-supervisor-1",
+    sessionId: "session-supervisor-1",
+    orchestrationId: "orchestration-1",
+    orchestrationVersionId: "orchestration-version-1",
+    mode: OrchestrationMode.ORCHESTRATION_MODE_SUPERVISOR,
+    callRuntime: runtime,
+    agentRuntimes: [
+      { agentId: "agent-1", agentVersionId: "agent-version-supervisor", llmWorker: { model: "model-1" }, instructions: { systemPrompt: "Route." }, contextPolicy: ContextPolicy.CONTEXT_POLICY_CONVERSATION },
+      { agentId: "agent-2", agentVersionId: "agent-version-billing", llmWorker: { model: "model-2" }, instructions: { systemPrompt: "Billing." }, contextPolicy: ContextPolicy.CONTEXT_POLICY_CONVERSATION },
+    ],
+    supervisor: { supervisorAgentVersionId: "agent-version-supervisor", specialists: [{ relationId: "billing", targetAgentVersionId: "agent-version-billing", routeDescription: "Billing", contextPolicy: ContextPolicy.CONTEXT_POLICY_CONVERSATION }] },
+  });
+  const handoff = BootstrapOrchestrationResponse.create({
+    ...supervisor,
+    mode: OrchestrationMode.ORCHESTRATION_MODE_HANDOFF,
+    supervisor: undefined,
+    agentRuntimes: [
+      { agentId: "agent-1", agentVersionId: "agent-version-entry", llmWorker: { model: "model-1" }, instructions: { systemPrompt: "Route." }, contextPolicy: ContextPolicy.CONTEXT_POLICY_CONVERSATION },
+      { agentId: "agent-2", agentVersionId: "agent-version-billing", llmWorker: { model: "model-2" }, instructions: { systemPrompt: "Billing." }, contextPolicy: ContextPolicy.CONTEXT_POLICY_CONVERSATION },
+    ],
+    handoff: { entryAgentVersionId: "agent-version-entry", maxHandoffDepth: 2, routes: [{ transitionId: "to-billing", sourceAgentVersionId: "agent-version-entry", targetAgentVersionId: "agent-version-billing", routingDescription: "Billing", contextPolicy: ContextPolicy.CONTEXT_POLICY_CONVERSATION }] },
+  });
+  for (const source of [supervisor, handoff]) {
+    const decoded = BootstrapOrchestrationResponse.decode(BootstrapOrchestrationResponse.encode(source).finish());
+    assert.deepEqual(decoded, source);
+    assert.ok(decoded.callRuntime?.backgroundAudio);
+    assert.ok(decoded.callRuntime?.dtmf);
+    assert.equal(Boolean(decoded.supervisor) !== Boolean(decoded.handoff), true);
+    assert.ok(decoded.agentRuntimes?.length);
+    assert.equal(decoded.agentRuntimes[0]?.callRuntime, undefined);
+  }
 });
 
 test("orchestration graph fields survive protobuf wire round-trip", () => {

@@ -22,6 +22,113 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+type BackgroundAudioPreset int32
+
+const (
+	BackgroundAudioPreset_BACKGROUND_AUDIO_PRESET_UNSPECIFIED    BackgroundAudioPreset = 0
+	BackgroundAudioPreset_BACKGROUND_AUDIO_PRESET_NONE           BackgroundAudioPreset = 1
+	BackgroundAudioPreset_BACKGROUND_AUDIO_PRESET_CAFE           BackgroundAudioPreset = 2
+	BackgroundAudioPreset_BACKGROUND_AUDIO_PRESET_OFFICE         BackgroundAudioPreset = 3
+	BackgroundAudioPreset_BACKGROUND_AUDIO_PRESET_CONTACT_CENTER BackgroundAudioPreset = 4
+	BackgroundAudioPreset_BACKGROUND_AUDIO_PRESET_LIBRARY        BackgroundAudioPreset = 5
+)
+
+// Enum value maps for BackgroundAudioPreset.
+var (
+	BackgroundAudioPreset_name = map[int32]string{
+		0: "BACKGROUND_AUDIO_PRESET_UNSPECIFIED",
+		1: "BACKGROUND_AUDIO_PRESET_NONE",
+		2: "BACKGROUND_AUDIO_PRESET_CAFE",
+		3: "BACKGROUND_AUDIO_PRESET_OFFICE",
+		4: "BACKGROUND_AUDIO_PRESET_CONTACT_CENTER",
+		5: "BACKGROUND_AUDIO_PRESET_LIBRARY",
+	}
+	BackgroundAudioPreset_value = map[string]int32{
+		"BACKGROUND_AUDIO_PRESET_UNSPECIFIED":    0,
+		"BACKGROUND_AUDIO_PRESET_NONE":           1,
+		"BACKGROUND_AUDIO_PRESET_CAFE":           2,
+		"BACKGROUND_AUDIO_PRESET_OFFICE":         3,
+		"BACKGROUND_AUDIO_PRESET_CONTACT_CENTER": 4,
+		"BACKGROUND_AUDIO_PRESET_LIBRARY":        5,
+	}
+)
+
+func (x BackgroundAudioPreset) Enum() *BackgroundAudioPreset {
+	p := new(BackgroundAudioPreset)
+	*p = x
+	return p
+}
+
+func (x BackgroundAudioPreset) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (BackgroundAudioPreset) Descriptor() protoreflect.EnumDescriptor {
+	return file_port_api_v1_agent_session_proto_enumTypes[0].Descriptor()
+}
+
+func (BackgroundAudioPreset) Type() protoreflect.EnumType {
+	return &file_port_api_v1_agent_session_proto_enumTypes[0]
+}
+
+func (x BackgroundAudioPreset) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use BackgroundAudioPreset.Descriptor instead.
+func (BackgroundAudioPreset) EnumDescriptor() ([]byte, []int) {
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{0}
+}
+
+type OrchestrationMode int32
+
+const (
+	OrchestrationMode_ORCHESTRATION_MODE_UNSPECIFIED OrchestrationMode = 0
+	OrchestrationMode_ORCHESTRATION_MODE_SUPERVISOR  OrchestrationMode = 1
+	OrchestrationMode_ORCHESTRATION_MODE_HANDOFF     OrchestrationMode = 2
+)
+
+// Enum value maps for OrchestrationMode.
+var (
+	OrchestrationMode_name = map[int32]string{
+		0: "ORCHESTRATION_MODE_UNSPECIFIED",
+		1: "ORCHESTRATION_MODE_SUPERVISOR",
+		2: "ORCHESTRATION_MODE_HANDOFF",
+	}
+	OrchestrationMode_value = map[string]int32{
+		"ORCHESTRATION_MODE_UNSPECIFIED": 0,
+		"ORCHESTRATION_MODE_SUPERVISOR":  1,
+		"ORCHESTRATION_MODE_HANDOFF":     2,
+	}
+)
+
+func (x OrchestrationMode) Enum() *OrchestrationMode {
+	p := new(OrchestrationMode)
+	*p = x
+	return p
+}
+
+func (x OrchestrationMode) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (OrchestrationMode) Descriptor() protoreflect.EnumDescriptor {
+	return file_port_api_v1_agent_session_proto_enumTypes[1].Descriptor()
+}
+
+func (OrchestrationMode) Type() protoreflect.EnumType {
+	return &file_port_api_v1_agent_session_proto_enumTypes[1]
+}
+
+func (x OrchestrationMode) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use OrchestrationMode.Descriptor instead.
+func (OrchestrationMode) EnumDescriptor() ([]byte, []int) {
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{1}
+}
+
 type NodeKind int32
 
 const (
@@ -58,11 +165,11 @@ func (x NodeKind) String() string {
 }
 
 func (NodeKind) Descriptor() protoreflect.EnumDescriptor {
-	return file_port_api_v1_agent_session_proto_enumTypes[0].Descriptor()
+	return file_port_api_v1_agent_session_proto_enumTypes[2].Descriptor()
 }
 
 func (NodeKind) Type() protoreflect.EnumType {
-	return &file_port_api_v1_agent_session_proto_enumTypes[0]
+	return &file_port_api_v1_agent_session_proto_enumTypes[2]
 }
 
 func (x NodeKind) Number() protoreflect.EnumNumber {
@@ -71,7 +178,7 @@ func (x NodeKind) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use NodeKind.Descriptor instead.
 func (NodeKind) EnumDescriptor() ([]byte, []int) {
-	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{0}
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{2}
 }
 
 type TransitionKind int32
@@ -107,11 +214,11 @@ func (x TransitionKind) String() string {
 }
 
 func (TransitionKind) Descriptor() protoreflect.EnumDescriptor {
-	return file_port_api_v1_agent_session_proto_enumTypes[1].Descriptor()
+	return file_port_api_v1_agent_session_proto_enumTypes[3].Descriptor()
 }
 
 func (TransitionKind) Type() protoreflect.EnumType {
-	return &file_port_api_v1_agent_session_proto_enumTypes[1]
+	return &file_port_api_v1_agent_session_proto_enumTypes[3]
 }
 
 func (x TransitionKind) Number() protoreflect.EnumNumber {
@@ -120,7 +227,7 @@ func (x TransitionKind) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use TransitionKind.Descriptor instead.
 func (TransitionKind) EnumDescriptor() ([]byte, []int) {
-	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{1}
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{3}
 }
 
 type ContextPolicy int32
@@ -156,11 +263,11 @@ func (x ContextPolicy) String() string {
 }
 
 func (ContextPolicy) Descriptor() protoreflect.EnumDescriptor {
-	return file_port_api_v1_agent_session_proto_enumTypes[2].Descriptor()
+	return file_port_api_v1_agent_session_proto_enumTypes[4].Descriptor()
 }
 
 func (ContextPolicy) Type() protoreflect.EnumType {
-	return &file_port_api_v1_agent_session_proto_enumTypes[2]
+	return &file_port_api_v1_agent_session_proto_enumTypes[4]
 }
 
 func (x ContextPolicy) Number() protoreflect.EnumNumber {
@@ -169,7 +276,7 @@ func (x ContextPolicy) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use ContextPolicy.Descriptor instead.
 func (ContextPolicy) EnumDescriptor() ([]byte, []int) {
-	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{2}
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{4}
 }
 
 type BootstrapRequest struct {
@@ -542,6 +649,978 @@ func (x *BootstrapResponse) GetOrchestrationGraph() *OrchestrationGraphSnapshot 
 	return nil
 }
 
+type BootstrapAgentRequest struct {
+	state            protoimpl.MessageState `protogen:"open.v1"`
+	Admission        *BootstrapRequest      `protobuf:"bytes,1,opt,name=admission,proto3" json:"admission,omitempty"`
+	ConversationId   string                 `protobuf:"bytes,2,opt,name=conversation_id,json=conversationId,proto3" json:"conversation_id,omitempty"`
+	SessionId        string                 `protobuf:"bytes,3,opt,name=session_id,json=sessionId,proto3" json:"session_id,omitempty"`
+	AgentVersionId   string                 `protobuf:"bytes,4,opt,name=agent_version_id,json=agentVersionId,proto3" json:"agent_version_id,omitempty"`
+	ContractRevision string                 `protobuf:"bytes,5,opt,name=contract_revision,json=contractRevision,proto3" json:"contract_revision,omitempty"`
+	unknownFields    protoimpl.UnknownFields
+	sizeCache        protoimpl.SizeCache
+}
+
+func (x *BootstrapAgentRequest) Reset() {
+	*x = BootstrapAgentRequest{}
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[3]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *BootstrapAgentRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*BootstrapAgentRequest) ProtoMessage() {}
+
+func (x *BootstrapAgentRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[3]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use BootstrapAgentRequest.ProtoReflect.Descriptor instead.
+func (*BootstrapAgentRequest) Descriptor() ([]byte, []int) {
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{3}
+}
+
+func (x *BootstrapAgentRequest) GetAdmission() *BootstrapRequest {
+	if x != nil {
+		return x.Admission
+	}
+	return nil
+}
+
+func (x *BootstrapAgentRequest) GetConversationId() string {
+	if x != nil {
+		return x.ConversationId
+	}
+	return ""
+}
+
+func (x *BootstrapAgentRequest) GetSessionId() string {
+	if x != nil {
+		return x.SessionId
+	}
+	return ""
+}
+
+func (x *BootstrapAgentRequest) GetAgentVersionId() string {
+	if x != nil {
+		return x.AgentVersionId
+	}
+	return ""
+}
+
+func (x *BootstrapAgentRequest) GetContractRevision() string {
+	if x != nil {
+		return x.ContractRevision
+	}
+	return ""
+}
+
+type BootstrapAgentResponse struct {
+	state            protoimpl.MessageState `protogen:"open.v1"`
+	ContractRevision string                 `protobuf:"bytes,1,opt,name=contract_revision,json=contractRevision,proto3" json:"contract_revision,omitempty"`
+	SchemaVersion    string                 `protobuf:"bytes,2,opt,name=schema_version,json=schemaVersion,proto3" json:"schema_version,omitempty"`
+	ConversationId   string                 `protobuf:"bytes,3,opt,name=conversation_id,json=conversationId,proto3" json:"conversation_id,omitempty"`
+	SessionId        string                 `protobuf:"bytes,4,opt,name=session_id,json=sessionId,proto3" json:"session_id,omitempty"`
+	AgentId          string                 `protobuf:"bytes,5,opt,name=agent_id,json=agentId,proto3" json:"agent_id,omitempty"`
+	AgentVersionId   string                 `protobuf:"bytes,6,opt,name=agent_version_id,json=agentVersionId,proto3" json:"agent_version_id,omitempty"`
+	CallRuntime      *CallRuntimeSnapshot   `protobuf:"bytes,7,opt,name=call_runtime,json=callRuntime,proto3" json:"call_runtime,omitempty"`
+	AgentRuntime     *AgentRuntime          `protobuf:"bytes,8,opt,name=agent_runtime,json=agentRuntime,proto3" json:"agent_runtime,omitempty"`
+	unknownFields    protoimpl.UnknownFields
+	sizeCache        protoimpl.SizeCache
+}
+
+func (x *BootstrapAgentResponse) Reset() {
+	*x = BootstrapAgentResponse{}
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[4]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *BootstrapAgentResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*BootstrapAgentResponse) ProtoMessage() {}
+
+func (x *BootstrapAgentResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[4]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use BootstrapAgentResponse.ProtoReflect.Descriptor instead.
+func (*BootstrapAgentResponse) Descriptor() ([]byte, []int) {
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{4}
+}
+
+func (x *BootstrapAgentResponse) GetContractRevision() string {
+	if x != nil {
+		return x.ContractRevision
+	}
+	return ""
+}
+
+func (x *BootstrapAgentResponse) GetSchemaVersion() string {
+	if x != nil {
+		return x.SchemaVersion
+	}
+	return ""
+}
+
+func (x *BootstrapAgentResponse) GetConversationId() string {
+	if x != nil {
+		return x.ConversationId
+	}
+	return ""
+}
+
+func (x *BootstrapAgentResponse) GetSessionId() string {
+	if x != nil {
+		return x.SessionId
+	}
+	return ""
+}
+
+func (x *BootstrapAgentResponse) GetAgentId() string {
+	if x != nil {
+		return x.AgentId
+	}
+	return ""
+}
+
+func (x *BootstrapAgentResponse) GetAgentVersionId() string {
+	if x != nil {
+		return x.AgentVersionId
+	}
+	return ""
+}
+
+func (x *BootstrapAgentResponse) GetCallRuntime() *CallRuntimeSnapshot {
+	if x != nil {
+		return x.CallRuntime
+	}
+	return nil
+}
+
+func (x *BootstrapAgentResponse) GetAgentRuntime() *AgentRuntime {
+	if x != nil {
+		return x.AgentRuntime
+	}
+	return nil
+}
+
+type BootstrapOrchestrationRequest struct {
+	state                  protoimpl.MessageState `protogen:"open.v1"`
+	Admission              *BootstrapRequest      `protobuf:"bytes,1,opt,name=admission,proto3" json:"admission,omitempty"`
+	ConversationId         string                 `protobuf:"bytes,2,opt,name=conversation_id,json=conversationId,proto3" json:"conversation_id,omitempty"`
+	SessionId              string                 `protobuf:"bytes,3,opt,name=session_id,json=sessionId,proto3" json:"session_id,omitempty"`
+	OrchestrationVersionId string                 `protobuf:"bytes,4,opt,name=orchestration_version_id,json=orchestrationVersionId,proto3" json:"orchestration_version_id,omitempty"`
+	ContractRevision       string                 `protobuf:"bytes,5,opt,name=contract_revision,json=contractRevision,proto3" json:"contract_revision,omitempty"`
+	unknownFields          protoimpl.UnknownFields
+	sizeCache              protoimpl.SizeCache
+}
+
+func (x *BootstrapOrchestrationRequest) Reset() {
+	*x = BootstrapOrchestrationRequest{}
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[5]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *BootstrapOrchestrationRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*BootstrapOrchestrationRequest) ProtoMessage() {}
+
+func (x *BootstrapOrchestrationRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[5]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use BootstrapOrchestrationRequest.ProtoReflect.Descriptor instead.
+func (*BootstrapOrchestrationRequest) Descriptor() ([]byte, []int) {
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{5}
+}
+
+func (x *BootstrapOrchestrationRequest) GetAdmission() *BootstrapRequest {
+	if x != nil {
+		return x.Admission
+	}
+	return nil
+}
+
+func (x *BootstrapOrchestrationRequest) GetConversationId() string {
+	if x != nil {
+		return x.ConversationId
+	}
+	return ""
+}
+
+func (x *BootstrapOrchestrationRequest) GetSessionId() string {
+	if x != nil {
+		return x.SessionId
+	}
+	return ""
+}
+
+func (x *BootstrapOrchestrationRequest) GetOrchestrationVersionId() string {
+	if x != nil {
+		return x.OrchestrationVersionId
+	}
+	return ""
+}
+
+func (x *BootstrapOrchestrationRequest) GetContractRevision() string {
+	if x != nil {
+		return x.ContractRevision
+	}
+	return ""
+}
+
+type BootstrapOrchestrationResponse struct {
+	state                  protoimpl.MessageState `protogen:"open.v1"`
+	ContractRevision       string                 `protobuf:"bytes,1,opt,name=contract_revision,json=contractRevision,proto3" json:"contract_revision,omitempty"`
+	SchemaVersion          string                 `protobuf:"bytes,2,opt,name=schema_version,json=schemaVersion,proto3" json:"schema_version,omitempty"`
+	ConversationId         string                 `protobuf:"bytes,3,opt,name=conversation_id,json=conversationId,proto3" json:"conversation_id,omitempty"`
+	SessionId              string                 `protobuf:"bytes,4,opt,name=session_id,json=sessionId,proto3" json:"session_id,omitempty"`
+	OrchestrationId        string                 `protobuf:"bytes,5,opt,name=orchestration_id,json=orchestrationId,proto3" json:"orchestration_id,omitempty"`
+	OrchestrationVersionId string                 `protobuf:"bytes,6,opt,name=orchestration_version_id,json=orchestrationVersionId,proto3" json:"orchestration_version_id,omitempty"`
+	Mode                   OrchestrationMode      `protobuf:"varint,7,opt,name=mode,proto3,enum=port.api.v1.OrchestrationMode" json:"mode,omitempty"`
+	CallRuntime            *CallRuntimeSnapshot   `protobuf:"bytes,8,opt,name=call_runtime,json=callRuntime,proto3" json:"call_runtime,omitempty"`
+	AgentRuntimes          []*AgentRuntime        `protobuf:"bytes,9,rep,name=agent_runtimes,json=agentRuntimes,proto3" json:"agent_runtimes,omitempty"`
+	Supervisor             *SupervisorSnapshot    `protobuf:"bytes,10,opt,name=supervisor,proto3" json:"supervisor,omitempty"`
+	Handoff                *HandoffSnapshot       `protobuf:"bytes,11,opt,name=handoff,proto3" json:"handoff,omitempty"`
+	unknownFields          protoimpl.UnknownFields
+	sizeCache              protoimpl.SizeCache
+}
+
+func (x *BootstrapOrchestrationResponse) Reset() {
+	*x = BootstrapOrchestrationResponse{}
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[6]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *BootstrapOrchestrationResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*BootstrapOrchestrationResponse) ProtoMessage() {}
+
+func (x *BootstrapOrchestrationResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[6]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use BootstrapOrchestrationResponse.ProtoReflect.Descriptor instead.
+func (*BootstrapOrchestrationResponse) Descriptor() ([]byte, []int) {
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{6}
+}
+
+func (x *BootstrapOrchestrationResponse) GetContractRevision() string {
+	if x != nil {
+		return x.ContractRevision
+	}
+	return ""
+}
+
+func (x *BootstrapOrchestrationResponse) GetSchemaVersion() string {
+	if x != nil {
+		return x.SchemaVersion
+	}
+	return ""
+}
+
+func (x *BootstrapOrchestrationResponse) GetConversationId() string {
+	if x != nil {
+		return x.ConversationId
+	}
+	return ""
+}
+
+func (x *BootstrapOrchestrationResponse) GetSessionId() string {
+	if x != nil {
+		return x.SessionId
+	}
+	return ""
+}
+
+func (x *BootstrapOrchestrationResponse) GetOrchestrationId() string {
+	if x != nil {
+		return x.OrchestrationId
+	}
+	return ""
+}
+
+func (x *BootstrapOrchestrationResponse) GetOrchestrationVersionId() string {
+	if x != nil {
+		return x.OrchestrationVersionId
+	}
+	return ""
+}
+
+func (x *BootstrapOrchestrationResponse) GetMode() OrchestrationMode {
+	if x != nil {
+		return x.Mode
+	}
+	return OrchestrationMode_ORCHESTRATION_MODE_UNSPECIFIED
+}
+
+func (x *BootstrapOrchestrationResponse) GetCallRuntime() *CallRuntimeSnapshot {
+	if x != nil {
+		return x.CallRuntime
+	}
+	return nil
+}
+
+func (x *BootstrapOrchestrationResponse) GetAgentRuntimes() []*AgentRuntime {
+	if x != nil {
+		return x.AgentRuntimes
+	}
+	return nil
+}
+
+func (x *BootstrapOrchestrationResponse) GetSupervisor() *SupervisorSnapshot {
+	if x != nil {
+		return x.Supervisor
+	}
+	return nil
+}
+
+func (x *BootstrapOrchestrationResponse) GetHandoff() *HandoffSnapshot {
+	if x != nil {
+		return x.Handoff
+	}
+	return nil
+}
+
+type CallRuntimeSnapshot struct {
+	state           protoimpl.MessageState  `protogen:"open.v1"`
+	Stt             *SttRuntime             `protobuf:"bytes,1,opt,name=stt,proto3" json:"stt,omitempty"`
+	Tts             *TtsRuntime             `protobuf:"bytes,2,opt,name=tts,proto3" json:"tts,omitempty"`
+	BackgroundAudio *BackgroundAudioRuntime `protobuf:"bytes,3,opt,name=background_audio,json=backgroundAudio,proto3" json:"background_audio,omitempty"`
+	Dtmf            *DtmfInputRuntime       `protobuf:"bytes,4,opt,name=dtmf,proto3" json:"dtmf,omitempty"`
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
+}
+
+func (x *CallRuntimeSnapshot) Reset() {
+	*x = CallRuntimeSnapshot{}
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[7]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CallRuntimeSnapshot) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CallRuntimeSnapshot) ProtoMessage() {}
+
+func (x *CallRuntimeSnapshot) ProtoReflect() protoreflect.Message {
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[7]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CallRuntimeSnapshot.ProtoReflect.Descriptor instead.
+func (*CallRuntimeSnapshot) Descriptor() ([]byte, []int) {
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{7}
+}
+
+func (x *CallRuntimeSnapshot) GetStt() *SttRuntime {
+	if x != nil {
+		return x.Stt
+	}
+	return nil
+}
+
+func (x *CallRuntimeSnapshot) GetTts() *TtsRuntime {
+	if x != nil {
+		return x.Tts
+	}
+	return nil
+}
+
+func (x *CallRuntimeSnapshot) GetBackgroundAudio() *BackgroundAudioRuntime {
+	if x != nil {
+		return x.BackgroundAudio
+	}
+	return nil
+}
+
+func (x *CallRuntimeSnapshot) GetDtmf() *DtmfInputRuntime {
+	if x != nil {
+		return x.Dtmf
+	}
+	return nil
+}
+
+type BackgroundAudioRuntime struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Preset        BackgroundAudioPreset  `protobuf:"varint,1,opt,name=preset,proto3,enum=port.api.v1.BackgroundAudioPreset" json:"preset,omitempty"`
+	Volume        *float64               `protobuf:"fixed64,2,opt,name=volume,proto3,oneof" json:"volume,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *BackgroundAudioRuntime) Reset() {
+	*x = BackgroundAudioRuntime{}
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[8]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *BackgroundAudioRuntime) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*BackgroundAudioRuntime) ProtoMessage() {}
+
+func (x *BackgroundAudioRuntime) ProtoReflect() protoreflect.Message {
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[8]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use BackgroundAudioRuntime.ProtoReflect.Descriptor instead.
+func (*BackgroundAudioRuntime) Descriptor() ([]byte, []int) {
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{8}
+}
+
+func (x *BackgroundAudioRuntime) GetPreset() BackgroundAudioPreset {
+	if x != nil {
+		return x.Preset
+	}
+	return BackgroundAudioPreset_BACKGROUND_AUDIO_PRESET_UNSPECIFIED
+}
+
+func (x *BackgroundAudioRuntime) GetVolume() float64 {
+	if x != nil && x.Volume != nil {
+		return *x.Volume
+	}
+	return 0
+}
+
+type DtmfInputRuntime struct {
+	state          protoimpl.MessageState `protogen:"open.v1"`
+	TimeoutSeconds uint32                 `protobuf:"varint,1,opt,name=timeout_seconds,json=timeoutSeconds,proto3" json:"timeout_seconds,omitempty"`
+	EndKey         *string                `protobuf:"bytes,2,opt,name=end_key,json=endKey,proto3,oneof" json:"end_key,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
+}
+
+func (x *DtmfInputRuntime) Reset() {
+	*x = DtmfInputRuntime{}
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[9]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DtmfInputRuntime) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DtmfInputRuntime) ProtoMessage() {}
+
+func (x *DtmfInputRuntime) ProtoReflect() protoreflect.Message {
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[9]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DtmfInputRuntime.ProtoReflect.Descriptor instead.
+func (*DtmfInputRuntime) Descriptor() ([]byte, []int) {
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{9}
+}
+
+func (x *DtmfInputRuntime) GetTimeoutSeconds() uint32 {
+	if x != nil {
+		return x.TimeoutSeconds
+	}
+	return 0
+}
+
+func (x *DtmfInputRuntime) GetEndKey() string {
+	if x != nil && x.EndKey != nil {
+		return *x.EndKey
+	}
+	return ""
+}
+
+type AgentRuntime struct {
+	state               protoimpl.MessageState `protogen:"open.v1"`
+	AgentId             string                 `protobuf:"bytes,1,opt,name=agent_id,json=agentId,proto3" json:"agent_id,omitempty"`
+	AgentVersionId      string                 `protobuf:"bytes,2,opt,name=agent_version_id,json=agentVersionId,proto3" json:"agent_version_id,omitempty"`
+	LlmWorker           *LlmRuntime            `protobuf:"bytes,3,opt,name=llm_worker,json=llmWorker,proto3" json:"llm_worker,omitempty"`
+	Instructions        *AgentInstructions     `protobuf:"bytes,4,opt,name=instructions,proto3" json:"instructions,omitempty"`
+	ContextPolicy       ContextPolicy          `protobuf:"varint,5,opt,name=context_policy,json=contextPolicy,proto3,enum=port.api.v1.ContextPolicy" json:"context_policy,omitempty"`
+	Tools               []*NodeToolMetadata    `protobuf:"bytes,6,rep,name=tools,proto3" json:"tools,omitempty"`
+	McpServers          []*McpServerRuntime    `protobuf:"bytes,7,rep,name=mcp_servers,json=mcpServers,proto3" json:"mcp_servers,omitempty"`
+	Greeting            string                 `protobuf:"bytes,8,opt,name=greeting,proto3" json:"greeting,omitempty"`
+	KnowledgeRevisionId string                 `protobuf:"bytes,9,opt,name=knowledge_revision_id,json=knowledgeRevisionId,proto3" json:"knowledge_revision_id,omitempty"`
+	unknownFields       protoimpl.UnknownFields
+	sizeCache           protoimpl.SizeCache
+}
+
+func (x *AgentRuntime) Reset() {
+	*x = AgentRuntime{}
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[10]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *AgentRuntime) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*AgentRuntime) ProtoMessage() {}
+
+func (x *AgentRuntime) ProtoReflect() protoreflect.Message {
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[10]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use AgentRuntime.ProtoReflect.Descriptor instead.
+func (*AgentRuntime) Descriptor() ([]byte, []int) {
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{10}
+}
+
+func (x *AgentRuntime) GetAgentId() string {
+	if x != nil {
+		return x.AgentId
+	}
+	return ""
+}
+
+func (x *AgentRuntime) GetAgentVersionId() string {
+	if x != nil {
+		return x.AgentVersionId
+	}
+	return ""
+}
+
+func (x *AgentRuntime) GetLlmWorker() *LlmRuntime {
+	if x != nil {
+		return x.LlmWorker
+	}
+	return nil
+}
+
+func (x *AgentRuntime) GetInstructions() *AgentInstructions {
+	if x != nil {
+		return x.Instructions
+	}
+	return nil
+}
+
+func (x *AgentRuntime) GetContextPolicy() ContextPolicy {
+	if x != nil {
+		return x.ContextPolicy
+	}
+	return ContextPolicy_CONTEXT_POLICY_UNSPECIFIED
+}
+
+func (x *AgentRuntime) GetTools() []*NodeToolMetadata {
+	if x != nil {
+		return x.Tools
+	}
+	return nil
+}
+
+func (x *AgentRuntime) GetMcpServers() []*McpServerRuntime {
+	if x != nil {
+		return x.McpServers
+	}
+	return nil
+}
+
+func (x *AgentRuntime) GetGreeting() string {
+	if x != nil {
+		return x.Greeting
+	}
+	return ""
+}
+
+func (x *AgentRuntime) GetKnowledgeRevisionId() string {
+	if x != nil {
+		return x.KnowledgeRevisionId
+	}
+	return ""
+}
+
+type AgentInstructions struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	SystemPrompt  string                 `protobuf:"bytes,1,opt,name=system_prompt,json=systemPrompt,proto3" json:"system_prompt,omitempty"`
+	Guardrails    []string               `protobuf:"bytes,2,rep,name=guardrails,proto3" json:"guardrails,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *AgentInstructions) Reset() {
+	*x = AgentInstructions{}
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[11]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *AgentInstructions) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*AgentInstructions) ProtoMessage() {}
+
+func (x *AgentInstructions) ProtoReflect() protoreflect.Message {
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[11]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use AgentInstructions.ProtoReflect.Descriptor instead.
+func (*AgentInstructions) Descriptor() ([]byte, []int) {
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{11}
+}
+
+func (x *AgentInstructions) GetSystemPrompt() string {
+	if x != nil {
+		return x.SystemPrompt
+	}
+	return ""
+}
+
+func (x *AgentInstructions) GetGuardrails() []string {
+	if x != nil {
+		return x.Guardrails
+	}
+	return nil
+}
+
+type SupervisorSnapshot struct {
+	state                    protoimpl.MessageState  `protogen:"open.v1"`
+	SupervisorAgentVersionId string                  `protobuf:"bytes,1,opt,name=supervisor_agent_version_id,json=supervisorAgentVersionId,proto3" json:"supervisor_agent_version_id,omitempty"`
+	Specialists              []*SupervisorSpecialist `protobuf:"bytes,2,rep,name=specialists,proto3" json:"specialists,omitempty"`
+	unknownFields            protoimpl.UnknownFields
+	sizeCache                protoimpl.SizeCache
+}
+
+func (x *SupervisorSnapshot) Reset() {
+	*x = SupervisorSnapshot{}
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[12]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SupervisorSnapshot) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SupervisorSnapshot) ProtoMessage() {}
+
+func (x *SupervisorSnapshot) ProtoReflect() protoreflect.Message {
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[12]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SupervisorSnapshot.ProtoReflect.Descriptor instead.
+func (*SupervisorSnapshot) Descriptor() ([]byte, []int) {
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{12}
+}
+
+func (x *SupervisorSnapshot) GetSupervisorAgentVersionId() string {
+	if x != nil {
+		return x.SupervisorAgentVersionId
+	}
+	return ""
+}
+
+func (x *SupervisorSnapshot) GetSpecialists() []*SupervisorSpecialist {
+	if x != nil {
+		return x.Specialists
+	}
+	return nil
+}
+
+type SupervisorSpecialist struct {
+	state            protoimpl.MessageState `protogen:"open.v1"`
+	RelationId       string                 `protobuf:"bytes,1,opt,name=relation_id,json=relationId,proto3" json:"relation_id,omitempty"`
+	AgentVersionId   string                 `protobuf:"bytes,2,opt,name=agent_version_id,json=agentVersionId,proto3" json:"agent_version_id,omitempty"`
+	RouteDescription string                 `protobuf:"bytes,3,opt,name=route_description,json=routeDescription,proto3" json:"route_description,omitempty"`
+	ContextPolicy    ContextPolicy          `protobuf:"varint,4,opt,name=context_policy,json=contextPolicy,proto3,enum=port.api.v1.ContextPolicy" json:"context_policy,omitempty"`
+	unknownFields    protoimpl.UnknownFields
+	sizeCache        protoimpl.SizeCache
+}
+
+func (x *SupervisorSpecialist) Reset() {
+	*x = SupervisorSpecialist{}
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[13]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SupervisorSpecialist) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SupervisorSpecialist) ProtoMessage() {}
+
+func (x *SupervisorSpecialist) ProtoReflect() protoreflect.Message {
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[13]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SupervisorSpecialist.ProtoReflect.Descriptor instead.
+func (*SupervisorSpecialist) Descriptor() ([]byte, []int) {
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{13}
+}
+
+func (x *SupervisorSpecialist) GetRelationId() string {
+	if x != nil {
+		return x.RelationId
+	}
+	return ""
+}
+
+func (x *SupervisorSpecialist) GetAgentVersionId() string {
+	if x != nil {
+		return x.AgentVersionId
+	}
+	return ""
+}
+
+func (x *SupervisorSpecialist) GetRouteDescription() string {
+	if x != nil {
+		return x.RouteDescription
+	}
+	return ""
+}
+
+func (x *SupervisorSpecialist) GetContextPolicy() ContextPolicy {
+	if x != nil {
+		return x.ContextPolicy
+	}
+	return ContextPolicy_CONTEXT_POLICY_UNSPECIFIED
+}
+
+type HandoffSnapshot struct {
+	state               protoimpl.MessageState `protogen:"open.v1"`
+	EntryAgentVersionId string                 `protobuf:"bytes,1,opt,name=entry_agent_version_id,json=entryAgentVersionId,proto3" json:"entry_agent_version_id,omitempty"`
+	MaxHandoffDepth     uint32                 `protobuf:"varint,2,opt,name=max_handoff_depth,json=maxHandoffDepth,proto3" json:"max_handoff_depth,omitempty"`
+	Routes              []*HandoffRoute        `protobuf:"bytes,3,rep,name=routes,proto3" json:"routes,omitempty"`
+	unknownFields       protoimpl.UnknownFields
+	sizeCache           protoimpl.SizeCache
+}
+
+func (x *HandoffSnapshot) Reset() {
+	*x = HandoffSnapshot{}
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[14]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *HandoffSnapshot) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*HandoffSnapshot) ProtoMessage() {}
+
+func (x *HandoffSnapshot) ProtoReflect() protoreflect.Message {
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[14]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use HandoffSnapshot.ProtoReflect.Descriptor instead.
+func (*HandoffSnapshot) Descriptor() ([]byte, []int) {
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{14}
+}
+
+func (x *HandoffSnapshot) GetEntryAgentVersionId() string {
+	if x != nil {
+		return x.EntryAgentVersionId
+	}
+	return ""
+}
+
+func (x *HandoffSnapshot) GetMaxHandoffDepth() uint32 {
+	if x != nil {
+		return x.MaxHandoffDepth
+	}
+	return 0
+}
+
+func (x *HandoffSnapshot) GetRoutes() []*HandoffRoute {
+	if x != nil {
+		return x.Routes
+	}
+	return nil
+}
+
+type HandoffRoute struct {
+	state                protoimpl.MessageState `protogen:"open.v1"`
+	TransitionId         string                 `protobuf:"bytes,1,opt,name=transition_id,json=transitionId,proto3" json:"transition_id,omitempty"`
+	SourceAgentVersionId string                 `protobuf:"bytes,2,opt,name=source_agent_version_id,json=sourceAgentVersionId,proto3" json:"source_agent_version_id,omitempty"`
+	TargetAgentVersionId string                 `protobuf:"bytes,3,opt,name=target_agent_version_id,json=targetAgentVersionId,proto3" json:"target_agent_version_id,omitempty"`
+	RoutingDescription   string                 `protobuf:"bytes,4,opt,name=routing_description,json=routingDescription,proto3" json:"routing_description,omitempty"`
+	ContextPolicy        ContextPolicy          `protobuf:"varint,5,opt,name=context_policy,json=contextPolicy,proto3,enum=port.api.v1.ContextPolicy" json:"context_policy,omitempty"`
+	Announcement         string                 `protobuf:"bytes,6,opt,name=announcement,proto3" json:"announcement,omitempty"`
+	unknownFields        protoimpl.UnknownFields
+	sizeCache            protoimpl.SizeCache
+}
+
+func (x *HandoffRoute) Reset() {
+	*x = HandoffRoute{}
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[15]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *HandoffRoute) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*HandoffRoute) ProtoMessage() {}
+
+func (x *HandoffRoute) ProtoReflect() protoreflect.Message {
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[15]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use HandoffRoute.ProtoReflect.Descriptor instead.
+func (*HandoffRoute) Descriptor() ([]byte, []int) {
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{15}
+}
+
+func (x *HandoffRoute) GetTransitionId() string {
+	if x != nil {
+		return x.TransitionId
+	}
+	return ""
+}
+
+func (x *HandoffRoute) GetSourceAgentVersionId() string {
+	if x != nil {
+		return x.SourceAgentVersionId
+	}
+	return ""
+}
+
+func (x *HandoffRoute) GetTargetAgentVersionId() string {
+	if x != nil {
+		return x.TargetAgentVersionId
+	}
+	return ""
+}
+
+func (x *HandoffRoute) GetRoutingDescription() string {
+	if x != nil {
+		return x.RoutingDescription
+	}
+	return ""
+}
+
+func (x *HandoffRoute) GetContextPolicy() ContextPolicy {
+	if x != nil {
+		return x.ContextPolicy
+	}
+	return ContextPolicy_CONTEXT_POLICY_UNSPECIFIED
+}
+
+func (x *HandoffRoute) GetAnnouncement() string {
+	if x != nil {
+		return x.Announcement
+	}
+	return ""
+}
+
 type OrchestrationGraphSnapshot struct {
 	state             protoimpl.MessageState     `protogen:"open.v1"`
 	SnapshotId        string                     `protobuf:"bytes,1,opt,name=snapshot_id,json=snapshotId,proto3" json:"snapshot_id,omitempty"`
@@ -558,7 +1637,7 @@ type OrchestrationGraphSnapshot struct {
 
 func (x *OrchestrationGraphSnapshot) Reset() {
 	*x = OrchestrationGraphSnapshot{}
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[3]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[16]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -570,7 +1649,7 @@ func (x *OrchestrationGraphSnapshot) String() string {
 func (*OrchestrationGraphSnapshot) ProtoMessage() {}
 
 func (x *OrchestrationGraphSnapshot) ProtoReflect() protoreflect.Message {
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[3]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[16]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -583,7 +1662,7 @@ func (x *OrchestrationGraphSnapshot) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use OrchestrationGraphSnapshot.ProtoReflect.Descriptor instead.
 func (*OrchestrationGraphSnapshot) Descriptor() ([]byte, []int) {
-	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{3}
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{16}
 }
 
 func (x *OrchestrationGraphSnapshot) GetSnapshotId() string {
@@ -661,7 +1740,7 @@ type OrchestrationNode struct {
 
 func (x *OrchestrationNode) Reset() {
 	*x = OrchestrationNode{}
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[4]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[17]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -673,7 +1752,7 @@ func (x *OrchestrationNode) String() string {
 func (*OrchestrationNode) ProtoMessage() {}
 
 func (x *OrchestrationNode) ProtoReflect() protoreflect.Message {
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[4]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[17]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -686,7 +1765,7 @@ func (x *OrchestrationNode) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use OrchestrationNode.ProtoReflect.Descriptor instead.
 func (*OrchestrationNode) Descriptor() ([]byte, []int) {
-	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{4}
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{17}
 }
 
 func (x *OrchestrationNode) GetNodeId() string {
@@ -793,7 +1872,7 @@ type OrchestrationAgent struct {
 
 func (x *OrchestrationAgent) Reset() {
 	*x = OrchestrationAgent{}
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[5]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[18]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -805,7 +1884,7 @@ func (x *OrchestrationAgent) String() string {
 func (*OrchestrationAgent) ProtoMessage() {}
 
 func (x *OrchestrationAgent) ProtoReflect() protoreflect.Message {
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[5]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[18]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -818,7 +1897,7 @@ func (x *OrchestrationAgent) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use OrchestrationAgent.ProtoReflect.Descriptor instead.
 func (*OrchestrationAgent) Descriptor() ([]byte, []int) {
-	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{5}
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{18}
 }
 
 func (x *OrchestrationAgent) GetAgentId() string {
@@ -869,7 +1948,7 @@ type OrchestrationTask struct {
 
 func (x *OrchestrationTask) Reset() {
 	*x = OrchestrationTask{}
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[6]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[19]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -881,7 +1960,7 @@ func (x *OrchestrationTask) String() string {
 func (*OrchestrationTask) ProtoMessage() {}
 
 func (x *OrchestrationTask) ProtoReflect() protoreflect.Message {
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[6]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[19]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -894,7 +1973,7 @@ func (x *OrchestrationTask) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use OrchestrationTask.ProtoReflect.Descriptor instead.
 func (*OrchestrationTask) Descriptor() ([]byte, []int) {
-	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{6}
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{19}
 }
 
 func (x *OrchestrationTask) GetName() string {
@@ -941,7 +2020,7 @@ type OrchestrationGroup struct {
 
 func (x *OrchestrationGroup) Reset() {
 	*x = OrchestrationGroup{}
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[7]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[20]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -953,7 +2032,7 @@ func (x *OrchestrationGroup) String() string {
 func (*OrchestrationGroup) ProtoMessage() {}
 
 func (x *OrchestrationGroup) ProtoReflect() protoreflect.Message {
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[7]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[20]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -966,7 +2045,7 @@ func (x *OrchestrationGroup) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use OrchestrationGroup.ProtoReflect.Descriptor instead.
 func (*OrchestrationGroup) Descriptor() ([]byte, []int) {
-	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{7}
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{20}
 }
 
 func (x *OrchestrationGroup) GetLabel() string {
@@ -987,7 +2066,7 @@ type OrchestrationAgentPersona struct {
 
 func (x *OrchestrationAgentPersona) Reset() {
 	*x = OrchestrationAgentPersona{}
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[8]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[21]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -999,7 +2078,7 @@ func (x *OrchestrationAgentPersona) String() string {
 func (*OrchestrationAgentPersona) ProtoMessage() {}
 
 func (x *OrchestrationAgentPersona) ProtoReflect() protoreflect.Message {
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[8]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[21]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1012,7 +2091,7 @@ func (x *OrchestrationAgentPersona) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use OrchestrationAgentPersona.ProtoReflect.Descriptor instead.
 func (*OrchestrationAgentPersona) Descriptor() ([]byte, []int) {
-	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{8}
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{21}
 }
 
 func (x *OrchestrationAgentPersona) GetDisplayName() string {
@@ -1048,7 +2127,7 @@ type OrchestrationExecutionProfile struct {
 
 func (x *OrchestrationExecutionProfile) Reset() {
 	*x = OrchestrationExecutionProfile{}
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[9]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[22]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1060,7 +2139,7 @@ func (x *OrchestrationExecutionProfile) String() string {
 func (*OrchestrationExecutionProfile) ProtoMessage() {}
 
 func (x *OrchestrationExecutionProfile) ProtoReflect() protoreflect.Message {
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[9]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[22]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1073,7 +2152,7 @@ func (x *OrchestrationExecutionProfile) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use OrchestrationExecutionProfile.ProtoReflect.Descriptor instead.
 func (*OrchestrationExecutionProfile) Descriptor() ([]byte, []int) {
-	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{9}
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{22}
 }
 
 func (x *OrchestrationExecutionProfile) GetLlmModel() string {
@@ -1116,7 +2195,7 @@ type NodeToolSnapshot struct {
 
 func (x *NodeToolSnapshot) Reset() {
 	*x = NodeToolSnapshot{}
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[10]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[23]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1128,7 +2207,7 @@ func (x *NodeToolSnapshot) String() string {
 func (*NodeToolSnapshot) ProtoMessage() {}
 
 func (x *NodeToolSnapshot) ProtoReflect() protoreflect.Message {
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[10]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[23]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1141,7 +2220,7 @@ func (x *NodeToolSnapshot) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use NodeToolSnapshot.ProtoReflect.Descriptor instead.
 func (*NodeToolSnapshot) Descriptor() ([]byte, []int) {
-	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{10}
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{23}
 }
 
 func (x *NodeToolSnapshot) GetSnapshotId() string {
@@ -1189,7 +2268,7 @@ type NodeToolMetadata struct {
 
 func (x *NodeToolMetadata) Reset() {
 	*x = NodeToolMetadata{}
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[11]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[24]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1201,7 +2280,7 @@ func (x *NodeToolMetadata) String() string {
 func (*NodeToolMetadata) ProtoMessage() {}
 
 func (x *NodeToolMetadata) ProtoReflect() protoreflect.Message {
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[11]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[24]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1214,7 +2293,7 @@ func (x *NodeToolMetadata) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use NodeToolMetadata.ProtoReflect.Descriptor instead.
 func (*NodeToolMetadata) Descriptor() ([]byte, []int) {
-	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{11}
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{24}
 }
 
 func (x *NodeToolMetadata) GetToolId() string {
@@ -1301,7 +2380,7 @@ type OrchestrationTransition struct {
 
 func (x *OrchestrationTransition) Reset() {
 	*x = OrchestrationTransition{}
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[12]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[25]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1313,7 +2392,7 @@ func (x *OrchestrationTransition) String() string {
 func (*OrchestrationTransition) ProtoMessage() {}
 
 func (x *OrchestrationTransition) ProtoReflect() protoreflect.Message {
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[12]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[25]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1326,7 +2405,7 @@ func (x *OrchestrationTransition) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use OrchestrationTransition.ProtoReflect.Descriptor instead.
 func (*OrchestrationTransition) Descriptor() ([]byte, []int) {
-	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{12}
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{25}
 }
 
 func (x *OrchestrationTransition) GetTransitionId() string {
@@ -1390,7 +2469,7 @@ type SupervisorPersona struct {
 
 func (x *SupervisorPersona) Reset() {
 	*x = SupervisorPersona{}
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[13]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[26]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1402,7 +2481,7 @@ func (x *SupervisorPersona) String() string {
 func (*SupervisorPersona) ProtoMessage() {}
 
 func (x *SupervisorPersona) ProtoReflect() protoreflect.Message {
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[13]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[26]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1415,7 +2494,7 @@ func (x *SupervisorPersona) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SupervisorPersona.ProtoReflect.Descriptor instead.
 func (*SupervisorPersona) Descriptor() ([]byte, []int) {
-	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{13}
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{26}
 }
 
 func (x *SupervisorPersona) GetDisplayName() string {
@@ -1457,7 +2536,7 @@ type SupervisorConfig struct {
 
 func (x *SupervisorConfig) Reset() {
 	*x = SupervisorConfig{}
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[14]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[27]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1469,7 +2548,7 @@ func (x *SupervisorConfig) String() string {
 func (*SupervisorConfig) ProtoMessage() {}
 
 func (x *SupervisorConfig) ProtoReflect() protoreflect.Message {
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[14]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[27]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1482,7 +2561,7 @@ func (x *SupervisorConfig) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SupervisorConfig.ProtoReflect.Descriptor instead.
 func (*SupervisorConfig) Descriptor() ([]byte, []int) {
-	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{14}
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{27}
 }
 
 func (x *SupervisorConfig) GetRoutingInstructions() string {
@@ -1524,7 +2603,7 @@ type WorkerSnapshot struct {
 
 func (x *WorkerSnapshot) Reset() {
 	*x = WorkerSnapshot{}
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[15]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[28]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1536,7 +2615,7 @@ func (x *WorkerSnapshot) String() string {
 func (*WorkerSnapshot) ProtoMessage() {}
 
 func (x *WorkerSnapshot) ProtoReflect() protoreflect.Message {
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[15]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[28]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1549,7 +2628,7 @@ func (x *WorkerSnapshot) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use WorkerSnapshot.ProtoReflect.Descriptor instead.
 func (*WorkerSnapshot) Descriptor() ([]byte, []int) {
-	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{15}
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{28}
 }
 
 func (x *WorkerSnapshot) GetWorkerId() string {
@@ -1621,7 +2700,7 @@ type WorkerPersona struct {
 
 func (x *WorkerPersona) Reset() {
 	*x = WorkerPersona{}
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[16]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[29]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1633,7 +2712,7 @@ func (x *WorkerPersona) String() string {
 func (*WorkerPersona) ProtoMessage() {}
 
 func (x *WorkerPersona) ProtoReflect() protoreflect.Message {
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[16]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[29]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1646,7 +2725,7 @@ func (x *WorkerPersona) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use WorkerPersona.ProtoReflect.Descriptor instead.
 func (*WorkerPersona) Descriptor() ([]byte, []int) {
-	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{16}
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{29}
 }
 
 func (x *WorkerPersona) GetDisplayName() string {
@@ -1698,7 +2777,7 @@ type CanvasSnapshot struct {
 
 func (x *CanvasSnapshot) Reset() {
 	*x = CanvasSnapshot{}
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[17]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[30]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1710,7 +2789,7 @@ func (x *CanvasSnapshot) String() string {
 func (*CanvasSnapshot) ProtoMessage() {}
 
 func (x *CanvasSnapshot) ProtoReflect() protoreflect.Message {
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[17]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[30]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1723,7 +2802,7 @@ func (x *CanvasSnapshot) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CanvasSnapshot.ProtoReflect.Descriptor instead.
 func (*CanvasSnapshot) Descriptor() ([]byte, []int) {
-	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{17}
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{30}
 }
 
 func (x *CanvasSnapshot) GetSnapshotId() string {
@@ -1772,7 +2851,7 @@ type CanvasNodeSnapshot struct {
 
 func (x *CanvasNodeSnapshot) Reset() {
 	*x = CanvasNodeSnapshot{}
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[18]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[31]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1784,7 +2863,7 @@ func (x *CanvasNodeSnapshot) String() string {
 func (*CanvasNodeSnapshot) ProtoMessage() {}
 
 func (x *CanvasNodeSnapshot) ProtoReflect() protoreflect.Message {
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[18]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[31]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1797,7 +2876,7 @@ func (x *CanvasNodeSnapshot) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CanvasNodeSnapshot.ProtoReflect.Descriptor instead.
 func (*CanvasNodeSnapshot) Descriptor() ([]byte, []int) {
-	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{18}
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{31}
 }
 
 func (x *CanvasNodeSnapshot) GetNodeId() string {
@@ -1885,7 +2964,7 @@ type CanvasGroupPlacement struct {
 
 func (x *CanvasGroupPlacement) Reset() {
 	*x = CanvasGroupPlacement{}
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[19]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[32]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1897,7 +2976,7 @@ func (x *CanvasGroupPlacement) String() string {
 func (*CanvasGroupPlacement) ProtoMessage() {}
 
 func (x *CanvasGroupPlacement) ProtoReflect() protoreflect.Message {
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[19]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[32]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1910,7 +2989,7 @@ func (x *CanvasGroupPlacement) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CanvasGroupPlacement.ProtoReflect.Descriptor instead.
 func (*CanvasGroupPlacement) Descriptor() ([]byte, []int) {
-	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{19}
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{32}
 }
 
 func (x *CanvasGroupPlacement) GetLabel() string {
@@ -1929,7 +3008,7 @@ type CanvasAgentPlacement struct {
 
 func (x *CanvasAgentPlacement) Reset() {
 	*x = CanvasAgentPlacement{}
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[20]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[33]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1941,7 +3020,7 @@ func (x *CanvasAgentPlacement) String() string {
 func (*CanvasAgentPlacement) ProtoMessage() {}
 
 func (x *CanvasAgentPlacement) ProtoReflect() protoreflect.Message {
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[20]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[33]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1954,7 +3033,7 @@ func (x *CanvasAgentPlacement) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CanvasAgentPlacement.ProtoReflect.Descriptor instead.
 func (*CanvasAgentPlacement) Descriptor() ([]byte, []int) {
-	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{20}
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{33}
 }
 
 func (x *CanvasAgentPlacement) GetAgentId() string {
@@ -1974,7 +3053,7 @@ type CanvasPosition struct {
 
 func (x *CanvasPosition) Reset() {
 	*x = CanvasPosition{}
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[21]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[34]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1986,7 +3065,7 @@ func (x *CanvasPosition) String() string {
 func (*CanvasPosition) ProtoMessage() {}
 
 func (x *CanvasPosition) ProtoReflect() protoreflect.Message {
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[21]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[34]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1999,7 +3078,7 @@ func (x *CanvasPosition) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CanvasPosition.ProtoReflect.Descriptor instead.
 func (*CanvasPosition) Descriptor() ([]byte, []int) {
-	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{21}
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{34}
 }
 
 func (x *CanvasPosition) GetX() float64 {
@@ -2026,7 +3105,7 @@ type CanvasSize struct {
 
 func (x *CanvasSize) Reset() {
 	*x = CanvasSize{}
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[22]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[35]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2038,7 +3117,7 @@ func (x *CanvasSize) String() string {
 func (*CanvasSize) ProtoMessage() {}
 
 func (x *CanvasSize) ProtoReflect() protoreflect.Message {
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[22]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[35]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2051,7 +3130,7 @@ func (x *CanvasSize) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CanvasSize.ProtoReflect.Descriptor instead.
 func (*CanvasSize) Descriptor() ([]byte, []int) {
-	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{22}
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{35}
 }
 
 func (x *CanvasSize) GetWidth() float64 {
@@ -2083,7 +3162,7 @@ type WorkerToolSnapshot struct {
 
 func (x *WorkerToolSnapshot) Reset() {
 	*x = WorkerToolSnapshot{}
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[23]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[36]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2095,7 +3174,7 @@ func (x *WorkerToolSnapshot) String() string {
 func (*WorkerToolSnapshot) ProtoMessage() {}
 
 func (x *WorkerToolSnapshot) ProtoReflect() protoreflect.Message {
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[23]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[36]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2108,7 +3187,7 @@ func (x *WorkerToolSnapshot) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use WorkerToolSnapshot.ProtoReflect.Descriptor instead.
 func (*WorkerToolSnapshot) Descriptor() ([]byte, []int) {
-	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{23}
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{36}
 }
 
 func (x *WorkerToolSnapshot) GetSnapshotId() string {
@@ -2156,7 +3235,7 @@ type WorkerToolMetadata struct {
 
 func (x *WorkerToolMetadata) Reset() {
 	*x = WorkerToolMetadata{}
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[24]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[37]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2168,7 +3247,7 @@ func (x *WorkerToolMetadata) String() string {
 func (*WorkerToolMetadata) ProtoMessage() {}
 
 func (x *WorkerToolMetadata) ProtoReflect() protoreflect.Message {
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[24]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[37]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2181,7 +3260,7 @@ func (x *WorkerToolMetadata) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use WorkerToolMetadata.ProtoReflect.Descriptor instead.
 func (*WorkerToolMetadata) Descriptor() ([]byte, []int) {
-	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{24}
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{37}
 }
 
 func (x *WorkerToolMetadata) GetToolId() string {
@@ -2264,7 +3343,7 @@ type McpToolMetadata struct {
 
 func (x *McpToolMetadata) Reset() {
 	*x = McpToolMetadata{}
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[25]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[38]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2276,7 +3355,7 @@ func (x *McpToolMetadata) String() string {
 func (*McpToolMetadata) ProtoMessage() {}
 
 func (x *McpToolMetadata) ProtoReflect() protoreflect.Message {
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[25]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[38]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2289,7 +3368,7 @@ func (x *McpToolMetadata) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use McpToolMetadata.ProtoReflect.Descriptor instead.
 func (*McpToolMetadata) Descriptor() ([]byte, []int) {
-	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{25}
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{38}
 }
 
 func (x *McpToolMetadata) GetServerName() string {
@@ -2325,7 +3404,7 @@ type ApiToolMetadata struct {
 
 func (x *ApiToolMetadata) Reset() {
 	*x = ApiToolMetadata{}
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[26]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[39]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2337,7 +3416,7 @@ func (x *ApiToolMetadata) String() string {
 func (*ApiToolMetadata) ProtoMessage() {}
 
 func (x *ApiToolMetadata) ProtoReflect() protoreflect.Message {
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[26]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[39]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2350,7 +3429,7 @@ func (x *ApiToolMetadata) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ApiToolMetadata.ProtoReflect.Descriptor instead.
 func (*ApiToolMetadata) Descriptor() ([]byte, []int) {
-	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{26}
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{39}
 }
 
 func (x *ApiToolMetadata) GetMethod() string {
@@ -2393,7 +3472,7 @@ type ApiToolRuntime struct {
 
 func (x *ApiToolRuntime) Reset() {
 	*x = ApiToolRuntime{}
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[27]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[40]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2405,7 +3484,7 @@ func (x *ApiToolRuntime) String() string {
 func (*ApiToolRuntime) ProtoMessage() {}
 
 func (x *ApiToolRuntime) ProtoReflect() protoreflect.Message {
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[27]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[40]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2418,7 +3497,7 @@ func (x *ApiToolRuntime) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ApiToolRuntime.ProtoReflect.Descriptor instead.
 func (*ApiToolRuntime) Descriptor() ([]byte, []int) {
-	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{27}
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{40}
 }
 
 func (x *ApiToolRuntime) GetToolId() string {
@@ -2447,7 +3526,7 @@ type AgentGlobalActions struct {
 
 func (x *AgentGlobalActions) Reset() {
 	*x = AgentGlobalActions{}
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[28]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[41]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2459,7 +3538,7 @@ func (x *AgentGlobalActions) String() string {
 func (*AgentGlobalActions) ProtoMessage() {}
 
 func (x *AgentGlobalActions) ProtoReflect() protoreflect.Message {
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[28]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[41]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2472,7 +3551,7 @@ func (x *AgentGlobalActions) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AgentGlobalActions.ProtoReflect.Descriptor instead.
 func (*AgentGlobalActions) Descriptor() ([]byte, []int) {
-	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{28}
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{41}
 }
 
 func (x *AgentGlobalActions) GetTransferToHuman() *TransferToHumanAction {
@@ -2502,7 +3581,7 @@ type TransferToHumanAction struct {
 
 func (x *TransferToHumanAction) Reset() {
 	*x = TransferToHumanAction{}
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[29]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[42]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2514,7 +3593,7 @@ func (x *TransferToHumanAction) String() string {
 func (*TransferToHumanAction) ProtoMessage() {}
 
 func (x *TransferToHumanAction) ProtoReflect() protoreflect.Message {
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[29]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[42]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2527,7 +3606,7 @@ func (x *TransferToHumanAction) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TransferToHumanAction.ProtoReflect.Descriptor instead.
 func (*TransferToHumanAction) Descriptor() ([]byte, []int) {
-	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{29}
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{42}
 }
 
 func (x *TransferToHumanAction) GetEnabled() bool {
@@ -2570,7 +3649,7 @@ type EndCallAction struct {
 
 func (x *EndCallAction) Reset() {
 	*x = EndCallAction{}
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[30]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[43]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2582,7 +3661,7 @@ func (x *EndCallAction) String() string {
 func (*EndCallAction) ProtoMessage() {}
 
 func (x *EndCallAction) ProtoReflect() protoreflect.Message {
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[30]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[43]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2595,7 +3674,7 @@ func (x *EndCallAction) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use EndCallAction.ProtoReflect.Descriptor instead.
 func (*EndCallAction) Descriptor() ([]byte, []int) {
-	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{30}
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{43}
 }
 
 func (x *EndCallAction) GetEnabled() bool {
@@ -2631,7 +3710,7 @@ type McpServerRuntime struct {
 
 func (x *McpServerRuntime) Reset() {
 	*x = McpServerRuntime{}
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[31]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[44]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2643,7 +3722,7 @@ func (x *McpServerRuntime) String() string {
 func (*McpServerRuntime) ProtoMessage() {}
 
 func (x *McpServerRuntime) ProtoReflect() protoreflect.Message {
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[31]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[44]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2656,7 +3735,7 @@ func (x *McpServerRuntime) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use McpServerRuntime.ProtoReflect.Descriptor instead.
 func (*McpServerRuntime) Descriptor() ([]byte, []int) {
-	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{31}
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{44}
 }
 
 func (x *McpServerRuntime) GetName() string {
@@ -2730,7 +3809,128 @@ const file_port_api_v1_agent_session_proto_rawDesc = "" +
 	"\x15worker_tool_snapshots\x18\x18 \x03(\v2\x1f.port.api.v1.WorkerToolSnapshotR\x13workerToolSnapshots\x12;\n" +
 	"\x15bootstrap_snapshot_id\x18\x19 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x13bootstrapSnapshotId\x12G\n" +
 	"\x11api_tool_runtimes\x18\x1a \x03(\v2\x1b.port.api.v1.ApiToolRuntimeR\x0fapiToolRuntimes\x12X\n" +
-	"\x13orchestration_graph\x18\x1b \x01(\v2'.port.api.v1.OrchestrationGraphSnapshotR\x12orchestrationGraphJ\x04\b\v\x10\fJ\x04\b\f\x10\rJ\x04\b\r\x10\x0eJ\x04\b\x0e\x10\x0fJ\x04\b\x0f\x10\x10J\x04\b\x10\x10\x11J\x04\b\x11\x10\x12R\aflow_idR\x0fflow_version_idR\apersonaR\vspecialistsR\x0eglobal_actionsR\x10agent_version_idR\bworkflow\"\xe3\x03\n" +
+	"\x13orchestration_graph\x18\x1b \x01(\v2'.port.api.v1.OrchestrationGraphSnapshotR\x12orchestrationGraphJ\x04\b\v\x10\fJ\x04\b\f\x10\rJ\x04\b\r\x10\x0eJ\x04\b\x0e\x10\x0fJ\x04\b\x0f\x10\x10J\x04\b\x10\x10\x11J\x04\b\x11\x10\x12R\aflow_idR\x0fflow_version_idR\apersonaR\vspecialistsR\x0eglobal_actionsR\x10agent_version_idR\bworkflow\"\xc6\x02\n" +
+	"\x15BootstrapAgentRequest\x12C\n" +
+	"\tadmission\x18\x01 \x01(\v2\x1d.port.api.v1.BootstrapRequestB\x06\xbaH\x03\xc8\x01\x01R\tadmission\x123\n" +
+	"\x0fconversation_id\x18\x02 \x01(\tB\n" +
+	"\xbaH\a\xc8\x01\x01r\x02\x10\x01R\x0econversationId\x12)\n" +
+	"\n" +
+	"session_id\x18\x03 \x01(\tB\n" +
+	"\xbaH\a\xc8\x01\x01r\x02\x10\x01R\tsessionId\x124\n" +
+	"\x10agent_version_id\x18\x04 \x01(\tB\n" +
+	"\xbaH\a\xc8\x01\x01r\x02\x10\x01R\x0eagentVersionId\x12R\n" +
+	"\x11contract_revision\x18\x05 \x01(\tB%\xbaH\"\xc8\x01\x01r\x1d\n" +
+	"\x1borchestration-2026-08-07-r4R\x10contractRevision\"\x87\x04\n" +
+	"\x16BootstrapAgentResponse\x12R\n" +
+	"\x11contract_revision\x18\x01 \x01(\tB%\xbaH\"\xc8\x01\x01r\x1d\n" +
+	"\x1borchestration-2026-08-07-r4R\x10contractRevision\x12G\n" +
+	"\x0eschema_version\x18\x02 \x01(\tB \xbaH\x1d\xc8\x01\x01r\x18\n" +
+	"\x16agent.orchestration.v1R\rschemaVersion\x123\n" +
+	"\x0fconversation_id\x18\x03 \x01(\tB\n" +
+	"\xbaH\a\xc8\x01\x01r\x02\x10\x01R\x0econversationId\x12)\n" +
+	"\n" +
+	"session_id\x18\x04 \x01(\tB\n" +
+	"\xbaH\a\xc8\x01\x01r\x02\x10\x01R\tsessionId\x12%\n" +
+	"\bagent_id\x18\x05 \x01(\tB\n" +
+	"\xbaH\a\xc8\x01\x01r\x02\x10\x01R\aagentId\x124\n" +
+	"\x10agent_version_id\x18\x06 \x01(\tB\n" +
+	"\xbaH\a\xc8\x01\x01r\x02\x10\x01R\x0eagentVersionId\x12K\n" +
+	"\fcall_runtime\x18\a \x01(\v2 .port.api.v1.CallRuntimeSnapshotB\x06\xbaH\x03\xc8\x01\x01R\vcallRuntime\x12F\n" +
+	"\ragent_runtime\x18\b \x01(\v2\x19.port.api.v1.AgentRuntimeB\x06\xbaH\x03\xc8\x01\x01R\fagentRuntime\"\xde\x02\n" +
+	"\x1dBootstrapOrchestrationRequest\x12C\n" +
+	"\tadmission\x18\x01 \x01(\v2\x1d.port.api.v1.BootstrapRequestB\x06\xbaH\x03\xc8\x01\x01R\tadmission\x123\n" +
+	"\x0fconversation_id\x18\x02 \x01(\tB\n" +
+	"\xbaH\a\xc8\x01\x01r\x02\x10\x01R\x0econversationId\x12)\n" +
+	"\n" +
+	"session_id\x18\x03 \x01(\tB\n" +
+	"\xbaH\a\xc8\x01\x01r\x02\x10\x01R\tsessionId\x12D\n" +
+	"\x18orchestration_version_id\x18\x04 \x01(\tB\n" +
+	"\xbaH\a\xc8\x01\x01r\x02\x10\x01R\x16orchestrationVersionId\x12R\n" +
+	"\x11contract_revision\x18\x05 \x01(\tB%\xbaH\"\xc8\x01\x01r\x1d\n" +
+	"\x1borchestration-2026-08-07-r4R\x10contractRevision\"\xca\a\n" +
+	"\x1eBootstrapOrchestrationResponse\x12R\n" +
+	"\x11contract_revision\x18\x01 \x01(\tB%\xbaH\"\xc8\x01\x01r\x1d\n" +
+	"\x1borchestration-2026-08-07-r4R\x10contractRevision\x12G\n" +
+	"\x0eschema_version\x18\x02 \x01(\tB \xbaH\x1d\xc8\x01\x01r\x18\n" +
+	"\x16agent.orchestration.v1R\rschemaVersion\x123\n" +
+	"\x0fconversation_id\x18\x03 \x01(\tB\n" +
+	"\xbaH\a\xc8\x01\x01r\x02\x10\x01R\x0econversationId\x12)\n" +
+	"\n" +
+	"session_id\x18\x04 \x01(\tB\n" +
+	"\xbaH\a\xc8\x01\x01r\x02\x10\x01R\tsessionId\x125\n" +
+	"\x10orchestration_id\x18\x05 \x01(\tB\n" +
+	"\xbaH\a\xc8\x01\x01r\x02\x10\x01R\x0forchestrationId\x12D\n" +
+	"\x18orchestration_version_id\x18\x06 \x01(\tB\n" +
+	"\xbaH\a\xc8\x01\x01r\x02\x10\x01R\x16orchestrationVersionId\x12A\n" +
+	"\x04mode\x18\a \x01(\x0e2\x1e.port.api.v1.OrchestrationModeB\r\xbaH\n" +
+	"\xc8\x01\x01\x82\x01\x04\x10\x01 \x00R\x04mode\x12K\n" +
+	"\fcall_runtime\x18\b \x01(\v2 .port.api.v1.CallRuntimeSnapshotB\x06\xbaH\x03\xc8\x01\x01R\vcallRuntime\x12J\n" +
+	"\x0eagent_runtimes\x18\t \x03(\v2\x19.port.api.v1.AgentRuntimeB\b\xbaH\x05\x92\x01\x02\b\x01R\ragentRuntimes\x12?\n" +
+	"\n" +
+	"supervisor\x18\n" +
+	" \x01(\v2\x1f.port.api.v1.SupervisorSnapshotR\n" +
+	"supervisor\x126\n" +
+	"\ahandoff\x18\v \x01(\v2\x1c.port.api.v1.HandoffSnapshotR\ahandoff:\xd8\x01\xbaH\xd4\x01\x1a\xb8\x01\n" +
+	".bootstrap_orchestration_response.mode_snapshot\x123mode must match the selected orchestration snapshot\x1aQ(this.mode == 1 && has(this.supervisor)) || (this.mode == 2 && has(this.handoff))\"\x17\n" +
+	"\n" +
+	"supervisor\n" +
+	"\ahandoff\x10\x01\"\x8e\x02\n" +
+	"\x13CallRuntimeSnapshot\x121\n" +
+	"\x03stt\x18\x01 \x01(\v2\x17.port.api.v1.SttRuntimeB\x06\xbaH\x03\xc8\x01\x01R\x03stt\x121\n" +
+	"\x03tts\x18\x02 \x01(\v2\x17.port.api.v1.TtsRuntimeB\x06\xbaH\x03\xc8\x01\x01R\x03tts\x12V\n" +
+	"\x10background_audio\x18\x03 \x01(\v2#.port.api.v1.BackgroundAudioRuntimeB\x06\xbaH\x03\xc8\x01\x01R\x0fbackgroundAudio\x129\n" +
+	"\x04dtmf\x18\x04 \x01(\v2\x1d.port.api.v1.DtmfInputRuntimeB\x06\xbaH\x03\xc8\x01\x01R\x04dtmf\"\xa4\x01\n" +
+	"\x16BackgroundAudioRuntime\x12F\n" +
+	"\x06preset\x18\x01 \x01(\x0e2\".port.api.v1.BackgroundAudioPresetB\n" +
+	"\xbaH\a\x82\x01\x04\x10\x01 \x00R\x06preset\x127\n" +
+	"\x06volume\x18\x02 \x01(\x01B\x1a\xbaH\x17\xc8\x01\x01\x12\x12\x19\x00\x00\x00\x00\x00\x00\xf0?)\x00\x00\x00\x00\x00\x00\x00\x00H\x00R\x06volume\x88\x01\x01B\t\n" +
+	"\a_volume\"\x82\x01\n" +
+	"\x10DtmfInputRuntime\x122\n" +
+	"\x0ftimeout_seconds\x18\x01 \x01(\rB\t\xbaH\x06*\x04\x18\n" +
+	"(\x01R\x0etimeoutSeconds\x12.\n" +
+	"\aend_key\x18\x02 \x01(\tB\x10\xbaH\rr\v2\t^[0-9#*]$H\x00R\x06endKey\x88\x01\x01B\n" +
+	"\n" +
+	"\b_end_key\"\x85\x04\n" +
+	"\fAgentRuntime\x12\"\n" +
+	"\bagent_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\aagentId\x121\n" +
+	"\x10agent_version_id\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x0eagentVersionId\x12>\n" +
+	"\n" +
+	"llm_worker\x18\x03 \x01(\v2\x17.port.api.v1.LlmRuntimeB\x06\xbaH\x03\xc8\x01\x01R\tllmWorker\x12J\n" +
+	"\finstructions\x18\x04 \x01(\v2\x1e.port.api.v1.AgentInstructionsB\x06\xbaH\x03\xc8\x01\x01R\finstructions\x12M\n" +
+	"\x0econtext_policy\x18\x05 \x01(\x0e2\x1a.port.api.v1.ContextPolicyB\n" +
+	"\xbaH\a\x82\x01\x04\x10\x01 \x00R\rcontextPolicy\x123\n" +
+	"\x05tools\x18\x06 \x03(\v2\x1d.port.api.v1.NodeToolMetadataR\x05tools\x12>\n" +
+	"\vmcp_servers\x18\a \x03(\v2\x1d.port.api.v1.McpServerRuntimeR\n" +
+	"mcpServers\x12\x1a\n" +
+	"\bgreeting\x18\b \x01(\tR\bgreeting\x122\n" +
+	"\x15knowledge_revision_id\x18\t \x01(\tR\x13knowledgeRevisionId\"a\n" +
+	"\x11AgentInstructions\x12,\n" +
+	"\rsystem_prompt\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\fsystemPrompt\x12\x1e\n" +
+	"\n" +
+	"guardrails\x18\x02 \x03(\tR\n" +
+	"guardrails\"\xab\x01\n" +
+	"\x12SupervisorSnapshot\x12F\n" +
+	"\x1bsupervisor_agent_version_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x18supervisorAgentVersionId\x12M\n" +
+	"\vspecialists\x18\x02 \x03(\v2!.port.api.v1.SupervisorSpecialistB\b\xbaH\x05\x92\x01\x02\b\x01R\vspecialists\"\xf8\x01\n" +
+	"\x14SupervisorSpecialist\x12(\n" +
+	"\vrelation_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\n" +
+	"relationId\x121\n" +
+	"\x10agent_version_id\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x0eagentVersionId\x124\n" +
+	"\x11route_description\x18\x03 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x10routeDescription\x12M\n" +
+	"\x0econtext_policy\x18\x04 \x01(\x0e2\x1a.port.api.v1.ContextPolicyB\n" +
+	"\xbaH\a\x82\x01\x04\x10\x01 \x00R\rcontextPolicy\"\xc1\x01\n" +
+	"\x0fHandoffSnapshot\x12<\n" +
+	"\x16entry_agent_version_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x13entryAgentVersionId\x123\n" +
+	"\x11max_handoff_depth\x18\x02 \x01(\rB\a\xbaH\x04*\x02 \x00R\x0fmaxHandoffDepth\x12;\n" +
+	"\x06routes\x18\x03 \x03(\v2\x19.port.api.v1.HandoffRouteB\b\xbaH\x05\x92\x01\x02\b\x01R\x06routes\"\xe9\x02\n" +
+	"\fHandoffRoute\x12,\n" +
+	"\rtransition_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\ftransitionId\x12>\n" +
+	"\x17source_agent_version_id\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x14sourceAgentVersionId\x12>\n" +
+	"\x17target_agent_version_id\x18\x03 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x14targetAgentVersionId\x128\n" +
+	"\x13routing_description\x18\x04 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x12routingDescription\x12M\n" +
+	"\x0econtext_policy\x18\x05 \x01(\x0e2\x1a.port.api.v1.ContextPolicyB\n" +
+	"\xbaH\a\x82\x01\x04\x10\x01 \x00R\rcontextPolicy\x12\"\n" +
+	"\fannouncement\x18\x06 \x01(\tR\fannouncement\"\xe3\x03\n" +
 	"\x1aOrchestrationGraphSnapshot\x12(\n" +
 	"\vsnapshot_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\n" +
 	"snapshotId\x12&\n" +
@@ -2910,7 +4110,18 @@ const file_port_api_v1_agent_session_proto_rawDesc = "" +
 	"\aheaders\x18\x04 \x03(\v2*.port.api.v1.McpServerRuntime.HeadersEntryR\aheaders\x1a:\n" +
 	"\fHeadersEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
-	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01*c\n" +
+	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01*\xf9\x01\n" +
+	"\x15BackgroundAudioPreset\x12'\n" +
+	"#BACKGROUND_AUDIO_PRESET_UNSPECIFIED\x10\x00\x12 \n" +
+	"\x1cBACKGROUND_AUDIO_PRESET_NONE\x10\x01\x12 \n" +
+	"\x1cBACKGROUND_AUDIO_PRESET_CAFE\x10\x02\x12\"\n" +
+	"\x1eBACKGROUND_AUDIO_PRESET_OFFICE\x10\x03\x12*\n" +
+	"&BACKGROUND_AUDIO_PRESET_CONTACT_CENTER\x10\x04\x12#\n" +
+	"\x1fBACKGROUND_AUDIO_PRESET_LIBRARY\x10\x05*z\n" +
+	"\x11OrchestrationMode\x12\"\n" +
+	"\x1eORCHESTRATION_MODE_UNSPECIFIED\x10\x00\x12!\n" +
+	"\x1dORCHESTRATION_MODE_SUPERVISOR\x10\x01\x12\x1e\n" +
+	"\x1aORCHESTRATION_MODE_HANDOFF\x10\x02*c\n" +
 	"\bNodeKind\x12\x19\n" +
 	"\x15NODE_KIND_UNSPECIFIED\x10\x00\x12\x13\n" +
 	"\x0fNODE_KIND_AGENT\x10\x01\x12\x12\n" +
@@ -2923,9 +4134,11 @@ const file_port_api_v1_agent_session_proto_rawDesc = "" +
 	"\rContextPolicy\x12\x1e\n" +
 	"\x1aCONTEXT_POLICY_UNSPECIFIED\x10\x00\x12\x17\n" +
 	"\x13CONTEXT_POLICY_NONE\x10\x01\x12\x1f\n" +
-	"\x1bCONTEXT_POLICY_CONVERSATION\x10\x022a\n" +
+	"\x1bCONTEXT_POLICY_CONVERSATION\x10\x022\xaf\x02\n" +
 	"\x13AgentSessionService\x12J\n" +
-	"\tBootstrap\x12\x1d.port.api.v1.BootstrapRequest\x1a\x1e.port.api.v1.BootstrapResponseB<Z:github.com/kyh0703/port-contracts/gen/go/port/api/v1;apiv1b\x06proto3"
+	"\tBootstrap\x12\x1d.port.api.v1.BootstrapRequest\x1a\x1e.port.api.v1.BootstrapResponse\x12Y\n" +
+	"\x0eBootstrapAgent\x12\".port.api.v1.BootstrapAgentRequest\x1a#.port.api.v1.BootstrapAgentResponse\x12q\n" +
+	"\x16BootstrapOrchestration\x12*.port.api.v1.BootstrapOrchestrationRequest\x1a+.port.api.v1.BootstrapOrchestrationResponseB<Z:github.com/kyh0703/port-contracts/gen/go/port/api/v1;apiv1b\x06proto3"
 
 var (
 	file_port_api_v1_agent_session_proto_rawDescOnce sync.Once
@@ -2939,101 +4152,143 @@ func file_port_api_v1_agent_session_proto_rawDescGZIP() []byte {
 	return file_port_api_v1_agent_session_proto_rawDescData
 }
 
-var file_port_api_v1_agent_session_proto_enumTypes = make([]protoimpl.EnumInfo, 3)
-var file_port_api_v1_agent_session_proto_msgTypes = make([]protoimpl.MessageInfo, 34)
+var file_port_api_v1_agent_session_proto_enumTypes = make([]protoimpl.EnumInfo, 5)
+var file_port_api_v1_agent_session_proto_msgTypes = make([]protoimpl.MessageInfo, 47)
 var file_port_api_v1_agent_session_proto_goTypes = []any{
-	(NodeKind)(0),                         // 0: port.api.v1.NodeKind
-	(TransitionKind)(0),                   // 1: port.api.v1.TransitionKind
-	(ContextPolicy)(0),                    // 2: port.api.v1.ContextPolicy
-	(*BootstrapRequest)(nil),              // 3: port.api.v1.BootstrapRequest
-	(*SipBootstrapContext)(nil),           // 4: port.api.v1.SipBootstrapContext
-	(*BootstrapResponse)(nil),             // 5: port.api.v1.BootstrapResponse
-	(*OrchestrationGraphSnapshot)(nil),    // 6: port.api.v1.OrchestrationGraphSnapshot
-	(*OrchestrationNode)(nil),             // 7: port.api.v1.OrchestrationNode
-	(*OrchestrationAgent)(nil),            // 8: port.api.v1.OrchestrationAgent
-	(*OrchestrationTask)(nil),             // 9: port.api.v1.OrchestrationTask
-	(*OrchestrationGroup)(nil),            // 10: port.api.v1.OrchestrationGroup
-	(*OrchestrationAgentPersona)(nil),     // 11: port.api.v1.OrchestrationAgentPersona
-	(*OrchestrationExecutionProfile)(nil), // 12: port.api.v1.OrchestrationExecutionProfile
-	(*NodeToolSnapshot)(nil),              // 13: port.api.v1.NodeToolSnapshot
-	(*NodeToolMetadata)(nil),              // 14: port.api.v1.NodeToolMetadata
-	(*OrchestrationTransition)(nil),       // 15: port.api.v1.OrchestrationTransition
-	(*SupervisorPersona)(nil),             // 16: port.api.v1.SupervisorPersona
-	(*SupervisorConfig)(nil),              // 17: port.api.v1.SupervisorConfig
-	(*WorkerSnapshot)(nil),                // 18: port.api.v1.WorkerSnapshot
-	(*WorkerPersona)(nil),                 // 19: port.api.v1.WorkerPersona
-	(*CanvasSnapshot)(nil),                // 20: port.api.v1.CanvasSnapshot
-	(*CanvasNodeSnapshot)(nil),            // 21: port.api.v1.CanvasNodeSnapshot
-	(*CanvasGroupPlacement)(nil),          // 22: port.api.v1.CanvasGroupPlacement
-	(*CanvasAgentPlacement)(nil),          // 23: port.api.v1.CanvasAgentPlacement
-	(*CanvasPosition)(nil),                // 24: port.api.v1.CanvasPosition
-	(*CanvasSize)(nil),                    // 25: port.api.v1.CanvasSize
-	(*WorkerToolSnapshot)(nil),            // 26: port.api.v1.WorkerToolSnapshot
-	(*WorkerToolMetadata)(nil),            // 27: port.api.v1.WorkerToolMetadata
-	(*McpToolMetadata)(nil),               // 28: port.api.v1.McpToolMetadata
-	(*ApiToolMetadata)(nil),               // 29: port.api.v1.ApiToolMetadata
-	(*ApiToolRuntime)(nil),                // 30: port.api.v1.ApiToolRuntime
-	(*AgentGlobalActions)(nil),            // 31: port.api.v1.AgentGlobalActions
-	(*TransferToHumanAction)(nil),         // 32: port.api.v1.TransferToHumanAction
-	(*EndCallAction)(nil),                 // 33: port.api.v1.EndCallAction
-	(*McpServerRuntime)(nil),              // 34: port.api.v1.McpServerRuntime
-	nil,                                   // 35: port.api.v1.ApiToolRuntime.HeadersEntry
-	nil,                                   // 36: port.api.v1.McpServerRuntime.HeadersEntry
-	(*SttRuntime)(nil),                    // 37: port.api.v1.SttRuntime
-	(*LlmRuntime)(nil),                    // 38: port.api.v1.LlmRuntime
-	(*TtsRuntime)(nil),                    // 39: port.api.v1.TtsRuntime
+	(BackgroundAudioPreset)(0),             // 0: port.api.v1.BackgroundAudioPreset
+	(OrchestrationMode)(0),                 // 1: port.api.v1.OrchestrationMode
+	(NodeKind)(0),                          // 2: port.api.v1.NodeKind
+	(TransitionKind)(0),                    // 3: port.api.v1.TransitionKind
+	(ContextPolicy)(0),                     // 4: port.api.v1.ContextPolicy
+	(*BootstrapRequest)(nil),               // 5: port.api.v1.BootstrapRequest
+	(*SipBootstrapContext)(nil),            // 6: port.api.v1.SipBootstrapContext
+	(*BootstrapResponse)(nil),              // 7: port.api.v1.BootstrapResponse
+	(*BootstrapAgentRequest)(nil),          // 8: port.api.v1.BootstrapAgentRequest
+	(*BootstrapAgentResponse)(nil),         // 9: port.api.v1.BootstrapAgentResponse
+	(*BootstrapOrchestrationRequest)(nil),  // 10: port.api.v1.BootstrapOrchestrationRequest
+	(*BootstrapOrchestrationResponse)(nil), // 11: port.api.v1.BootstrapOrchestrationResponse
+	(*CallRuntimeSnapshot)(nil),            // 12: port.api.v1.CallRuntimeSnapshot
+	(*BackgroundAudioRuntime)(nil),         // 13: port.api.v1.BackgroundAudioRuntime
+	(*DtmfInputRuntime)(nil),               // 14: port.api.v1.DtmfInputRuntime
+	(*AgentRuntime)(nil),                   // 15: port.api.v1.AgentRuntime
+	(*AgentInstructions)(nil),              // 16: port.api.v1.AgentInstructions
+	(*SupervisorSnapshot)(nil),             // 17: port.api.v1.SupervisorSnapshot
+	(*SupervisorSpecialist)(nil),           // 18: port.api.v1.SupervisorSpecialist
+	(*HandoffSnapshot)(nil),                // 19: port.api.v1.HandoffSnapshot
+	(*HandoffRoute)(nil),                   // 20: port.api.v1.HandoffRoute
+	(*OrchestrationGraphSnapshot)(nil),     // 21: port.api.v1.OrchestrationGraphSnapshot
+	(*OrchestrationNode)(nil),              // 22: port.api.v1.OrchestrationNode
+	(*OrchestrationAgent)(nil),             // 23: port.api.v1.OrchestrationAgent
+	(*OrchestrationTask)(nil),              // 24: port.api.v1.OrchestrationTask
+	(*OrchestrationGroup)(nil),             // 25: port.api.v1.OrchestrationGroup
+	(*OrchestrationAgentPersona)(nil),      // 26: port.api.v1.OrchestrationAgentPersona
+	(*OrchestrationExecutionProfile)(nil),  // 27: port.api.v1.OrchestrationExecutionProfile
+	(*NodeToolSnapshot)(nil),               // 28: port.api.v1.NodeToolSnapshot
+	(*NodeToolMetadata)(nil),               // 29: port.api.v1.NodeToolMetadata
+	(*OrchestrationTransition)(nil),        // 30: port.api.v1.OrchestrationTransition
+	(*SupervisorPersona)(nil),              // 31: port.api.v1.SupervisorPersona
+	(*SupervisorConfig)(nil),               // 32: port.api.v1.SupervisorConfig
+	(*WorkerSnapshot)(nil),                 // 33: port.api.v1.WorkerSnapshot
+	(*WorkerPersona)(nil),                  // 34: port.api.v1.WorkerPersona
+	(*CanvasSnapshot)(nil),                 // 35: port.api.v1.CanvasSnapshot
+	(*CanvasNodeSnapshot)(nil),             // 36: port.api.v1.CanvasNodeSnapshot
+	(*CanvasGroupPlacement)(nil),           // 37: port.api.v1.CanvasGroupPlacement
+	(*CanvasAgentPlacement)(nil),           // 38: port.api.v1.CanvasAgentPlacement
+	(*CanvasPosition)(nil),                 // 39: port.api.v1.CanvasPosition
+	(*CanvasSize)(nil),                     // 40: port.api.v1.CanvasSize
+	(*WorkerToolSnapshot)(nil),             // 41: port.api.v1.WorkerToolSnapshot
+	(*WorkerToolMetadata)(nil),             // 42: port.api.v1.WorkerToolMetadata
+	(*McpToolMetadata)(nil),                // 43: port.api.v1.McpToolMetadata
+	(*ApiToolMetadata)(nil),                // 44: port.api.v1.ApiToolMetadata
+	(*ApiToolRuntime)(nil),                 // 45: port.api.v1.ApiToolRuntime
+	(*AgentGlobalActions)(nil),             // 46: port.api.v1.AgentGlobalActions
+	(*TransferToHumanAction)(nil),          // 47: port.api.v1.TransferToHumanAction
+	(*EndCallAction)(nil),                  // 48: port.api.v1.EndCallAction
+	(*McpServerRuntime)(nil),               // 49: port.api.v1.McpServerRuntime
+	nil,                                    // 50: port.api.v1.ApiToolRuntime.HeadersEntry
+	nil,                                    // 51: port.api.v1.McpServerRuntime.HeadersEntry
+	(*SttRuntime)(nil),                     // 52: port.api.v1.SttRuntime
+	(*LlmRuntime)(nil),                     // 53: port.api.v1.LlmRuntime
+	(*TtsRuntime)(nil),                     // 54: port.api.v1.TtsRuntime
 }
 var file_port_api_v1_agent_session_proto_depIdxs = []int32{
-	4,  // 0: port.api.v1.BootstrapRequest.sip:type_name -> port.api.v1.SipBootstrapContext
-	37, // 1: port.api.v1.BootstrapResponse.stt:type_name -> port.api.v1.SttRuntime
-	38, // 2: port.api.v1.BootstrapResponse.llm:type_name -> port.api.v1.LlmRuntime
-	39, // 3: port.api.v1.BootstrapResponse.tts:type_name -> port.api.v1.TtsRuntime
-	34, // 4: port.api.v1.BootstrapResponse.mcp_servers:type_name -> port.api.v1.McpServerRuntime
-	16, // 5: port.api.v1.BootstrapResponse.supervisor_persona:type_name -> port.api.v1.SupervisorPersona
-	17, // 6: port.api.v1.BootstrapResponse.supervisor_config:type_name -> port.api.v1.SupervisorConfig
-	18, // 7: port.api.v1.BootstrapResponse.workers:type_name -> port.api.v1.WorkerSnapshot
-	20, // 8: port.api.v1.BootstrapResponse.canvas:type_name -> port.api.v1.CanvasSnapshot
-	26, // 9: port.api.v1.BootstrapResponse.worker_tool_snapshots:type_name -> port.api.v1.WorkerToolSnapshot
-	30, // 10: port.api.v1.BootstrapResponse.api_tool_runtimes:type_name -> port.api.v1.ApiToolRuntime
-	6,  // 11: port.api.v1.BootstrapResponse.orchestration_graph:type_name -> port.api.v1.OrchestrationGraphSnapshot
-	7,  // 12: port.api.v1.OrchestrationGraphSnapshot.nodes:type_name -> port.api.v1.OrchestrationNode
-	15, // 13: port.api.v1.OrchestrationGraphSnapshot.transitions:type_name -> port.api.v1.OrchestrationTransition
-	13, // 14: port.api.v1.OrchestrationGraphSnapshot.node_tool_snapshots:type_name -> port.api.v1.NodeToolSnapshot
-	0,  // 15: port.api.v1.OrchestrationNode.kind:type_name -> port.api.v1.NodeKind
-	24, // 16: port.api.v1.OrchestrationNode.position:type_name -> port.api.v1.CanvasPosition
-	25, // 17: port.api.v1.OrchestrationNode.size:type_name -> port.api.v1.CanvasSize
-	8,  // 18: port.api.v1.OrchestrationNode.agent:type_name -> port.api.v1.OrchestrationAgent
-	9,  // 19: port.api.v1.OrchestrationNode.task:type_name -> port.api.v1.OrchestrationTask
-	10, // 20: port.api.v1.OrchestrationNode.group:type_name -> port.api.v1.OrchestrationGroup
-	11, // 21: port.api.v1.OrchestrationAgent.persona:type_name -> port.api.v1.OrchestrationAgentPersona
-	12, // 22: port.api.v1.OrchestrationAgent.execution_profile:type_name -> port.api.v1.OrchestrationExecutionProfile
-	12, // 23: port.api.v1.OrchestrationTask.execution_profile:type_name -> port.api.v1.OrchestrationExecutionProfile
-	14, // 24: port.api.v1.NodeToolSnapshot.tools:type_name -> port.api.v1.NodeToolMetadata
-	28, // 25: port.api.v1.NodeToolMetadata.mcp:type_name -> port.api.v1.McpToolMetadata
-	29, // 26: port.api.v1.NodeToolMetadata.api:type_name -> port.api.v1.ApiToolMetadata
-	1,  // 27: port.api.v1.OrchestrationTransition.kind:type_name -> port.api.v1.TransitionKind
-	2,  // 28: port.api.v1.OrchestrationTransition.context_policy:type_name -> port.api.v1.ContextPolicy
-	31, // 29: port.api.v1.SupervisorConfig.global_actions:type_name -> port.api.v1.AgentGlobalActions
-	19, // 30: port.api.v1.WorkerSnapshot.persona:type_name -> port.api.v1.WorkerPersona
-	21, // 31: port.api.v1.CanvasSnapshot.nodes:type_name -> port.api.v1.CanvasNodeSnapshot
-	24, // 32: port.api.v1.CanvasNodeSnapshot.position:type_name -> port.api.v1.CanvasPosition
-	25, // 33: port.api.v1.CanvasNodeSnapshot.size:type_name -> port.api.v1.CanvasSize
-	22, // 34: port.api.v1.CanvasNodeSnapshot.group:type_name -> port.api.v1.CanvasGroupPlacement
-	23, // 35: port.api.v1.CanvasNodeSnapshot.agent:type_name -> port.api.v1.CanvasAgentPlacement
-	27, // 36: port.api.v1.WorkerToolSnapshot.tools:type_name -> port.api.v1.WorkerToolMetadata
-	28, // 37: port.api.v1.WorkerToolMetadata.mcp:type_name -> port.api.v1.McpToolMetadata
-	29, // 38: port.api.v1.WorkerToolMetadata.api:type_name -> port.api.v1.ApiToolMetadata
-	35, // 39: port.api.v1.ApiToolRuntime.headers:type_name -> port.api.v1.ApiToolRuntime.HeadersEntry
-	32, // 40: port.api.v1.AgentGlobalActions.transfer_to_human:type_name -> port.api.v1.TransferToHumanAction
-	33, // 41: port.api.v1.AgentGlobalActions.end_call:type_name -> port.api.v1.EndCallAction
-	36, // 42: port.api.v1.McpServerRuntime.headers:type_name -> port.api.v1.McpServerRuntime.HeadersEntry
-	3,  // 43: port.api.v1.AgentSessionService.Bootstrap:input_type -> port.api.v1.BootstrapRequest
-	5,  // 44: port.api.v1.AgentSessionService.Bootstrap:output_type -> port.api.v1.BootstrapResponse
-	44, // [44:45] is the sub-list for method output_type
-	43, // [43:44] is the sub-list for method input_type
-	43, // [43:43] is the sub-list for extension type_name
-	43, // [43:43] is the sub-list for extension extendee
-	0,  // [0:43] is the sub-list for field type_name
+	6,  // 0: port.api.v1.BootstrapRequest.sip:type_name -> port.api.v1.SipBootstrapContext
+	52, // 1: port.api.v1.BootstrapResponse.stt:type_name -> port.api.v1.SttRuntime
+	53, // 2: port.api.v1.BootstrapResponse.llm:type_name -> port.api.v1.LlmRuntime
+	54, // 3: port.api.v1.BootstrapResponse.tts:type_name -> port.api.v1.TtsRuntime
+	49, // 4: port.api.v1.BootstrapResponse.mcp_servers:type_name -> port.api.v1.McpServerRuntime
+	31, // 5: port.api.v1.BootstrapResponse.supervisor_persona:type_name -> port.api.v1.SupervisorPersona
+	32, // 6: port.api.v1.BootstrapResponse.supervisor_config:type_name -> port.api.v1.SupervisorConfig
+	33, // 7: port.api.v1.BootstrapResponse.workers:type_name -> port.api.v1.WorkerSnapshot
+	35, // 8: port.api.v1.BootstrapResponse.canvas:type_name -> port.api.v1.CanvasSnapshot
+	41, // 9: port.api.v1.BootstrapResponse.worker_tool_snapshots:type_name -> port.api.v1.WorkerToolSnapshot
+	45, // 10: port.api.v1.BootstrapResponse.api_tool_runtimes:type_name -> port.api.v1.ApiToolRuntime
+	21, // 11: port.api.v1.BootstrapResponse.orchestration_graph:type_name -> port.api.v1.OrchestrationGraphSnapshot
+	5,  // 12: port.api.v1.BootstrapAgentRequest.admission:type_name -> port.api.v1.BootstrapRequest
+	12, // 13: port.api.v1.BootstrapAgentResponse.call_runtime:type_name -> port.api.v1.CallRuntimeSnapshot
+	15, // 14: port.api.v1.BootstrapAgentResponse.agent_runtime:type_name -> port.api.v1.AgentRuntime
+	5,  // 15: port.api.v1.BootstrapOrchestrationRequest.admission:type_name -> port.api.v1.BootstrapRequest
+	1,  // 16: port.api.v1.BootstrapOrchestrationResponse.mode:type_name -> port.api.v1.OrchestrationMode
+	12, // 17: port.api.v1.BootstrapOrchestrationResponse.call_runtime:type_name -> port.api.v1.CallRuntimeSnapshot
+	15, // 18: port.api.v1.BootstrapOrchestrationResponse.agent_runtimes:type_name -> port.api.v1.AgentRuntime
+	17, // 19: port.api.v1.BootstrapOrchestrationResponse.supervisor:type_name -> port.api.v1.SupervisorSnapshot
+	19, // 20: port.api.v1.BootstrapOrchestrationResponse.handoff:type_name -> port.api.v1.HandoffSnapshot
+	52, // 21: port.api.v1.CallRuntimeSnapshot.stt:type_name -> port.api.v1.SttRuntime
+	54, // 22: port.api.v1.CallRuntimeSnapshot.tts:type_name -> port.api.v1.TtsRuntime
+	13, // 23: port.api.v1.CallRuntimeSnapshot.background_audio:type_name -> port.api.v1.BackgroundAudioRuntime
+	14, // 24: port.api.v1.CallRuntimeSnapshot.dtmf:type_name -> port.api.v1.DtmfInputRuntime
+	0,  // 25: port.api.v1.BackgroundAudioRuntime.preset:type_name -> port.api.v1.BackgroundAudioPreset
+	53, // 26: port.api.v1.AgentRuntime.llm_worker:type_name -> port.api.v1.LlmRuntime
+	16, // 27: port.api.v1.AgentRuntime.instructions:type_name -> port.api.v1.AgentInstructions
+	4,  // 28: port.api.v1.AgentRuntime.context_policy:type_name -> port.api.v1.ContextPolicy
+	29, // 29: port.api.v1.AgentRuntime.tools:type_name -> port.api.v1.NodeToolMetadata
+	49, // 30: port.api.v1.AgentRuntime.mcp_servers:type_name -> port.api.v1.McpServerRuntime
+	18, // 31: port.api.v1.SupervisorSnapshot.specialists:type_name -> port.api.v1.SupervisorSpecialist
+	4,  // 32: port.api.v1.SupervisorSpecialist.context_policy:type_name -> port.api.v1.ContextPolicy
+	20, // 33: port.api.v1.HandoffSnapshot.routes:type_name -> port.api.v1.HandoffRoute
+	4,  // 34: port.api.v1.HandoffRoute.context_policy:type_name -> port.api.v1.ContextPolicy
+	22, // 35: port.api.v1.OrchestrationGraphSnapshot.nodes:type_name -> port.api.v1.OrchestrationNode
+	30, // 36: port.api.v1.OrchestrationGraphSnapshot.transitions:type_name -> port.api.v1.OrchestrationTransition
+	28, // 37: port.api.v1.OrchestrationGraphSnapshot.node_tool_snapshots:type_name -> port.api.v1.NodeToolSnapshot
+	2,  // 38: port.api.v1.OrchestrationNode.kind:type_name -> port.api.v1.NodeKind
+	39, // 39: port.api.v1.OrchestrationNode.position:type_name -> port.api.v1.CanvasPosition
+	40, // 40: port.api.v1.OrchestrationNode.size:type_name -> port.api.v1.CanvasSize
+	23, // 41: port.api.v1.OrchestrationNode.agent:type_name -> port.api.v1.OrchestrationAgent
+	24, // 42: port.api.v1.OrchestrationNode.task:type_name -> port.api.v1.OrchestrationTask
+	25, // 43: port.api.v1.OrchestrationNode.group:type_name -> port.api.v1.OrchestrationGroup
+	26, // 44: port.api.v1.OrchestrationAgent.persona:type_name -> port.api.v1.OrchestrationAgentPersona
+	27, // 45: port.api.v1.OrchestrationAgent.execution_profile:type_name -> port.api.v1.OrchestrationExecutionProfile
+	27, // 46: port.api.v1.OrchestrationTask.execution_profile:type_name -> port.api.v1.OrchestrationExecutionProfile
+	29, // 47: port.api.v1.NodeToolSnapshot.tools:type_name -> port.api.v1.NodeToolMetadata
+	43, // 48: port.api.v1.NodeToolMetadata.mcp:type_name -> port.api.v1.McpToolMetadata
+	44, // 49: port.api.v1.NodeToolMetadata.api:type_name -> port.api.v1.ApiToolMetadata
+	3,  // 50: port.api.v1.OrchestrationTransition.kind:type_name -> port.api.v1.TransitionKind
+	4,  // 51: port.api.v1.OrchestrationTransition.context_policy:type_name -> port.api.v1.ContextPolicy
+	46, // 52: port.api.v1.SupervisorConfig.global_actions:type_name -> port.api.v1.AgentGlobalActions
+	34, // 53: port.api.v1.WorkerSnapshot.persona:type_name -> port.api.v1.WorkerPersona
+	36, // 54: port.api.v1.CanvasSnapshot.nodes:type_name -> port.api.v1.CanvasNodeSnapshot
+	39, // 55: port.api.v1.CanvasNodeSnapshot.position:type_name -> port.api.v1.CanvasPosition
+	40, // 56: port.api.v1.CanvasNodeSnapshot.size:type_name -> port.api.v1.CanvasSize
+	37, // 57: port.api.v1.CanvasNodeSnapshot.group:type_name -> port.api.v1.CanvasGroupPlacement
+	38, // 58: port.api.v1.CanvasNodeSnapshot.agent:type_name -> port.api.v1.CanvasAgentPlacement
+	42, // 59: port.api.v1.WorkerToolSnapshot.tools:type_name -> port.api.v1.WorkerToolMetadata
+	43, // 60: port.api.v1.WorkerToolMetadata.mcp:type_name -> port.api.v1.McpToolMetadata
+	44, // 61: port.api.v1.WorkerToolMetadata.api:type_name -> port.api.v1.ApiToolMetadata
+	50, // 62: port.api.v1.ApiToolRuntime.headers:type_name -> port.api.v1.ApiToolRuntime.HeadersEntry
+	47, // 63: port.api.v1.AgentGlobalActions.transfer_to_human:type_name -> port.api.v1.TransferToHumanAction
+	48, // 64: port.api.v1.AgentGlobalActions.end_call:type_name -> port.api.v1.EndCallAction
+	51, // 65: port.api.v1.McpServerRuntime.headers:type_name -> port.api.v1.McpServerRuntime.HeadersEntry
+	5,  // 66: port.api.v1.AgentSessionService.Bootstrap:input_type -> port.api.v1.BootstrapRequest
+	8,  // 67: port.api.v1.AgentSessionService.BootstrapAgent:input_type -> port.api.v1.BootstrapAgentRequest
+	10, // 68: port.api.v1.AgentSessionService.BootstrapOrchestration:input_type -> port.api.v1.BootstrapOrchestrationRequest
+	7,  // 69: port.api.v1.AgentSessionService.Bootstrap:output_type -> port.api.v1.BootstrapResponse
+	9,  // 70: port.api.v1.AgentSessionService.BootstrapAgent:output_type -> port.api.v1.BootstrapAgentResponse
+	11, // 71: port.api.v1.AgentSessionService.BootstrapOrchestration:output_type -> port.api.v1.BootstrapOrchestrationResponse
+	69, // [69:72] is the sub-list for method output_type
+	66, // [66:69] is the sub-list for method input_type
+	66, // [66:66] is the sub-list for extension type_name
+	66, // [66:66] is the sub-list for extension extendee
+	0,  // [0:66] is the sub-list for field type_name
 }
 
 func init() { file_port_api_v1_agent_session_proto_init() }
@@ -3046,20 +4301,22 @@ func file_port_api_v1_agent_session_proto_init() {
 		(*BootstrapRequest_WebrtcTicket)(nil),
 		(*BootstrapRequest_Sip)(nil),
 	}
-	file_port_api_v1_agent_session_proto_msgTypes[4].OneofWrappers = []any{
+	file_port_api_v1_agent_session_proto_msgTypes[8].OneofWrappers = []any{}
+	file_port_api_v1_agent_session_proto_msgTypes[9].OneofWrappers = []any{}
+	file_port_api_v1_agent_session_proto_msgTypes[17].OneofWrappers = []any{
 		(*OrchestrationNode_Agent)(nil),
 		(*OrchestrationNode_Task)(nil),
 		(*OrchestrationNode_Group)(nil),
 	}
-	file_port_api_v1_agent_session_proto_msgTypes[11].OneofWrappers = []any{
+	file_port_api_v1_agent_session_proto_msgTypes[24].OneofWrappers = []any{
 		(*NodeToolMetadata_Mcp)(nil),
 		(*NodeToolMetadata_Api)(nil),
 	}
-	file_port_api_v1_agent_session_proto_msgTypes[18].OneofWrappers = []any{
+	file_port_api_v1_agent_session_proto_msgTypes[31].OneofWrappers = []any{
 		(*CanvasNodeSnapshot_Group)(nil),
 		(*CanvasNodeSnapshot_Agent)(nil),
 	}
-	file_port_api_v1_agent_session_proto_msgTypes[24].OneofWrappers = []any{
+	file_port_api_v1_agent_session_proto_msgTypes[37].OneofWrappers = []any{
 		(*WorkerToolMetadata_Mcp)(nil),
 		(*WorkerToolMetadata_Api)(nil),
 	}
@@ -3068,8 +4325,8 @@ func file_port_api_v1_agent_session_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_port_api_v1_agent_session_proto_rawDesc), len(file_port_api_v1_agent_session_proto_rawDesc)),
-			NumEnums:      3,
-			NumMessages:   34,
+			NumEnums:      5,
+			NumMessages:   47,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

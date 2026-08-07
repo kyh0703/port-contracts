@@ -22,6 +22,102 @@ import { LlmRuntime, SttRuntime, TtsRuntime } from "./voice_runtime";
 
 export const protobufPackage = "port.api.v1";
 
+export enum BackgroundAudioPreset {
+  BACKGROUND_AUDIO_PRESET_UNSPECIFIED = 0,
+  BACKGROUND_AUDIO_PRESET_NONE = 1,
+  BACKGROUND_AUDIO_PRESET_CAFE = 2,
+  BACKGROUND_AUDIO_PRESET_OFFICE = 3,
+  BACKGROUND_AUDIO_PRESET_CONTACT_CENTER = 4,
+  BACKGROUND_AUDIO_PRESET_LIBRARY = 5,
+  UNRECOGNIZED = -1,
+}
+
+export function backgroundAudioPresetFromJSON(object: any): BackgroundAudioPreset {
+  switch (object) {
+    case 0:
+    case "BACKGROUND_AUDIO_PRESET_UNSPECIFIED":
+      return BackgroundAudioPreset.BACKGROUND_AUDIO_PRESET_UNSPECIFIED;
+    case 1:
+    case "BACKGROUND_AUDIO_PRESET_NONE":
+      return BackgroundAudioPreset.BACKGROUND_AUDIO_PRESET_NONE;
+    case 2:
+    case "BACKGROUND_AUDIO_PRESET_CAFE":
+      return BackgroundAudioPreset.BACKGROUND_AUDIO_PRESET_CAFE;
+    case 3:
+    case "BACKGROUND_AUDIO_PRESET_OFFICE":
+      return BackgroundAudioPreset.BACKGROUND_AUDIO_PRESET_OFFICE;
+    case 4:
+    case "BACKGROUND_AUDIO_PRESET_CONTACT_CENTER":
+      return BackgroundAudioPreset.BACKGROUND_AUDIO_PRESET_CONTACT_CENTER;
+    case 5:
+    case "BACKGROUND_AUDIO_PRESET_LIBRARY":
+      return BackgroundAudioPreset.BACKGROUND_AUDIO_PRESET_LIBRARY;
+    case -1:
+    case "UNRECOGNIZED":
+    default:
+      return BackgroundAudioPreset.UNRECOGNIZED;
+  }
+}
+
+export function backgroundAudioPresetToJSON(object: BackgroundAudioPreset): string {
+  switch (object) {
+    case BackgroundAudioPreset.BACKGROUND_AUDIO_PRESET_UNSPECIFIED:
+      return "BACKGROUND_AUDIO_PRESET_UNSPECIFIED";
+    case BackgroundAudioPreset.BACKGROUND_AUDIO_PRESET_NONE:
+      return "BACKGROUND_AUDIO_PRESET_NONE";
+    case BackgroundAudioPreset.BACKGROUND_AUDIO_PRESET_CAFE:
+      return "BACKGROUND_AUDIO_PRESET_CAFE";
+    case BackgroundAudioPreset.BACKGROUND_AUDIO_PRESET_OFFICE:
+      return "BACKGROUND_AUDIO_PRESET_OFFICE";
+    case BackgroundAudioPreset.BACKGROUND_AUDIO_PRESET_CONTACT_CENTER:
+      return "BACKGROUND_AUDIO_PRESET_CONTACT_CENTER";
+    case BackgroundAudioPreset.BACKGROUND_AUDIO_PRESET_LIBRARY:
+      return "BACKGROUND_AUDIO_PRESET_LIBRARY";
+    case BackgroundAudioPreset.UNRECOGNIZED:
+    default:
+      return "UNRECOGNIZED";
+  }
+}
+
+export enum OrchestrationMode {
+  ORCHESTRATION_MODE_UNSPECIFIED = 0,
+  ORCHESTRATION_MODE_SUPERVISOR = 1,
+  ORCHESTRATION_MODE_HANDOFF = 2,
+  UNRECOGNIZED = -1,
+}
+
+export function orchestrationModeFromJSON(object: any): OrchestrationMode {
+  switch (object) {
+    case 0:
+    case "ORCHESTRATION_MODE_UNSPECIFIED":
+      return OrchestrationMode.ORCHESTRATION_MODE_UNSPECIFIED;
+    case 1:
+    case "ORCHESTRATION_MODE_SUPERVISOR":
+      return OrchestrationMode.ORCHESTRATION_MODE_SUPERVISOR;
+    case 2:
+    case "ORCHESTRATION_MODE_HANDOFF":
+      return OrchestrationMode.ORCHESTRATION_MODE_HANDOFF;
+    case -1:
+    case "UNRECOGNIZED":
+    default:
+      return OrchestrationMode.UNRECOGNIZED;
+  }
+}
+
+export function orchestrationModeToJSON(object: OrchestrationMode): string {
+  switch (object) {
+    case OrchestrationMode.ORCHESTRATION_MODE_UNSPECIFIED:
+      return "ORCHESTRATION_MODE_UNSPECIFIED";
+    case OrchestrationMode.ORCHESTRATION_MODE_SUPERVISOR:
+      return "ORCHESTRATION_MODE_SUPERVISOR";
+    case OrchestrationMode.ORCHESTRATION_MODE_HANDOFF:
+      return "ORCHESTRATION_MODE_HANDOFF";
+    case OrchestrationMode.UNRECOGNIZED:
+    default:
+      return "UNRECOGNIZED";
+  }
+}
+
 export enum NodeKind {
   NODE_KIND_UNSPECIFIED = 0,
   NODE_KIND_AGENT = 1,
@@ -181,6 +277,108 @@ export interface BootstrapResponse {
   bootstrapSnapshotId: string;
   apiToolRuntimes: ApiToolRuntime[];
   orchestrationGraph?: OrchestrationGraphSnapshot | undefined;
+}
+
+export interface BootstrapAgentRequest {
+  admission?: BootstrapRequest | undefined;
+  conversationId: string;
+  sessionId: string;
+  agentVersionId: string;
+  contractRevision: string;
+}
+
+export interface BootstrapAgentResponse {
+  contractRevision: string;
+  schemaVersion: string;
+  conversationId: string;
+  sessionId: string;
+  agentId: string;
+  agentVersionId: string;
+  callRuntime?: CallRuntimeSnapshot | undefined;
+  agentRuntime?: AgentRuntime | undefined;
+}
+
+export interface BootstrapOrchestrationRequest {
+  admission?: BootstrapRequest | undefined;
+  conversationId: string;
+  sessionId: string;
+  orchestrationVersionId: string;
+  contractRevision: string;
+}
+
+export interface BootstrapOrchestrationResponse {
+  contractRevision: string;
+  schemaVersion: string;
+  conversationId: string;
+  sessionId: string;
+  orchestrationId: string;
+  orchestrationVersionId: string;
+  mode: OrchestrationMode;
+  callRuntime?: CallRuntimeSnapshot | undefined;
+  agentRuntimes: AgentRuntime[];
+  supervisor?: SupervisorSnapshot | undefined;
+  handoff?: HandoffSnapshot | undefined;
+}
+
+export interface CallRuntimeSnapshot {
+  stt?: SttRuntime | undefined;
+  tts?: TtsRuntime | undefined;
+  backgroundAudio?: BackgroundAudioRuntime | undefined;
+  dtmf?: DtmfInputRuntime | undefined;
+}
+
+export interface BackgroundAudioRuntime {
+  preset: BackgroundAudioPreset;
+  volume?: number | undefined;
+}
+
+export interface DtmfInputRuntime {
+  timeoutSeconds: number;
+  endKey?: string | undefined;
+}
+
+export interface AgentRuntime {
+  agentId: string;
+  agentVersionId: string;
+  llmWorker?: LlmRuntime | undefined;
+  instructions?: AgentInstructions | undefined;
+  contextPolicy: ContextPolicy;
+  tools: NodeToolMetadata[];
+  mcpServers: McpServerRuntime[];
+  greeting: string;
+  knowledgeRevisionId: string;
+}
+
+export interface AgentInstructions {
+  systemPrompt: string;
+  guardrails: string[];
+}
+
+export interface SupervisorSnapshot {
+  supervisorAgentVersionId: string;
+  specialists: SupervisorSpecialist[];
+}
+
+export interface SupervisorSpecialist {
+  relationId: string;
+  agentVersionId: string;
+  routeDescription: string;
+  contextPolicy: ContextPolicy;
+}
+
+export interface HandoffSnapshot {
+  entryAgentVersionId: string;
+  maxHandoffDepth: number;
+  routes: HandoffRoute[];
+}
+
+export interface HandoffRoute {
+  transitionId: string;
+  sourceAgentVersionId: string;
+  targetAgentVersionId: string;
+  routingDescription: string;
+  contextPolicy: ContextPolicy;
+  announcement: string;
 }
 
 export interface OrchestrationGraphSnapshot {
@@ -1144,6 +1342,1834 @@ export const BootstrapResponse: MessageFns<BootstrapResponse> = {
     message.orchestrationGraph = (object.orchestrationGraph !== undefined && object.orchestrationGraph !== null)
       ? OrchestrationGraphSnapshot.fromPartial(object.orchestrationGraph)
       : undefined;
+    return message;
+  },
+};
+
+function createBaseBootstrapAgentRequest(): BootstrapAgentRequest {
+  return { admission: undefined, conversationId: "", sessionId: "", agentVersionId: "", contractRevision: "" };
+}
+
+export const BootstrapAgentRequest: MessageFns<BootstrapAgentRequest> = {
+  encode(message: BootstrapAgentRequest, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.admission !== undefined) {
+      BootstrapRequest.encode(message.admission, writer.uint32(10).fork()).join();
+    }
+    if (message.conversationId !== "") {
+      writer.uint32(18).string(message.conversationId);
+    }
+    if (message.sessionId !== "") {
+      writer.uint32(26).string(message.sessionId);
+    }
+    if (message.agentVersionId !== "") {
+      writer.uint32(34).string(message.agentVersionId);
+    }
+    if (message.contractRevision !== "") {
+      writer.uint32(42).string(message.contractRevision);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): BootstrapAgentRequest {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseBootstrapAgentRequest();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.admission = BootstrapRequest.decode(reader, reader.uint32());
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.conversationId = reader.string();
+          continue;
+        }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.sessionId = reader.string();
+          continue;
+        }
+        case 4: {
+          if (tag !== 34) {
+            break;
+          }
+
+          message.agentVersionId = reader.string();
+          continue;
+        }
+        case 5: {
+          if (tag !== 42) {
+            break;
+          }
+
+          message.contractRevision = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): BootstrapAgentRequest {
+    return {
+      admission: isSet(object.admission) ? BootstrapRequest.fromJSON(object.admission) : undefined,
+      conversationId: isSet(object.conversationId)
+        ? globalThis.String(object.conversationId)
+        : isSet(object.conversation_id)
+        ? globalThis.String(object.conversation_id)
+        : "",
+      sessionId: isSet(object.sessionId)
+        ? globalThis.String(object.sessionId)
+        : isSet(object.session_id)
+        ? globalThis.String(object.session_id)
+        : "",
+      agentVersionId: isSet(object.agentVersionId)
+        ? globalThis.String(object.agentVersionId)
+        : isSet(object.agent_version_id)
+        ? globalThis.String(object.agent_version_id)
+        : "",
+      contractRevision: isSet(object.contractRevision)
+        ? globalThis.String(object.contractRevision)
+        : isSet(object.contract_revision)
+        ? globalThis.String(object.contract_revision)
+        : "",
+    };
+  },
+
+  toJSON(message: BootstrapAgentRequest): unknown {
+    const obj: any = {};
+    if (message.admission !== undefined) {
+      obj.admission = BootstrapRequest.toJSON(message.admission);
+    }
+    if (message.conversationId !== "") {
+      obj.conversationId = message.conversationId;
+    }
+    if (message.sessionId !== "") {
+      obj.sessionId = message.sessionId;
+    }
+    if (message.agentVersionId !== "") {
+      obj.agentVersionId = message.agentVersionId;
+    }
+    if (message.contractRevision !== "") {
+      obj.contractRevision = message.contractRevision;
+    }
+    return obj;
+  },
+
+  create(base?: DeepPartial<BootstrapAgentRequest>): BootstrapAgentRequest {
+    return BootstrapAgentRequest.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<BootstrapAgentRequest>): BootstrapAgentRequest {
+    const message = createBaseBootstrapAgentRequest();
+    message.admission = (object.admission !== undefined && object.admission !== null)
+      ? BootstrapRequest.fromPartial(object.admission)
+      : undefined;
+    message.conversationId = object.conversationId ?? "";
+    message.sessionId = object.sessionId ?? "";
+    message.agentVersionId = object.agentVersionId ?? "";
+    message.contractRevision = object.contractRevision ?? "";
+    return message;
+  },
+};
+
+function createBaseBootstrapAgentResponse(): BootstrapAgentResponse {
+  return {
+    contractRevision: "",
+    schemaVersion: "",
+    conversationId: "",
+    sessionId: "",
+    agentId: "",
+    agentVersionId: "",
+    callRuntime: undefined,
+    agentRuntime: undefined,
+  };
+}
+
+export const BootstrapAgentResponse: MessageFns<BootstrapAgentResponse> = {
+  encode(message: BootstrapAgentResponse, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.contractRevision !== "") {
+      writer.uint32(10).string(message.contractRevision);
+    }
+    if (message.schemaVersion !== "") {
+      writer.uint32(18).string(message.schemaVersion);
+    }
+    if (message.conversationId !== "") {
+      writer.uint32(26).string(message.conversationId);
+    }
+    if (message.sessionId !== "") {
+      writer.uint32(34).string(message.sessionId);
+    }
+    if (message.agentId !== "") {
+      writer.uint32(42).string(message.agentId);
+    }
+    if (message.agentVersionId !== "") {
+      writer.uint32(50).string(message.agentVersionId);
+    }
+    if (message.callRuntime !== undefined) {
+      CallRuntimeSnapshot.encode(message.callRuntime, writer.uint32(58).fork()).join();
+    }
+    if (message.agentRuntime !== undefined) {
+      AgentRuntime.encode(message.agentRuntime, writer.uint32(66).fork()).join();
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): BootstrapAgentResponse {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseBootstrapAgentResponse();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.contractRevision = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.schemaVersion = reader.string();
+          continue;
+        }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.conversationId = reader.string();
+          continue;
+        }
+        case 4: {
+          if (tag !== 34) {
+            break;
+          }
+
+          message.sessionId = reader.string();
+          continue;
+        }
+        case 5: {
+          if (tag !== 42) {
+            break;
+          }
+
+          message.agentId = reader.string();
+          continue;
+        }
+        case 6: {
+          if (tag !== 50) {
+            break;
+          }
+
+          message.agentVersionId = reader.string();
+          continue;
+        }
+        case 7: {
+          if (tag !== 58) {
+            break;
+          }
+
+          message.callRuntime = CallRuntimeSnapshot.decode(reader, reader.uint32());
+          continue;
+        }
+        case 8: {
+          if (tag !== 66) {
+            break;
+          }
+
+          message.agentRuntime = AgentRuntime.decode(reader, reader.uint32());
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): BootstrapAgentResponse {
+    return {
+      contractRevision: isSet(object.contractRevision)
+        ? globalThis.String(object.contractRevision)
+        : isSet(object.contract_revision)
+        ? globalThis.String(object.contract_revision)
+        : "",
+      schemaVersion: isSet(object.schemaVersion)
+        ? globalThis.String(object.schemaVersion)
+        : isSet(object.schema_version)
+        ? globalThis.String(object.schema_version)
+        : "",
+      conversationId: isSet(object.conversationId)
+        ? globalThis.String(object.conversationId)
+        : isSet(object.conversation_id)
+        ? globalThis.String(object.conversation_id)
+        : "",
+      sessionId: isSet(object.sessionId)
+        ? globalThis.String(object.sessionId)
+        : isSet(object.session_id)
+        ? globalThis.String(object.session_id)
+        : "",
+      agentId: isSet(object.agentId)
+        ? globalThis.String(object.agentId)
+        : isSet(object.agent_id)
+        ? globalThis.String(object.agent_id)
+        : "",
+      agentVersionId: isSet(object.agentVersionId)
+        ? globalThis.String(object.agentVersionId)
+        : isSet(object.agent_version_id)
+        ? globalThis.String(object.agent_version_id)
+        : "",
+      callRuntime: isSet(object.callRuntime)
+        ? CallRuntimeSnapshot.fromJSON(object.callRuntime)
+        : isSet(object.call_runtime)
+        ? CallRuntimeSnapshot.fromJSON(object.call_runtime)
+        : undefined,
+      agentRuntime: isSet(object.agentRuntime)
+        ? AgentRuntime.fromJSON(object.agentRuntime)
+        : isSet(object.agent_runtime)
+        ? AgentRuntime.fromJSON(object.agent_runtime)
+        : undefined,
+    };
+  },
+
+  toJSON(message: BootstrapAgentResponse): unknown {
+    const obj: any = {};
+    if (message.contractRevision !== "") {
+      obj.contractRevision = message.contractRevision;
+    }
+    if (message.schemaVersion !== "") {
+      obj.schemaVersion = message.schemaVersion;
+    }
+    if (message.conversationId !== "") {
+      obj.conversationId = message.conversationId;
+    }
+    if (message.sessionId !== "") {
+      obj.sessionId = message.sessionId;
+    }
+    if (message.agentId !== "") {
+      obj.agentId = message.agentId;
+    }
+    if (message.agentVersionId !== "") {
+      obj.agentVersionId = message.agentVersionId;
+    }
+    if (message.callRuntime !== undefined) {
+      obj.callRuntime = CallRuntimeSnapshot.toJSON(message.callRuntime);
+    }
+    if (message.agentRuntime !== undefined) {
+      obj.agentRuntime = AgentRuntime.toJSON(message.agentRuntime);
+    }
+    return obj;
+  },
+
+  create(base?: DeepPartial<BootstrapAgentResponse>): BootstrapAgentResponse {
+    return BootstrapAgentResponse.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<BootstrapAgentResponse>): BootstrapAgentResponse {
+    const message = createBaseBootstrapAgentResponse();
+    message.contractRevision = object.contractRevision ?? "";
+    message.schemaVersion = object.schemaVersion ?? "";
+    message.conversationId = object.conversationId ?? "";
+    message.sessionId = object.sessionId ?? "";
+    message.agentId = object.agentId ?? "";
+    message.agentVersionId = object.agentVersionId ?? "";
+    message.callRuntime = (object.callRuntime !== undefined && object.callRuntime !== null)
+      ? CallRuntimeSnapshot.fromPartial(object.callRuntime)
+      : undefined;
+    message.agentRuntime = (object.agentRuntime !== undefined && object.agentRuntime !== null)
+      ? AgentRuntime.fromPartial(object.agentRuntime)
+      : undefined;
+    return message;
+  },
+};
+
+function createBaseBootstrapOrchestrationRequest(): BootstrapOrchestrationRequest {
+  return { admission: undefined, conversationId: "", sessionId: "", orchestrationVersionId: "", contractRevision: "" };
+}
+
+export const BootstrapOrchestrationRequest: MessageFns<BootstrapOrchestrationRequest> = {
+  encode(message: BootstrapOrchestrationRequest, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.admission !== undefined) {
+      BootstrapRequest.encode(message.admission, writer.uint32(10).fork()).join();
+    }
+    if (message.conversationId !== "") {
+      writer.uint32(18).string(message.conversationId);
+    }
+    if (message.sessionId !== "") {
+      writer.uint32(26).string(message.sessionId);
+    }
+    if (message.orchestrationVersionId !== "") {
+      writer.uint32(34).string(message.orchestrationVersionId);
+    }
+    if (message.contractRevision !== "") {
+      writer.uint32(42).string(message.contractRevision);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): BootstrapOrchestrationRequest {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseBootstrapOrchestrationRequest();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.admission = BootstrapRequest.decode(reader, reader.uint32());
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.conversationId = reader.string();
+          continue;
+        }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.sessionId = reader.string();
+          continue;
+        }
+        case 4: {
+          if (tag !== 34) {
+            break;
+          }
+
+          message.orchestrationVersionId = reader.string();
+          continue;
+        }
+        case 5: {
+          if (tag !== 42) {
+            break;
+          }
+
+          message.contractRevision = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): BootstrapOrchestrationRequest {
+    return {
+      admission: isSet(object.admission) ? BootstrapRequest.fromJSON(object.admission) : undefined,
+      conversationId: isSet(object.conversationId)
+        ? globalThis.String(object.conversationId)
+        : isSet(object.conversation_id)
+        ? globalThis.String(object.conversation_id)
+        : "",
+      sessionId: isSet(object.sessionId)
+        ? globalThis.String(object.sessionId)
+        : isSet(object.session_id)
+        ? globalThis.String(object.session_id)
+        : "",
+      orchestrationVersionId: isSet(object.orchestrationVersionId)
+        ? globalThis.String(object.orchestrationVersionId)
+        : isSet(object.orchestration_version_id)
+        ? globalThis.String(object.orchestration_version_id)
+        : "",
+      contractRevision: isSet(object.contractRevision)
+        ? globalThis.String(object.contractRevision)
+        : isSet(object.contract_revision)
+        ? globalThis.String(object.contract_revision)
+        : "",
+    };
+  },
+
+  toJSON(message: BootstrapOrchestrationRequest): unknown {
+    const obj: any = {};
+    if (message.admission !== undefined) {
+      obj.admission = BootstrapRequest.toJSON(message.admission);
+    }
+    if (message.conversationId !== "") {
+      obj.conversationId = message.conversationId;
+    }
+    if (message.sessionId !== "") {
+      obj.sessionId = message.sessionId;
+    }
+    if (message.orchestrationVersionId !== "") {
+      obj.orchestrationVersionId = message.orchestrationVersionId;
+    }
+    if (message.contractRevision !== "") {
+      obj.contractRevision = message.contractRevision;
+    }
+    return obj;
+  },
+
+  create(base?: DeepPartial<BootstrapOrchestrationRequest>): BootstrapOrchestrationRequest {
+    return BootstrapOrchestrationRequest.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<BootstrapOrchestrationRequest>): BootstrapOrchestrationRequest {
+    const message = createBaseBootstrapOrchestrationRequest();
+    message.admission = (object.admission !== undefined && object.admission !== null)
+      ? BootstrapRequest.fromPartial(object.admission)
+      : undefined;
+    message.conversationId = object.conversationId ?? "";
+    message.sessionId = object.sessionId ?? "";
+    message.orchestrationVersionId = object.orchestrationVersionId ?? "";
+    message.contractRevision = object.contractRevision ?? "";
+    return message;
+  },
+};
+
+function createBaseBootstrapOrchestrationResponse(): BootstrapOrchestrationResponse {
+  return {
+    contractRevision: "",
+    schemaVersion: "",
+    conversationId: "",
+    sessionId: "",
+    orchestrationId: "",
+    orchestrationVersionId: "",
+    mode: 0,
+    callRuntime: undefined,
+    agentRuntimes: [],
+    supervisor: undefined,
+    handoff: undefined,
+  };
+}
+
+export const BootstrapOrchestrationResponse: MessageFns<BootstrapOrchestrationResponse> = {
+  encode(message: BootstrapOrchestrationResponse, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.contractRevision !== "") {
+      writer.uint32(10).string(message.contractRevision);
+    }
+    if (message.schemaVersion !== "") {
+      writer.uint32(18).string(message.schemaVersion);
+    }
+    if (message.conversationId !== "") {
+      writer.uint32(26).string(message.conversationId);
+    }
+    if (message.sessionId !== "") {
+      writer.uint32(34).string(message.sessionId);
+    }
+    if (message.orchestrationId !== "") {
+      writer.uint32(42).string(message.orchestrationId);
+    }
+    if (message.orchestrationVersionId !== "") {
+      writer.uint32(50).string(message.orchestrationVersionId);
+    }
+    if (message.mode !== 0) {
+      writer.uint32(56).int32(message.mode);
+    }
+    if (message.callRuntime !== undefined) {
+      CallRuntimeSnapshot.encode(message.callRuntime, writer.uint32(66).fork()).join();
+    }
+    for (const v of message.agentRuntimes) {
+      AgentRuntime.encode(v!, writer.uint32(74).fork()).join();
+    }
+    if (message.supervisor !== undefined) {
+      SupervisorSnapshot.encode(message.supervisor, writer.uint32(82).fork()).join();
+    }
+    if (message.handoff !== undefined) {
+      HandoffSnapshot.encode(message.handoff, writer.uint32(90).fork()).join();
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): BootstrapOrchestrationResponse {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseBootstrapOrchestrationResponse();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.contractRevision = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.schemaVersion = reader.string();
+          continue;
+        }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.conversationId = reader.string();
+          continue;
+        }
+        case 4: {
+          if (tag !== 34) {
+            break;
+          }
+
+          message.sessionId = reader.string();
+          continue;
+        }
+        case 5: {
+          if (tag !== 42) {
+            break;
+          }
+
+          message.orchestrationId = reader.string();
+          continue;
+        }
+        case 6: {
+          if (tag !== 50) {
+            break;
+          }
+
+          message.orchestrationVersionId = reader.string();
+          continue;
+        }
+        case 7: {
+          if (tag !== 56) {
+            break;
+          }
+
+          message.mode = reader.int32() as any;
+          continue;
+        }
+        case 8: {
+          if (tag !== 66) {
+            break;
+          }
+
+          message.callRuntime = CallRuntimeSnapshot.decode(reader, reader.uint32());
+          continue;
+        }
+        case 9: {
+          if (tag !== 74) {
+            break;
+          }
+
+          message.agentRuntimes.push(AgentRuntime.decode(reader, reader.uint32()));
+          continue;
+        }
+        case 10: {
+          if (tag !== 82) {
+            break;
+          }
+
+          message.supervisor = SupervisorSnapshot.decode(reader, reader.uint32());
+          continue;
+        }
+        case 11: {
+          if (tag !== 90) {
+            break;
+          }
+
+          message.handoff = HandoffSnapshot.decode(reader, reader.uint32());
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): BootstrapOrchestrationResponse {
+    return {
+      contractRevision: isSet(object.contractRevision)
+        ? globalThis.String(object.contractRevision)
+        : isSet(object.contract_revision)
+        ? globalThis.String(object.contract_revision)
+        : "",
+      schemaVersion: isSet(object.schemaVersion)
+        ? globalThis.String(object.schemaVersion)
+        : isSet(object.schema_version)
+        ? globalThis.String(object.schema_version)
+        : "",
+      conversationId: isSet(object.conversationId)
+        ? globalThis.String(object.conversationId)
+        : isSet(object.conversation_id)
+        ? globalThis.String(object.conversation_id)
+        : "",
+      sessionId: isSet(object.sessionId)
+        ? globalThis.String(object.sessionId)
+        : isSet(object.session_id)
+        ? globalThis.String(object.session_id)
+        : "",
+      orchestrationId: isSet(object.orchestrationId)
+        ? globalThis.String(object.orchestrationId)
+        : isSet(object.orchestration_id)
+        ? globalThis.String(object.orchestration_id)
+        : "",
+      orchestrationVersionId: isSet(object.orchestrationVersionId)
+        ? globalThis.String(object.orchestrationVersionId)
+        : isSet(object.orchestration_version_id)
+        ? globalThis.String(object.orchestration_version_id)
+        : "",
+      mode: isSet(object.mode) ? orchestrationModeFromJSON(object.mode) : 0,
+      callRuntime: isSet(object.callRuntime)
+        ? CallRuntimeSnapshot.fromJSON(object.callRuntime)
+        : isSet(object.call_runtime)
+        ? CallRuntimeSnapshot.fromJSON(object.call_runtime)
+        : undefined,
+      agentRuntimes: globalThis.Array.isArray(object?.agentRuntimes)
+        ? object.agentRuntimes.map((e: any) => AgentRuntime.fromJSON(e))
+        : globalThis.Array.isArray(object?.agent_runtimes)
+        ? object.agent_runtimes.map((e: any) => AgentRuntime.fromJSON(e))
+        : [],
+      supervisor: isSet(object.supervisor) ? SupervisorSnapshot.fromJSON(object.supervisor) : undefined,
+      handoff: isSet(object.handoff) ? HandoffSnapshot.fromJSON(object.handoff) : undefined,
+    };
+  },
+
+  toJSON(message: BootstrapOrchestrationResponse): unknown {
+    const obj: any = {};
+    if (message.contractRevision !== "") {
+      obj.contractRevision = message.contractRevision;
+    }
+    if (message.schemaVersion !== "") {
+      obj.schemaVersion = message.schemaVersion;
+    }
+    if (message.conversationId !== "") {
+      obj.conversationId = message.conversationId;
+    }
+    if (message.sessionId !== "") {
+      obj.sessionId = message.sessionId;
+    }
+    if (message.orchestrationId !== "") {
+      obj.orchestrationId = message.orchestrationId;
+    }
+    if (message.orchestrationVersionId !== "") {
+      obj.orchestrationVersionId = message.orchestrationVersionId;
+    }
+    if (message.mode !== 0) {
+      obj.mode = orchestrationModeToJSON(message.mode);
+    }
+    if (message.callRuntime !== undefined) {
+      obj.callRuntime = CallRuntimeSnapshot.toJSON(message.callRuntime);
+    }
+    if (message.agentRuntimes?.length) {
+      obj.agentRuntimes = message.agentRuntimes.map((e) => AgentRuntime.toJSON(e));
+    }
+    if (message.supervisor !== undefined) {
+      obj.supervisor = SupervisorSnapshot.toJSON(message.supervisor);
+    }
+    if (message.handoff !== undefined) {
+      obj.handoff = HandoffSnapshot.toJSON(message.handoff);
+    }
+    return obj;
+  },
+
+  create(base?: DeepPartial<BootstrapOrchestrationResponse>): BootstrapOrchestrationResponse {
+    return BootstrapOrchestrationResponse.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<BootstrapOrchestrationResponse>): BootstrapOrchestrationResponse {
+    const message = createBaseBootstrapOrchestrationResponse();
+    message.contractRevision = object.contractRevision ?? "";
+    message.schemaVersion = object.schemaVersion ?? "";
+    message.conversationId = object.conversationId ?? "";
+    message.sessionId = object.sessionId ?? "";
+    message.orchestrationId = object.orchestrationId ?? "";
+    message.orchestrationVersionId = object.orchestrationVersionId ?? "";
+    message.mode = object.mode ?? 0;
+    message.callRuntime = (object.callRuntime !== undefined && object.callRuntime !== null)
+      ? CallRuntimeSnapshot.fromPartial(object.callRuntime)
+      : undefined;
+    message.agentRuntimes = object.agentRuntimes?.map((e) => AgentRuntime.fromPartial(e)) || [];
+    message.supervisor = (object.supervisor !== undefined && object.supervisor !== null)
+      ? SupervisorSnapshot.fromPartial(object.supervisor)
+      : undefined;
+    message.handoff = (object.handoff !== undefined && object.handoff !== null)
+      ? HandoffSnapshot.fromPartial(object.handoff)
+      : undefined;
+    return message;
+  },
+};
+
+function createBaseCallRuntimeSnapshot(): CallRuntimeSnapshot {
+  return { stt: undefined, tts: undefined, backgroundAudio: undefined, dtmf: undefined };
+}
+
+export const CallRuntimeSnapshot: MessageFns<CallRuntimeSnapshot> = {
+  encode(message: CallRuntimeSnapshot, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.stt !== undefined) {
+      SttRuntime.encode(message.stt, writer.uint32(10).fork()).join();
+    }
+    if (message.tts !== undefined) {
+      TtsRuntime.encode(message.tts, writer.uint32(18).fork()).join();
+    }
+    if (message.backgroundAudio !== undefined) {
+      BackgroundAudioRuntime.encode(message.backgroundAudio, writer.uint32(26).fork()).join();
+    }
+    if (message.dtmf !== undefined) {
+      DtmfInputRuntime.encode(message.dtmf, writer.uint32(34).fork()).join();
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): CallRuntimeSnapshot {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseCallRuntimeSnapshot();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.stt = SttRuntime.decode(reader, reader.uint32());
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.tts = TtsRuntime.decode(reader, reader.uint32());
+          continue;
+        }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.backgroundAudio = BackgroundAudioRuntime.decode(reader, reader.uint32());
+          continue;
+        }
+        case 4: {
+          if (tag !== 34) {
+            break;
+          }
+
+          message.dtmf = DtmfInputRuntime.decode(reader, reader.uint32());
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): CallRuntimeSnapshot {
+    return {
+      stt: isSet(object.stt) ? SttRuntime.fromJSON(object.stt) : undefined,
+      tts: isSet(object.tts) ? TtsRuntime.fromJSON(object.tts) : undefined,
+      backgroundAudio: isSet(object.backgroundAudio)
+        ? BackgroundAudioRuntime.fromJSON(object.backgroundAudio)
+        : isSet(object.background_audio)
+        ? BackgroundAudioRuntime.fromJSON(object.background_audio)
+        : undefined,
+      dtmf: isSet(object.dtmf) ? DtmfInputRuntime.fromJSON(object.dtmf) : undefined,
+    };
+  },
+
+  toJSON(message: CallRuntimeSnapshot): unknown {
+    const obj: any = {};
+    if (message.stt !== undefined) {
+      obj.stt = SttRuntime.toJSON(message.stt);
+    }
+    if (message.tts !== undefined) {
+      obj.tts = TtsRuntime.toJSON(message.tts);
+    }
+    if (message.backgroundAudio !== undefined) {
+      obj.backgroundAudio = BackgroundAudioRuntime.toJSON(message.backgroundAudio);
+    }
+    if (message.dtmf !== undefined) {
+      obj.dtmf = DtmfInputRuntime.toJSON(message.dtmf);
+    }
+    return obj;
+  },
+
+  create(base?: DeepPartial<CallRuntimeSnapshot>): CallRuntimeSnapshot {
+    return CallRuntimeSnapshot.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<CallRuntimeSnapshot>): CallRuntimeSnapshot {
+    const message = createBaseCallRuntimeSnapshot();
+    message.stt = (object.stt !== undefined && object.stt !== null) ? SttRuntime.fromPartial(object.stt) : undefined;
+    message.tts = (object.tts !== undefined && object.tts !== null) ? TtsRuntime.fromPartial(object.tts) : undefined;
+    message.backgroundAudio = (object.backgroundAudio !== undefined && object.backgroundAudio !== null)
+      ? BackgroundAudioRuntime.fromPartial(object.backgroundAudio)
+      : undefined;
+    message.dtmf = (object.dtmf !== undefined && object.dtmf !== null)
+      ? DtmfInputRuntime.fromPartial(object.dtmf)
+      : undefined;
+    return message;
+  },
+};
+
+function createBaseBackgroundAudioRuntime(): BackgroundAudioRuntime {
+  return { preset: 0, volume: undefined };
+}
+
+export const BackgroundAudioRuntime: MessageFns<BackgroundAudioRuntime> = {
+  encode(message: BackgroundAudioRuntime, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.preset !== 0) {
+      writer.uint32(8).int32(message.preset);
+    }
+    if (message.volume !== undefined) {
+      writer.uint32(17).double(message.volume);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): BackgroundAudioRuntime {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseBackgroundAudioRuntime();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 8) {
+            break;
+          }
+
+          message.preset = reader.int32() as any;
+          continue;
+        }
+        case 2: {
+          if (tag !== 17) {
+            break;
+          }
+
+          message.volume = reader.double();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): BackgroundAudioRuntime {
+    return {
+      preset: isSet(object.preset) ? backgroundAudioPresetFromJSON(object.preset) : 0,
+      volume: isSet(object.volume) ? globalThis.Number(object.volume) : undefined,
+    };
+  },
+
+  toJSON(message: BackgroundAudioRuntime): unknown {
+    const obj: any = {};
+    if (message.preset !== 0) {
+      obj.preset = backgroundAudioPresetToJSON(message.preset);
+    }
+    if (message.volume !== undefined) {
+      obj.volume = message.volume;
+    }
+    return obj;
+  },
+
+  create(base?: DeepPartial<BackgroundAudioRuntime>): BackgroundAudioRuntime {
+    return BackgroundAudioRuntime.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<BackgroundAudioRuntime>): BackgroundAudioRuntime {
+    const message = createBaseBackgroundAudioRuntime();
+    message.preset = object.preset ?? 0;
+    message.volume = object.volume ?? undefined;
+    return message;
+  },
+};
+
+function createBaseDtmfInputRuntime(): DtmfInputRuntime {
+  return { timeoutSeconds: 0, endKey: undefined };
+}
+
+export const DtmfInputRuntime: MessageFns<DtmfInputRuntime> = {
+  encode(message: DtmfInputRuntime, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.timeoutSeconds !== 0) {
+      writer.uint32(8).uint32(message.timeoutSeconds);
+    }
+    if (message.endKey !== undefined) {
+      writer.uint32(18).string(message.endKey);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): DtmfInputRuntime {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseDtmfInputRuntime();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 8) {
+            break;
+          }
+
+          message.timeoutSeconds = reader.uint32();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.endKey = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): DtmfInputRuntime {
+    return {
+      timeoutSeconds: isSet(object.timeoutSeconds)
+        ? globalThis.Number(object.timeoutSeconds)
+        : isSet(object.timeout_seconds)
+        ? globalThis.Number(object.timeout_seconds)
+        : 0,
+      endKey: isSet(object.endKey)
+        ? globalThis.String(object.endKey)
+        : isSet(object.end_key)
+        ? globalThis.String(object.end_key)
+        : undefined,
+    };
+  },
+
+  toJSON(message: DtmfInputRuntime): unknown {
+    const obj: any = {};
+    if (message.timeoutSeconds !== 0) {
+      obj.timeoutSeconds = Math.round(message.timeoutSeconds);
+    }
+    if (message.endKey !== undefined) {
+      obj.endKey = message.endKey;
+    }
+    return obj;
+  },
+
+  create(base?: DeepPartial<DtmfInputRuntime>): DtmfInputRuntime {
+    return DtmfInputRuntime.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<DtmfInputRuntime>): DtmfInputRuntime {
+    const message = createBaseDtmfInputRuntime();
+    message.timeoutSeconds = object.timeoutSeconds ?? 0;
+    message.endKey = object.endKey ?? undefined;
+    return message;
+  },
+};
+
+function createBaseAgentRuntime(): AgentRuntime {
+  return {
+    agentId: "",
+    agentVersionId: "",
+    llmWorker: undefined,
+    instructions: undefined,
+    contextPolicy: 0,
+    tools: [],
+    mcpServers: [],
+    greeting: "",
+    knowledgeRevisionId: "",
+  };
+}
+
+export const AgentRuntime: MessageFns<AgentRuntime> = {
+  encode(message: AgentRuntime, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.agentId !== "") {
+      writer.uint32(10).string(message.agentId);
+    }
+    if (message.agentVersionId !== "") {
+      writer.uint32(18).string(message.agentVersionId);
+    }
+    if (message.llmWorker !== undefined) {
+      LlmRuntime.encode(message.llmWorker, writer.uint32(26).fork()).join();
+    }
+    if (message.instructions !== undefined) {
+      AgentInstructions.encode(message.instructions, writer.uint32(34).fork()).join();
+    }
+    if (message.contextPolicy !== 0) {
+      writer.uint32(40).int32(message.contextPolicy);
+    }
+    for (const v of message.tools) {
+      NodeToolMetadata.encode(v!, writer.uint32(50).fork()).join();
+    }
+    for (const v of message.mcpServers) {
+      McpServerRuntime.encode(v!, writer.uint32(58).fork()).join();
+    }
+    if (message.greeting !== "") {
+      writer.uint32(66).string(message.greeting);
+    }
+    if (message.knowledgeRevisionId !== "") {
+      writer.uint32(74).string(message.knowledgeRevisionId);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): AgentRuntime {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseAgentRuntime();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.agentId = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.agentVersionId = reader.string();
+          continue;
+        }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.llmWorker = LlmRuntime.decode(reader, reader.uint32());
+          continue;
+        }
+        case 4: {
+          if (tag !== 34) {
+            break;
+          }
+
+          message.instructions = AgentInstructions.decode(reader, reader.uint32());
+          continue;
+        }
+        case 5: {
+          if (tag !== 40) {
+            break;
+          }
+
+          message.contextPolicy = reader.int32() as any;
+          continue;
+        }
+        case 6: {
+          if (tag !== 50) {
+            break;
+          }
+
+          message.tools.push(NodeToolMetadata.decode(reader, reader.uint32()));
+          continue;
+        }
+        case 7: {
+          if (tag !== 58) {
+            break;
+          }
+
+          message.mcpServers.push(McpServerRuntime.decode(reader, reader.uint32()));
+          continue;
+        }
+        case 8: {
+          if (tag !== 66) {
+            break;
+          }
+
+          message.greeting = reader.string();
+          continue;
+        }
+        case 9: {
+          if (tag !== 74) {
+            break;
+          }
+
+          message.knowledgeRevisionId = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): AgentRuntime {
+    return {
+      agentId: isSet(object.agentId)
+        ? globalThis.String(object.agentId)
+        : isSet(object.agent_id)
+        ? globalThis.String(object.agent_id)
+        : "",
+      agentVersionId: isSet(object.agentVersionId)
+        ? globalThis.String(object.agentVersionId)
+        : isSet(object.agent_version_id)
+        ? globalThis.String(object.agent_version_id)
+        : "",
+      llmWorker: isSet(object.llmWorker)
+        ? LlmRuntime.fromJSON(object.llmWorker)
+        : isSet(object.llm_worker)
+        ? LlmRuntime.fromJSON(object.llm_worker)
+        : undefined,
+      instructions: isSet(object.instructions) ? AgentInstructions.fromJSON(object.instructions) : undefined,
+      contextPolicy: isSet(object.contextPolicy)
+        ? contextPolicyFromJSON(object.contextPolicy)
+        : isSet(object.context_policy)
+        ? contextPolicyFromJSON(object.context_policy)
+        : 0,
+      tools: globalThis.Array.isArray(object?.tools) ? object.tools.map((e: any) => NodeToolMetadata.fromJSON(e)) : [],
+      mcpServers: globalThis.Array.isArray(object?.mcpServers)
+        ? object.mcpServers.map((e: any) => McpServerRuntime.fromJSON(e))
+        : globalThis.Array.isArray(object?.mcp_servers)
+        ? object.mcp_servers.map((e: any) => McpServerRuntime.fromJSON(e))
+        : [],
+      greeting: isSet(object.greeting) ? globalThis.String(object.greeting) : "",
+      knowledgeRevisionId: isSet(object.knowledgeRevisionId)
+        ? globalThis.String(object.knowledgeRevisionId)
+        : isSet(object.knowledge_revision_id)
+        ? globalThis.String(object.knowledge_revision_id)
+        : "",
+    };
+  },
+
+  toJSON(message: AgentRuntime): unknown {
+    const obj: any = {};
+    if (message.agentId !== "") {
+      obj.agentId = message.agentId;
+    }
+    if (message.agentVersionId !== "") {
+      obj.agentVersionId = message.agentVersionId;
+    }
+    if (message.llmWorker !== undefined) {
+      obj.llmWorker = LlmRuntime.toJSON(message.llmWorker);
+    }
+    if (message.instructions !== undefined) {
+      obj.instructions = AgentInstructions.toJSON(message.instructions);
+    }
+    if (message.contextPolicy !== 0) {
+      obj.contextPolicy = contextPolicyToJSON(message.contextPolicy);
+    }
+    if (message.tools?.length) {
+      obj.tools = message.tools.map((e) => NodeToolMetadata.toJSON(e));
+    }
+    if (message.mcpServers?.length) {
+      obj.mcpServers = message.mcpServers.map((e) => McpServerRuntime.toJSON(e));
+    }
+    if (message.greeting !== "") {
+      obj.greeting = message.greeting;
+    }
+    if (message.knowledgeRevisionId !== "") {
+      obj.knowledgeRevisionId = message.knowledgeRevisionId;
+    }
+    return obj;
+  },
+
+  create(base?: DeepPartial<AgentRuntime>): AgentRuntime {
+    return AgentRuntime.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<AgentRuntime>): AgentRuntime {
+    const message = createBaseAgentRuntime();
+    message.agentId = object.agentId ?? "";
+    message.agentVersionId = object.agentVersionId ?? "";
+    message.llmWorker = (object.llmWorker !== undefined && object.llmWorker !== null)
+      ? LlmRuntime.fromPartial(object.llmWorker)
+      : undefined;
+    message.instructions = (object.instructions !== undefined && object.instructions !== null)
+      ? AgentInstructions.fromPartial(object.instructions)
+      : undefined;
+    message.contextPolicy = object.contextPolicy ?? 0;
+    message.tools = object.tools?.map((e) => NodeToolMetadata.fromPartial(e)) || [];
+    message.mcpServers = object.mcpServers?.map((e) => McpServerRuntime.fromPartial(e)) || [];
+    message.greeting = object.greeting ?? "";
+    message.knowledgeRevisionId = object.knowledgeRevisionId ?? "";
+    return message;
+  },
+};
+
+function createBaseAgentInstructions(): AgentInstructions {
+  return { systemPrompt: "", guardrails: [] };
+}
+
+export const AgentInstructions: MessageFns<AgentInstructions> = {
+  encode(message: AgentInstructions, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.systemPrompt !== "") {
+      writer.uint32(10).string(message.systemPrompt);
+    }
+    for (const v of message.guardrails) {
+      writer.uint32(18).string(v!);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): AgentInstructions {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseAgentInstructions();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.systemPrompt = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.guardrails.push(reader.string());
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): AgentInstructions {
+    return {
+      systemPrompt: isSet(object.systemPrompt)
+        ? globalThis.String(object.systemPrompt)
+        : isSet(object.system_prompt)
+        ? globalThis.String(object.system_prompt)
+        : "",
+      guardrails: globalThis.Array.isArray(object?.guardrails)
+        ? object.guardrails.map((e: any) => globalThis.String(e))
+        : [],
+    };
+  },
+
+  toJSON(message: AgentInstructions): unknown {
+    const obj: any = {};
+    if (message.systemPrompt !== "") {
+      obj.systemPrompt = message.systemPrompt;
+    }
+    if (message.guardrails?.length) {
+      obj.guardrails = message.guardrails;
+    }
+    return obj;
+  },
+
+  create(base?: DeepPartial<AgentInstructions>): AgentInstructions {
+    return AgentInstructions.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<AgentInstructions>): AgentInstructions {
+    const message = createBaseAgentInstructions();
+    message.systemPrompt = object.systemPrompt ?? "";
+    message.guardrails = object.guardrails?.map((e) => e) || [];
+    return message;
+  },
+};
+
+function createBaseSupervisorSnapshot(): SupervisorSnapshot {
+  return { supervisorAgentVersionId: "", specialists: [] };
+}
+
+export const SupervisorSnapshot: MessageFns<SupervisorSnapshot> = {
+  encode(message: SupervisorSnapshot, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.supervisorAgentVersionId !== "") {
+      writer.uint32(10).string(message.supervisorAgentVersionId);
+    }
+    for (const v of message.specialists) {
+      SupervisorSpecialist.encode(v!, writer.uint32(18).fork()).join();
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): SupervisorSnapshot {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseSupervisorSnapshot();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.supervisorAgentVersionId = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.specialists.push(SupervisorSpecialist.decode(reader, reader.uint32()));
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): SupervisorSnapshot {
+    return {
+      supervisorAgentVersionId: isSet(object.supervisorAgentVersionId)
+        ? globalThis.String(object.supervisorAgentVersionId)
+        : isSet(object.supervisor_agent_version_id)
+        ? globalThis.String(object.supervisor_agent_version_id)
+        : "",
+      specialists: globalThis.Array.isArray(object?.specialists)
+        ? object.specialists.map((e: any) => SupervisorSpecialist.fromJSON(e))
+        : [],
+    };
+  },
+
+  toJSON(message: SupervisorSnapshot): unknown {
+    const obj: any = {};
+    if (message.supervisorAgentVersionId !== "") {
+      obj.supervisorAgentVersionId = message.supervisorAgentVersionId;
+    }
+    if (message.specialists?.length) {
+      obj.specialists = message.specialists.map((e) => SupervisorSpecialist.toJSON(e));
+    }
+    return obj;
+  },
+
+  create(base?: DeepPartial<SupervisorSnapshot>): SupervisorSnapshot {
+    return SupervisorSnapshot.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<SupervisorSnapshot>): SupervisorSnapshot {
+    const message = createBaseSupervisorSnapshot();
+    message.supervisorAgentVersionId = object.supervisorAgentVersionId ?? "";
+    message.specialists = object.specialists?.map((e) => SupervisorSpecialist.fromPartial(e)) || [];
+    return message;
+  },
+};
+
+function createBaseSupervisorSpecialist(): SupervisorSpecialist {
+  return { relationId: "", agentVersionId: "", routeDescription: "", contextPolicy: 0 };
+}
+
+export const SupervisorSpecialist: MessageFns<SupervisorSpecialist> = {
+  encode(message: SupervisorSpecialist, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.relationId !== "") {
+      writer.uint32(10).string(message.relationId);
+    }
+    if (message.agentVersionId !== "") {
+      writer.uint32(18).string(message.agentVersionId);
+    }
+    if (message.routeDescription !== "") {
+      writer.uint32(26).string(message.routeDescription);
+    }
+    if (message.contextPolicy !== 0) {
+      writer.uint32(32).int32(message.contextPolicy);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): SupervisorSpecialist {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseSupervisorSpecialist();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.relationId = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.agentVersionId = reader.string();
+          continue;
+        }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.routeDescription = reader.string();
+          continue;
+        }
+        case 4: {
+          if (tag !== 32) {
+            break;
+          }
+
+          message.contextPolicy = reader.int32() as any;
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): SupervisorSpecialist {
+    return {
+      relationId: isSet(object.relationId)
+        ? globalThis.String(object.relationId)
+        : isSet(object.relation_id)
+        ? globalThis.String(object.relation_id)
+        : "",
+      agentVersionId: isSet(object.agentVersionId)
+        ? globalThis.String(object.agentVersionId)
+        : isSet(object.agent_version_id)
+        ? globalThis.String(object.agent_version_id)
+        : "",
+      routeDescription: isSet(object.routeDescription)
+        ? globalThis.String(object.routeDescription)
+        : isSet(object.route_description)
+        ? globalThis.String(object.route_description)
+        : "",
+      contextPolicy: isSet(object.contextPolicy)
+        ? contextPolicyFromJSON(object.contextPolicy)
+        : isSet(object.context_policy)
+        ? contextPolicyFromJSON(object.context_policy)
+        : 0,
+    };
+  },
+
+  toJSON(message: SupervisorSpecialist): unknown {
+    const obj: any = {};
+    if (message.relationId !== "") {
+      obj.relationId = message.relationId;
+    }
+    if (message.agentVersionId !== "") {
+      obj.agentVersionId = message.agentVersionId;
+    }
+    if (message.routeDescription !== "") {
+      obj.routeDescription = message.routeDescription;
+    }
+    if (message.contextPolicy !== 0) {
+      obj.contextPolicy = contextPolicyToJSON(message.contextPolicy);
+    }
+    return obj;
+  },
+
+  create(base?: DeepPartial<SupervisorSpecialist>): SupervisorSpecialist {
+    return SupervisorSpecialist.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<SupervisorSpecialist>): SupervisorSpecialist {
+    const message = createBaseSupervisorSpecialist();
+    message.relationId = object.relationId ?? "";
+    message.agentVersionId = object.agentVersionId ?? "";
+    message.routeDescription = object.routeDescription ?? "";
+    message.contextPolicy = object.contextPolicy ?? 0;
+    return message;
+  },
+};
+
+function createBaseHandoffSnapshot(): HandoffSnapshot {
+  return { entryAgentVersionId: "", maxHandoffDepth: 0, routes: [] };
+}
+
+export const HandoffSnapshot: MessageFns<HandoffSnapshot> = {
+  encode(message: HandoffSnapshot, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.entryAgentVersionId !== "") {
+      writer.uint32(10).string(message.entryAgentVersionId);
+    }
+    if (message.maxHandoffDepth !== 0) {
+      writer.uint32(16).uint32(message.maxHandoffDepth);
+    }
+    for (const v of message.routes) {
+      HandoffRoute.encode(v!, writer.uint32(26).fork()).join();
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): HandoffSnapshot {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseHandoffSnapshot();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.entryAgentVersionId = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 16) {
+            break;
+          }
+
+          message.maxHandoffDepth = reader.uint32();
+          continue;
+        }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.routes.push(HandoffRoute.decode(reader, reader.uint32()));
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): HandoffSnapshot {
+    return {
+      entryAgentVersionId: isSet(object.entryAgentVersionId)
+        ? globalThis.String(object.entryAgentVersionId)
+        : isSet(object.entry_agent_version_id)
+        ? globalThis.String(object.entry_agent_version_id)
+        : "",
+      maxHandoffDepth: isSet(object.maxHandoffDepth)
+        ? globalThis.Number(object.maxHandoffDepth)
+        : isSet(object.max_handoff_depth)
+        ? globalThis.Number(object.max_handoff_depth)
+        : 0,
+      routes: globalThis.Array.isArray(object?.routes) ? object.routes.map((e: any) => HandoffRoute.fromJSON(e)) : [],
+    };
+  },
+
+  toJSON(message: HandoffSnapshot): unknown {
+    const obj: any = {};
+    if (message.entryAgentVersionId !== "") {
+      obj.entryAgentVersionId = message.entryAgentVersionId;
+    }
+    if (message.maxHandoffDepth !== 0) {
+      obj.maxHandoffDepth = Math.round(message.maxHandoffDepth);
+    }
+    if (message.routes?.length) {
+      obj.routes = message.routes.map((e) => HandoffRoute.toJSON(e));
+    }
+    return obj;
+  },
+
+  create(base?: DeepPartial<HandoffSnapshot>): HandoffSnapshot {
+    return HandoffSnapshot.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<HandoffSnapshot>): HandoffSnapshot {
+    const message = createBaseHandoffSnapshot();
+    message.entryAgentVersionId = object.entryAgentVersionId ?? "";
+    message.maxHandoffDepth = object.maxHandoffDepth ?? 0;
+    message.routes = object.routes?.map((e) => HandoffRoute.fromPartial(e)) || [];
+    return message;
+  },
+};
+
+function createBaseHandoffRoute(): HandoffRoute {
+  return {
+    transitionId: "",
+    sourceAgentVersionId: "",
+    targetAgentVersionId: "",
+    routingDescription: "",
+    contextPolicy: 0,
+    announcement: "",
+  };
+}
+
+export const HandoffRoute: MessageFns<HandoffRoute> = {
+  encode(message: HandoffRoute, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.transitionId !== "") {
+      writer.uint32(10).string(message.transitionId);
+    }
+    if (message.sourceAgentVersionId !== "") {
+      writer.uint32(18).string(message.sourceAgentVersionId);
+    }
+    if (message.targetAgentVersionId !== "") {
+      writer.uint32(26).string(message.targetAgentVersionId);
+    }
+    if (message.routingDescription !== "") {
+      writer.uint32(34).string(message.routingDescription);
+    }
+    if (message.contextPolicy !== 0) {
+      writer.uint32(40).int32(message.contextPolicy);
+    }
+    if (message.announcement !== "") {
+      writer.uint32(50).string(message.announcement);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): HandoffRoute {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseHandoffRoute();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.transitionId = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.sourceAgentVersionId = reader.string();
+          continue;
+        }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.targetAgentVersionId = reader.string();
+          continue;
+        }
+        case 4: {
+          if (tag !== 34) {
+            break;
+          }
+
+          message.routingDescription = reader.string();
+          continue;
+        }
+        case 5: {
+          if (tag !== 40) {
+            break;
+          }
+
+          message.contextPolicy = reader.int32() as any;
+          continue;
+        }
+        case 6: {
+          if (tag !== 50) {
+            break;
+          }
+
+          message.announcement = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): HandoffRoute {
+    return {
+      transitionId: isSet(object.transitionId)
+        ? globalThis.String(object.transitionId)
+        : isSet(object.transition_id)
+        ? globalThis.String(object.transition_id)
+        : "",
+      sourceAgentVersionId: isSet(object.sourceAgentVersionId)
+        ? globalThis.String(object.sourceAgentVersionId)
+        : isSet(object.source_agent_version_id)
+        ? globalThis.String(object.source_agent_version_id)
+        : "",
+      targetAgentVersionId: isSet(object.targetAgentVersionId)
+        ? globalThis.String(object.targetAgentVersionId)
+        : isSet(object.target_agent_version_id)
+        ? globalThis.String(object.target_agent_version_id)
+        : "",
+      routingDescription: isSet(object.routingDescription)
+        ? globalThis.String(object.routingDescription)
+        : isSet(object.routing_description)
+        ? globalThis.String(object.routing_description)
+        : "",
+      contextPolicy: isSet(object.contextPolicy)
+        ? contextPolicyFromJSON(object.contextPolicy)
+        : isSet(object.context_policy)
+        ? contextPolicyFromJSON(object.context_policy)
+        : 0,
+      announcement: isSet(object.announcement) ? globalThis.String(object.announcement) : "",
+    };
+  },
+
+  toJSON(message: HandoffRoute): unknown {
+    const obj: any = {};
+    if (message.transitionId !== "") {
+      obj.transitionId = message.transitionId;
+    }
+    if (message.sourceAgentVersionId !== "") {
+      obj.sourceAgentVersionId = message.sourceAgentVersionId;
+    }
+    if (message.targetAgentVersionId !== "") {
+      obj.targetAgentVersionId = message.targetAgentVersionId;
+    }
+    if (message.routingDescription !== "") {
+      obj.routingDescription = message.routingDescription;
+    }
+    if (message.contextPolicy !== 0) {
+      obj.contextPolicy = contextPolicyToJSON(message.contextPolicy);
+    }
+    if (message.announcement !== "") {
+      obj.announcement = message.announcement;
+    }
+    return obj;
+  },
+
+  create(base?: DeepPartial<HandoffRoute>): HandoffRoute {
+    return HandoffRoute.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<HandoffRoute>): HandoffRoute {
+    const message = createBaseHandoffRoute();
+    message.transitionId = object.transitionId ?? "";
+    message.sourceAgentVersionId = object.sourceAgentVersionId ?? "";
+    message.targetAgentVersionId = object.targetAgentVersionId ?? "";
+    message.routingDescription = object.routingDescription ?? "";
+    message.contextPolicy = object.contextPolicy ?? 0;
+    message.announcement = object.announcement ?? "";
     return message;
   },
 };
@@ -4897,10 +6923,35 @@ export const AgentSessionServiceService = {
     responseSerialize: (value: BootstrapResponse): Buffer => Buffer.from(BootstrapResponse.encode(value).finish()),
     responseDeserialize: (value: Buffer): BootstrapResponse => BootstrapResponse.decode(value),
   },
+  bootstrapAgent: {
+    path: "/port.api.v1.AgentSessionService/BootstrapAgent" as const,
+    requestStream: false as const,
+    responseStream: false as const,
+    requestSerialize: (value: BootstrapAgentRequest): Buffer =>
+      Buffer.from(BootstrapAgentRequest.encode(value).finish()),
+    requestDeserialize: (value: Buffer): BootstrapAgentRequest => BootstrapAgentRequest.decode(value),
+    responseSerialize: (value: BootstrapAgentResponse): Buffer =>
+      Buffer.from(BootstrapAgentResponse.encode(value).finish()),
+    responseDeserialize: (value: Buffer): BootstrapAgentResponse => BootstrapAgentResponse.decode(value),
+  },
+  bootstrapOrchestration: {
+    path: "/port.api.v1.AgentSessionService/BootstrapOrchestration" as const,
+    requestStream: false as const,
+    responseStream: false as const,
+    requestSerialize: (value: BootstrapOrchestrationRequest): Buffer =>
+      Buffer.from(BootstrapOrchestrationRequest.encode(value).finish()),
+    requestDeserialize: (value: Buffer): BootstrapOrchestrationRequest => BootstrapOrchestrationRequest.decode(value),
+    responseSerialize: (value: BootstrapOrchestrationResponse): Buffer =>
+      Buffer.from(BootstrapOrchestrationResponse.encode(value).finish()),
+    responseDeserialize: (value: Buffer): BootstrapOrchestrationResponse =>
+      BootstrapOrchestrationResponse.decode(value),
+  },
 } as const;
 
 export interface AgentSessionServiceServer extends UntypedServiceImplementation {
   bootstrap: handleUnaryCall<BootstrapRequest, BootstrapResponse>;
+  bootstrapAgent: handleUnaryCall<BootstrapAgentRequest, BootstrapAgentResponse>;
+  bootstrapOrchestration: handleUnaryCall<BootstrapOrchestrationRequest, BootstrapOrchestrationResponse>;
 }
 
 export interface AgentSessionServiceClient extends Client {
@@ -4918,6 +6969,36 @@ export interface AgentSessionServiceClient extends Client {
     metadata: Metadata,
     options: Partial<CallOptions>,
     callback: (error: ServiceError | null, response: BootstrapResponse) => void,
+  ): ClientUnaryCall;
+  bootstrapAgent(
+    request: BootstrapAgentRequest,
+    callback: (error: ServiceError | null, response: BootstrapAgentResponse) => void,
+  ): ClientUnaryCall;
+  bootstrapAgent(
+    request: BootstrapAgentRequest,
+    metadata: Metadata,
+    callback: (error: ServiceError | null, response: BootstrapAgentResponse) => void,
+  ): ClientUnaryCall;
+  bootstrapAgent(
+    request: BootstrapAgentRequest,
+    metadata: Metadata,
+    options: Partial<CallOptions>,
+    callback: (error: ServiceError | null, response: BootstrapAgentResponse) => void,
+  ): ClientUnaryCall;
+  bootstrapOrchestration(
+    request: BootstrapOrchestrationRequest,
+    callback: (error: ServiceError | null, response: BootstrapOrchestrationResponse) => void,
+  ): ClientUnaryCall;
+  bootstrapOrchestration(
+    request: BootstrapOrchestrationRequest,
+    metadata: Metadata,
+    callback: (error: ServiceError | null, response: BootstrapOrchestrationResponse) => void,
+  ): ClientUnaryCall;
+  bootstrapOrchestration(
+    request: BootstrapOrchestrationRequest,
+    metadata: Metadata,
+    options: Partial<CallOptions>,
+    callback: (error: ServiceError | null, response: BootstrapOrchestrationResponse) => void,
   ): ClientUnaryCall;
 }
 

@@ -10,10 +10,13 @@ option go_package = "github.com/kyh0703/port-contracts/gen/go/port/api/v1;apiv1"
 // AgentSessionService is the worker-only API boundary for LiveKit jobs.
 service AgentSessionService {
   rpc Bootstrap(BootstrapRequest) returns (BootstrapResponse);
+  rpc BootstrapAgent(BootstrapAgentRequest) returns (BootstrapAgentResponse);
+  rpc BootstrapOrchestration(BootstrapOrchestrationRequest) returns (BootstrapOrchestrationResponse);
 }
 
 message BootstrapRequest {
   oneof admission {
+    option (buf.validate.oneof).required = true;
     string webrtc_ticket = 1 [(buf.validate.field).string.min_len = 1];
     SipBootstrapContext sip = 2;
   }
@@ -60,6 +63,171 @@ message BootstrapResponse {
   string bootstrap_snapshot_id = 25 [(buf.validate.field).string.min_len = 1];
   repeated ApiToolRuntime api_tool_runtimes = 26;
   OrchestrationGraphSnapshot orchestration_graph = 27;
+}
+
+message BootstrapAgentRequest {
+  BootstrapRequest admission = 1 [(buf.validate.field).required = true];
+  string conversation_id = 2 [(buf.validate.field).required = true, (buf.validate.field).string.min_len = 1];
+  string session_id = 3 [(buf.validate.field).required = true, (buf.validate.field).string.min_len = 1];
+  string agent_version_id = 4 [(buf.validate.field).required = true, (buf.validate.field).string.min_len = 1];
+  string contract_revision = 5 [
+    (buf.validate.field).required = true,
+    (buf.validate.field).string.const = "orchestration-2026-08-07-r4"
+  ];
+}
+
+message BootstrapAgentResponse {
+  string contract_revision = 1 [
+    (buf.validate.field).required = true,
+    (buf.validate.field).string.const = "orchestration-2026-08-07-r4"
+  ];
+  string schema_version = 2 [
+    (buf.validate.field).required = true,
+    (buf.validate.field).string.const = "agent.orchestration.v1"
+  ];
+  string conversation_id = 3 [(buf.validate.field).required = true, (buf.validate.field).string.min_len = 1];
+  string session_id = 4 [(buf.validate.field).required = true, (buf.validate.field).string.min_len = 1];
+  CallRuntimeSnapshot call_runtime = 5 [(buf.validate.field).required = true];
+  AgentRuntime agent_runtime = 6 [(buf.validate.field).required = true];
+}
+
+message BootstrapOrchestrationRequest {
+  BootstrapRequest admission = 1 [(buf.validate.field).required = true];
+  string conversation_id = 2 [(buf.validate.field).required = true, (buf.validate.field).string.min_len = 1];
+  string session_id = 3 [(buf.validate.field).required = true, (buf.validate.field).string.min_len = 1];
+  string orchestration_version_id = 4 [(buf.validate.field).required = true, (buf.validate.field).string.min_len = 1];
+  string contract_revision = 5 [
+    (buf.validate.field).required = true,
+    (buf.validate.field).string.const = "orchestration-2026-08-07-r4"
+  ];
+}
+
+message BootstrapOrchestrationResponse {
+  option (buf.validate.message).oneof = {
+    fields: ["supervisor", "handoff"]
+    required: true
+  };
+  option (buf.validate.message).cel = {
+    id: "bootstrap_orchestration_response.mode_snapshot"
+    message: "mode must match the selected orchestration snapshot"
+    expression: "(this.mode == 1 && has(this.supervisor)) || (this.mode == 2 && has(this.handoff))"
+  };
+
+  string contract_revision = 1 [
+    (buf.validate.field).required = true,
+    (buf.validate.field).string.const = "orchestration-2026-08-07-r4"
+  ];
+  string schema_version = 2 [
+    (buf.validate.field).required = true,
+    (buf.validate.field).string.const = "agent.orchestration.v1"
+  ];
+  string conversation_id = 3 [(buf.validate.field).required = true, (buf.validate.field).string.min_len = 1];
+  string session_id = 4 [(buf.validate.field).required = true, (buf.validate.field).string.min_len = 1];
+  string orchestration_id = 5 [(buf.validate.field).required = true, (buf.validate.field).string.min_len = 1];
+  string orchestration_version_id = 6 [(buf.validate.field).required = true, (buf.validate.field).string.min_len = 1];
+  OrchestrationMode mode = 7 [
+    (buf.validate.field).required = true,
+    (buf.validate.field).enum = {defined_only: true not_in: 0}
+  ];
+  CallRuntimeSnapshot call_runtime = 8 [(buf.validate.field).required = true];
+  repeated AgentRuntime agent_runtimes = 9 [(buf.validate.field).repeated.min_items = 2];
+  SupervisorSnapshot supervisor = 10;
+  HandoffSnapshot handoff = 11;
+
+  option (buf.validate.message).cel = {
+    id: "bootstrap_orchestration_response.unique_runtime_versions"
+    message: "agent runtime version IDs must be unique"
+    expression: "this.agent_runtimes.map(r, r.agent_version_id).distinct().size() == this.agent_runtimes.size()"
+  };
+  option (buf.validate.message).cel = {
+    id: "bootstrap_orchestration_response.supervisor_references"
+    message: "supervisor snapshot references must resolve to unique runtimes"
+    expression: "!has(this.supervisor) || (this.agent_runtimes.exists(r, r.agent_version_id == this.supervisor.supervisor_agent_version_id) && this.supervisor.specialists.map(s, s.relation_id).distinct().size() == this.supervisor.specialists.size() && this.supervisor.specialists.all(s, this.agent_runtimes.exists(r, r.agent_version_id == s.agent_version_id)))"
+  };
+  option (buf.validate.message).cel = {
+    id: "bootstrap_orchestration_response.handoff_references"
+    message: "handoff snapshot references must resolve to unique runtimes"
+    expression: "!has(this.handoff) || (this.agent_runtimes.exists(r, r.agent_version_id == this.handoff.entry_agent_version_id) && this.handoff.routes.map(r, r.transition_id).distinct().size() == this.handoff.routes.size() && this.handoff.routes.all(r, this.agent_runtimes.exists(a, a.agent_version_id == r.source_agent_version_id) && this.agent_runtimes.exists(a, a.agent_version_id == r.target_agent_version_id)))"
+  };
+}
+
+message CallRuntimeSnapshot {
+  SttRuntime stt = 1 [(buf.validate.field).required = true];
+  TtsRuntime tts = 2 [(buf.validate.field).required = true];
+  BackgroundAudioRuntime background_audio = 3 [(buf.validate.field).required = true];
+  DtmfInputRuntime dtmf = 4 [(buf.validate.field).required = true];
+}
+
+enum BackgroundAudioPreset {
+  BACKGROUND_AUDIO_PRESET_UNSPECIFIED = 0;
+  BACKGROUND_AUDIO_PRESET_NONE = 1;
+  BACKGROUND_AUDIO_PRESET_CAFE = 2;
+  BACKGROUND_AUDIO_PRESET_OFFICE = 3;
+  BACKGROUND_AUDIO_PRESET_CONTACT_CENTER = 4;
+  BACKGROUND_AUDIO_PRESET_LIBRARY = 5;
+}
+
+message BackgroundAudioRuntime {
+  BackgroundAudioPreset preset = 1 [(buf.validate.field).enum = {defined_only: true not_in: 0}];
+  optional double volume = 2 [
+    (buf.validate.field).required = true,
+    (buf.validate.field).double = {gte: 0 lte: 1}
+  ];
+}
+
+message DtmfInputRuntime {
+  uint32 timeout_seconds = 1 [(buf.validate.field).uint32 = {gte: 1 lte: 10}];
+  optional string end_key = 2 [(buf.validate.field).string.pattern = "^[0-9#*]$"];
+}
+
+message AgentRuntime {
+  string agent_id = 1 [(buf.validate.field).string.min_len = 1];
+  string agent_version_id = 2 [(buf.validate.field).string.min_len = 1];
+  LlmRuntime llm_worker = 3 [(buf.validate.field).required = true];
+  AgentInstructions instructions = 4 [(buf.validate.field).required = true];
+  ContextPolicy context_policy = 5 [(buf.validate.field).enum = {defined_only: true not_in: 0}];
+  repeated NodeToolMetadata tools = 6;
+  repeated McpServerRuntime mcp_servers = 7;
+  string greeting = 8;
+  string knowledge_revision_id = 9;
+}
+
+message AgentInstructions {
+  string system_prompt = 1 [(buf.validate.field).string.min_len = 1];
+  repeated string guardrails = 2;
+}
+
+enum OrchestrationMode {
+  ORCHESTRATION_MODE_UNSPECIFIED = 0;
+  ORCHESTRATION_MODE_SUPERVISOR = 1;
+  ORCHESTRATION_MODE_HANDOFF = 2;
+}
+
+message SupervisorSnapshot {
+  string supervisor_agent_version_id = 1 [(buf.validate.field).string.min_len = 1];
+  repeated SupervisorSpecialist specialists = 2 [(buf.validate.field).repeated.min_items = 1];
+}
+
+message SupervisorSpecialist {
+  string relation_id = 1 [(buf.validate.field).string.min_len = 1];
+  string target_agent_version_id = 2 [(buf.validate.field).string.min_len = 1];
+  string route_description = 3 [(buf.validate.field).string.min_len = 1];
+  ContextPolicy context_policy = 4 [(buf.validate.field).enum = {defined_only: true not_in: 0}];
+}
+
+message HandoffSnapshot {
+  string entry_agent_version_id = 1 [(buf.validate.field).string.min_len = 1];
+  uint32 max_handoff_depth = 2 [(buf.validate.field).uint32.gt = 0];
+  repeated HandoffRoute routes = 3 [(buf.validate.field).repeated.min_items = 1];
+}
+
+message HandoffRoute {
+  string transition_id = 1 [(buf.validate.field).string.min_len = 1];
+  string source_agent_version_id = 2 [(buf.validate.field).string.min_len = 1];
+  string target_agent_version_id = 3 [(buf.validate.field).string.min_len = 1];
+  string routing_description = 4 [(buf.validate.field).string.min_len = 1];
+  ContextPolicy context_policy = 5 [(buf.validate.field).enum = {defined_only: true not_in: 0}];
+  string announcement = 6;
 }
 
 message OrchestrationGraphSnapshot {

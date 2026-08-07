@@ -1,10 +1,16 @@
 package validation
 
 import (
+	"reflect"
 	"testing"
 
+	validatepb "buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go/buf/validate"
 	apiv1 "github.com/kyh0703/port-contracts/gen/go/port/api/v1"
 	"google.golang.org/protobuf/proto"
+	"google.golang.org/protobuf/reflect/protoreflect"
+	"google.golang.org/protobuf/reflect/protoregistry"
+	"google.golang.org/protobuf/types/descriptorpb"
+	"google.golang.org/protobuf/types/dynamicpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -12,6 +18,386 @@ func TestValidateRejectsMissingRequiredFields(t *testing.T) {
 	err := Validate(&apiv1.RecordGatewayEventRequest{})
 	if err == nil {
 		t.Fatal("Validate() error = nil, want validation error")
+	}
+}
+
+func requireR4FieldRules(t *testing.T, message protoreflect.MessageDescriptor, name protoreflect.Name) *validatepb.FieldRules {
+	t.Helper()
+	field := message.Fields().ByName(name)
+	if field == nil {
+		t.Fatalf("%s missing field %s", message.FullName(), name)
+	}
+	options := field.Options().(*descriptorpb.FieldOptions)
+	if !proto.HasExtension(options, validatepb.E_Field) {
+		t.Fatalf("%s.%s missing protovalidate field rules", message.FullName(), name)
+	}
+	rules, ok := proto.GetExtension(options, validatepb.E_Field).(*validatepb.FieldRules)
+	if !ok {
+		t.Fatalf("%s.%s protovalidate rules have unexpected type", message.FullName(), name)
+	}
+	return rules
+}
+
+func requireR4MessageRules(t *testing.T, message protoreflect.MessageDescriptor) *validatepb.MessageRules {
+	t.Helper()
+	options := message.Options().(*descriptorpb.MessageOptions)
+	if !proto.HasExtension(options, validatepb.E_Message) {
+		t.Fatalf("%s missing protovalidate message rules", message.FullName())
+	}
+	rules, ok := proto.GetExtension(options, validatepb.E_Message).(*validatepb.MessageRules)
+	if !ok {
+		t.Fatalf("%s protovalidate rules have unexpected type", message.FullName())
+	}
+	return rules
+}
+
+func TestR4TransportDescriptorsAndRequiredRuntimeValidation(t *testing.T) {
+	messageNames := []protoreflect.FullName{
+		"port.api.v1.BootstrapAgentRequest",
+		"port.api.v1.BootstrapAgentResponse",
+		"port.api.v1.BootstrapOrchestrationRequest",
+		"port.api.v1.BootstrapOrchestrationResponse",
+		"port.api.v1.CallRuntimeSnapshot",
+		"port.api.v1.AgentRuntime",
+		"port.api.v1.BackgroundAudioRuntime",
+		"port.api.v1.DtmfInputRuntime",
+		"port.api.v1.SupervisorSnapshot",
+		"port.api.v1.HandoffSnapshot",
+	}
+	for _, name := range messageNames {
+		descriptor, err := protoregistry.GlobalFiles.FindDescriptorByName(name)
+		if err != nil {
+			t.Fatalf("FindDescriptorByName(%q) error = %v; r4 descriptor is absent", name, err)
+		}
+		if _, ok := descriptor.(protoreflect.MessageDescriptor); !ok {
+			t.Fatalf("descriptor %q is %T, want message descriptor", name, descriptor)
+		}
+	}
+	serviceDescriptor, err := protoregistry.GlobalFiles.FindDescriptorByName("port.api.v1.AgentSessionService")
+	if err != nil {
+		t.Fatalf("FindDescriptorByName(service) error = %v; r4 service is absent", err)
+	}
+	service := serviceDescriptor.(protoreflect.ServiceDescriptor)
+	for _, method := range []struct {
+		name, request, response protoreflect.FullName
+	}{
+		{"Bootstrap", "port.api.v1.BootstrapRequest", "port.api.v1.BootstrapResponse"},
+		{"BootstrapAgent", "port.api.v1.BootstrapAgentRequest", "port.api.v1.BootstrapAgentResponse"},
+		{"BootstrapOrchestration", "port.api.v1.BootstrapOrchestrationRequest", "port.api.v1.BootstrapOrchestrationResponse"},
+	} {
+		methodDescriptor := service.Methods().ByName(protoreflect.Name(method.name))
+		if methodDescriptor == nil {
+			t.Fatalf("service method %s is missing", method.name)
+		}
+		if methodDescriptor.Input().FullName() != method.request || methodDescriptor.Output().FullName() != method.response {
+			t.Fatalf("service method %s has %s -> %s, want %s -> %s", method.name, methodDescriptor.Input().FullName(), methodDescriptor.Output().FullName(), method.request, method.response)
+		}
+	}
+	for _, request := range []struct {
+		name, targetField protoreflect.FullName
+	}{
+		{"port.api.v1.BootstrapAgentRequest", "agent_version_id"},
+		{"port.api.v1.BootstrapOrchestrationRequest", "orchestration_version_id"},
+	} {
+		descriptor, _ := protoregistry.GlobalFiles.FindDescriptorByName(request.name)
+		fields := descriptor.(protoreflect.MessageDescriptor).Fields()
+		for _, fieldName := range []protoreflect.Name{"conversation_id", "session_id", protoreflect.Name(request.targetField), "contract_revision"} {
+			if fields.ByName(fieldName) == nil {
+				t.Fatalf("%s missing documented binding %q", request.name, fieldName)
+			}
+			if !requireR4FieldRules(t, descriptor.(protoreflect.MessageDescriptor), fieldName).GetRequired() {
+				t.Fatalf("%s.%s must be required", request.name, fieldName)
+			}
+		}
+	}
+
+	for _, responseName := range []protoreflect.FullName{"port.api.v1.BootstrapAgentResponse", "port.api.v1.BootstrapOrchestrationResponse"} {
+		response := protoregistry.GlobalFiles.FindDescriptorByName
+		descriptor, lookupErr := response(responseName)
+		if lookupErr != nil {
+			t.Fatal(lookupErr)
+		}
+		rules := requireR4FieldRules(t, descriptor.(protoreflect.MessageDescriptor), "contract_revision")
+		if !rules.GetRequired() || rules.GetString().GetConst() != "orchestration-2026-08-07-r4" {
+			t.Fatalf("%s.contract_revision must be required and fixed to r4", responseName)
+		}
+	}
+
+	agentRuntimeDescriptor, _ := protoregistry.GlobalFiles.FindDescriptorByName("port.api.v1.AgentRuntime")
+	for _, fieldName := range []protoreflect.Name{"llm_worker", "instructions"} {
+		if !requireR4FieldRules(t, agentRuntimeDescriptor.(protoreflect.MessageDescriptor), fieldName).GetRequired() {
+			t.Fatalf("AgentRuntime.%s must be required", fieldName)
+		}
+	}
+	callRuntimeDescriptor, _ := protoregistry.GlobalFiles.FindDescriptorByName("port.api.v1.CallRuntimeSnapshot")
+	for _, fieldName := range []protoreflect.Name{"background_audio", "dtmf"} {
+		if !requireR4FieldRules(t, callRuntimeDescriptor.(protoreflect.MessageDescriptor), fieldName).GetRequired() {
+			t.Fatalf("CallRuntimeSnapshot.%s must be required", fieldName)
+		}
+	}
+
+	orchestrationDescriptor, _ := protoregistry.GlobalFiles.FindDescriptorByName("port.api.v1.BootstrapOrchestrationResponse")
+	orchestration := orchestrationDescriptor.(protoreflect.MessageDescriptor)
+	modeRules := requireR4FieldRules(t, orchestration, "mode")
+	if !modeRules.GetRequired() || !modeRules.GetEnum().GetDefinedOnly() {
+		t.Fatal("BootstrapOrchestrationResponse.mode must reject unspecified and unknown values")
+	}
+	messageRules := requireR4MessageRules(t, orchestration)
+	foundModeSnapshot := false
+	for _, rule := range messageRules.GetOneof() {
+		if reflect.DeepEqual(rule.GetFields(), []string{"supervisor", "handoff"}) && rule.GetRequired() {
+			foundModeSnapshot = true
+		}
+	}
+	if !foundModeSnapshot {
+		t.Fatal("BootstrapOrchestrationResponse must require exactly one supervisor or handoff snapshot")
+	}
+	foundModeConsistency := false
+	for _, rule := range messageRules.GetCel() {
+		if rule.GetId() == "bootstrap_orchestration_response.mode_snapshot" && rule.GetExpression() != "" {
+			foundModeConsistency = true
+		}
+	}
+	if !foundModeConsistency {
+		t.Fatal("BootstrapOrchestrationResponse must validate mode/snapshot consistency")
+	}
+}
+
+func TestR4DynamicProtovalidateBoundaries(t *testing.T) {
+	lookup := func(name protoreflect.FullName) protoreflect.MessageDescriptor {
+		descriptor, err := protoregistry.GlobalFiles.FindDescriptorByName(name)
+		if err != nil {
+			t.Fatalf("descriptor %s: %v", name, err)
+		}
+		return descriptor.(protoreflect.MessageDescriptor)
+	}
+	background := lookup("port.api.v1.BackgroundAudioRuntime")
+	presetField := background.Fields().ByName("preset")
+	volumeField := background.Fields().ByName("volume")
+	if presetField == nil || volumeField == nil {
+		t.Fatal("BackgroundAudioRuntime missing preset or volume")
+	}
+	for _, presetName := range []protoreflect.Name{"BACKGROUND_AUDIO_PRESET_NONE", "BACKGROUND_AUDIO_PRESET_CAFE", "BACKGROUND_AUDIO_PRESET_OFFICE", "BACKGROUND_AUDIO_PRESET_CONTACT_CENTER", "BACKGROUND_AUDIO_PRESET_LIBRARY"} {
+		message := dynamicpb.NewMessage(background)
+		message.Set(presetField, protoreflect.ValueOfEnum(presetField.Enum().Values().ByName(presetName).Number()))
+		message.Set(volumeField, protoreflect.ValueOfFloat64(0))
+		if err := Validate(message); err != nil {
+			t.Fatalf("Validate(valid preset %s) = %v", presetName, err)
+		}
+	}
+	for _, volume := range []float64{-0.1, 1.1} {
+		message := dynamicpb.NewMessage(background)
+		message.Set(presetField, protoreflect.ValueOfEnum(1))
+		message.Set(volumeField, protoreflect.ValueOfFloat64(volume))
+		if err := Validate(message); err == nil {
+			t.Fatalf("Validate(volume=%v) = nil, want range rejection", volume)
+		}
+	}
+	unspecified := dynamicpb.NewMessage(background)
+	unspecified.Set(volumeField, protoreflect.ValueOfFloat64(0))
+	if err := Validate(unspecified); err == nil {
+		t.Fatal("Validate(unspecified BackgroundAudio preset) = nil, want rejection")
+	}
+	unknown := dynamicpb.NewMessage(background)
+	unknown.Set(presetField, protoreflect.ValueOfEnum(99))
+	unknown.Set(volumeField, protoreflect.ValueOfFloat64(0))
+	if err := Validate(unknown); err == nil {
+		t.Fatal("Validate(unknown BackgroundAudio preset) = nil, want rejection")
+	}
+
+	dtmf := lookup("port.api.v1.DtmfInputRuntime")
+	timeoutField := dtmf.Fields().ByName("timeout_seconds")
+	endKeyField := dtmf.Fields().ByName("end_key")
+	if timeoutField == nil || endKeyField == nil {
+		t.Fatal("DtmfInputRuntime missing timeout_seconds or end_key")
+	}
+	for _, timeout := range []int64{1, 10} {
+		message := dynamicpb.NewMessage(dtmf)
+		message.Set(timeoutField, protoreflect.ValueOfUint32(uint32(timeout)))
+		if err := Validate(message); err != nil {
+			t.Fatalf("Validate(timeout=%d) = %v", timeout, err)
+		}
+	}
+	for _, endKey := range []string{"0", "#", "*"} {
+		message := dynamicpb.NewMessage(dtmf)
+		message.Set(timeoutField, protoreflect.ValueOfUint32(3))
+		message.Set(endKeyField, protoreflect.ValueOfString(endKey))
+		if err := Validate(message); err != nil {
+			t.Fatalf("Validate(valid end_key=%q) = %v", endKey, err)
+		}
+	}
+	absentEndKey := dynamicpb.NewMessage(dtmf)
+	absentEndKey.Set(timeoutField, protoreflect.ValueOfUint32(3))
+	if err := Validate(absentEndKey); err != nil {
+		t.Fatalf("Validate(absent end_key) = %v", err)
+	}
+	for _, timeout := range []int64{0, 11} {
+		message := dynamicpb.NewMessage(dtmf)
+		message.Set(timeoutField, protoreflect.ValueOfUint32(uint32(timeout)))
+		if err := Validate(message); err == nil {
+			t.Fatalf("Validate(timeout=%d) = nil, want range rejection", timeout)
+		}
+	}
+	for _, endKey := range []string{"", "12", "A"} {
+		message := dynamicpb.NewMessage(dtmf)
+		message.Set(timeoutField, protoreflect.ValueOfUint32(3))
+		message.Set(endKeyField, protoreflect.ValueOfString(endKey))
+		if err := Validate(message); err == nil {
+			t.Fatalf("Validate(end_key=%q) = nil, want rejection", endKey)
+		}
+	}
+}
+
+func validR4CallRuntime() *apiv1.CallRuntimeSnapshot {
+	return &apiv1.CallRuntimeSnapshot{
+		Stt: &apiv1.SttRuntime{ApiKey: "stt-key", Model: "stt-model", Language: "ko"},
+		Tts: &apiv1.TtsRuntime{ApiKey: "tts-key", Model: "tts-model", Language: "ko", VoiceId: "voice-1"},
+		BackgroundAudio: &apiv1.BackgroundAudioRuntime{
+			Preset: apiv1.BackgroundAudioPreset_BACKGROUND_AUDIO_PRESET_NONE,
+			Volume: proto.Float64(0.5),
+		},
+		Dtmf: &apiv1.DtmfInputRuntime{TimeoutSeconds: 3},
+	}
+}
+
+func validR4AgentRuntime() *apiv1.AgentRuntime {
+	return &apiv1.AgentRuntime{
+		AgentId:        "agent-1",
+		AgentVersionId: "agent-version-1",
+		LlmWorker:      &apiv1.LlmRuntime{ApiKey: "llm-key", Model: "llm-model"},
+		Instructions:   &apiv1.AgentInstructions{SystemPrompt: "Help."},
+		ContextPolicy:  apiv1.ContextPolicy_CONTEXT_POLICY_CONVERSATION,
+	}
+}
+
+func validR4SupervisorResponse() *apiv1.BootstrapOrchestrationResponse {
+	return &apiv1.BootstrapOrchestrationResponse{
+		ContractRevision:       "orchestration-2026-08-07-r4",
+		SchemaVersion:          "agent.orchestration.v1",
+		ConversationId:         "conversation-1",
+		SessionId:              "session-1",
+		OrchestrationId:        "orchestration-1",
+		OrchestrationVersionId: "orchestration-version-1",
+		Mode:                   apiv1.OrchestrationMode_ORCHESTRATION_MODE_SUPERVISOR,
+		CallRuntime:            validR4CallRuntime(),
+		AgentRuntimes:          []*apiv1.AgentRuntime{validR4AgentRuntime()},
+		Supervisor: &apiv1.SupervisorSnapshot{
+			SupervisorAgentVersionId: "agent-version-1",
+			Specialists: []*apiv1.SupervisorSpecialist{{
+				RelationId:       "relation-1",
+				AgentVersionId:   "agent-version-2",
+				RouteDescription: "Billing",
+				ContextPolicy:    apiv1.ContextPolicy_CONTEXT_POLICY_CONVERSATION,
+			}},
+		},
+	}
+}
+
+func TestR4OrchestrationModeSnapshotValidation(t *testing.T) {
+	valid := validR4SupervisorResponse()
+	if err := Validate(valid); err != nil {
+		t.Fatalf("Validate(valid supervisor response) = %v", err)
+	}
+
+	validHandoff := &apiv1.HandoffSnapshot{
+		EntryAgentVersionId: "agent-version-1",
+		MaxHandoffDepth:     2,
+		Routes: []*apiv1.HandoffRoute{{
+			TransitionId:         "transition-1",
+			SourceAgentVersionId: "agent-version-1",
+			TargetAgentVersionId: "agent-version-2",
+			RoutingDescription:   "Billing",
+			ContextPolicy:        apiv1.ContextPolicy_CONTEXT_POLICY_CONVERSATION,
+		}},
+	}
+	tests := []struct {
+		name   string
+		mutate func(*apiv1.BootstrapOrchestrationResponse)
+	}{
+		{"mode snapshot mismatch", func(response *apiv1.BootstrapOrchestrationResponse) {
+			response.Mode = apiv1.OrchestrationMode_ORCHESTRATION_MODE_HANDOFF
+		}},
+		{"both snapshots", func(response *apiv1.BootstrapOrchestrationResponse) { response.Handoff = validHandoff }},
+		{"missing snapshot", func(response *apiv1.BootstrapOrchestrationResponse) { response.Supervisor = nil }},
+		{"unspecified mode", func(response *apiv1.BootstrapOrchestrationResponse) {
+			response.Mode = apiv1.OrchestrationMode_ORCHESTRATION_MODE_UNSPECIFIED
+		}},
+		{"unknown mode", func(response *apiv1.BootstrapOrchestrationResponse) { response.Mode = 99 }},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			response := proto.Clone(valid).(*apiv1.BootstrapOrchestrationResponse)
+			tt.mutate(response)
+			if err := Validate(response); err == nil {
+				t.Fatal("Validate() = nil, want mode/snapshot validation error")
+			}
+		})
+	}
+}
+
+func TestR4GeneratedGoWireRoundTrip(t *testing.T) {
+	direct := &apiv1.BootstrapAgentResponse{
+		ContractRevision: "orchestration-2026-08-07-r4",
+		SchemaVersion:    "agent.orchestration.v1",
+		ConversationId:   "conversation-1",
+		SessionId:        "session-1",
+		AgentId:          "agent-1",
+		AgentVersionId:   "agent-version-1",
+		CallRuntime:      validR4CallRuntime(),
+		AgentRuntime:     validR4AgentRuntime(),
+	}
+	supervisor := validR4SupervisorResponse()
+	handoff := proto.Clone(supervisor).(*apiv1.BootstrapOrchestrationResponse)
+	handoff.Mode = apiv1.OrchestrationMode_ORCHESTRATION_MODE_HANDOFF
+	handoff.Supervisor = nil
+	handoff.Handoff = &apiv1.HandoffSnapshot{
+		EntryAgentVersionId: "agent-version-1",
+		MaxHandoffDepth:     2,
+		Routes: []*apiv1.HandoffRoute{{
+			TransitionId:         "transition-1",
+			SourceAgentVersionId: "agent-version-1",
+			TargetAgentVersionId: "agent-version-2",
+			RoutingDescription:   "Billing",
+			ContextPolicy:        apiv1.ContextPolicy_CONTEXT_POLICY_CONVERSATION,
+		}},
+	}
+
+	for _, source := range []proto.Message{direct, supervisor, handoff} {
+		wire, err := proto.Marshal(source)
+		if err != nil {
+			t.Fatalf("proto.Marshal(%T) = %v", source, err)
+		}
+		decoded := source.ProtoReflect().New().Interface()
+		if err := proto.Unmarshal(wire, decoded); err != nil {
+			t.Fatalf("proto.Unmarshal(%T) = %v", source, err)
+		}
+		if !proto.Equal(decoded, source) {
+			t.Fatalf("wire round-trip changed %T", source)
+		}
+	}
+}
+
+func TestR4CallRuntimeDescriptorRetainsBackgroundAudioAndDtmfBoundaries(t *testing.T) {
+	runtimeDescriptor, err := protoregistry.GlobalFiles.FindDescriptorByName("port.api.v1.CallRuntimeSnapshot")
+	if err != nil {
+		t.Fatal(err)
+	}
+	fields := runtimeDescriptor.(protoreflect.MessageDescriptor).Fields()
+	for _, fieldName := range []protoreflect.Name{"background_audio", "dtmf"} {
+		if fields.ByName(fieldName) == nil {
+			t.Fatalf("CallRuntimeSnapshot missing required field %q", fieldName)
+		}
+	}
+
+	agentRuntimeDescriptor, err := protoregistry.GlobalFiles.FindDescriptorByName("port.api.v1.AgentRuntime")
+	if err != nil {
+		t.Fatal(err)
+	}
+	agentFields := agentRuntimeDescriptor.(protoreflect.MessageDescriptor).Fields()
+	for _, forbidden := range []protoreflect.Name{"transport", "stt", "tts", "voice", "vad", "background_audio", "dtmf", "interruption"} {
+		if agentFields.ByName(forbidden) != nil {
+			t.Fatalf("AgentRuntime unexpectedly owns CallRuntime field %q", forbidden)
+		}
 	}
 }
 

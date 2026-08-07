@@ -20,6 +20,16 @@ class AgentSessionServiceStub:
                 request_serializer=port_dot_api_dot_v1_dot_agent__session__pb2.BootstrapRequest.SerializeToString,
                 response_deserializer=port_dot_api_dot_v1_dot_agent__session__pb2.BootstrapResponse.FromString,
                 _registered_method=True)
+        self.BootstrapAgent = channel.unary_unary(
+                '/port.api.v1.AgentSessionService/BootstrapAgent',
+                request_serializer=port_dot_api_dot_v1_dot_agent__session__pb2.BootstrapAgentRequest.SerializeToString,
+                response_deserializer=port_dot_api_dot_v1_dot_agent__session__pb2.BootstrapAgentResponse.FromString,
+                _registered_method=True)
+        self.BootstrapOrchestration = channel.unary_unary(
+                '/port.api.v1.AgentSessionService/BootstrapOrchestration',
+                request_serializer=port_dot_api_dot_v1_dot_agent__session__pb2.BootstrapOrchestrationRequest.SerializeToString,
+                response_deserializer=port_dot_api_dot_v1_dot_agent__session__pb2.BootstrapOrchestrationResponse.FromString,
+                _registered_method=True)
 
 
 class AgentSessionServiceServicer:
@@ -32,6 +42,18 @@ class AgentSessionServiceServicer:
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def BootstrapAgent(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def BootstrapOrchestration(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_AgentSessionServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
@@ -39,6 +61,16 @@ def add_AgentSessionServiceServicer_to_server(servicer, server):
                     servicer.Bootstrap,
                     request_deserializer=port_dot_api_dot_v1_dot_agent__session__pb2.BootstrapRequest.FromString,
                     response_serializer=port_dot_api_dot_v1_dot_agent__session__pb2.BootstrapResponse.SerializeToString,
+            ),
+            'BootstrapAgent': grpc.unary_unary_rpc_method_handler(
+                    servicer.BootstrapAgent,
+                    request_deserializer=port_dot_api_dot_v1_dot_agent__session__pb2.BootstrapAgentRequest.FromString,
+                    response_serializer=port_dot_api_dot_v1_dot_agent__session__pb2.BootstrapAgentResponse.SerializeToString,
+            ),
+            'BootstrapOrchestration': grpc.unary_unary_rpc_method_handler(
+                    servicer.BootstrapOrchestration,
+                    request_deserializer=port_dot_api_dot_v1_dot_agent__session__pb2.BootstrapOrchestrationRequest.FromString,
+                    response_serializer=port_dot_api_dot_v1_dot_agent__session__pb2.BootstrapOrchestrationResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -69,6 +101,60 @@ class AgentSessionService:
             '/port.api.v1.AgentSessionService/Bootstrap',
             port_dot_api_dot_v1_dot_agent__session__pb2.BootstrapRequest.SerializeToString,
             port_dot_api_dot_v1_dot_agent__session__pb2.BootstrapResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def BootstrapAgent(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/port.api.v1.AgentSessionService/BootstrapAgent',
+            port_dot_api_dot_v1_dot_agent__session__pb2.BootstrapAgentRequest.SerializeToString,
+            port_dot_api_dot_v1_dot_agent__session__pb2.BootstrapAgentResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def BootstrapOrchestration(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/port.api.v1.AgentSessionService/BootstrapOrchestration',
+            port_dot_api_dot_v1_dot_agent__session__pb2.BootstrapOrchestrationRequest.SerializeToString,
+            port_dot_api_dot_v1_dot_agent__session__pb2.BootstrapOrchestrationResponse.FromString,
             options,
             channel_credentials,
             insecure,

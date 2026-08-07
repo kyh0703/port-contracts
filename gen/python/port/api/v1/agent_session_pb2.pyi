@@ -9,6 +9,21 @@ from typing import ClassVar as _ClassVar, Optional as _Optional, Union as _Union
 
 DESCRIPTOR: _descriptor.FileDescriptor
 
+class BackgroundAudioPreset(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
+    __slots__ = ()
+    BACKGROUND_AUDIO_PRESET_UNSPECIFIED: _ClassVar[BackgroundAudioPreset]
+    BACKGROUND_AUDIO_PRESET_NONE: _ClassVar[BackgroundAudioPreset]
+    BACKGROUND_AUDIO_PRESET_CAFE: _ClassVar[BackgroundAudioPreset]
+    BACKGROUND_AUDIO_PRESET_OFFICE: _ClassVar[BackgroundAudioPreset]
+    BACKGROUND_AUDIO_PRESET_CONTACT_CENTER: _ClassVar[BackgroundAudioPreset]
+    BACKGROUND_AUDIO_PRESET_LIBRARY: _ClassVar[BackgroundAudioPreset]
+
+class OrchestrationMode(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
+    __slots__ = ()
+    ORCHESTRATION_MODE_UNSPECIFIED: _ClassVar[OrchestrationMode]
+    ORCHESTRATION_MODE_SUPERVISOR: _ClassVar[OrchestrationMode]
+    ORCHESTRATION_MODE_HANDOFF: _ClassVar[OrchestrationMode]
+
 class NodeKind(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     __slots__ = ()
     NODE_KIND_UNSPECIFIED: _ClassVar[NodeKind]
@@ -27,6 +42,15 @@ class ContextPolicy(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     CONTEXT_POLICY_UNSPECIFIED: _ClassVar[ContextPolicy]
     CONTEXT_POLICY_NONE: _ClassVar[ContextPolicy]
     CONTEXT_POLICY_CONVERSATION: _ClassVar[ContextPolicy]
+BACKGROUND_AUDIO_PRESET_UNSPECIFIED: BackgroundAudioPreset
+BACKGROUND_AUDIO_PRESET_NONE: BackgroundAudioPreset
+BACKGROUND_AUDIO_PRESET_CAFE: BackgroundAudioPreset
+BACKGROUND_AUDIO_PRESET_OFFICE: BackgroundAudioPreset
+BACKGROUND_AUDIO_PRESET_CONTACT_CENTER: BackgroundAudioPreset
+BACKGROUND_AUDIO_PRESET_LIBRARY: BackgroundAudioPreset
+ORCHESTRATION_MODE_UNSPECIFIED: OrchestrationMode
+ORCHESTRATION_MODE_SUPERVISOR: OrchestrationMode
+ORCHESTRATION_MODE_HANDOFF: OrchestrationMode
 NODE_KIND_UNSPECIFIED: NodeKind
 NODE_KIND_AGENT: NodeKind
 NODE_KIND_TASK: NodeKind
@@ -107,6 +131,184 @@ class BootstrapResponse(_message.Message):
     api_tool_runtimes: _containers.RepeatedCompositeFieldContainer[ApiToolRuntime]
     orchestration_graph: OrchestrationGraphSnapshot
     def __init__(self, conversation_id: _Optional[str] = ..., session_id: _Optional[str] = ..., source: _Optional[str] = ..., room_name: _Optional[str] = ..., agent_tool_snapshot_id: _Optional[str] = ..., stt: _Optional[_Union[_voice_runtime_pb2.SttRuntime, _Mapping]] = ..., llm: _Optional[_Union[_voice_runtime_pb2.LlmRuntime, _Mapping]] = ..., tts: _Optional[_Union[_voice_runtime_pb2.TtsRuntime, _Mapping]] = ..., mcp_servers: _Optional[_Iterable[_Union[McpServerRuntime, _Mapping]]] = ..., agent_id: _Optional[str] = ..., supervisor_id: _Optional[str] = ..., supervisor_version_id: _Optional[str] = ..., supervisor_persona: _Optional[_Union[SupervisorPersona, _Mapping]] = ..., supervisor_config: _Optional[_Union[SupervisorConfig, _Mapping]] = ..., workers: _Optional[_Iterable[_Union[WorkerSnapshot, _Mapping]]] = ..., canvas: _Optional[_Union[CanvasSnapshot, _Mapping]] = ..., worker_tool_snapshots: _Optional[_Iterable[_Union[WorkerToolSnapshot, _Mapping]]] = ..., bootstrap_snapshot_id: _Optional[str] = ..., api_tool_runtimes: _Optional[_Iterable[_Union[ApiToolRuntime, _Mapping]]] = ..., orchestration_graph: _Optional[_Union[OrchestrationGraphSnapshot, _Mapping]] = ...) -> None: ...
+
+class BootstrapAgentRequest(_message.Message):
+    __slots__ = ("admission", "conversation_id", "session_id", "agent_version_id", "contract_revision")
+    ADMISSION_FIELD_NUMBER: _ClassVar[int]
+    CONVERSATION_ID_FIELD_NUMBER: _ClassVar[int]
+    SESSION_ID_FIELD_NUMBER: _ClassVar[int]
+    AGENT_VERSION_ID_FIELD_NUMBER: _ClassVar[int]
+    CONTRACT_REVISION_FIELD_NUMBER: _ClassVar[int]
+    admission: BootstrapRequest
+    conversation_id: str
+    session_id: str
+    agent_version_id: str
+    contract_revision: str
+    def __init__(self, admission: _Optional[_Union[BootstrapRequest, _Mapping]] = ..., conversation_id: _Optional[str] = ..., session_id: _Optional[str] = ..., agent_version_id: _Optional[str] = ..., contract_revision: _Optional[str] = ...) -> None: ...
+
+class BootstrapAgentResponse(_message.Message):
+    __slots__ = ("contract_revision", "schema_version", "conversation_id", "session_id", "agent_id", "agent_version_id", "call_runtime", "agent_runtime")
+    CONTRACT_REVISION_FIELD_NUMBER: _ClassVar[int]
+    SCHEMA_VERSION_FIELD_NUMBER: _ClassVar[int]
+    CONVERSATION_ID_FIELD_NUMBER: _ClassVar[int]
+    SESSION_ID_FIELD_NUMBER: _ClassVar[int]
+    AGENT_ID_FIELD_NUMBER: _ClassVar[int]
+    AGENT_VERSION_ID_FIELD_NUMBER: _ClassVar[int]
+    CALL_RUNTIME_FIELD_NUMBER: _ClassVar[int]
+    AGENT_RUNTIME_FIELD_NUMBER: _ClassVar[int]
+    contract_revision: str
+    schema_version: str
+    conversation_id: str
+    session_id: str
+    agent_id: str
+    agent_version_id: str
+    call_runtime: CallRuntimeSnapshot
+    agent_runtime: AgentRuntime
+    def __init__(self, contract_revision: _Optional[str] = ..., schema_version: _Optional[str] = ..., conversation_id: _Optional[str] = ..., session_id: _Optional[str] = ..., agent_id: _Optional[str] = ..., agent_version_id: _Optional[str] = ..., call_runtime: _Optional[_Union[CallRuntimeSnapshot, _Mapping]] = ..., agent_runtime: _Optional[_Union[AgentRuntime, _Mapping]] = ...) -> None: ...
+
+class BootstrapOrchestrationRequest(_message.Message):
+    __slots__ = ("admission", "conversation_id", "session_id", "orchestration_version_id", "contract_revision")
+    ADMISSION_FIELD_NUMBER: _ClassVar[int]
+    CONVERSATION_ID_FIELD_NUMBER: _ClassVar[int]
+    SESSION_ID_FIELD_NUMBER: _ClassVar[int]
+    ORCHESTRATION_VERSION_ID_FIELD_NUMBER: _ClassVar[int]
+    CONTRACT_REVISION_FIELD_NUMBER: _ClassVar[int]
+    admission: BootstrapRequest
+    conversation_id: str
+    session_id: str
+    orchestration_version_id: str
+    contract_revision: str
+    def __init__(self, admission: _Optional[_Union[BootstrapRequest, _Mapping]] = ..., conversation_id: _Optional[str] = ..., session_id: _Optional[str] = ..., orchestration_version_id: _Optional[str] = ..., contract_revision: _Optional[str] = ...) -> None: ...
+
+class BootstrapOrchestrationResponse(_message.Message):
+    __slots__ = ("contract_revision", "schema_version", "conversation_id", "session_id", "orchestration_id", "orchestration_version_id", "mode", "call_runtime", "agent_runtimes", "supervisor", "handoff")
+    CONTRACT_REVISION_FIELD_NUMBER: _ClassVar[int]
+    SCHEMA_VERSION_FIELD_NUMBER: _ClassVar[int]
+    CONVERSATION_ID_FIELD_NUMBER: _ClassVar[int]
+    SESSION_ID_FIELD_NUMBER: _ClassVar[int]
+    ORCHESTRATION_ID_FIELD_NUMBER: _ClassVar[int]
+    ORCHESTRATION_VERSION_ID_FIELD_NUMBER: _ClassVar[int]
+    MODE_FIELD_NUMBER: _ClassVar[int]
+    CALL_RUNTIME_FIELD_NUMBER: _ClassVar[int]
+    AGENT_RUNTIMES_FIELD_NUMBER: _ClassVar[int]
+    SUPERVISOR_FIELD_NUMBER: _ClassVar[int]
+    HANDOFF_FIELD_NUMBER: _ClassVar[int]
+    contract_revision: str
+    schema_version: str
+    conversation_id: str
+    session_id: str
+    orchestration_id: str
+    orchestration_version_id: str
+    mode: OrchestrationMode
+    call_runtime: CallRuntimeSnapshot
+    agent_runtimes: _containers.RepeatedCompositeFieldContainer[AgentRuntime]
+    supervisor: SupervisorSnapshot
+    handoff: HandoffSnapshot
+    def __init__(self, contract_revision: _Optional[str] = ..., schema_version: _Optional[str] = ..., conversation_id: _Optional[str] = ..., session_id: _Optional[str] = ..., orchestration_id: _Optional[str] = ..., orchestration_version_id: _Optional[str] = ..., mode: _Optional[_Union[OrchestrationMode, str]] = ..., call_runtime: _Optional[_Union[CallRuntimeSnapshot, _Mapping]] = ..., agent_runtimes: _Optional[_Iterable[_Union[AgentRuntime, _Mapping]]] = ..., supervisor: _Optional[_Union[SupervisorSnapshot, _Mapping]] = ..., handoff: _Optional[_Union[HandoffSnapshot, _Mapping]] = ...) -> None: ...
+
+class CallRuntimeSnapshot(_message.Message):
+    __slots__ = ("stt", "tts", "background_audio", "dtmf")
+    STT_FIELD_NUMBER: _ClassVar[int]
+    TTS_FIELD_NUMBER: _ClassVar[int]
+    BACKGROUND_AUDIO_FIELD_NUMBER: _ClassVar[int]
+    DTMF_FIELD_NUMBER: _ClassVar[int]
+    stt: _voice_runtime_pb2.SttRuntime
+    tts: _voice_runtime_pb2.TtsRuntime
+    background_audio: BackgroundAudioRuntime
+    dtmf: DtmfInputRuntime
+    def __init__(self, stt: _Optional[_Union[_voice_runtime_pb2.SttRuntime, _Mapping]] = ..., tts: _Optional[_Union[_voice_runtime_pb2.TtsRuntime, _Mapping]] = ..., background_audio: _Optional[_Union[BackgroundAudioRuntime, _Mapping]] = ..., dtmf: _Optional[_Union[DtmfInputRuntime, _Mapping]] = ...) -> None: ...
+
+class BackgroundAudioRuntime(_message.Message):
+    __slots__ = ("preset", "volume")
+    PRESET_FIELD_NUMBER: _ClassVar[int]
+    VOLUME_FIELD_NUMBER: _ClassVar[int]
+    preset: BackgroundAudioPreset
+    volume: float
+    def __init__(self, preset: _Optional[_Union[BackgroundAudioPreset, str]] = ..., volume: _Optional[float] = ...) -> None: ...
+
+class DtmfInputRuntime(_message.Message):
+    __slots__ = ("timeout_seconds", "end_key")
+    TIMEOUT_SECONDS_FIELD_NUMBER: _ClassVar[int]
+    END_KEY_FIELD_NUMBER: _ClassVar[int]
+    timeout_seconds: int
+    end_key: str
+    def __init__(self, timeout_seconds: _Optional[int] = ..., end_key: _Optional[str] = ...) -> None: ...
+
+class AgentRuntime(_message.Message):
+    __slots__ = ("agent_id", "agent_version_id", "llm_worker", "instructions", "context_policy", "tools", "mcp_servers", "greeting", "knowledge_revision_id")
+    AGENT_ID_FIELD_NUMBER: _ClassVar[int]
+    AGENT_VERSION_ID_FIELD_NUMBER: _ClassVar[int]
+    LLM_WORKER_FIELD_NUMBER: _ClassVar[int]
+    INSTRUCTIONS_FIELD_NUMBER: _ClassVar[int]
+    CONTEXT_POLICY_FIELD_NUMBER: _ClassVar[int]
+    TOOLS_FIELD_NUMBER: _ClassVar[int]
+    MCP_SERVERS_FIELD_NUMBER: _ClassVar[int]
+    GREETING_FIELD_NUMBER: _ClassVar[int]
+    KNOWLEDGE_REVISION_ID_FIELD_NUMBER: _ClassVar[int]
+    agent_id: str
+    agent_version_id: str
+    llm_worker: _voice_runtime_pb2.LlmRuntime
+    instructions: AgentInstructions
+    context_policy: ContextPolicy
+    tools: _containers.RepeatedCompositeFieldContainer[NodeToolMetadata]
+    mcp_servers: _containers.RepeatedCompositeFieldContainer[McpServerRuntime]
+    greeting: str
+    knowledge_revision_id: str
+    def __init__(self, agent_id: _Optional[str] = ..., agent_version_id: _Optional[str] = ..., llm_worker: _Optional[_Union[_voice_runtime_pb2.LlmRuntime, _Mapping]] = ..., instructions: _Optional[_Union[AgentInstructions, _Mapping]] = ..., context_policy: _Optional[_Union[ContextPolicy, str]] = ..., tools: _Optional[_Iterable[_Union[NodeToolMetadata, _Mapping]]] = ..., mcp_servers: _Optional[_Iterable[_Union[McpServerRuntime, _Mapping]]] = ..., greeting: _Optional[str] = ..., knowledge_revision_id: _Optional[str] = ...) -> None: ...
+
+class AgentInstructions(_message.Message):
+    __slots__ = ("system_prompt", "guardrails")
+    SYSTEM_PROMPT_FIELD_NUMBER: _ClassVar[int]
+    GUARDRAILS_FIELD_NUMBER: _ClassVar[int]
+    system_prompt: str
+    guardrails: _containers.RepeatedScalarFieldContainer[str]
+    def __init__(self, system_prompt: _Optional[str] = ..., guardrails: _Optional[_Iterable[str]] = ...) -> None: ...
+
+class SupervisorSnapshot(_message.Message):
+    __slots__ = ("supervisor_agent_version_id", "specialists")
+    SUPERVISOR_AGENT_VERSION_ID_FIELD_NUMBER: _ClassVar[int]
+    SPECIALISTS_FIELD_NUMBER: _ClassVar[int]
+    supervisor_agent_version_id: str
+    specialists: _containers.RepeatedCompositeFieldContainer[SupervisorSpecialist]
+    def __init__(self, supervisor_agent_version_id: _Optional[str] = ..., specialists: _Optional[_Iterable[_Union[SupervisorSpecialist, _Mapping]]] = ...) -> None: ...
+
+class SupervisorSpecialist(_message.Message):
+    __slots__ = ("relation_id", "agent_version_id", "route_description", "context_policy")
+    RELATION_ID_FIELD_NUMBER: _ClassVar[int]
+    AGENT_VERSION_ID_FIELD_NUMBER: _ClassVar[int]
+    ROUTE_DESCRIPTION_FIELD_NUMBER: _ClassVar[int]
+    CONTEXT_POLICY_FIELD_NUMBER: _ClassVar[int]
+    relation_id: str
+    agent_version_id: str
+    route_description: str
+    context_policy: ContextPolicy
+    def __init__(self, relation_id: _Optional[str] = ..., agent_version_id: _Optional[str] = ..., route_description: _Optional[str] = ..., context_policy: _Optional[_Union[ContextPolicy, str]] = ...) -> None: ...
+
+class HandoffSnapshot(_message.Message):
+    __slots__ = ("entry_agent_version_id", "max_handoff_depth", "routes")
+    ENTRY_AGENT_VERSION_ID_FIELD_NUMBER: _ClassVar[int]
+    MAX_HANDOFF_DEPTH_FIELD_NUMBER: _ClassVar[int]
+    ROUTES_FIELD_NUMBER: _ClassVar[int]
+    entry_agent_version_id: str
+    max_handoff_depth: int
+    routes: _containers.RepeatedCompositeFieldContainer[HandoffRoute]
+    def __init__(self, entry_agent_version_id: _Optional[str] = ..., max_handoff_depth: _Optional[int] = ..., routes: _Optional[_Iterable[_Union[HandoffRoute, _Mapping]]] = ...) -> None: ...
+
+class HandoffRoute(_message.Message):
+    __slots__ = ("transition_id", "source_agent_version_id", "target_agent_version_id", "routing_description", "context_policy", "announcement")
+    TRANSITION_ID_FIELD_NUMBER: _ClassVar[int]
+    SOURCE_AGENT_VERSION_ID_FIELD_NUMBER: _ClassVar[int]
+    TARGET_AGENT_VERSION_ID_FIELD_NUMBER: _ClassVar[int]
+    ROUTING_DESCRIPTION_FIELD_NUMBER: _ClassVar[int]
+    CONTEXT_POLICY_FIELD_NUMBER: _ClassVar[int]
+    ANNOUNCEMENT_FIELD_NUMBER: _ClassVar[int]
+    transition_id: str
+    source_agent_version_id: str
+    target_agent_version_id: str
+    routing_description: str
+    context_policy: ContextPolicy
+    announcement: str
+    def __init__(self, transition_id: _Optional[str] = ..., source_agent_version_id: _Optional[str] = ..., target_agent_version_id: _Optional[str] = ..., routing_description: _Optional[str] = ..., context_policy: _Optional[_Union[ContextPolicy, str]] = ..., announcement: _Optional[str] = ...) -> None: ...
 
 class OrchestrationGraphSnapshot(_message.Message):
     __slots__ = ("snapshot_id", "version_id", "schema_version", "entry_node_id", "max_handoff_depth", "nodes", "transitions", "node_tool_snapshots")
