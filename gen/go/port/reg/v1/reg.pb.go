@@ -253,7 +253,7 @@ const file_port_reg_v1_reg_proto_rawDesc = "" +
 	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x012O\n" +
 	"\n" +
 	"RegService\x12A\n" +
-	"\x06Search\x12\x1a.port.reg.v1.SearchRequest\x1a\x1b.port.reg.v1.SearchResponseB<Z:github.com/kyh0703/port-contracts/gen/go/port/reg/v1;regv1b\x06proto3"
+	"\x06Search\x12\x1a.port.reg.v1.SearchRequest\x1a\x1b.port.reg.v1.SearchResponseB?Z=github.com/kyh0703/port-contracts/v2/gen/go/port/reg/v1;regv1b\x06proto3"
 
 var (
 	file_port_reg_v1_reg_proto_rawDescOnce sync.Once

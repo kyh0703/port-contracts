@@ -5,7 +5,7 @@ package port.api.v1;
 import "buf/validate/validate.proto";
 import "port/api/v1/voice_runtime.proto";
 
-option go_package = "github.com/kyh0703/port-contracts/gen/go/port/api/v1;apiv1";
+option go_package = "github.com/kyh0703/port-contracts/v2/gen/go/port/api/v1;apiv1";
 
 // AgentSessionService is the worker-only API boundary for LiveKit jobs.
 service AgentSessionService {

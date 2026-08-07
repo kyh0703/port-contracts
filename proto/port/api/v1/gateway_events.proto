@@ -6,7 +6,7 @@ import "buf/validate/validate.proto";
 import "google/api/annotations.proto";
 import "google/protobuf/timestamp.proto";
 
-option go_package = "github.com/kyh0703/port-contracts/gen/go/port/api/v1;apiv1";
+option go_package = "github.com/kyh0703/port-contracts/v2/gen/go/port/api/v1;apiv1";
 
 service ApiEventService {
   rpc RecordGatewayEvent(RecordGatewayEventRequest) returns (RecordGatewayEventResponse) {

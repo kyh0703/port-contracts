@@ -53,13 +53,13 @@ import { AgentSessionServiceClient } from '@overthinker1127/port-contracts/gen/t
 Example import:
 
 ```go
-import apiv1 "github.com/kyh0703/port-contracts/gen/go/port/api/v1"
+import apiv1 "github.com/kyh0703/port-contracts/v2/gen/go/port/api/v1"
 ```
 
 Validation:
 
 ```go
-import "github.com/kyh0703/port-contracts/validation"
+import "github.com/kyh0703/port-contracts/v2/validation"
 
 err := validation.Validate(&apiv1.RecordGatewayEventRequest{
     EventType: apiv1.GatewayLifecycleEventType_GATEWAY_LIFECYCLE_EVENT_TYPE_AGENT_STARTED,

@@ -4521,7 +4521,7 @@ const file_port_api_v1_agent_session_proto_rawDesc = "" +
 	"\x13AgentSessionService\x12J\n" +
 	"\tBootstrap\x12\x1d.port.api.v1.BootstrapRequest\x1a\x1e.port.api.v1.BootstrapResponse\x12Y\n" +
 	"\x0eBootstrapAgent\x12\".port.api.v1.BootstrapAgentRequest\x1a#.port.api.v1.BootstrapAgentResponse\x12q\n" +
-	"\x16BootstrapOrchestration\x12*.port.api.v1.BootstrapOrchestrationRequest\x1a+.port.api.v1.BootstrapOrchestrationResponseB<Z:github.com/kyh0703/port-contracts/gen/go/port/api/v1;apiv1b\x06proto3"
+	"\x16BootstrapOrchestration\x12*.port.api.v1.BootstrapOrchestrationRequest\x1a+.port.api.v1.BootstrapOrchestrationResponseB?Z=github.com/kyh0703/port-contracts/v2/gen/go/port/api/v1;apiv1b\x06proto3"
 
 var (
 	file_port_api_v1_agent_session_proto_rawDescOnce sync.Once

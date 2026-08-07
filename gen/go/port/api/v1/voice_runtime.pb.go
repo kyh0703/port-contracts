@@ -352,7 +352,7 @@ const file_port_api_v1_voice_runtime_proto_rawDesc = "" +
 	"\blanguage\x18\x03 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\blanguage\x12\"\n" +
 	"\bvoice_id\x18\x04 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\avoiceId2j\n" +
 	"\x13VoiceRuntimeService\x12S\n" +
-	"\fResolveLease\x12 .port.api.v1.ResolveLeaseRequest\x1a!.port.api.v1.ResolveLeaseResponseB<Z:github.com/kyh0703/port-contracts/gen/go/port/api/v1;apiv1b\x06proto3"
+	"\fResolveLease\x12 .port.api.v1.ResolveLeaseRequest\x1a!.port.api.v1.ResolveLeaseResponseB?Z=github.com/kyh0703/port-contracts/v2/gen/go/port/api/v1;apiv1b\x06proto3"
 
 var (
 	file_port_api_v1_voice_runtime_proto_rawDescOnce sync.Once

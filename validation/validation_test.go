@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	validatepb "buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go/buf/validate"
-	apiv1 "github.com/kyh0703/port-contracts/gen/go/port/api/v1"
+	apiv1 "github.com/kyh0703/port-contracts/v2/gen/go/port/api/v1"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/reflect/protoreflect"
 	"google.golang.org/protobuf/reflect/protoregistry"

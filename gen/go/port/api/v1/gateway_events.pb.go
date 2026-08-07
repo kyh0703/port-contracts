@@ -235,7 +235,7 @@ const file_port_api_v1_gateway_events_proto_rawDesc = "" +
 	"*GATEWAY_LIFECYCLE_EVENT_TYPE_SIP_CONNECTED\x10\x03\x12*\n" +
 	"&GATEWAY_LIFECYCLE_EVENT_TYPE_SIP_ENDED\x10\x042\x9c\x01\n" +
 	"\x0fApiEventService\x12\x88\x01\n" +
-	"\x12RecordGatewayEvent\x12&.port.api.v1.RecordGatewayEventRequest\x1a'.port.api.v1.RecordGatewayEventResponse\"!\x82\xd3\xe4\x93\x02\x1b:\x01*\"\x16/api/v1/gateway/eventsB<Z:github.com/kyh0703/port-contracts/gen/go/port/api/v1;apiv1b\x06proto3"
+	"\x12RecordGatewayEvent\x12&.port.api.v1.RecordGatewayEventRequest\x1a'.port.api.v1.RecordGatewayEventResponse\"!\x82\xd3\xe4\x93\x02\x1b:\x01*\"\x16/api/v1/gateway/eventsB?Z=github.com/kyh0703/port-contracts/v2/gen/go/port/api/v1;apiv1b\x06proto3"
 
 var (
 	file_port_api_v1_gateway_events_proto_rawDescOnce sync.Once

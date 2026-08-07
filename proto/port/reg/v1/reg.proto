@@ -4,7 +4,7 @@ package port.reg.v1;
 
 import "buf/validate/validate.proto";
 
-option go_package = "github.com/kyh0703/port-contracts/gen/go/port/reg/v1;regv1";
+option go_package = "github.com/kyh0703/port-contracts/v2/gen/go/port/reg/v1;regv1";
 
 service RegService {
   rpc Search(SearchRequest) returns (SearchResponse);
