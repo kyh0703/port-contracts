@@ -343,6 +343,10 @@ export interface AgentRuntime {
   contextPolicy: ContextPolicy;
   tools: NodeToolMetadata[];
   mcpServers: McpServerRuntime[];
+  /**
+   * Greeting activation is derived from execution context per C17: initial and
+   * handoff activations may play it, while supervisor specialist tasks do not.
+   */
   greeting: string;
   knowledgeRevisionId: string;
 }

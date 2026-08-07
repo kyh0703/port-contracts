@@ -281,10 +281,14 @@ func TestR4CallRuntimeRequiredComponents(t *testing.T) {
 	for _, name := range []string{"stt", "tts", "background_audio", "dtmf"} {
 		runtime := validR4CallRuntime()
 		switch name {
-		case "stt": runtime.Stt = nil
-		case "tts": runtime.Tts = nil
-		case "background_audio": runtime.BackgroundAudio = nil
-		case "dtmf": runtime.Dtmf = nil
+		case "stt":
+			runtime.Stt = nil
+		case "tts":
+			runtime.Tts = nil
+		case "background_audio":
+			runtime.BackgroundAudio = nil
+		case "dtmf":
+			runtime.Dtmf = nil
 		}
 		if err := Validate(runtime); err == nil {
 			t.Fatalf("Validate(runtime missing %s) = nil, want rejection", name)
@@ -329,6 +333,17 @@ func validR4SpecialistRuntime() *apiv1.AgentRuntime {
 	}
 }
 
+func validR4DirectResponse() *apiv1.BootstrapAgentResponse {
+	return &apiv1.BootstrapAgentResponse{
+		ContractRevision: "orchestration-2026-08-07-r4",
+		SchemaVersion:    "agent.orchestration.v1",
+		ConversationId:   "conversation-1",
+		SessionId:        "session-1",
+		CallRuntime:      validR4CallRuntime(),
+		AgentRuntime:     validR4AgentRuntime(),
+	}
+}
+
 func validR4SupervisorResponse() *apiv1.BootstrapOrchestrationResponse {
 	return &apiv1.BootstrapOrchestrationResponse{
 		ContractRevision:       "orchestration-2026-08-07-r4",
@@ -368,6 +383,63 @@ func validR4HandoffResponse() *apiv1.BootstrapOrchestrationResponse {
 		}},
 	}
 	return response
+}
+
+func TestR4RevisionSchemaAndAgentRuntimeValidation(t *testing.T) {
+	validAdmission := &apiv1.BootstrapRequest{Admission: &apiv1.BootstrapRequest_WebrtcTicket{WebrtcTicket: "ticket"}}
+	revisionMessages := []proto.Message{
+		&apiv1.BootstrapAgentRequest{Admission: validAdmission, ConversationId: "conversation-1", SessionId: "session-1", AgentVersionId: "agent-version-1", ContractRevision: "orchestration-2026-08-07-r4"},
+		&apiv1.BootstrapOrchestrationRequest{Admission: validAdmission, ConversationId: "conversation-1", SessionId: "session-1", OrchestrationVersionId: "orchestration-version-1", ContractRevision: "orchestration-2026-08-07-r4"},
+		validR4DirectResponse(),
+		validR4SupervisorResponse(),
+	}
+	for _, source := range revisionMessages {
+		if err := Validate(source); err != nil {
+			t.Fatalf("Validate(valid %T) = %v", source, err)
+		}
+		for _, revision := range []string{"", "orchestration-unsupported"} {
+			message := proto.Clone(source)
+			field := message.ProtoReflect().Descriptor().Fields().ByName("contract_revision")
+			message.ProtoReflect().Set(field, protoreflect.ValueOfString(revision))
+			if err := Validate(message); err == nil {
+				t.Fatalf("Validate(%T contract_revision=%q) = nil, want rejection", source, revision)
+			}
+		}
+	}
+
+	for _, source := range []proto.Message{validR4DirectResponse(), validR4SupervisorResponse()} {
+		for _, schemaVersion := range []string{"", "agent.orchestration.v0"} {
+			message := proto.Clone(source)
+			field := message.ProtoReflect().Descriptor().Fields().ByName("schema_version")
+			message.ProtoReflect().Set(field, protoreflect.ValueOfString(schemaVersion))
+			if err := Validate(message); err == nil {
+				t.Fatalf("Validate(%T schema_version=%q) = nil, want rejection", source, schemaVersion)
+			}
+		}
+	}
+
+	agentRuntimeTests := []struct {
+		name   string
+		mutate func(*apiv1.BootstrapAgentResponse)
+	}{
+		{"missing LLM worker", func(response *apiv1.BootstrapAgentResponse) { response.AgentRuntime.LlmWorker = nil }},
+		{"missing instructions", func(response *apiv1.BootstrapAgentResponse) { response.AgentRuntime.Instructions = nil }},
+	}
+	for _, tt := range agentRuntimeTests {
+		t.Run(tt.name, func(t *testing.T) {
+			response := validR4DirectResponse()
+			tt.mutate(response)
+			if err := Validate(response); err == nil {
+				t.Fatal("Validate() = nil, want AgentRuntime validation error")
+			}
+		})
+	}
+
+	orchestration := validR4SupervisorResponse()
+	orchestration.AgentRuntimes[1].Instructions = nil
+	if err := Validate(orchestration); err == nil {
+		t.Fatal("Validate(orchestration with invalid AgentRuntime) = nil, want rejection")
+	}
 }
 
 func TestR4OrchestrationValidation(t *testing.T) {
@@ -446,14 +518,7 @@ func TestR4OrchestrationValidation(t *testing.T) {
 }
 
 func TestR4GeneratedGoWireRoundTrip(t *testing.T) {
-	direct := &apiv1.BootstrapAgentResponse{
-		ContractRevision: "orchestration-2026-08-07-r4",
-		SchemaVersion:    "agent.orchestration.v1",
-		ConversationId:   "conversation-1",
-		SessionId:        "session-1",
-		CallRuntime:      validR4CallRuntime(),
-		AgentRuntime:     validR4AgentRuntime(),
-	}
+	direct := validR4DirectResponse()
 	supervisor := validR4SupervisorResponse()
 	handoff := validR4HandoffResponse()
 

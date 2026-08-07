@@ -188,6 +188,8 @@ message AgentRuntime {
   ContextPolicy context_policy = 5 [(buf.validate.field).enum = {defined_only: true not_in: 0}];
   repeated NodeToolMetadata tools = 6;
   repeated McpServerRuntime mcp_servers = 7;
+  // Greeting activation is derived from execution context per C17: initial and
+  // handoff activations may play it, while supervisor specialist tasks do not.
   string greeting = 8;
   string knowledge_revision_id = 9;
 }

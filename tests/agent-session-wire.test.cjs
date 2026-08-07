@@ -15,6 +15,32 @@ const {
   TtsRuntime,
 } = require("../dist/gen/ts/port/api/v1/agent_session.js");
 
+function createPinnedCallRuntime() {
+  return {
+    stt: { apiKey: "stt-key", model: "stt-model", language: "ko" },
+    tts: { apiKey: "tts-key", model: "tts-model", language: "ko", voiceId: "voice-1" },
+    backgroundAudio: { preset: BackgroundAudioPreset.BACKGROUND_AUDIO_PRESET_CONTACT_CENTER, volume: 1 },
+    dtmf: DtmfInputRuntime.create({ timeoutSeconds: 10, endKey: "*" }),
+  };
+}
+
+function createDirectAgentResponse() {
+  return BootstrapAgentResponse.create({
+    contractRevision: "orchestration-2026-08-07-r4",
+    schemaVersion: "agent.orchestration.v1",
+    conversationId: "conversation-agent-1",
+    sessionId: "session-agent-1",
+    callRuntime: createPinnedCallRuntime(),
+    agentRuntime: {
+      agentId: "agent-1",
+      agentVersionId: "agent-version-1",
+      llmWorker: { model: "model-1" },
+      instructions: { systemPrompt: "Help." },
+      contextPolicy: ContextPolicy.CONTEXT_POLICY_CONVERSATION,
+    },
+  });
+}
+
 test("r4 generated symbols and service methods are exported", () => {
   assert.equal(typeof BootstrapAgentResponse?.create, "function");
   assert.equal(typeof BootstrapOrchestrationResponse?.create, "function");
@@ -114,36 +140,15 @@ test("supervisor/worker bootstrap fields survive protobuf wire round-trip", () =
 });
 
 test("direct Agent response carries one pinned CallRuntime and AgentRuntime", () => {
-  const source = BootstrapAgentResponse.create({
-    contractRevision: "orchestration-2026-08-07-r4",
-    schemaVersion: "agent.orchestration.v1",
-    conversationId: "conversation-agent-1",
-    sessionId: "session-agent-1",
-    callRuntime: {
-      stt: { apiKey: "stt-key", model: "stt-model", language: "ko" },
-      tts: { apiKey: "tts-key", model: "tts-model", language: "ko", voiceId: "voice-1" },
-      backgroundAudio: { preset: BackgroundAudioPreset.BACKGROUND_AUDIO_PRESET_CAFE, volume: 0 },
-      dtmf: DtmfInputRuntime.create({ timeoutSeconds: 1, endKey: "#" }),
-    },
-    agentRuntime: {
-      agentId: "agent-1",
-      agentVersionId: "agent-version-1",
-      llmWorker: { model: "model-1" },
-      instructions: { systemPrompt: "Help." },
-    },
-  });
+  const source = createDirectAgentResponse();
   const decoded = BootstrapAgentResponse.decode(BootstrapAgentResponse.encode(source).finish());
   assert.deepEqual(decoded, source);
   assert.equal(decoded.agentRuntime?.callRuntime, undefined);
 });
 
 test("supervisor and handoff responses carry exactly one mode snapshot", () => {
-  const runtime = {
-    stt: { apiKey: "stt-key", model: "stt-model", language: "ko" },
-    tts: { apiKey: "tts-key", model: "tts-model", language: "ko", voiceId: "voice-1" },
-    backgroundAudio: { preset: BackgroundAudioPreset.BACKGROUND_AUDIO_PRESET_CONTACT_CENTER, volume: 1 },
-    dtmf: DtmfInputRuntime.create({ timeoutSeconds: 10, endKey: "*" }),
-  };
+  const direct = createDirectAgentResponse();
+  const runtime = createPinnedCallRuntime();
   const supervisor = BootstrapOrchestrationResponse.create({
     contractRevision: "orchestration-2026-08-07-r4",
     schemaVersion: "agent.orchestration.v1",
@@ -177,6 +182,7 @@ test("supervisor and handoff responses carry exactly one mode snapshot", () => {
     assert.equal(Boolean(decoded.supervisor) !== Boolean(decoded.handoff), true);
     assert.ok(decoded.agentRuntimes?.length);
     assert.equal(decoded.agentRuntimes[0]?.callRuntime, undefined);
+    assert.deepEqual(decoded.callRuntime, direct.callRuntime);
   }
 });
 

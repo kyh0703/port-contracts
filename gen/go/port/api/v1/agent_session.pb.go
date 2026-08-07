@@ -1182,16 +1182,18 @@ func (x *DtmfInputRuntime) GetEndKey() string {
 }
 
 type AgentRuntime struct {
-	state               protoimpl.MessageState `protogen:"open.v1"`
-	AgentId             string                 `protobuf:"bytes,1,opt,name=agent_id,json=agentId,proto3" json:"agent_id,omitempty"`
-	AgentVersionId      string                 `protobuf:"bytes,2,opt,name=agent_version_id,json=agentVersionId,proto3" json:"agent_version_id,omitempty"`
-	LlmWorker           *LlmRuntime            `protobuf:"bytes,3,opt,name=llm_worker,json=llmWorker,proto3" json:"llm_worker,omitempty"`
-	Instructions        *AgentInstructions     `protobuf:"bytes,4,opt,name=instructions,proto3" json:"instructions,omitempty"`
-	ContextPolicy       ContextPolicy          `protobuf:"varint,5,opt,name=context_policy,json=contextPolicy,proto3,enum=port.api.v1.ContextPolicy" json:"context_policy,omitempty"`
-	Tools               []*NodeToolMetadata    `protobuf:"bytes,6,rep,name=tools,proto3" json:"tools,omitempty"`
-	McpServers          []*McpServerRuntime    `protobuf:"bytes,7,rep,name=mcp_servers,json=mcpServers,proto3" json:"mcp_servers,omitempty"`
-	Greeting            string                 `protobuf:"bytes,8,opt,name=greeting,proto3" json:"greeting,omitempty"`
-	KnowledgeRevisionId string                 `protobuf:"bytes,9,opt,name=knowledge_revision_id,json=knowledgeRevisionId,proto3" json:"knowledge_revision_id,omitempty"`
+	state          protoimpl.MessageState `protogen:"open.v1"`
+	AgentId        string                 `protobuf:"bytes,1,opt,name=agent_id,json=agentId,proto3" json:"agent_id,omitempty"`
+	AgentVersionId string                 `protobuf:"bytes,2,opt,name=agent_version_id,json=agentVersionId,proto3" json:"agent_version_id,omitempty"`
+	LlmWorker      *LlmRuntime            `protobuf:"bytes,3,opt,name=llm_worker,json=llmWorker,proto3" json:"llm_worker,omitempty"`
+	Instructions   *AgentInstructions     `protobuf:"bytes,4,opt,name=instructions,proto3" json:"instructions,omitempty"`
+	ContextPolicy  ContextPolicy          `protobuf:"varint,5,opt,name=context_policy,json=contextPolicy,proto3,enum=port.api.v1.ContextPolicy" json:"context_policy,omitempty"`
+	Tools          []*NodeToolMetadata    `protobuf:"bytes,6,rep,name=tools,proto3" json:"tools,omitempty"`
+	McpServers     []*McpServerRuntime    `protobuf:"bytes,7,rep,name=mcp_servers,json=mcpServers,proto3" json:"mcp_servers,omitempty"`
+	// Greeting activation is derived from execution context per C17: initial and
+	// handoff activations may play it, while supervisor specialist tasks do not.
+	Greeting            string `protobuf:"bytes,8,opt,name=greeting,proto3" json:"greeting,omitempty"`
+	KnowledgeRevisionId string `protobuf:"bytes,9,opt,name=knowledge_revision_id,json=knowledgeRevisionId,proto3" json:"knowledge_revision_id,omitempty"`
 	unknownFields       protoimpl.UnknownFields
 	sizeCache           protoimpl.SizeCache
 }
