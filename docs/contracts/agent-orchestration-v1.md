@@ -1,6 +1,6 @@
 ---
 contract: agent-orchestration-v1
-contract_revision: orchestration-2026-08-07-r3
+contract_revision: orchestration-2026-08-07-r4
 status: locked
 effective_date: 2026-08-07
 ---
@@ -20,7 +20,7 @@ effective_date: 2026-08-07
 
 - **C01 — Revision:** 신규 Orchestration payload는 제품·schema 이름
   `agent.orchestration.v1`과 필수 `contractRevision =
-  "orchestration-2026-08-07-r3"`를 함께 가져야 한다. revision이 누락되거나 값이
+  "orchestration-2026-08-07-r4"`를 함께 가져야 한다. revision이 누락되거나 값이
   다르면 API와 runtime은 payload를 거부해야 한다.
 - **C02 — Breaking boundary:** `contracts@1.8.0`의 기존 graph 계약은 역사적
   retired 계약이다. 새 계약은 additive 호환으로 가장하지 않고 breaking
@@ -39,22 +39,28 @@ effective_date: 2026-08-07
   실행 Agent와 AgentTask는 자신에게 고정된 LLM을 사용해야 하며 전역 LLM
   fallback을 사용해서는 안 된다.
 - **C06 — No CallRuntime ownership:** Agent, AgentVersion, AgentRuntime은
-  Transport, STT, TTS, Voice, VAD, 인터럽션, 통화 시간 또는 타임아웃을
-  소유하거나 재구성하지 않는다.
-- **C07 — CallRuntime ownership:** 통화 설정을 소유하는 별도 도메인 객체는
-  없다. 현재 `userId`는 mutable한 CallRuntime 설정 하나를
-  소유한다. CallRuntime은 Transport, VAD, STT, Voice를 포함한 TTS,
-  인터럽션, 최대 통화 시간과 각종 타임아웃의 유일한 소유 경계다.
+  Transport, STT, TTS, Voice, VAD, BackgroundAudio, DTMF 입력, 인터럽션,
+  통화 시간 또는 타임아웃을 소유하거나 재구성하지 않는다.
+- **C07 — CallRuntime ownership:** 현재 `userId`는 mutable한
+  `CallRuntimeConfig` singleton 하나를 소유한다. 별도 named profile이나
+  Agent별 통화 설정 객체를 만들지 않는다. CallRuntimeConfig는 Transport,
+  VAD, STT, Voice를 포함한 TTS, BackgroundAudio preset·volume, DTMF 입력,
+  인터럽션, 최대 통화 시간과 각종 타임아웃의 유일한 영속 설정 경계다.
 
 런타임 모델은 다음 두 경계로 고정한다.
 
 ```text
-CallRuntime — Conversation당 하나
+CallRuntime — Conversation당 runtime instance 하나
 ├─ Transport
 ├─ VAD
 ├─ STT
-└─ TTS
-   └─ Voice
+├─ TTS
+│  └─ Voice
+├─ BackgroundAudio
+├─ DTMF input
+└─ Policies
+   ├─ Interruption
+   └─ Limits / Timeouts
 
 AgentRuntime — 활성 Agent 또는 AgentTask별
 ├─ LLMWorker
@@ -64,12 +70,30 @@ AgentRuntime — 활성 Agent 또는 AgentTask별
 └─ MCP
 ```
 
-CallRuntime 설정은 실행 전에 snapshot되고, 통화 시작 시 하나의 session-scoped
-CallRuntime instance로 materialize된다. AgentRuntime은 pinned AgentVersion에서
+ExecutionTarget 종류와 무관하게 통화 시작 시 현재 CallRuntimeConfig 전체를
+불변 `CallRuntimeSnapshot`으로 고정하고, 하나의 session-scoped CallRuntime
+instance로 materialize한다. AgentRuntime은 pinned AgentVersion에서
 materialize하며, 실행 중인 모든 AgentRuntime은 같은 CallRuntime을 공유한다.
 AgentVersion의 Prompt·Guardrails는 Instructions, LLM은 LLMWorker, 도구와 MCP
 binding은 각각 Tools와 MCP의 입력이다. Context는 AgentVersion의 소유 자산이
 아니라 AgentRuntime이 실행 중 관리하는 상태다.
+
+CallRuntimeConfig와 CallRuntimeSnapshot은 다음 값을 명시적으로 포함한다.
+
+- `backgroundAudio.preset`: `none | cafe | office | contact_center | library`,
+  기본값 `none`
+- `backgroundAudio.volume`: BackgroundAudio에만 적용되는 `0..1` 값,
+  기본값 `0.5`
+- `dtmf.timeoutSeconds`: 마지막 DTMF 키 입력 뒤 추가 입력을 기다리는 `1..10`
+  범위의 초 단위 정수, 기본값 `3`
+- `dtmf.endKey`: `null | 0..9 | # | *`, 기본값 `null`
+
+`backgroundAudio.preset = none`이면 volume 값과 무관하게 재생하지 않는다.
+BackgroundAudio preset은 named CallRuntimeConfig profile이나 사용자 입력 URL이
+아니라 runtime이 소유한 system preset이다. DTMF timeout은 키 입력마다 다시
+시작하며, 설정된 end key는 결과에 포함하지 않고 입력 수집을 즉시 완료한다.
+end key는 통화를 종료하지 않는다. DTMF를 지원하지 않는 transport에서는 이
+정책을 실행하지 않되 snapshot 자체를 변경하지 않는다.
 
 ## 3. 실행 대상과 Orchestration 모드
 
@@ -91,26 +115,28 @@ binding은 각각 Tools와 MCP의 입력이다. Context는 AgentVersion의 소�
 ## 4. Publish, routing, pinning
 
 - **C12 — Immutable OrchestrationVersion:** OrchestrationVersion은 모드, 정확한
-  AgentVersion 참조와 모드별 관계, CallRuntime 설정 전체를 불변 snapshot으로
-  고정한다.
-- **C13 — Publish isolation:** Orchestration이 참조하는 Agent 또는 CallRuntime 설정을
-  변경해도 이미 production인 OrchestrationVersion에는 반영되지 않는다. Orchestration
-  실행에 적용하려면 다시 publish해야 한다. Agent 직접 실행은 통화 시작 시
-  현재 production AgentVersion과 CallRuntime 설정을 해석한다.
+  AgentVersion 참조, 모드별 관계와 orchestration 한도를 불변 snapshot으로
+  고정한다. CallRuntimeConfig나 CallRuntimeSnapshot은 소유하지 않는다.
+- **C13 — Publish isolation:** Orchestration이 참조하는 Agent를 변경해도 이미
+  production인 OrchestrationVersion의 AgentVersion 참조는 바뀌지 않으며 적용하려면
+  Orchestration을 다시 publish해야 한다. CallRuntimeConfig 변경은 Orchestration
+  publish와 독립적이며 다음 Conversation 시작 시 Agent와 Orchestration 실행 모두에
+  적용된다.
 - **C14 — Call routing:** 전화번호와 WebRTC 통화 관리는 Agent 또는 Orchestration
   중 정확히 하나를 ExecutionTarget으로 가리킨다. AgentVersion이나
   OrchestrationVersion을 직접 설정 대상으로 노출하지 않는다.
 - **C15 — Conversation pin:** Conversation은 시작 시 ExecutionTarget을
-  해석해 정확히 하나의 AgentVersion 또는 OrchestrationVersion을 고정한다. 직접
-  Agent 실행은 같은 시점의 CallRuntime snapshot도 고정한다. 이후 publish나
-  설정 변경은 진행 중 통화에 소급되지 않는다.
+  해석해 정확히 하나의 AgentVersion 또는 OrchestrationVersion을 고정하고, 같은
+  transaction 경계에서 현재 CallRuntimeConfig 전체를 CallRuntimeSnapshot으로
+  고정한다. 이후 publish나 설정 변경은 진행 중 통화에 소급되지 않는다.
 
 ## 5. Runtime 불변식
 
 - **C16 — One CallRuntime:** Transport, VAD, STT, TTS와 그 Voice, 인터럽션,
-  통화 한도·타임아웃은 pinned CallRuntime snapshot으로 통화 시작 시 한 번
-  생성한다. Agent 전환이나 AgentTask 실행 중 교체하지 않는다. Voice를 TTS와
-  분리된 Agent별 runtime으로 만들지 않는다.
+  BackgroundAudio, DTMF 입력 수집, 통화 한도·타임아웃은 pinned
+  CallRuntimeSnapshot으로 통화 시작 시 한 번 생성한다. Agent 전환이나
+  AgentTask 실행 중 player, listener 또는 policy를 교체하지 않는다. Voice를
+  TTS와 분리된 Agent별 runtime으로 만들지 않는다.
 - **C17 — Greeting:** 최초 활성 Agent는 자신의 Greeting을 실행할 수 있다.
   Supervisor가 호출한 전문 Agent는 고객과 대화할 수 있지만 일반 Agent
   Greeting을 자동 재생하지 않는다. handoff 대상 Agent는 자신의 Greeting을
@@ -128,13 +154,14 @@ binding은 각각 Tools와 MCP의 입력이다. Context는 AgentVersion의 소�
 - **C22 — Events:** runtime은 AgentTask와 handoff의 시작·완료·거부·실패를
   ExecutionTarget version, Conversation, source/target AgentVersion, task run
   또는 transition 식별자와 함께 기록한다. 대화 원문, Prompt, credential, Task 결과
-  전문은 일반 로그나 metric label에 기록하지 않는다.
+  전문과 raw DTMF 입력은 일반 로그, event 또는 metric label에 기록하지 않는다.
 
 ## 6. Transport와 출시 경계
 
 - **C23 — New bootstrap:** Agent ExecutionTarget은 별도 `BootstrapAgent`,
   Orchestration ExecutionTarget은 별도 `BootstrapOrchestration` RPC와 response를
-  사용한다. 두 response는 CallRuntime snapshot과 AgentRuntime 입력을 전달하고,
+  사용한다. 두 response는 Conversation에 고정된 CallRuntimeSnapshot과
+  AgentRuntime 입력을 전달하고,
   Orchestration response만 OrchestrationVersion과 모드별 snapshot을 가진다.
   기존 `BootstrapResponse.orchestration_graph`를 신규 실행에 사용하지 않는다.
 - **C24 — Legacy bootstrap:** 기존 `Bootstrap` RPC는 전환되지 않은

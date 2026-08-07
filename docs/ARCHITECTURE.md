@@ -13,25 +13,29 @@ legacy agent.canvas.v1 ──> Bootstrap ──> legacy compiler
 
 AgentVersion ──────────> BootstrapAgent ───────────> direct compiler
 OrchestrationVersion ─> BootstrapOrchestration ──> orchestration compiler
-                         CallRuntime + AgentRuntime inputs
+Conversation ─────────> CallRuntimeSnapshot + AgentRuntime inputs
 ```
 
 두 경계는 별도 RPC와 response를 사용한다. 신규 Orchestration은
-`contractRevision = "orchestration-2026-08-07-r3"`을 필수로 하며 잘못된 신규
+`contractRevision = "orchestration-2026-08-07-r4"`를 필수로 하며 잘못된 신규
 payload를 legacy decoder로 fallback하지 않는다.
 
-두 신규 response는 Transport, VAD, STT, Voice를 포함한 TTS와 통화 policy를
-CallRuntime snapshot 하나로 전달한다. 각 AgentRuntime 입력은 LLMWorker, Instructions,
+두 신규 response는 API가 통화 시작 시 CallRuntimeConfig에서 고정한
+CallRuntimeSnapshot 하나로 Transport, VAD, STT, Voice를 포함한 TTS와 통화
+policy, BackgroundAudio와 DTMF 입력 설정을 전달한다. 각 AgentRuntime 입력은
+LLMWorker, Instructions,
 Context 초기화 policy, Tools, MCP를 포함하며 CallRuntime 필드를 중복하지 않는다.
 Orchestration mode payload는 `supervisor | handoff` 중 정확히 하나다.
 
 ```text
-CallRuntime — response당 하나
+CallRuntimeSnapshot — response당 하나
 ├─ Transport
 ├─ VAD
 ├─ STT
 ├─ TTS
 │  └─ Voice
+├─ BackgroundAudio
+├─ DTMF input
 └─ Policies
    ├─ Interruption
    └─ Limits / Timeouts
