@@ -24,7 +24,7 @@ jobs:
         if: github.event_name == 'pull_request'
         run: |
           if git rev-parse --verify origin/main >/dev/null 2>&1; then
-            docker run --rm -v "$PWD:/workspace" -w /workspace bufbuild/buf:latest breaking --against '.git#branch=main'
+            docker run --rm -v "$PWD:/workspace" -w /workspace bufbuild/buf:latest breaking --against '.git#ref=origin/main'
           else
             echo "origin/main not found; skipping breaking check"
           fi
