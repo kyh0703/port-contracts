@@ -339,19 +339,23 @@ func TestR4CallRuntimeEnumPresenceAndNumericBoundaries(t *testing.T) {
 	limits := lookup("port.api.v1.CallLimitsRuntime")
 	for _, enumSpec := range []struct {
 		name   protoreflect.FullName
-		values []string
+		values map[string]protoreflect.EnumNumber
 	}{
-		{"port.api.v1.CallTransportSource", []string{"CALL_TRANSPORT_SOURCE_UNSPECIFIED", "CALL_TRANSPORT_SOURCE_WEBRTC", "CALL_TRANSPORT_SOURCE_SIP", "CALL_TRANSPORT_SOURCE_TEXT_STREAM"}},
-		{"port.api.v1.NoiseCancellationMode", []string{"NOISE_CANCELLATION_MODE_UNSPECIFIED", "NOISE_CANCELLATION_MODE_OFF", "NOISE_CANCELLATION_MODE_STANDARD", "NOISE_CANCELLATION_MODE_STRONG"}},
+		{"port.api.v1.CallTransportSource", map[string]protoreflect.EnumNumber{"CALL_TRANSPORT_SOURCE_UNSPECIFIED": 0, "CALL_TRANSPORT_SOURCE_WEBRTC": 1, "CALL_TRANSPORT_SOURCE_SIP": 2, "CALL_TRANSPORT_SOURCE_TEXT_STREAM": 3}},
+		{"port.api.v1.NoiseCancellationMode", map[string]protoreflect.EnumNumber{"NOISE_CANCELLATION_MODE_UNSPECIFIED": 0, "NOISE_CANCELLATION_MODE_OFF": 1, "NOISE_CANCELLATION_MODE_STANDARD": 2, "NOISE_CANCELLATION_MODE_STRONG": 3}},
 	} {
 		d, err := protoregistry.GlobalFiles.FindDescriptorByName(enumSpec.name)
 		if err != nil {
 			t.Fatalf("enum %s: %v", enumSpec.name, err)
 		}
 		e := d.(protoreflect.EnumDescriptor)
-		for _, value := range enumSpec.values {
-			if e.Values().ByName(protoreflect.Name(value)) == nil {
+		for value, number := range enumSpec.values {
+			descriptor := e.Values().ByName(protoreflect.Name(value))
+			if descriptor == nil {
 				t.Fatalf("enum %s missing %s", enumSpec.name, value)
+			}
+			if descriptor.Number() != number {
+				t.Fatalf("enum %s.%s number = %d, want %d", enumSpec.name, value, descriptor.Number(), number)
 			}
 		}
 	}
