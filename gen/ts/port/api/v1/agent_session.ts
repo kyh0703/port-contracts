@@ -22,6 +22,96 @@ import { LlmRuntime, SttRuntime, TtsRuntime } from "./voice_runtime";
 
 export const protobufPackage = "port.api.v1";
 
+export enum CallTransportSource {
+  CALL_TRANSPORT_SOURCE_UNSPECIFIED = 0,
+  CALL_TRANSPORT_SOURCE_WEBRTC = 1,
+  CALL_TRANSPORT_SOURCE_SIP = 2,
+  CALL_TRANSPORT_SOURCE_TEXT_STREAM = 3,
+  UNRECOGNIZED = -1,
+}
+
+export function callTransportSourceFromJSON(object: any): CallTransportSource {
+  switch (object) {
+    case 0:
+    case "CALL_TRANSPORT_SOURCE_UNSPECIFIED":
+      return CallTransportSource.CALL_TRANSPORT_SOURCE_UNSPECIFIED;
+    case 1:
+    case "CALL_TRANSPORT_SOURCE_WEBRTC":
+      return CallTransportSource.CALL_TRANSPORT_SOURCE_WEBRTC;
+    case 2:
+    case "CALL_TRANSPORT_SOURCE_SIP":
+      return CallTransportSource.CALL_TRANSPORT_SOURCE_SIP;
+    case 3:
+    case "CALL_TRANSPORT_SOURCE_TEXT_STREAM":
+      return CallTransportSource.CALL_TRANSPORT_SOURCE_TEXT_STREAM;
+    case -1:
+    case "UNRECOGNIZED":
+    default:
+      return CallTransportSource.UNRECOGNIZED;
+  }
+}
+
+export function callTransportSourceToJSON(object: CallTransportSource): string {
+  switch (object) {
+    case CallTransportSource.CALL_TRANSPORT_SOURCE_UNSPECIFIED:
+      return "CALL_TRANSPORT_SOURCE_UNSPECIFIED";
+    case CallTransportSource.CALL_TRANSPORT_SOURCE_WEBRTC:
+      return "CALL_TRANSPORT_SOURCE_WEBRTC";
+    case CallTransportSource.CALL_TRANSPORT_SOURCE_SIP:
+      return "CALL_TRANSPORT_SOURCE_SIP";
+    case CallTransportSource.CALL_TRANSPORT_SOURCE_TEXT_STREAM:
+      return "CALL_TRANSPORT_SOURCE_TEXT_STREAM";
+    case CallTransportSource.UNRECOGNIZED:
+    default:
+      return "UNRECOGNIZED";
+  }
+}
+
+export enum NoiseCancellationMode {
+  NOISE_CANCELLATION_MODE_UNSPECIFIED = 0,
+  NOISE_CANCELLATION_MODE_OFF = 1,
+  NOISE_CANCELLATION_MODE_STANDARD = 2,
+  NOISE_CANCELLATION_MODE_STRONG = 3,
+  UNRECOGNIZED = -1,
+}
+
+export function noiseCancellationModeFromJSON(object: any): NoiseCancellationMode {
+  switch (object) {
+    case 0:
+    case "NOISE_CANCELLATION_MODE_UNSPECIFIED":
+      return NoiseCancellationMode.NOISE_CANCELLATION_MODE_UNSPECIFIED;
+    case 1:
+    case "NOISE_CANCELLATION_MODE_OFF":
+      return NoiseCancellationMode.NOISE_CANCELLATION_MODE_OFF;
+    case 2:
+    case "NOISE_CANCELLATION_MODE_STANDARD":
+      return NoiseCancellationMode.NOISE_CANCELLATION_MODE_STANDARD;
+    case 3:
+    case "NOISE_CANCELLATION_MODE_STRONG":
+      return NoiseCancellationMode.NOISE_CANCELLATION_MODE_STRONG;
+    case -1:
+    case "UNRECOGNIZED":
+    default:
+      return NoiseCancellationMode.UNRECOGNIZED;
+  }
+}
+
+export function noiseCancellationModeToJSON(object: NoiseCancellationMode): string {
+  switch (object) {
+    case NoiseCancellationMode.NOISE_CANCELLATION_MODE_UNSPECIFIED:
+      return "NOISE_CANCELLATION_MODE_UNSPECIFIED";
+    case NoiseCancellationMode.NOISE_CANCELLATION_MODE_OFF:
+      return "NOISE_CANCELLATION_MODE_OFF";
+    case NoiseCancellationMode.NOISE_CANCELLATION_MODE_STANDARD:
+      return "NOISE_CANCELLATION_MODE_STANDARD";
+    case NoiseCancellationMode.NOISE_CANCELLATION_MODE_STRONG:
+      return "NOISE_CANCELLATION_MODE_STRONG";
+    case NoiseCancellationMode.UNRECOGNIZED:
+    default:
+      return "UNRECOGNIZED";
+  }
+}
+
 export enum BackgroundAudioPreset {
   BACKGROUND_AUDIO_PRESET_UNSPECIFIED = 0,
   BACKGROUND_AUDIO_PRESET_NONE = 1,
@@ -323,6 +413,32 @@ export interface CallRuntimeSnapshot {
   tts?: TtsRuntime | undefined;
   backgroundAudio?: BackgroundAudioRuntime | undefined;
   dtmf?: DtmfInputRuntime | undefined;
+  transport?: TransportRuntime | undefined;
+  vad?: VadRuntime | undefined;
+  speechPolicy?: SpeechPolicyRuntime | undefined;
+  limits?: CallLimitsRuntime | undefined;
+}
+
+export interface TransportRuntime {
+  source: CallTransportSource;
+  roomName: string;
+  callerParticipantIdentity: string;
+}
+
+export interface VadRuntime {
+  noiseCancellation: NoiseCancellationMode;
+  recognitionSensitivity?: number | undefined;
+}
+
+export interface SpeechPolicyRuntime {
+  responseSpeed?: number | undefined;
+  allowInterruptions?: boolean | undefined;
+}
+
+export interface CallLimitsRuntime {
+  dialWaitTimeSeconds: number;
+  maxCallDurationSeconds: number;
+  noAnswerTimeoutSeconds: number;
 }
 
 export interface BackgroundAudioRuntime {
@@ -2078,7 +2194,16 @@ export const BootstrapOrchestrationResponse: MessageFns<BootstrapOrchestrationRe
 };
 
 function createBaseCallRuntimeSnapshot(): CallRuntimeSnapshot {
-  return { stt: undefined, tts: undefined, backgroundAudio: undefined, dtmf: undefined };
+  return {
+    stt: undefined,
+    tts: undefined,
+    backgroundAudio: undefined,
+    dtmf: undefined,
+    transport: undefined,
+    vad: undefined,
+    speechPolicy: undefined,
+    limits: undefined,
+  };
 }
 
 export const CallRuntimeSnapshot: MessageFns<CallRuntimeSnapshot> = {
@@ -2094,6 +2219,18 @@ export const CallRuntimeSnapshot: MessageFns<CallRuntimeSnapshot> = {
     }
     if (message.dtmf !== undefined) {
       DtmfInputRuntime.encode(message.dtmf, writer.uint32(34).fork()).join();
+    }
+    if (message.transport !== undefined) {
+      TransportRuntime.encode(message.transport, writer.uint32(42).fork()).join();
+    }
+    if (message.vad !== undefined) {
+      VadRuntime.encode(message.vad, writer.uint32(50).fork()).join();
+    }
+    if (message.speechPolicy !== undefined) {
+      SpeechPolicyRuntime.encode(message.speechPolicy, writer.uint32(58).fork()).join();
+    }
+    if (message.limits !== undefined) {
+      CallLimitsRuntime.encode(message.limits, writer.uint32(66).fork()).join();
     }
     return writer;
   },
@@ -2137,6 +2274,38 @@ export const CallRuntimeSnapshot: MessageFns<CallRuntimeSnapshot> = {
           message.dtmf = DtmfInputRuntime.decode(reader, reader.uint32());
           continue;
         }
+        case 5: {
+          if (tag !== 42) {
+            break;
+          }
+
+          message.transport = TransportRuntime.decode(reader, reader.uint32());
+          continue;
+        }
+        case 6: {
+          if (tag !== 50) {
+            break;
+          }
+
+          message.vad = VadRuntime.decode(reader, reader.uint32());
+          continue;
+        }
+        case 7: {
+          if (tag !== 58) {
+            break;
+          }
+
+          message.speechPolicy = SpeechPolicyRuntime.decode(reader, reader.uint32());
+          continue;
+        }
+        case 8: {
+          if (tag !== 66) {
+            break;
+          }
+
+          message.limits = CallLimitsRuntime.decode(reader, reader.uint32());
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -2156,6 +2325,14 @@ export const CallRuntimeSnapshot: MessageFns<CallRuntimeSnapshot> = {
         ? BackgroundAudioRuntime.fromJSON(object.background_audio)
         : undefined,
       dtmf: isSet(object.dtmf) ? DtmfInputRuntime.fromJSON(object.dtmf) : undefined,
+      transport: isSet(object.transport) ? TransportRuntime.fromJSON(object.transport) : undefined,
+      vad: isSet(object.vad) ? VadRuntime.fromJSON(object.vad) : undefined,
+      speechPolicy: isSet(object.speechPolicy)
+        ? SpeechPolicyRuntime.fromJSON(object.speechPolicy)
+        : isSet(object.speech_policy)
+        ? SpeechPolicyRuntime.fromJSON(object.speech_policy)
+        : undefined,
+      limits: isSet(object.limits) ? CallLimitsRuntime.fromJSON(object.limits) : undefined,
     };
   },
 
@@ -2173,6 +2350,18 @@ export const CallRuntimeSnapshot: MessageFns<CallRuntimeSnapshot> = {
     if (message.dtmf !== undefined) {
       obj.dtmf = DtmfInputRuntime.toJSON(message.dtmf);
     }
+    if (message.transport !== undefined) {
+      obj.transport = TransportRuntime.toJSON(message.transport);
+    }
+    if (message.vad !== undefined) {
+      obj.vad = VadRuntime.toJSON(message.vad);
+    }
+    if (message.speechPolicy !== undefined) {
+      obj.speechPolicy = SpeechPolicyRuntime.toJSON(message.speechPolicy);
+    }
+    if (message.limits !== undefined) {
+      obj.limits = CallLimitsRuntime.toJSON(message.limits);
+    }
     return obj;
   },
 
@@ -2189,6 +2378,388 @@ export const CallRuntimeSnapshot: MessageFns<CallRuntimeSnapshot> = {
     message.dtmf = (object.dtmf !== undefined && object.dtmf !== null)
       ? DtmfInputRuntime.fromPartial(object.dtmf)
       : undefined;
+    message.transport = (object.transport !== undefined && object.transport !== null)
+      ? TransportRuntime.fromPartial(object.transport)
+      : undefined;
+    message.vad = (object.vad !== undefined && object.vad !== null) ? VadRuntime.fromPartial(object.vad) : undefined;
+    message.speechPolicy = (object.speechPolicy !== undefined && object.speechPolicy !== null)
+      ? SpeechPolicyRuntime.fromPartial(object.speechPolicy)
+      : undefined;
+    message.limits = (object.limits !== undefined && object.limits !== null)
+      ? CallLimitsRuntime.fromPartial(object.limits)
+      : undefined;
+    return message;
+  },
+};
+
+function createBaseTransportRuntime(): TransportRuntime {
+  return { source: 0, roomName: "", callerParticipantIdentity: "" };
+}
+
+export const TransportRuntime: MessageFns<TransportRuntime> = {
+  encode(message: TransportRuntime, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.source !== 0) {
+      writer.uint32(8).int32(message.source);
+    }
+    if (message.roomName !== "") {
+      writer.uint32(18).string(message.roomName);
+    }
+    if (message.callerParticipantIdentity !== "") {
+      writer.uint32(26).string(message.callerParticipantIdentity);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): TransportRuntime {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseTransportRuntime();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 8) {
+            break;
+          }
+
+          message.source = reader.int32() as any;
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.roomName = reader.string();
+          continue;
+        }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.callerParticipantIdentity = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): TransportRuntime {
+    return {
+      source: isSet(object.source) ? callTransportSourceFromJSON(object.source) : 0,
+      roomName: isSet(object.roomName)
+        ? globalThis.String(object.roomName)
+        : isSet(object.room_name)
+        ? globalThis.String(object.room_name)
+        : "",
+      callerParticipantIdentity: isSet(object.callerParticipantIdentity)
+        ? globalThis.String(object.callerParticipantIdentity)
+        : isSet(object.caller_participant_identity)
+        ? globalThis.String(object.caller_participant_identity)
+        : "",
+    };
+  },
+
+  toJSON(message: TransportRuntime): unknown {
+    const obj: any = {};
+    if (message.source !== 0) {
+      obj.source = callTransportSourceToJSON(message.source);
+    }
+    if (message.roomName !== "") {
+      obj.roomName = message.roomName;
+    }
+    if (message.callerParticipantIdentity !== "") {
+      obj.callerParticipantIdentity = message.callerParticipantIdentity;
+    }
+    return obj;
+  },
+
+  create(base?: DeepPartial<TransportRuntime>): TransportRuntime {
+    return TransportRuntime.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<TransportRuntime>): TransportRuntime {
+    const message = createBaseTransportRuntime();
+    message.source = object.source ?? 0;
+    message.roomName = object.roomName ?? "";
+    message.callerParticipantIdentity = object.callerParticipantIdentity ?? "";
+    return message;
+  },
+};
+
+function createBaseVadRuntime(): VadRuntime {
+  return { noiseCancellation: 0, recognitionSensitivity: undefined };
+}
+
+export const VadRuntime: MessageFns<VadRuntime> = {
+  encode(message: VadRuntime, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.noiseCancellation !== 0) {
+      writer.uint32(8).int32(message.noiseCancellation);
+    }
+    if (message.recognitionSensitivity !== undefined) {
+      writer.uint32(17).double(message.recognitionSensitivity);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): VadRuntime {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseVadRuntime();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 8) {
+            break;
+          }
+
+          message.noiseCancellation = reader.int32() as any;
+          continue;
+        }
+        case 2: {
+          if (tag !== 17) {
+            break;
+          }
+
+          message.recognitionSensitivity = reader.double();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): VadRuntime {
+    return {
+      noiseCancellation: isSet(object.noiseCancellation)
+        ? noiseCancellationModeFromJSON(object.noiseCancellation)
+        : isSet(object.noise_cancellation)
+        ? noiseCancellationModeFromJSON(object.noise_cancellation)
+        : 0,
+      recognitionSensitivity: isSet(object.recognitionSensitivity)
+        ? globalThis.Number(object.recognitionSensitivity)
+        : isSet(object.recognition_sensitivity)
+        ? globalThis.Number(object.recognition_sensitivity)
+        : undefined,
+    };
+  },
+
+  toJSON(message: VadRuntime): unknown {
+    const obj: any = {};
+    if (message.noiseCancellation !== 0) {
+      obj.noiseCancellation = noiseCancellationModeToJSON(message.noiseCancellation);
+    }
+    if (message.recognitionSensitivity !== undefined) {
+      obj.recognitionSensitivity = message.recognitionSensitivity;
+    }
+    return obj;
+  },
+
+  create(base?: DeepPartial<VadRuntime>): VadRuntime {
+    return VadRuntime.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<VadRuntime>): VadRuntime {
+    const message = createBaseVadRuntime();
+    message.noiseCancellation = object.noiseCancellation ?? 0;
+    message.recognitionSensitivity = object.recognitionSensitivity ?? undefined;
+    return message;
+  },
+};
+
+function createBaseSpeechPolicyRuntime(): SpeechPolicyRuntime {
+  return { responseSpeed: undefined, allowInterruptions: undefined };
+}
+
+export const SpeechPolicyRuntime: MessageFns<SpeechPolicyRuntime> = {
+  encode(message: SpeechPolicyRuntime, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.responseSpeed !== undefined) {
+      writer.uint32(9).double(message.responseSpeed);
+    }
+    if (message.allowInterruptions !== undefined) {
+      writer.uint32(16).bool(message.allowInterruptions);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): SpeechPolicyRuntime {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseSpeechPolicyRuntime();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 9) {
+            break;
+          }
+
+          message.responseSpeed = reader.double();
+          continue;
+        }
+        case 2: {
+          if (tag !== 16) {
+            break;
+          }
+
+          message.allowInterruptions = reader.bool();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): SpeechPolicyRuntime {
+    return {
+      responseSpeed: isSet(object.responseSpeed)
+        ? globalThis.Number(object.responseSpeed)
+        : isSet(object.response_speed)
+        ? globalThis.Number(object.response_speed)
+        : undefined,
+      allowInterruptions: isSet(object.allowInterruptions)
+        ? globalThis.Boolean(object.allowInterruptions)
+        : isSet(object.allow_interruptions)
+        ? globalThis.Boolean(object.allow_interruptions)
+        : undefined,
+    };
+  },
+
+  toJSON(message: SpeechPolicyRuntime): unknown {
+    const obj: any = {};
+    if (message.responseSpeed !== undefined) {
+      obj.responseSpeed = message.responseSpeed;
+    }
+    if (message.allowInterruptions !== undefined) {
+      obj.allowInterruptions = message.allowInterruptions;
+    }
+    return obj;
+  },
+
+  create(base?: DeepPartial<SpeechPolicyRuntime>): SpeechPolicyRuntime {
+    return SpeechPolicyRuntime.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<SpeechPolicyRuntime>): SpeechPolicyRuntime {
+    const message = createBaseSpeechPolicyRuntime();
+    message.responseSpeed = object.responseSpeed ?? undefined;
+    message.allowInterruptions = object.allowInterruptions ?? undefined;
+    return message;
+  },
+};
+
+function createBaseCallLimitsRuntime(): CallLimitsRuntime {
+  return { dialWaitTimeSeconds: 0, maxCallDurationSeconds: 0, noAnswerTimeoutSeconds: 0 };
+}
+
+export const CallLimitsRuntime: MessageFns<CallLimitsRuntime> = {
+  encode(message: CallLimitsRuntime, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.dialWaitTimeSeconds !== 0) {
+      writer.uint32(8).uint32(message.dialWaitTimeSeconds);
+    }
+    if (message.maxCallDurationSeconds !== 0) {
+      writer.uint32(16).uint32(message.maxCallDurationSeconds);
+    }
+    if (message.noAnswerTimeoutSeconds !== 0) {
+      writer.uint32(24).uint32(message.noAnswerTimeoutSeconds);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): CallLimitsRuntime {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseCallLimitsRuntime();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 8) {
+            break;
+          }
+
+          message.dialWaitTimeSeconds = reader.uint32();
+          continue;
+        }
+        case 2: {
+          if (tag !== 16) {
+            break;
+          }
+
+          message.maxCallDurationSeconds = reader.uint32();
+          continue;
+        }
+        case 3: {
+          if (tag !== 24) {
+            break;
+          }
+
+          message.noAnswerTimeoutSeconds = reader.uint32();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): CallLimitsRuntime {
+    return {
+      dialWaitTimeSeconds: isSet(object.dialWaitTimeSeconds)
+        ? globalThis.Number(object.dialWaitTimeSeconds)
+        : isSet(object.dial_wait_time_seconds)
+        ? globalThis.Number(object.dial_wait_time_seconds)
+        : 0,
+      maxCallDurationSeconds: isSet(object.maxCallDurationSeconds)
+        ? globalThis.Number(object.maxCallDurationSeconds)
+        : isSet(object.max_call_duration_seconds)
+        ? globalThis.Number(object.max_call_duration_seconds)
+        : 0,
+      noAnswerTimeoutSeconds: isSet(object.noAnswerTimeoutSeconds)
+        ? globalThis.Number(object.noAnswerTimeoutSeconds)
+        : isSet(object.no_answer_timeout_seconds)
+        ? globalThis.Number(object.no_answer_timeout_seconds)
+        : 0,
+    };
+  },
+
+  toJSON(message: CallLimitsRuntime): unknown {
+    const obj: any = {};
+    if (message.dialWaitTimeSeconds !== 0) {
+      obj.dialWaitTimeSeconds = Math.round(message.dialWaitTimeSeconds);
+    }
+    if (message.maxCallDurationSeconds !== 0) {
+      obj.maxCallDurationSeconds = Math.round(message.maxCallDurationSeconds);
+    }
+    if (message.noAnswerTimeoutSeconds !== 0) {
+      obj.noAnswerTimeoutSeconds = Math.round(message.noAnswerTimeoutSeconds);
+    }
+    return obj;
+  },
+
+  create(base?: DeepPartial<CallLimitsRuntime>): CallLimitsRuntime {
+    return CallLimitsRuntime.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<CallLimitsRuntime>): CallLimitsRuntime {
+    const message = createBaseCallLimitsRuntime();
+    message.dialWaitTimeSeconds = object.dialWaitTimeSeconds ?? 0;
+    message.maxCallDurationSeconds = object.maxCallDurationSeconds ?? 0;
+    message.noAnswerTimeoutSeconds = object.noAnswerTimeoutSeconds ?? 0;
     return message;
   },
 };

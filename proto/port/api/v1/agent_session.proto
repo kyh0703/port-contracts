@@ -156,6 +156,52 @@ message CallRuntimeSnapshot {
   TtsRuntime tts = 2 [(buf.validate.field).required = true];
   BackgroundAudioRuntime background_audio = 3 [(buf.validate.field).required = true];
   DtmfInputRuntime dtmf = 4 [(buf.validate.field).required = true];
+  TransportRuntime transport = 5 [(buf.validate.field).required = true];
+  VadRuntime vad = 6 [(buf.validate.field).required = true];
+  SpeechPolicyRuntime speech_policy = 7 [(buf.validate.field).required = true];
+  CallLimitsRuntime limits = 8 [(buf.validate.field).required = true];
+}
+
+enum CallTransportSource {
+  CALL_TRANSPORT_SOURCE_UNSPECIFIED = 0;
+  CALL_TRANSPORT_SOURCE_WEBRTC = 1;
+  CALL_TRANSPORT_SOURCE_SIP = 2;
+  CALL_TRANSPORT_SOURCE_TEXT_STREAM = 3;
+}
+
+message TransportRuntime {
+  CallTransportSource source = 1 [(buf.validate.field).enum = {defined_only: true not_in: 0}];
+  string room_name = 2 [(buf.validate.field).string.min_len = 1];
+  string caller_participant_identity = 3 [(buf.validate.field).string.min_len = 1];
+}
+
+enum NoiseCancellationMode {
+  NOISE_CANCELLATION_MODE_UNSPECIFIED = 0;
+  NOISE_CANCELLATION_MODE_OFF = 1;
+  NOISE_CANCELLATION_MODE_STANDARD = 2;
+  NOISE_CANCELLATION_MODE_STRONG = 3;
+}
+
+message VadRuntime {
+  NoiseCancellationMode noise_cancellation = 1 [(buf.validate.field).enum = {defined_only: true not_in: 0}];
+  optional double recognition_sensitivity = 2 [
+    (buf.validate.field).required = true,
+    (buf.validate.field).double = {gte: 0.5 lte: 0.75}
+  ];
+}
+
+message SpeechPolicyRuntime {
+  optional double response_speed = 1 [
+    (buf.validate.field).required = true,
+    (buf.validate.field).double = {gte: 0 lte: 1}
+  ];
+  optional bool allow_interruptions = 2 [(buf.validate.field).required = true];
+}
+
+message CallLimitsRuntime {
+  uint32 dial_wait_time_seconds = 1 [(buf.validate.field).uint32 = {gte: 10 lte: 90}];
+  uint32 max_call_duration_seconds = 2 [(buf.validate.field).uint32 = {gte: 60 lte: 900}];
+  uint32 no_answer_timeout_seconds = 3 [(buf.validate.field).uint32 = {gte: 10 lte: 300}];
 }
 
 enum BackgroundAudioPreset {

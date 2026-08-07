@@ -122,6 +122,9 @@ func TestR4TransportDescriptorsAndRequiredRuntimeValidation(t *testing.T) {
 		if !rules.GetRequired() || rules.GetString().GetConst() != "orchestration-2026-08-07-r4" {
 			t.Fatalf("%s.contract_revision must be required and fixed to r4", responseName)
 		}
+		if !requireR4FieldRules(t, descriptor.(protoreflect.MessageDescriptor), "call_runtime").GetRequired() {
+			t.Fatalf("%s.call_runtime must be required", responseName)
+		}
 	}
 	responseDescriptor, _ := protoregistry.GlobalFiles.FindDescriptorByName("port.api.v1.BootstrapAgentResponse")
 	responseFields := responseDescriptor.(protoreflect.MessageDescriptor).Fields()
@@ -138,7 +141,7 @@ func TestR4TransportDescriptorsAndRequiredRuntimeValidation(t *testing.T) {
 		}
 	}
 	callRuntimeDescriptor, _ := protoregistry.GlobalFiles.FindDescriptorByName("port.api.v1.CallRuntimeSnapshot")
-	for _, fieldName := range []protoreflect.Name{"background_audio", "dtmf"} {
+	for _, fieldName := range []protoreflect.Name{"stt", "tts", "background_audio", "dtmf", "transport", "vad", "speech_policy", "limits"} {
 		if !requireR4FieldRules(t, callRuntimeDescriptor.(protoreflect.MessageDescriptor), fieldName).GetRequired() {
 			t.Fatalf("CallRuntimeSnapshot.%s must be required", fieldName)
 		}
@@ -278,7 +281,7 @@ func TestR4DynamicProtovalidateBoundaries(t *testing.T) {
 }
 
 func TestR4CallRuntimeRequiredComponents(t *testing.T) {
-	for _, name := range []string{"stt", "tts", "background_audio", "dtmf"} {
+	for _, name := range []string{"stt", "tts", "background_audio", "dtmf", "transport", "vad", "speech_policy", "limits"} {
 		runtime := validR4CallRuntime()
 		switch name {
 		case "stt":
@@ -289,6 +292,14 @@ func TestR4CallRuntimeRequiredComponents(t *testing.T) {
 			runtime.BackgroundAudio = nil
 		case "dtmf":
 			runtime.Dtmf = nil
+		case "transport":
+			runtime.Transport = nil
+		case "vad":
+			runtime.Vad = nil
+		case "speech_policy":
+			runtime.SpeechPolicy = nil
+		case "limits":
+			runtime.Limits = nil
 		}
 		if err := Validate(runtime); err == nil {
 			t.Fatalf("Validate(runtime missing %s) = nil, want rejection", name)
@@ -309,7 +320,171 @@ func validR4CallRuntime() *apiv1.CallRuntimeSnapshot {
 			Preset: apiv1.BackgroundAudioPreset_BACKGROUND_AUDIO_PRESET_NONE,
 			Volume: proto.Float64(0.5),
 		},
-		Dtmf: &apiv1.DtmfInputRuntime{TimeoutSeconds: 3},
+		Dtmf:         &apiv1.DtmfInputRuntime{TimeoutSeconds: 3},
+		Transport:    &apiv1.TransportRuntime{Source: 1, RoomName: "room-1", CallerParticipantIdentity: "caller-1"},
+		Vad:          &apiv1.VadRuntime{NoiseCancellation: 3, RecognitionSensitivity: proto.Float64(0.75)},
+		SpeechPolicy: &apiv1.SpeechPolicyRuntime{ResponseSpeed: proto.Float64(1), AllowInterruptions: proto.Bool(false)},
+		Limits:       &apiv1.CallLimitsRuntime{DialWaitTimeSeconds: 90, MaxCallDurationSeconds: 900, NoAnswerTimeoutSeconds: 300},
+	}
+}
+
+func TestR4CallRuntimeEnumPresenceAndNumericBoundaries(t *testing.T) {
+	lookup := func(name protoreflect.FullName) protoreflect.MessageDescriptor {
+		descriptor, err := protoregistry.GlobalFiles.FindDescriptorByName(name)
+		if err != nil {
+			t.Fatalf("descriptor %s: %v", name, err)
+		}
+		return descriptor.(protoreflect.MessageDescriptor)
+	}
+	transport := lookup("port.api.v1.TransportRuntime")
+	vad := lookup("port.api.v1.VadRuntime")
+	speech := lookup("port.api.v1.SpeechPolicyRuntime")
+	limits := lookup("port.api.v1.CallLimitsRuntime")
+	for _, enumSpec := range []struct {
+		name   protoreflect.FullName
+		values map[string]protoreflect.EnumNumber
+	}{
+		{"port.api.v1.CallTransportSource", map[string]protoreflect.EnumNumber{"CALL_TRANSPORT_SOURCE_UNSPECIFIED": 0, "CALL_TRANSPORT_SOURCE_WEBRTC": 1, "CALL_TRANSPORT_SOURCE_SIP": 2, "CALL_TRANSPORT_SOURCE_TEXT_STREAM": 3}},
+		{"port.api.v1.NoiseCancellationMode", map[string]protoreflect.EnumNumber{"NOISE_CANCELLATION_MODE_UNSPECIFIED": 0, "NOISE_CANCELLATION_MODE_OFF": 1, "NOISE_CANCELLATION_MODE_STANDARD": 2, "NOISE_CANCELLATION_MODE_STRONG": 3}},
+	} {
+		d, err := protoregistry.GlobalFiles.FindDescriptorByName(enumSpec.name)
+		if err != nil {
+			t.Fatalf("enum %s: %v", enumSpec.name, err)
+		}
+		e := d.(protoreflect.EnumDescriptor)
+		for value, number := range enumSpec.values {
+			descriptor := e.Values().ByName(protoreflect.Name(value))
+			if descriptor == nil {
+				t.Fatalf("enum %s missing %s", enumSpec.name, value)
+			}
+			if descriptor.Number() != number {
+				t.Fatalf("enum %s.%s number = %d, want %d", enumSpec.name, value, descriptor.Number(), number)
+			}
+		}
+	}
+
+	for _, source := range []protoreflect.EnumNumber{1, 2, 3} {
+		message := dynamicpb.NewMessage(transport)
+		message.Set(transport.Fields().ByName("source"), protoreflect.ValueOfEnum(source))
+		message.Set(transport.Fields().ByName("room_name"), protoreflect.ValueOfString("room-1"))
+		message.Set(transport.Fields().ByName("caller_participant_identity"), protoreflect.ValueOfString("caller-1"))
+		if err := Validate(message); err != nil {
+			t.Fatalf("Validate(source=%q) = %v", source, err)
+		}
+	}
+	for _, source := range []protoreflect.EnumNumber{0, 99} {
+		message := dynamicpb.NewMessage(transport)
+		message.Set(transport.Fields().ByName("source"), protoreflect.ValueOfEnum(source))
+		message.Set(transport.Fields().ByName("room_name"), protoreflect.ValueOfString("room-1"))
+		message.Set(transport.Fields().ByName("caller_participant_identity"), protoreflect.ValueOfString("caller-1"))
+		if err := Validate(message); err == nil {
+			t.Fatalf("Validate(source=%q) = nil, want rejection", source)
+		}
+	}
+	for _, fieldName := range []protoreflect.Name{"room_name", "caller_participant_identity"} {
+		message := dynamicpb.NewMessage(transport)
+		message.Set(transport.Fields().ByName("source"), protoreflect.ValueOfEnum(1))
+		message.Set(transport.Fields().ByName("room_name"), protoreflect.ValueOfString("room-1"))
+		message.Set(transport.Fields().ByName("caller_participant_identity"), protoreflect.ValueOfString("caller-1"))
+		message.Set(transport.Fields().ByName(fieldName), protoreflect.ValueOfString(""))
+		if err := Validate(message); err == nil {
+			t.Fatalf("Validate(empty %s) = nil, want rejection", fieldName)
+		}
+	}
+
+	for _, noise := range []protoreflect.EnumNumber{1, 2, 3} {
+		message := dynamicpb.NewMessage(vad)
+		message.Set(vad.Fields().ByName("noise_cancellation"), protoreflect.ValueOfEnum(noise))
+		message.Set(vad.Fields().ByName("recognition_sensitivity"), protoreflect.ValueOfFloat64(0.5))
+		if err := Validate(message); err != nil {
+			t.Fatalf("Validate(noise=%q) = %v", noise, err)
+		}
+	}
+	for _, noise := range []protoreflect.EnumNumber{0, 99} {
+		message := dynamicpb.NewMessage(vad)
+		message.Set(vad.Fields().ByName("noise_cancellation"), protoreflect.ValueOfEnum(noise))
+		message.Set(vad.Fields().ByName("recognition_sensitivity"), protoreflect.ValueOfFloat64(0.5))
+		if err := Validate(message); err == nil {
+			t.Fatalf("Validate(noise=%q) = nil, want rejection", noise)
+		}
+	}
+	for _, sensitivity := range []float64{0.5, 0.75} {
+		message := dynamicpb.NewMessage(vad)
+		message.Set(vad.Fields().ByName("noise_cancellation"), protoreflect.ValueOfEnum(3))
+		message.Set(vad.Fields().ByName("recognition_sensitivity"), protoreflect.ValueOfFloat64(sensitivity))
+		if err := Validate(message); err != nil {
+			t.Fatalf("Validate(sensitivity=%v) = %v", sensitivity, err)
+		}
+	}
+	for _, sensitivity := range []float64{0.49, 0.76, math.NaN(), math.Inf(1)} {
+		message := dynamicpb.NewMessage(vad)
+		message.Set(vad.Fields().ByName("noise_cancellation"), protoreflect.ValueOfEnum(3))
+		message.Set(vad.Fields().ByName("recognition_sensitivity"), protoreflect.ValueOfFloat64(sensitivity))
+		if err := Validate(message); err == nil {
+			t.Fatalf("Validate(sensitivity=%v) = nil, want rejection", sensitivity)
+		}
+	}
+	missingSensitivity := dynamicpb.NewMessage(vad)
+	missingSensitivity.Set(vad.Fields().ByName("noise_cancellation"), protoreflect.ValueOfEnum(3))
+	if err := Validate(missingSensitivity); err == nil {
+		t.Fatal("Validate(missing recognition_sensitivity) = nil, want rejection")
+	}
+	for _, fieldName := range []protoreflect.Name{"volume", "recognition_sensitivity"} {
+		d := lookup(map[protoreflect.Name]protoreflect.FullName{"volume": "port.api.v1.BackgroundAudioRuntime", "recognition_sensitivity": "port.api.v1.VadRuntime"}[fieldName])
+		if !d.Fields().ByName(fieldName).HasPresence() {
+			t.Fatalf("%s missing scalar presence", fieldName)
+		}
+	}
+
+	for _, responseSpeed := range []float64{0, 1} {
+		message := dynamicpb.NewMessage(speech)
+		message.Set(speech.Fields().ByName("response_speed"), protoreflect.ValueOfFloat64(responseSpeed))
+		message.Set(speech.Fields().ByName("allow_interruptions"), protoreflect.ValueOfBool(false))
+		if err := Validate(message); err != nil {
+			t.Fatalf("Validate(response_speed=%v) = %v", responseSpeed, err)
+		}
+	}
+	for _, responseSpeed := range []float64{-0.01, 1.01, math.NaN(), math.Inf(-1)} {
+		message := dynamicpb.NewMessage(speech)
+		message.Set(speech.Fields().ByName("response_speed"), protoreflect.ValueOfFloat64(responseSpeed))
+		message.Set(speech.Fields().ByName("allow_interruptions"), protoreflect.ValueOfBool(false))
+		if err := Validate(message); err == nil {
+			t.Fatalf("Validate(response_speed=%v) = nil, want rejection", responseSpeed)
+		}
+	}
+	missingInterruptions := dynamicpb.NewMessage(speech)
+	missingInterruptions.Set(speech.Fields().ByName("response_speed"), protoreflect.ValueOfFloat64(0.5))
+	if err := Validate(missingInterruptions); err == nil {
+		t.Fatal("Validate(missing allow_interruptions) = nil, want rejection")
+	}
+	missingResponseSpeed := dynamicpb.NewMessage(speech)
+	missingResponseSpeed.Set(speech.Fields().ByName("allow_interruptions"), protoreflect.ValueOfBool(false))
+	if err := Validate(missingResponseSpeed); err == nil {
+		t.Fatal("Validate(missing response_speed) = nil, want rejection")
+	}
+	for _, fieldName := range []protoreflect.Name{"response_speed", "allow_interruptions"} {
+		if !speech.Fields().ByName(fieldName).HasPresence() {
+			t.Fatalf("speech field %s missing scalar presence", fieldName)
+		}
+	}
+
+	for _, values := range [][3]uint32{{10, 60, 10}, {90, 900, 300}} {
+		message := dynamicpb.NewMessage(limits)
+		message.Set(limits.Fields().ByName("dial_wait_time_seconds"), protoreflect.ValueOfUint32(values[0]))
+		message.Set(limits.Fields().ByName("max_call_duration_seconds"), protoreflect.ValueOfUint32(values[1]))
+		message.Set(limits.Fields().ByName("no_answer_timeout_seconds"), protoreflect.ValueOfUint32(values[2]))
+		if err := Validate(message); err != nil {
+			t.Fatalf("Validate(limits=%v) = %v", values, err)
+		}
+	}
+	for _, values := range [][3]uint32{{9, 60, 10}, {10, 59, 10}, {90, 901, 300}, {90, 900, 9}, {90, 900, 301}} {
+		message := dynamicpb.NewMessage(limits)
+		message.Set(limits.Fields().ByName("dial_wait_time_seconds"), protoreflect.ValueOfUint32(values[0]))
+		message.Set(limits.Fields().ByName("max_call_duration_seconds"), protoreflect.ValueOfUint32(values[1]))
+		message.Set(limits.Fields().ByName("no_answer_timeout_seconds"), protoreflect.ValueOfUint32(values[2]))
+		if err := Validate(message); err == nil {
+			t.Fatalf("Validate(limits=%v) = nil, want rejection", values)
+		}
 	}
 }
 
@@ -543,11 +718,17 @@ func TestR4CallRuntimeDescriptorRetainsBackgroundAudioAndDtmfBoundaries(t *testi
 		t.Fatal(err)
 	}
 	fields := runtimeDescriptor.(protoreflect.MessageDescriptor).Fields()
-	for _, fieldName := range []protoreflect.Name{"background_audio", "dtmf"} {
-		if fields.ByName(fieldName) == nil {
-			t.Fatalf("CallRuntimeSnapshot missing required field %q", fieldName)
-		}
+	wantFields := map[protoreflect.Name]protoreflect.FieldNumber{"stt": 1, "tts": 2, "background_audio": 3, "dtmf": 4, "transport": 5, "vad": 6, "speech_policy": 7, "limits": 8}
+	for fieldName, number := range wantFields {
+		field := fields.ByName(fieldName)
+		if field == nil || field.Number() != number { t.Fatalf("CallRuntimeSnapshot.%s number = %v, want %d", fieldName, field, number) }
 	}
+	transportField := fields.ByName("transport")
+	if transportField.Enum() != nil || transportField.Message().FullName() != "port.api.v1.TransportRuntime" { t.Fatalf("transport type = %v, want TransportRuntime", transportField.Message()) }
+	vadField := fields.ByName("vad")
+	if vadField.Message().FullName() != "port.api.v1.VadRuntime" { t.Fatalf("vad type = %v, want VadRuntime", vadField.Message()) }
+	if transportField.Message().Fields().ByName("source").Enum().FullName() != "port.api.v1.CallTransportSource" { t.Fatal("transport.source enum FullName mismatch") }
+	if vadField.Message().Fields().ByName("noise_cancellation").Enum().FullName() != "port.api.v1.NoiseCancellationMode" { t.Fatal("vad.noise_cancellation enum FullName mismatch") }
 
 	agentRuntimeDescriptor, err := protoregistry.GlobalFiles.FindDescriptorByName("port.api.v1.AgentRuntime")
 	if err != nil {
@@ -557,6 +738,29 @@ func TestR4CallRuntimeDescriptorRetainsBackgroundAudioAndDtmfBoundaries(t *testi
 	for _, forbidden := range []protoreflect.Name{"transport", "stt", "tts", "voice", "vad", "background_audio", "dtmf", "interruption"} {
 		if agentFields.ByName(forbidden) != nil {
 			t.Fatalf("AgentRuntime unexpectedly owns CallRuntime field %q", forbidden)
+		}
+	}
+}
+
+func TestLegacyBootstrapFieldNumbersRemainReserved(t *testing.T) {
+	d, err := protoregistry.GlobalFiles.FindDescriptorByName("port.api.v1.BootstrapResponse")
+	if err != nil {
+		t.Fatal(err)
+	}
+	f := d.(protoreflect.MessageDescriptor).Fields()
+	want := map[protoreflect.Name]protoreflect.FieldNumber{"conversation_id": 1, "session_id": 2, "source": 3, "room_name": 4, "agent_tool_snapshot_id": 5, "stt": 6, "llm": 7, "tts": 8, "mcp_servers": 9, "agent_id": 10, "supervisor_id": 18, "supervisor_version_id": 19, "supervisor_persona": 20, "supervisor_config": 21, "workers": 22, "canvas": 23, "worker_tool_snapshots": 24, "bootstrap_snapshot_id": 25, "api_tool_runtimes": 26, "orchestration_graph": 27}
+	for name, number := range want { field := f.ByName(name); if field == nil || field.Number() != number { t.Fatalf("BootstrapResponse.%s number = %v, want %d", name, field, number) } }
+	r := d.(protoreflect.MessageDescriptor).ReservedRanges()
+	for _, n := range []protoreflect.FieldNumber{11, 12, 13, 14, 15, 16, 17} {
+		found := false
+		for i := 0; i < r.Len(); i++ {
+			x := r.Get(i)
+			if n >= x[0] && n < x[1] {
+				found = true
+			}
+		}
+		if !found {
+			t.Fatalf("BootstrapResponse field %d is not reserved", n)
 		}
 	}
 }

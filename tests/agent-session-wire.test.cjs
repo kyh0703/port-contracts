@@ -13,6 +13,8 @@ const {
   ContextPolicy,
   SttRuntime,
   TtsRuntime,
+  CallTransportSource,
+  NoiseCancellationMode,
 } = require("../dist/gen/ts/port/api/v1/agent_session.js");
 
 function createPinnedCallRuntime() {
@@ -21,6 +23,10 @@ function createPinnedCallRuntime() {
     tts: { apiKey: "tts-key", model: "tts-model", language: "ko", voiceId: "voice-1" },
     backgroundAudio: { preset: BackgroundAudioPreset.BACKGROUND_AUDIO_PRESET_CONTACT_CENTER, volume: 1 },
     dtmf: DtmfInputRuntime.create({ timeoutSeconds: 10, endKey: "*" }),
+    transport: { source: CallTransportSource.CALL_TRANSPORT_SOURCE_WEBRTC, roomName: "room-1", callerParticipantIdentity: "caller-1" },
+    vad: { noiseCancellation: NoiseCancellationMode.NOISE_CANCELLATION_MODE_STRONG, recognitionSensitivity: 0.75 },
+    speechPolicy: { responseSpeed: 1, allowInterruptions: false },
+    limits: { dialWaitTimeSeconds: 90, maxCallDurationSeconds: 900, noAnswerTimeoutSeconds: 300 },
   };
 }
 
@@ -41,11 +47,20 @@ function createDirectAgentResponse() {
   });
 }
 
+function createValidAgentRuntimes() {
+  return [
+    { agentId: "agent-1", agentVersionId: "agent-version-1", llmWorker: { apiKey: "llm-key", model: "model-1" }, instructions: { systemPrompt: "Route." }, contextPolicy: ContextPolicy.CONTEXT_POLICY_CONVERSATION },
+    { agentId: "agent-2", agentVersionId: "agent-version-2", llmWorker: { apiKey: "llm-key-2", model: "model-2" }, instructions: { systemPrompt: "Billing." }, contextPolicy: ContextPolicy.CONTEXT_POLICY_CONVERSATION },
+  ];
+}
+
 test("r4 generated symbols and service methods are exported", () => {
   assert.equal(typeof BootstrapAgentResponse?.create, "function");
   assert.equal(typeof BootstrapOrchestrationResponse?.create, "function");
   assert.equal(typeof BackgroundAudioPreset, "object");
   assert.equal(typeof DtmfInputRuntime?.create, "function");
+  assert.equal(typeof CallTransportSource, "object");
+  assert.equal(typeof NoiseCancellationMode, "object");
   const { AgentSessionServiceService } = require("../dist/gen/ts/port/api/v1/agent_session.js");
   assert.equal(typeof AgentSessionServiceService?.bootstrapAgent, "object");
   assert.equal(typeof AgentSessionServiceService?.bootstrapOrchestration, "object");
@@ -183,6 +198,41 @@ test("supervisor and handoff responses carry exactly one mode snapshot", () => {
     assert.ok(decoded.agentRuntimes?.length);
     assert.equal(decoded.agentRuntimes[0]?.callRuntime, undefined);
     assert.deepEqual(decoded.callRuntime, direct.callRuntime);
+  }
+});
+
+test("direct, supervisor, and handoff wire fixtures share the complete CallRuntimeSnapshot", () => {
+  const direct = createDirectAgentResponse();
+  const supervisor = BootstrapOrchestrationResponse.create({
+    contractRevision: "orchestration-2026-08-07-r4", schemaVersion: "agent.orchestration.v1",
+    conversationId: "conversation-supervisor-2", sessionId: "session-supervisor-2", orchestrationId: "orchestration-2",
+    orchestrationVersionId: "orchestration-version-2", mode: OrchestrationMode.ORCHESTRATION_MODE_SUPERVISOR,
+    callRuntime: direct.callRuntime, agentRuntimes: createValidAgentRuntimes(), supervisor: { supervisorAgentVersionId: "agent-version-1", specialists: [{ relationId: "billing", targetAgentVersionId: "agent-version-2", routeDescription: "Billing", contextPolicy: ContextPolicy.CONTEXT_POLICY_CONVERSATION }] },
+  });
+  const handoff = BootstrapOrchestrationResponse.create({ ...supervisor, mode: OrchestrationMode.ORCHESTRATION_MODE_HANDOFF, supervisor: undefined, handoff: { entryAgentVersionId: "agent-version-1", maxHandoffDepth: 1, routes: [{ transitionId: "to-billing", sourceAgentVersionId: "agent-version-1", targetAgentVersionId: "agent-version-2", routingDescription: "Billing", contextPolicy: ContextPolicy.CONTEXT_POLICY_CONVERSATION }] } });
+  for (const source of [direct, supervisor, handoff]) {
+    const runtime = source.callRuntime;
+    assert.deepEqual(runtime, createPinnedCallRuntime());
+    assert.equal(runtime.transport?.source, CallTransportSource.CALL_TRANSPORT_SOURCE_WEBRTC);
+    assert.equal(runtime.vad?.recognitionSensitivity, 0.75);
+    assert.equal(runtime.speechPolicy?.responseSpeed, 1);
+    assert.equal(runtime.speechPolicy?.allowInterruptions, false);
+    assert.deepEqual(runtime.limits, { dialWaitTimeSeconds: 90, maxCallDurationSeconds: 900, noAnswerTimeoutSeconds: 300 });
+  }
+});
+
+test("complete CallRuntimeSnapshot preserves optional scalar presence and all transport source sentinels", () => {
+  for (const source of [CallTransportSource.CALL_TRANSPORT_SOURCE_WEBRTC, CallTransportSource.CALL_TRANSPORT_SOURCE_SIP, CallTransportSource.CALL_TRANSPORT_SOURCE_TEXT_STREAM]) {
+    const runtime = createPinnedCallRuntime();
+    runtime.transport.source = source;
+    runtime.speechPolicy.responseSpeed = 0;
+    runtime.speechPolicy.allowInterruptions = true;
+    const decoded = BootstrapAgentResponse.decode(BootstrapAgentResponse.encode(BootstrapAgentResponse.create({ ...createDirectAgentResponse(), callRuntime: runtime })).finish());
+    assert.equal(decoded.callRuntime.transport.source, source);
+    assert.equal(decoded.callRuntime.speechPolicy.responseSpeed, 0);
+    assert.equal(decoded.callRuntime.speechPolicy.allowInterruptions, true);
+    assert.equal(Object.prototype.hasOwnProperty.call(decoded.callRuntime.speechPolicy, "responseSpeed"), true);
+    assert.equal(Object.prototype.hasOwnProperty.call(decoded.callRuntime.speechPolicy, "allowInterruptions"), true);
   }
 });
 

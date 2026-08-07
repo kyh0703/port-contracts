@@ -24,11 +24,15 @@ jobs:
         if: github.event_name == 'pull_request'
         run: |
           if git rev-parse --verify origin/main >/dev/null 2>&1; then
-            docker run --rm -v "$PWD:/workspace" -w /workspace bufbuild/buf:latest breaking --against '.git#branch=main'
+            docker run --rm -v "$PWD:/workspace" -w /workspace bufbuild/buf:latest breaking --against '.git#ref=origin/main'
           else
             echo "origin/main not found; skipping breaking check"
           fi
       - run: docker run --rm -v "$PWD:/workspace" -w /workspace bufbuild/buf:latest generate
-      - run: npm run build
+      - run: npm run test:wire
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - run: go test ./...
       - run: go mod tidy
       - run: git diff --exit-code
