@@ -9,6 +9,20 @@ from typing import ClassVar as _ClassVar, Optional as _Optional, Union as _Union
 
 DESCRIPTOR: _descriptor.FileDescriptor
 
+class CallTransportSource(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
+    __slots__ = ()
+    CALL_TRANSPORT_SOURCE_UNSPECIFIED: _ClassVar[CallTransportSource]
+    CALL_TRANSPORT_SOURCE_WEBRTC: _ClassVar[CallTransportSource]
+    CALL_TRANSPORT_SOURCE_SIP: _ClassVar[CallTransportSource]
+    CALL_TRANSPORT_SOURCE_TEXT_STREAM: _ClassVar[CallTransportSource]
+
+class NoiseCancellationMode(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
+    __slots__ = ()
+    NOISE_CANCELLATION_MODE_UNSPECIFIED: _ClassVar[NoiseCancellationMode]
+    NOISE_CANCELLATION_MODE_OFF: _ClassVar[NoiseCancellationMode]
+    NOISE_CANCELLATION_MODE_STANDARD: _ClassVar[NoiseCancellationMode]
+    NOISE_CANCELLATION_MODE_STRONG: _ClassVar[NoiseCancellationMode]
+
 class BackgroundAudioPreset(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     __slots__ = ()
     BACKGROUND_AUDIO_PRESET_UNSPECIFIED: _ClassVar[BackgroundAudioPreset]
@@ -42,6 +56,14 @@ class ContextPolicy(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     CONTEXT_POLICY_UNSPECIFIED: _ClassVar[ContextPolicy]
     CONTEXT_POLICY_NONE: _ClassVar[ContextPolicy]
     CONTEXT_POLICY_CONVERSATION: _ClassVar[ContextPolicy]
+CALL_TRANSPORT_SOURCE_UNSPECIFIED: CallTransportSource
+CALL_TRANSPORT_SOURCE_WEBRTC: CallTransportSource
+CALL_TRANSPORT_SOURCE_SIP: CallTransportSource
+CALL_TRANSPORT_SOURCE_TEXT_STREAM: CallTransportSource
+NOISE_CANCELLATION_MODE_UNSPECIFIED: NoiseCancellationMode
+NOISE_CANCELLATION_MODE_OFF: NoiseCancellationMode
+NOISE_CANCELLATION_MODE_STANDARD: NoiseCancellationMode
+NOISE_CANCELLATION_MODE_STRONG: NoiseCancellationMode
 BACKGROUND_AUDIO_PRESET_UNSPECIFIED: BackgroundAudioPreset
 BACKGROUND_AUDIO_PRESET_NONE: BackgroundAudioPreset
 BACKGROUND_AUDIO_PRESET_CAFE: BackgroundAudioPreset
@@ -203,16 +225,60 @@ class BootstrapOrchestrationResponse(_message.Message):
     def __init__(self, contract_revision: _Optional[str] = ..., schema_version: _Optional[str] = ..., conversation_id: _Optional[str] = ..., session_id: _Optional[str] = ..., orchestration_id: _Optional[str] = ..., orchestration_version_id: _Optional[str] = ..., mode: _Optional[_Union[OrchestrationMode, str]] = ..., call_runtime: _Optional[_Union[CallRuntimeSnapshot, _Mapping]] = ..., agent_runtimes: _Optional[_Iterable[_Union[AgentRuntime, _Mapping]]] = ..., supervisor: _Optional[_Union[SupervisorSnapshot, _Mapping]] = ..., handoff: _Optional[_Union[HandoffSnapshot, _Mapping]] = ...) -> None: ...
 
 class CallRuntimeSnapshot(_message.Message):
-    __slots__ = ("stt", "tts", "background_audio", "dtmf")
+    __slots__ = ("stt", "tts", "background_audio", "dtmf", "transport", "vad", "speech_policy", "limits")
     STT_FIELD_NUMBER: _ClassVar[int]
     TTS_FIELD_NUMBER: _ClassVar[int]
     BACKGROUND_AUDIO_FIELD_NUMBER: _ClassVar[int]
     DTMF_FIELD_NUMBER: _ClassVar[int]
+    TRANSPORT_FIELD_NUMBER: _ClassVar[int]
+    VAD_FIELD_NUMBER: _ClassVar[int]
+    SPEECH_POLICY_FIELD_NUMBER: _ClassVar[int]
+    LIMITS_FIELD_NUMBER: _ClassVar[int]
     stt: _voice_runtime_pb2.SttRuntime
     tts: _voice_runtime_pb2.TtsRuntime
     background_audio: BackgroundAudioRuntime
     dtmf: DtmfInputRuntime
-    def __init__(self, stt: _Optional[_Union[_voice_runtime_pb2.SttRuntime, _Mapping]] = ..., tts: _Optional[_Union[_voice_runtime_pb2.TtsRuntime, _Mapping]] = ..., background_audio: _Optional[_Union[BackgroundAudioRuntime, _Mapping]] = ..., dtmf: _Optional[_Union[DtmfInputRuntime, _Mapping]] = ...) -> None: ...
+    transport: TransportRuntime
+    vad: VadRuntime
+    speech_policy: SpeechPolicyRuntime
+    limits: CallLimitsRuntime
+    def __init__(self, stt: _Optional[_Union[_voice_runtime_pb2.SttRuntime, _Mapping]] = ..., tts: _Optional[_Union[_voice_runtime_pb2.TtsRuntime, _Mapping]] = ..., background_audio: _Optional[_Union[BackgroundAudioRuntime, _Mapping]] = ..., dtmf: _Optional[_Union[DtmfInputRuntime, _Mapping]] = ..., transport: _Optional[_Union[TransportRuntime, _Mapping]] = ..., vad: _Optional[_Union[VadRuntime, _Mapping]] = ..., speech_policy: _Optional[_Union[SpeechPolicyRuntime, _Mapping]] = ..., limits: _Optional[_Union[CallLimitsRuntime, _Mapping]] = ...) -> None: ...
+
+class TransportRuntime(_message.Message):
+    __slots__ = ("source", "room_name", "caller_participant_identity")
+    SOURCE_FIELD_NUMBER: _ClassVar[int]
+    ROOM_NAME_FIELD_NUMBER: _ClassVar[int]
+    CALLER_PARTICIPANT_IDENTITY_FIELD_NUMBER: _ClassVar[int]
+    source: CallTransportSource
+    room_name: str
+    caller_participant_identity: str
+    def __init__(self, source: _Optional[_Union[CallTransportSource, str]] = ..., room_name: _Optional[str] = ..., caller_participant_identity: _Optional[str] = ...) -> None: ...
+
+class VadRuntime(_message.Message):
+    __slots__ = ("noise_cancellation", "recognition_sensitivity")
+    NOISE_CANCELLATION_FIELD_NUMBER: _ClassVar[int]
+    RECOGNITION_SENSITIVITY_FIELD_NUMBER: _ClassVar[int]
+    noise_cancellation: NoiseCancellationMode
+    recognition_sensitivity: float
+    def __init__(self, noise_cancellation: _Optional[_Union[NoiseCancellationMode, str]] = ..., recognition_sensitivity: _Optional[float] = ...) -> None: ...
+
+class SpeechPolicyRuntime(_message.Message):
+    __slots__ = ("response_speed", "allow_interruptions")
+    RESPONSE_SPEED_FIELD_NUMBER: _ClassVar[int]
+    ALLOW_INTERRUPTIONS_FIELD_NUMBER: _ClassVar[int]
+    response_speed: float
+    allow_interruptions: bool
+    def __init__(self, response_speed: _Optional[float] = ..., allow_interruptions: _Optional[bool] = ...) -> None: ...
+
+class CallLimitsRuntime(_message.Message):
+    __slots__ = ("dial_wait_time_seconds", "max_call_duration_seconds", "no_answer_timeout_seconds")
+    DIAL_WAIT_TIME_SECONDS_FIELD_NUMBER: _ClassVar[int]
+    MAX_CALL_DURATION_SECONDS_FIELD_NUMBER: _ClassVar[int]
+    NO_ANSWER_TIMEOUT_SECONDS_FIELD_NUMBER: _ClassVar[int]
+    dial_wait_time_seconds: int
+    max_call_duration_seconds: int
+    no_answer_timeout_seconds: int
+    def __init__(self, dial_wait_time_seconds: _Optional[int] = ..., max_call_duration_seconds: _Optional[int] = ..., no_answer_timeout_seconds: _Optional[int] = ...) -> None: ...
 
 class BackgroundAudioRuntime(_message.Message):
     __slots__ = ("preset", "volume")
