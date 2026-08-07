@@ -731,10 +731,8 @@ type BootstrapAgentResponse struct {
 	SchemaVersion    string                 `protobuf:"bytes,2,opt,name=schema_version,json=schemaVersion,proto3" json:"schema_version,omitempty"`
 	ConversationId   string                 `protobuf:"bytes,3,opt,name=conversation_id,json=conversationId,proto3" json:"conversation_id,omitempty"`
 	SessionId        string                 `protobuf:"bytes,4,opt,name=session_id,json=sessionId,proto3" json:"session_id,omitempty"`
-	AgentId          string                 `protobuf:"bytes,5,opt,name=agent_id,json=agentId,proto3" json:"agent_id,omitempty"`
-	AgentVersionId   string                 `protobuf:"bytes,6,opt,name=agent_version_id,json=agentVersionId,proto3" json:"agent_version_id,omitempty"`
-	CallRuntime      *CallRuntimeSnapshot   `protobuf:"bytes,7,opt,name=call_runtime,json=callRuntime,proto3" json:"call_runtime,omitempty"`
-	AgentRuntime     *AgentRuntime          `protobuf:"bytes,8,opt,name=agent_runtime,json=agentRuntime,proto3" json:"agent_runtime,omitempty"`
+	CallRuntime      *CallRuntimeSnapshot   `protobuf:"bytes,5,opt,name=call_runtime,json=callRuntime,proto3" json:"call_runtime,omitempty"`
+	AgentRuntime     *AgentRuntime          `protobuf:"bytes,6,opt,name=agent_runtime,json=agentRuntime,proto3" json:"agent_runtime,omitempty"`
 	unknownFields    protoimpl.UnknownFields
 	sizeCache        protoimpl.SizeCache
 }
@@ -793,20 +791,6 @@ func (x *BootstrapAgentResponse) GetConversationId() string {
 func (x *BootstrapAgentResponse) GetSessionId() string {
 	if x != nil {
 		return x.SessionId
-	}
-	return ""
-}
-
-func (x *BootstrapAgentResponse) GetAgentId() string {
-	if x != nil {
-		return x.AgentId
-	}
-	return ""
-}
-
-func (x *BootstrapAgentResponse) GetAgentVersionId() string {
-	if x != nil {
-		return x.AgentVersionId
 	}
 	return ""
 }
@@ -1410,13 +1394,13 @@ func (x *SupervisorSnapshot) GetSpecialists() []*SupervisorSpecialist {
 }
 
 type SupervisorSpecialist struct {
-	state            protoimpl.MessageState `protogen:"open.v1"`
-	RelationId       string                 `protobuf:"bytes,1,opt,name=relation_id,json=relationId,proto3" json:"relation_id,omitempty"`
-	AgentVersionId   string                 `protobuf:"bytes,2,opt,name=agent_version_id,json=agentVersionId,proto3" json:"agent_version_id,omitempty"`
-	RouteDescription string                 `protobuf:"bytes,3,opt,name=route_description,json=routeDescription,proto3" json:"route_description,omitempty"`
-	ContextPolicy    ContextPolicy          `protobuf:"varint,4,opt,name=context_policy,json=contextPolicy,proto3,enum=port.api.v1.ContextPolicy" json:"context_policy,omitempty"`
-	unknownFields    protoimpl.UnknownFields
-	sizeCache        protoimpl.SizeCache
+	state                protoimpl.MessageState `protogen:"open.v1"`
+	RelationId           string                 `protobuf:"bytes,1,opt,name=relation_id,json=relationId,proto3" json:"relation_id,omitempty"`
+	TargetAgentVersionId string                 `protobuf:"bytes,2,opt,name=target_agent_version_id,json=targetAgentVersionId,proto3" json:"target_agent_version_id,omitempty"`
+	RouteDescription     string                 `protobuf:"bytes,3,opt,name=route_description,json=routeDescription,proto3" json:"route_description,omitempty"`
+	ContextPolicy        ContextPolicy          `protobuf:"varint,4,opt,name=context_policy,json=contextPolicy,proto3,enum=port.api.v1.ContextPolicy" json:"context_policy,omitempty"`
+	unknownFields        protoimpl.UnknownFields
+	sizeCache            protoimpl.SizeCache
 }
 
 func (x *SupervisorSpecialist) Reset() {
@@ -1456,9 +1440,9 @@ func (x *SupervisorSpecialist) GetRelationId() string {
 	return ""
 }
 
-func (x *SupervisorSpecialist) GetAgentVersionId() string {
+func (x *SupervisorSpecialist) GetTargetAgentVersionId() string {
 	if x != nil {
-		return x.AgentVersionId
+		return x.TargetAgentVersionId
 	}
 	return ""
 }
@@ -3770,11 +3754,11 @@ var File_port_api_v1_agent_session_proto protoreflect.FileDescriptor
 
 const file_port_api_v1_agent_session_proto_rawDesc = "" +
 	"\n" +
-	"\x1fport/api/v1/agent_session.proto\x12\vport.api.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1fport/api/v1/voice_runtime.proto\"\x85\x01\n" +
+	"\x1fport/api/v1/agent_session.proto\x12\vport.api.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1fport/api/v1/voice_runtime.proto\"\x8c\x01\n" +
 	"\x10BootstrapRequest\x12.\n" +
 	"\rwebrtc_ticket\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01H\x00R\fwebrtcTicket\x124\n" +
-	"\x03sip\x18\x02 \x01(\v2 .port.api.v1.SipBootstrapContextH\x00R\x03sipB\v\n" +
-	"\tadmission\"\xc7\x02\n" +
+	"\x03sip\x18\x02 \x01(\v2 .port.api.v1.SipBootstrapContextH\x00R\x03sipB\x12\n" +
+	"\tadmission\x12\x05\xbaH\x02\b\x01\"\xc7\x02\n" +
 	"\x13SipBootstrapContext\x12\x1e\n" +
 	"\x06job_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x05jobId\x12(\n" +
 	"\vdispatch_id\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\n" +
@@ -3820,7 +3804,7 @@ const file_port_api_v1_agent_session_proto_rawDesc = "" +
 	"\x10agent_version_id\x18\x04 \x01(\tB\n" +
 	"\xbaH\a\xc8\x01\x01r\x02\x10\x01R\x0eagentVersionId\x12R\n" +
 	"\x11contract_revision\x18\x05 \x01(\tB%\xbaH\"\xc8\x01\x01r\x1d\n" +
-	"\x1borchestration-2026-08-07-r4R\x10contractRevision\"\x87\x04\n" +
+	"\x1borchestration-2026-08-07-r4R\x10contractRevision\"\xaa\x03\n" +
 	"\x16BootstrapAgentResponse\x12R\n" +
 	"\x11contract_revision\x18\x01 \x01(\tB%\xbaH\"\xc8\x01\x01r\x1d\n" +
 	"\x1borchestration-2026-08-07-r4R\x10contractRevision\x12G\n" +
@@ -3830,13 +3814,9 @@ const file_port_api_v1_agent_session_proto_rawDesc = "" +
 	"\xbaH\a\xc8\x01\x01r\x02\x10\x01R\x0econversationId\x12)\n" +
 	"\n" +
 	"session_id\x18\x04 \x01(\tB\n" +
-	"\xbaH\a\xc8\x01\x01r\x02\x10\x01R\tsessionId\x12%\n" +
-	"\bagent_id\x18\x05 \x01(\tB\n" +
-	"\xbaH\a\xc8\x01\x01r\x02\x10\x01R\aagentId\x124\n" +
-	"\x10agent_version_id\x18\x06 \x01(\tB\n" +
-	"\xbaH\a\xc8\x01\x01r\x02\x10\x01R\x0eagentVersionId\x12K\n" +
-	"\fcall_runtime\x18\a \x01(\v2 .port.api.v1.CallRuntimeSnapshotB\x06\xbaH\x03\xc8\x01\x01R\vcallRuntime\x12F\n" +
-	"\ragent_runtime\x18\b \x01(\v2\x19.port.api.v1.AgentRuntimeB\x06\xbaH\x03\xc8\x01\x01R\fagentRuntime\"\xde\x02\n" +
+	"\xbaH\a\xc8\x01\x01r\x02\x10\x01R\tsessionId\x12K\n" +
+	"\fcall_runtime\x18\x05 \x01(\v2 .port.api.v1.CallRuntimeSnapshotB\x06\xbaH\x03\xc8\x01\x01R\vcallRuntime\x12F\n" +
+	"\ragent_runtime\x18\x06 \x01(\v2\x19.port.api.v1.AgentRuntimeB\x06\xbaH\x03\xc8\x01\x01R\fagentRuntime\"\xde\x02\n" +
 	"\x1dBootstrapOrchestrationRequest\x12C\n" +
 	"\tadmission\x18\x01 \x01(\v2\x1d.port.api.v1.BootstrapRequestB\x06\xbaH\x03\xc8\x01\x01R\tadmission\x123\n" +
 	"\x0fconversation_id\x18\x02 \x01(\tB\n" +
@@ -3847,7 +3827,7 @@ const file_port_api_v1_agent_session_proto_rawDesc = "" +
 	"\x18orchestration_version_id\x18\x04 \x01(\tB\n" +
 	"\xbaH\a\xc8\x01\x01r\x02\x10\x01R\x16orchestrationVersionId\x12R\n" +
 	"\x11contract_revision\x18\x05 \x01(\tB%\xbaH\"\xc8\x01\x01r\x1d\n" +
-	"\x1borchestration-2026-08-07-r4R\x10contractRevision\"\xca\a\n" +
+	"\x1borchestration-2026-08-07-r4R\x10contractRevision\"\xfb\x11\n" +
 	"\x1eBootstrapOrchestrationResponse\x12R\n" +
 	"\x11contract_revision\x18\x01 \x01(\tB%\xbaH\"\xc8\x01\x01r\x1d\n" +
 	"\x1borchestration-2026-08-07-r4R\x10contractRevision\x12G\n" +
@@ -3865,13 +3845,16 @@ const file_port_api_v1_agent_session_proto_rawDesc = "" +
 	"\x04mode\x18\a \x01(\x0e2\x1e.port.api.v1.OrchestrationModeB\r\xbaH\n" +
 	"\xc8\x01\x01\x82\x01\x04\x10\x01 \x00R\x04mode\x12K\n" +
 	"\fcall_runtime\x18\b \x01(\v2 .port.api.v1.CallRuntimeSnapshotB\x06\xbaH\x03\xc8\x01\x01R\vcallRuntime\x12J\n" +
-	"\x0eagent_runtimes\x18\t \x03(\v2\x19.port.api.v1.AgentRuntimeB\b\xbaH\x05\x92\x01\x02\b\x01R\ragentRuntimes\x12?\n" +
+	"\x0eagent_runtimes\x18\t \x03(\v2\x19.port.api.v1.AgentRuntimeB\b\xbaH\x05\x92\x01\x02\b\x02R\ragentRuntimes\x12?\n" +
 	"\n" +
 	"supervisor\x18\n" +
 	" \x01(\v2\x1f.port.api.v1.SupervisorSnapshotR\n" +
 	"supervisor\x126\n" +
-	"\ahandoff\x18\v \x01(\v2\x1c.port.api.v1.HandoffSnapshotR\ahandoff:\xd8\x01\xbaH\xd4\x01\x1a\xb8\x01\n" +
-	".bootstrap_orchestration_response.mode_snapshot\x123mode must match the selected orchestration snapshot\x1aQ(this.mode == 1 && has(this.supervisor)) || (this.mode == 2 && has(this.handoff))\"\x17\n" +
+	"\ahandoff\x18\v \x01(\v2\x1c.port.api.v1.HandoffSnapshotR\ahandoff:\x89\f\xbaH\x85\f\x1a\xb8\x01\n" +
+	".bootstrap_orchestration_response.mode_snapshot\x123mode must match the selected orchestration snapshot\x1aQ(this.mode == 1 && has(this.supervisor)) || (this.mode == 2 && has(this.handoff))\x1a\xe5\x01\n" +
+	"8bootstrap_orchestration_response.unique_runtime_versions\x12(agent runtime version IDs must be unique\x1a\x7fthis.agent_runtimes.all(r, this.agent_runtimes.filter(candidate, candidate.agent_version_id == r.agent_version_id).size() == 1)\x1a\xf5\x03\n" +
+	"6bootstrap_orchestration_response.supervisor_references\x12>supervisor snapshot references must resolve to unique runtimes\x1a\xfa\x02!has(this.supervisor) || (this.agent_runtimes.exists(r, r.agent_version_id == this.supervisor.supervisor_agent_version_id) && this.supervisor.specialists.all(s, this.supervisor.specialists.filter(candidate, candidate.relation_id == s.relation_id).size() == 1) && this.supervisor.specialists.all(s, this.agent_runtimes.exists(r, r.agent_version_id == s.target_agent_version_id)))\x1a\xce\x04\n" +
+	"3bootstrap_orchestration_response.handoff_references\x12;handoff snapshot references must resolve to unique runtimes\x1a\xd9\x03!has(this.handoff) || (this.agent_runtimes.exists(r, r.agent_version_id == this.handoff.entry_agent_version_id) && this.handoff.routes.all(route, this.handoff.routes.filter(candidate, candidate.transition_id == route.transition_id).size() == 1) && this.handoff.routes.all(route, this.agent_runtimes.exists(runtime, runtime.agent_version_id == route.source_agent_version_id) && this.agent_runtimes.exists(runtime, runtime.agent_version_id == route.target_agent_version_id)))\"\x17\n" +
 	"\n" +
 	"supervisor\n" +
 	"\ahandoff\x10\x01\"\x8e\x02\n" +
@@ -3911,11 +3894,11 @@ const file_port_api_v1_agent_session_proto_rawDesc = "" +
 	"guardrails\"\xab\x01\n" +
 	"\x12SupervisorSnapshot\x12F\n" +
 	"\x1bsupervisor_agent_version_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x18supervisorAgentVersionId\x12M\n" +
-	"\vspecialists\x18\x02 \x03(\v2!.port.api.v1.SupervisorSpecialistB\b\xbaH\x05\x92\x01\x02\b\x01R\vspecialists\"\xf8\x01\n" +
+	"\vspecialists\x18\x02 \x03(\v2!.port.api.v1.SupervisorSpecialistB\b\xbaH\x05\x92\x01\x02\b\x01R\vspecialists\"\x85\x02\n" +
 	"\x14SupervisorSpecialist\x12(\n" +
 	"\vrelation_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\n" +
-	"relationId\x121\n" +
-	"\x10agent_version_id\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x0eagentVersionId\x124\n" +
+	"relationId\x12>\n" +
+	"\x17target_agent_version_id\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x14targetAgentVersionId\x124\n" +
 	"\x11route_description\x18\x03 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x10routeDescription\x12M\n" +
 	"\x0econtext_policy\x18\x04 \x01(\x0e2\x1a.port.api.v1.ContextPolicyB\n" +
 	"\xbaH\a\x82\x01\x04\x10\x01 \x00R\rcontextPolicy\"\xc1\x01\n" +

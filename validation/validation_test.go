@@ -1,6 +1,7 @@
 package validation
 
 import (
+	"math"
 	"reflect"
 	"testing"
 
@@ -122,6 +123,13 @@ func TestR4TransportDescriptorsAndRequiredRuntimeValidation(t *testing.T) {
 			t.Fatalf("%s.contract_revision must be required and fixed to r4", responseName)
 		}
 	}
+	responseDescriptor, _ := protoregistry.GlobalFiles.FindDescriptorByName("port.api.v1.BootstrapAgentResponse")
+	responseFields := responseDescriptor.(protoreflect.MessageDescriptor).Fields()
+	for _, forbidden := range []protoreflect.Name{"agent_id", "agent_version_id"} {
+		if responseFields.ByName(forbidden) != nil {
+			t.Fatalf("BootstrapAgentResponse must derive identity from AgentRuntime, found duplicate %q", forbidden)
+		}
+	}
 
 	agentRuntimeDescriptor, _ := protoregistry.GlobalFiles.FindDescriptorByName("port.api.v1.AgentRuntime")
 	for _, fieldName := range []protoreflect.Name{"llm_worker", "instructions"} {
@@ -163,6 +171,27 @@ func TestR4TransportDescriptorsAndRequiredRuntimeValidation(t *testing.T) {
 	}
 }
 
+func TestR4AdmissionOneofRequired(t *testing.T) {
+	validAdmission := &apiv1.BootstrapRequest{Admission: &apiv1.BootstrapRequest_WebrtcTicket{WebrtcTicket: "ticket"}}
+	validRequests := []proto.Message{
+		&apiv1.BootstrapAgentRequest{Admission: validAdmission, ConversationId: "conversation-1", SessionId: "session-1", AgentVersionId: "agent-version-1", ContractRevision: "orchestration-2026-08-07-r4"},
+		&apiv1.BootstrapOrchestrationRequest{Admission: validAdmission, ConversationId: "conversation-1", SessionId: "session-1", OrchestrationVersionId: "orchestration-version-1", ContractRevision: "orchestration-2026-08-07-r4"},
+	}
+	for _, request := range validRequests {
+		if err := Validate(request); err != nil {
+			t.Fatalf("Validate(valid %T) = %v", request, err)
+		}
+	}
+	for _, request := range []proto.Message{
+		&apiv1.BootstrapAgentRequest{Admission: &apiv1.BootstrapRequest{}, ConversationId: "conversation-1", SessionId: "session-1", AgentVersionId: "agent-version-1", ContractRevision: "orchestration-2026-08-07-r4"},
+		&apiv1.BootstrapOrchestrationRequest{Admission: &apiv1.BootstrapRequest{}, ConversationId: "conversation-1", SessionId: "session-1", OrchestrationVersionId: "orchestration-version-1", ContractRevision: "orchestration-2026-08-07-r4"},
+	} {
+		if err := Validate(request); err == nil {
+			t.Fatalf("Validate(empty admission %T) = nil, want rejection", request)
+		}
+	}
+}
+
 func TestR4DynamicProtovalidateBoundaries(t *testing.T) {
 	lookup := func(name protoreflect.FullName) protoreflect.MessageDescriptor {
 		descriptor, err := protoregistry.GlobalFiles.FindDescriptorByName(name)
@@ -185,7 +214,7 @@ func TestR4DynamicProtovalidateBoundaries(t *testing.T) {
 			t.Fatalf("Validate(valid preset %s) = %v", presetName, err)
 		}
 	}
-	for _, volume := range []float64{-0.1, 1.1} {
+	for _, volume := range []float64{-0.1, 1.1, math.NaN()} {
 		message := dynamicpb.NewMessage(background)
 		message.Set(presetField, protoreflect.ValueOfEnum(1))
 		message.Set(volumeField, protoreflect.ValueOfFloat64(volume))
@@ -248,6 +277,26 @@ func TestR4DynamicProtovalidateBoundaries(t *testing.T) {
 	}
 }
 
+func TestR4CallRuntimeRequiredComponents(t *testing.T) {
+	for _, name := range []string{"stt", "tts", "background_audio", "dtmf"} {
+		runtime := validR4CallRuntime()
+		switch name {
+		case "stt": runtime.Stt = nil
+		case "tts": runtime.Tts = nil
+		case "background_audio": runtime.BackgroundAudio = nil
+		case "dtmf": runtime.Dtmf = nil
+		}
+		if err := Validate(runtime); err == nil {
+			t.Fatalf("Validate(runtime missing %s) = nil, want rejection", name)
+		}
+	}
+	missingVolume := validR4CallRuntime()
+	missingVolume.BackgroundAudio.Volume = nil
+	if err := Validate(missingVolume); err == nil {
+		t.Fatal("Validate(runtime missing background volume) = nil, want rejection")
+	}
+}
+
 func validR4CallRuntime() *apiv1.CallRuntimeSnapshot {
 	return &apiv1.CallRuntimeSnapshot{
 		Stt: &apiv1.SttRuntime{ApiKey: "stt-key", Model: "stt-model", Language: "ko"},
@@ -270,6 +319,16 @@ func validR4AgentRuntime() *apiv1.AgentRuntime {
 	}
 }
 
+func validR4SpecialistRuntime() *apiv1.AgentRuntime {
+	return &apiv1.AgentRuntime{
+		AgentId:        "agent-2",
+		AgentVersionId: "agent-version-2",
+		LlmWorker:      &apiv1.LlmRuntime{ApiKey: "llm-key", Model: "llm-model"},
+		Instructions:   &apiv1.AgentInstructions{SystemPrompt: "Handle billing."},
+		ContextPolicy:  apiv1.ContextPolicy_CONTEXT_POLICY_CONVERSATION,
+	}
+}
+
 func validR4SupervisorResponse() *apiv1.BootstrapOrchestrationResponse {
 	return &apiv1.BootstrapOrchestrationResponse{
 		ContractRevision:       "orchestration-2026-08-07-r4",
@@ -280,26 +339,24 @@ func validR4SupervisorResponse() *apiv1.BootstrapOrchestrationResponse {
 		OrchestrationVersionId: "orchestration-version-1",
 		Mode:                   apiv1.OrchestrationMode_ORCHESTRATION_MODE_SUPERVISOR,
 		CallRuntime:            validR4CallRuntime(),
-		AgentRuntimes:          []*apiv1.AgentRuntime{validR4AgentRuntime()},
+		AgentRuntimes:          []*apiv1.AgentRuntime{validR4AgentRuntime(), validR4SpecialistRuntime()},
 		Supervisor: &apiv1.SupervisorSnapshot{
 			SupervisorAgentVersionId: "agent-version-1",
 			Specialists: []*apiv1.SupervisorSpecialist{{
-				RelationId:       "relation-1",
-				AgentVersionId:   "agent-version-2",
-				RouteDescription: "Billing",
-				ContextPolicy:    apiv1.ContextPolicy_CONTEXT_POLICY_CONVERSATION,
+				RelationId:           "relation-1",
+				TargetAgentVersionId: "agent-version-2",
+				RouteDescription:     "Billing",
+				ContextPolicy:        apiv1.ContextPolicy_CONTEXT_POLICY_CONVERSATION,
 			}},
 		},
 	}
 }
 
-func TestR4OrchestrationModeSnapshotValidation(t *testing.T) {
-	valid := validR4SupervisorResponse()
-	if err := Validate(valid); err != nil {
-		t.Fatalf("Validate(valid supervisor response) = %v", err)
-	}
-
-	validHandoff := &apiv1.HandoffSnapshot{
+func validR4HandoffResponse() *apiv1.BootstrapOrchestrationResponse {
+	response := validR4SupervisorResponse()
+	response.Mode = apiv1.OrchestrationMode_ORCHESTRATION_MODE_HANDOFF
+	response.Supervisor = nil
+	response.Handoff = &apiv1.HandoffSnapshot{
 		EntryAgentVersionId: "agent-version-1",
 		MaxHandoffDepth:     2,
 		Routes: []*apiv1.HandoffRoute{{
@@ -310,6 +367,20 @@ func TestR4OrchestrationModeSnapshotValidation(t *testing.T) {
 			ContextPolicy:        apiv1.ContextPolicy_CONTEXT_POLICY_CONVERSATION,
 		}},
 	}
+	return response
+}
+
+func TestR4OrchestrationValidation(t *testing.T) {
+	valid := validR4SupervisorResponse()
+	if err := Validate(valid); err != nil {
+		t.Fatalf("Validate(valid supervisor response) = %v", err)
+	}
+
+	validHandoff := validR4HandoffResponse()
+	if err := Validate(validHandoff); err != nil {
+		t.Fatalf("Validate(valid handoff response) = %v", err)
+	}
+
 	tests := []struct {
 		name   string
 		mutate func(*apiv1.BootstrapOrchestrationResponse)
@@ -317,19 +388,58 @@ func TestR4OrchestrationModeSnapshotValidation(t *testing.T) {
 		{"mode snapshot mismatch", func(response *apiv1.BootstrapOrchestrationResponse) {
 			response.Mode = apiv1.OrchestrationMode_ORCHESTRATION_MODE_HANDOFF
 		}},
-		{"both snapshots", func(response *apiv1.BootstrapOrchestrationResponse) { response.Handoff = validHandoff }},
+		{"both snapshots", func(response *apiv1.BootstrapOrchestrationResponse) { response.Handoff = validHandoff.Handoff }},
 		{"missing snapshot", func(response *apiv1.BootstrapOrchestrationResponse) { response.Supervisor = nil }},
 		{"unspecified mode", func(response *apiv1.BootstrapOrchestrationResponse) {
 			response.Mode = apiv1.OrchestrationMode_ORCHESTRATION_MODE_UNSPECIFIED
 		}},
 		{"unknown mode", func(response *apiv1.BootstrapOrchestrationResponse) { response.Mode = 99 }},
+		{"duplicate runtime version", func(response *apiv1.BootstrapOrchestrationResponse) {
+			response.AgentRuntimes = append(response.AgentRuntimes, proto.Clone(response.AgentRuntimes[0]).(*apiv1.AgentRuntime))
+		}},
+		{"missing supervisor runtime", func(response *apiv1.BootstrapOrchestrationResponse) {
+			response.Supervisor.SupervisorAgentVersionId = "missing-version"
+		}},
+		{"missing specialist runtime", func(response *apiv1.BootstrapOrchestrationResponse) {
+			response.Supervisor.Specialists[0].TargetAgentVersionId = "missing-version"
+		}},
+		{"duplicate specialist relation", func(response *apiv1.BootstrapOrchestrationResponse) {
+			response.Supervisor.Specialists = append(response.Supervisor.Specialists, proto.Clone(response.Supervisor.Specialists[0]).(*apiv1.SupervisorSpecialist))
+		}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			response := proto.Clone(valid).(*apiv1.BootstrapOrchestrationResponse)
 			tt.mutate(response)
 			if err := Validate(response); err == nil {
-				t.Fatal("Validate() = nil, want mode/snapshot validation error")
+				t.Fatal("Validate() = nil, want orchestration validation error")
+			}
+		})
+	}
+
+	handoffTests := []struct {
+		name   string
+		mutate func(*apiv1.BootstrapOrchestrationResponse)
+	}{
+		{"missing entry runtime", func(response *apiv1.BootstrapOrchestrationResponse) {
+			response.Handoff.EntryAgentVersionId = "missing-version"
+		}},
+		{"missing source runtime", func(response *apiv1.BootstrapOrchestrationResponse) {
+			response.Handoff.Routes[0].SourceAgentVersionId = "missing-version"
+		}},
+		{"missing target runtime", func(response *apiv1.BootstrapOrchestrationResponse) {
+			response.Handoff.Routes[0].TargetAgentVersionId = "missing-version"
+		}},
+		{"duplicate handoff transition", func(response *apiv1.BootstrapOrchestrationResponse) {
+			response.Handoff.Routes = append(response.Handoff.Routes, proto.Clone(response.Handoff.Routes[0]).(*apiv1.HandoffRoute))
+		}},
+	}
+	for _, tt := range handoffTests {
+		t.Run(tt.name, func(t *testing.T) {
+			response := proto.Clone(validHandoff).(*apiv1.BootstrapOrchestrationResponse)
+			tt.mutate(response)
+			if err := Validate(response); err == nil {
+				t.Fatal("Validate() = nil, want handoff validation error")
 			}
 		})
 	}
@@ -341,26 +451,11 @@ func TestR4GeneratedGoWireRoundTrip(t *testing.T) {
 		SchemaVersion:    "agent.orchestration.v1",
 		ConversationId:   "conversation-1",
 		SessionId:        "session-1",
-		AgentId:          "agent-1",
-		AgentVersionId:   "agent-version-1",
 		CallRuntime:      validR4CallRuntime(),
 		AgentRuntime:     validR4AgentRuntime(),
 	}
 	supervisor := validR4SupervisorResponse()
-	handoff := proto.Clone(supervisor).(*apiv1.BootstrapOrchestrationResponse)
-	handoff.Mode = apiv1.OrchestrationMode_ORCHESTRATION_MODE_HANDOFF
-	handoff.Supervisor = nil
-	handoff.Handoff = &apiv1.HandoffSnapshot{
-		EntryAgentVersionId: "agent-version-1",
-		MaxHandoffDepth:     2,
-		Routes: []*apiv1.HandoffRoute{{
-			TransitionId:         "transition-1",
-			SourceAgentVersionId: "agent-version-1",
-			TargetAgentVersionId: "agent-version-2",
-			RoutingDescription:   "Billing",
-			ContextPolicy:        apiv1.ContextPolicy_CONTEXT_POLICY_CONVERSATION,
-		}},
-	}
+	handoff := validR4HandoffResponse()
 
 	for _, source := range []proto.Message{direct, supervisor, handoff} {
 		wire, err := proto.Marshal(source)

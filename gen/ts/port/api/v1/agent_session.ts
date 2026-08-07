@@ -292,8 +292,6 @@ export interface BootstrapAgentResponse {
   schemaVersion: string;
   conversationId: string;
   sessionId: string;
-  agentId: string;
-  agentVersionId: string;
   callRuntime?: CallRuntimeSnapshot | undefined;
   agentRuntime?: AgentRuntime | undefined;
 }
@@ -361,7 +359,7 @@ export interface SupervisorSnapshot {
 
 export interface SupervisorSpecialist {
   relationId: string;
-  agentVersionId: string;
+  targetAgentVersionId: string;
   routeDescription: string;
   contextPolicy: ContextPolicy;
 }
@@ -1494,8 +1492,6 @@ function createBaseBootstrapAgentResponse(): BootstrapAgentResponse {
     schemaVersion: "",
     conversationId: "",
     sessionId: "",
-    agentId: "",
-    agentVersionId: "",
     callRuntime: undefined,
     agentRuntime: undefined,
   };
@@ -1515,17 +1511,11 @@ export const BootstrapAgentResponse: MessageFns<BootstrapAgentResponse> = {
     if (message.sessionId !== "") {
       writer.uint32(34).string(message.sessionId);
     }
-    if (message.agentId !== "") {
-      writer.uint32(42).string(message.agentId);
-    }
-    if (message.agentVersionId !== "") {
-      writer.uint32(50).string(message.agentVersionId);
-    }
     if (message.callRuntime !== undefined) {
-      CallRuntimeSnapshot.encode(message.callRuntime, writer.uint32(58).fork()).join();
+      CallRuntimeSnapshot.encode(message.callRuntime, writer.uint32(42).fork()).join();
     }
     if (message.agentRuntime !== undefined) {
-      AgentRuntime.encode(message.agentRuntime, writer.uint32(66).fork()).join();
+      AgentRuntime.encode(message.agentRuntime, writer.uint32(50).fork()).join();
     }
     return writer;
   },
@@ -1574,27 +1564,11 @@ export const BootstrapAgentResponse: MessageFns<BootstrapAgentResponse> = {
             break;
           }
 
-          message.agentId = reader.string();
+          message.callRuntime = CallRuntimeSnapshot.decode(reader, reader.uint32());
           continue;
         }
         case 6: {
           if (tag !== 50) {
-            break;
-          }
-
-          message.agentVersionId = reader.string();
-          continue;
-        }
-        case 7: {
-          if (tag !== 58) {
-            break;
-          }
-
-          message.callRuntime = CallRuntimeSnapshot.decode(reader, reader.uint32());
-          continue;
-        }
-        case 8: {
-          if (tag !== 66) {
             break;
           }
 
@@ -1632,16 +1606,6 @@ export const BootstrapAgentResponse: MessageFns<BootstrapAgentResponse> = {
         : isSet(object.session_id)
         ? globalThis.String(object.session_id)
         : "",
-      agentId: isSet(object.agentId)
-        ? globalThis.String(object.agentId)
-        : isSet(object.agent_id)
-        ? globalThis.String(object.agent_id)
-        : "",
-      agentVersionId: isSet(object.agentVersionId)
-        ? globalThis.String(object.agentVersionId)
-        : isSet(object.agent_version_id)
-        ? globalThis.String(object.agent_version_id)
-        : "",
       callRuntime: isSet(object.callRuntime)
         ? CallRuntimeSnapshot.fromJSON(object.callRuntime)
         : isSet(object.call_runtime)
@@ -1669,12 +1633,6 @@ export const BootstrapAgentResponse: MessageFns<BootstrapAgentResponse> = {
     if (message.sessionId !== "") {
       obj.sessionId = message.sessionId;
     }
-    if (message.agentId !== "") {
-      obj.agentId = message.agentId;
-    }
-    if (message.agentVersionId !== "") {
-      obj.agentVersionId = message.agentVersionId;
-    }
     if (message.callRuntime !== undefined) {
       obj.callRuntime = CallRuntimeSnapshot.toJSON(message.callRuntime);
     }
@@ -1693,8 +1651,6 @@ export const BootstrapAgentResponse: MessageFns<BootstrapAgentResponse> = {
     message.schemaVersion = object.schemaVersion ?? "";
     message.conversationId = object.conversationId ?? "";
     message.sessionId = object.sessionId ?? "";
-    message.agentId = object.agentId ?? "";
-    message.agentVersionId = object.agentVersionId ?? "";
     message.callRuntime = (object.callRuntime !== undefined && object.callRuntime !== null)
       ? CallRuntimeSnapshot.fromPartial(object.callRuntime)
       : undefined;
@@ -2784,7 +2740,7 @@ export const SupervisorSnapshot: MessageFns<SupervisorSnapshot> = {
 };
 
 function createBaseSupervisorSpecialist(): SupervisorSpecialist {
-  return { relationId: "", agentVersionId: "", routeDescription: "", contextPolicy: 0 };
+  return { relationId: "", targetAgentVersionId: "", routeDescription: "", contextPolicy: 0 };
 }
 
 export const SupervisorSpecialist: MessageFns<SupervisorSpecialist> = {
@@ -2792,8 +2748,8 @@ export const SupervisorSpecialist: MessageFns<SupervisorSpecialist> = {
     if (message.relationId !== "") {
       writer.uint32(10).string(message.relationId);
     }
-    if (message.agentVersionId !== "") {
-      writer.uint32(18).string(message.agentVersionId);
+    if (message.targetAgentVersionId !== "") {
+      writer.uint32(18).string(message.targetAgentVersionId);
     }
     if (message.routeDescription !== "") {
       writer.uint32(26).string(message.routeDescription);
@@ -2824,7 +2780,7 @@ export const SupervisorSpecialist: MessageFns<SupervisorSpecialist> = {
             break;
           }
 
-          message.agentVersionId = reader.string();
+          message.targetAgentVersionId = reader.string();
           continue;
         }
         case 3: {
@@ -2859,10 +2815,10 @@ export const SupervisorSpecialist: MessageFns<SupervisorSpecialist> = {
         : isSet(object.relation_id)
         ? globalThis.String(object.relation_id)
         : "",
-      agentVersionId: isSet(object.agentVersionId)
-        ? globalThis.String(object.agentVersionId)
-        : isSet(object.agent_version_id)
-        ? globalThis.String(object.agent_version_id)
+      targetAgentVersionId: isSet(object.targetAgentVersionId)
+        ? globalThis.String(object.targetAgentVersionId)
+        : isSet(object.target_agent_version_id)
+        ? globalThis.String(object.target_agent_version_id)
         : "",
       routeDescription: isSet(object.routeDescription)
         ? globalThis.String(object.routeDescription)
@@ -2882,8 +2838,8 @@ export const SupervisorSpecialist: MessageFns<SupervisorSpecialist> = {
     if (message.relationId !== "") {
       obj.relationId = message.relationId;
     }
-    if (message.agentVersionId !== "") {
-      obj.agentVersionId = message.agentVersionId;
+    if (message.targetAgentVersionId !== "") {
+      obj.targetAgentVersionId = message.targetAgentVersionId;
     }
     if (message.routeDescription !== "") {
       obj.routeDescription = message.routeDescription;
@@ -2900,7 +2856,7 @@ export const SupervisorSpecialist: MessageFns<SupervisorSpecialist> = {
   fromPartial(object: DeepPartial<SupervisorSpecialist>): SupervisorSpecialist {
     const message = createBaseSupervisorSpecialist();
     message.relationId = object.relationId ?? "";
-    message.agentVersionId = object.agentVersionId ?? "";
+    message.targetAgentVersionId = object.targetAgentVersionId ?? "";
     message.routeDescription = object.routeDescription ?? "";
     message.contextPolicy = object.contextPolicy ?? 0;
     return message;

@@ -147,24 +147,20 @@ class BootstrapAgentRequest(_message.Message):
     def __init__(self, admission: _Optional[_Union[BootstrapRequest, _Mapping]] = ..., conversation_id: _Optional[str] = ..., session_id: _Optional[str] = ..., agent_version_id: _Optional[str] = ..., contract_revision: _Optional[str] = ...) -> None: ...
 
 class BootstrapAgentResponse(_message.Message):
-    __slots__ = ("contract_revision", "schema_version", "conversation_id", "session_id", "agent_id", "agent_version_id", "call_runtime", "agent_runtime")
+    __slots__ = ("contract_revision", "schema_version", "conversation_id", "session_id", "call_runtime", "agent_runtime")
     CONTRACT_REVISION_FIELD_NUMBER: _ClassVar[int]
     SCHEMA_VERSION_FIELD_NUMBER: _ClassVar[int]
     CONVERSATION_ID_FIELD_NUMBER: _ClassVar[int]
     SESSION_ID_FIELD_NUMBER: _ClassVar[int]
-    AGENT_ID_FIELD_NUMBER: _ClassVar[int]
-    AGENT_VERSION_ID_FIELD_NUMBER: _ClassVar[int]
     CALL_RUNTIME_FIELD_NUMBER: _ClassVar[int]
     AGENT_RUNTIME_FIELD_NUMBER: _ClassVar[int]
     contract_revision: str
     schema_version: str
     conversation_id: str
     session_id: str
-    agent_id: str
-    agent_version_id: str
     call_runtime: CallRuntimeSnapshot
     agent_runtime: AgentRuntime
-    def __init__(self, contract_revision: _Optional[str] = ..., schema_version: _Optional[str] = ..., conversation_id: _Optional[str] = ..., session_id: _Optional[str] = ..., agent_id: _Optional[str] = ..., agent_version_id: _Optional[str] = ..., call_runtime: _Optional[_Union[CallRuntimeSnapshot, _Mapping]] = ..., agent_runtime: _Optional[_Union[AgentRuntime, _Mapping]] = ...) -> None: ...
+    def __init__(self, contract_revision: _Optional[str] = ..., schema_version: _Optional[str] = ..., conversation_id: _Optional[str] = ..., session_id: _Optional[str] = ..., call_runtime: _Optional[_Union[CallRuntimeSnapshot, _Mapping]] = ..., agent_runtime: _Optional[_Union[AgentRuntime, _Mapping]] = ...) -> None: ...
 
 class BootstrapOrchestrationRequest(_message.Message):
     __slots__ = ("admission", "conversation_id", "session_id", "orchestration_version_id", "contract_revision")
@@ -273,16 +269,16 @@ class SupervisorSnapshot(_message.Message):
     def __init__(self, supervisor_agent_version_id: _Optional[str] = ..., specialists: _Optional[_Iterable[_Union[SupervisorSpecialist, _Mapping]]] = ...) -> None: ...
 
 class SupervisorSpecialist(_message.Message):
-    __slots__ = ("relation_id", "agent_version_id", "route_description", "context_policy")
+    __slots__ = ("relation_id", "target_agent_version_id", "route_description", "context_policy")
     RELATION_ID_FIELD_NUMBER: _ClassVar[int]
-    AGENT_VERSION_ID_FIELD_NUMBER: _ClassVar[int]
+    TARGET_AGENT_VERSION_ID_FIELD_NUMBER: _ClassVar[int]
     ROUTE_DESCRIPTION_FIELD_NUMBER: _ClassVar[int]
     CONTEXT_POLICY_FIELD_NUMBER: _ClassVar[int]
     relation_id: str
-    agent_version_id: str
+    target_agent_version_id: str
     route_description: str
     context_policy: ContextPolicy
-    def __init__(self, relation_id: _Optional[str] = ..., agent_version_id: _Optional[str] = ..., route_description: _Optional[str] = ..., context_policy: _Optional[_Union[ContextPolicy, str]] = ...) -> None: ...
+    def __init__(self, relation_id: _Optional[str] = ..., target_agent_version_id: _Optional[str] = ..., route_description: _Optional[str] = ..., context_policy: _Optional[_Union[ContextPolicy, str]] = ...) -> None: ...
 
 class HandoffSnapshot(_message.Message):
     __slots__ = ("entry_agent_version_id", "max_handoff_depth", "routes")

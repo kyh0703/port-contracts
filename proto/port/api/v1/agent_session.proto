@@ -137,17 +137,17 @@ message BootstrapOrchestrationResponse {
   option (buf.validate.message).cel = {
     id: "bootstrap_orchestration_response.unique_runtime_versions"
     message: "agent runtime version IDs must be unique"
-    expression: "this.agent_runtimes.map(r, r.agent_version_id).distinct().size() == this.agent_runtimes.size()"
+    expression: "this.agent_runtimes.all(r, this.agent_runtimes.filter(candidate, candidate.agent_version_id == r.agent_version_id).size() == 1)"
   };
   option (buf.validate.message).cel = {
     id: "bootstrap_orchestration_response.supervisor_references"
     message: "supervisor snapshot references must resolve to unique runtimes"
-    expression: "!has(this.supervisor) || (this.agent_runtimes.exists(r, r.agent_version_id == this.supervisor.supervisor_agent_version_id) && this.supervisor.specialists.map(s, s.relation_id).distinct().size() == this.supervisor.specialists.size() && this.supervisor.specialists.all(s, this.agent_runtimes.exists(r, r.agent_version_id == s.agent_version_id)))"
+    expression: "!has(this.supervisor) || (this.agent_runtimes.exists(r, r.agent_version_id == this.supervisor.supervisor_agent_version_id) && this.supervisor.specialists.all(s, this.supervisor.specialists.filter(candidate, candidate.relation_id == s.relation_id).size() == 1) && this.supervisor.specialists.all(s, this.agent_runtimes.exists(r, r.agent_version_id == s.target_agent_version_id)))"
   };
   option (buf.validate.message).cel = {
     id: "bootstrap_orchestration_response.handoff_references"
     message: "handoff snapshot references must resolve to unique runtimes"
-    expression: "!has(this.handoff) || (this.agent_runtimes.exists(r, r.agent_version_id == this.handoff.entry_agent_version_id) && this.handoff.routes.map(r, r.transition_id).distinct().size() == this.handoff.routes.size() && this.handoff.routes.all(r, this.agent_runtimes.exists(a, a.agent_version_id == r.source_agent_version_id) && this.agent_runtimes.exists(a, a.agent_version_id == r.target_agent_version_id)))"
+    expression: "!has(this.handoff) || (this.agent_runtimes.exists(r, r.agent_version_id == this.handoff.entry_agent_version_id) && this.handoff.routes.all(route, this.handoff.routes.filter(candidate, candidate.transition_id == route.transition_id).size() == 1) && this.handoff.routes.all(route, this.agent_runtimes.exists(runtime, runtime.agent_version_id == route.source_agent_version_id) && this.agent_runtimes.exists(runtime, runtime.agent_version_id == route.target_agent_version_id)))"
   };
 }
 

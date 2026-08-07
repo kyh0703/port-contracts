@@ -119,8 +119,6 @@ test("direct Agent response carries one pinned CallRuntime and AgentRuntime", ()
     schemaVersion: "agent.orchestration.v1",
     conversationId: "conversation-agent-1",
     sessionId: "session-agent-1",
-    agentId: "agent-1",
-    agentVersionId: "agent-version-1",
     callRuntime: {
       stt: { apiKey: "stt-key", model: "stt-model", language: "ko" },
       tts: { apiKey: "tts-key", model: "tts-model", language: "ko", voiceId: "voice-1" },
