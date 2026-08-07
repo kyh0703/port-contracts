@@ -122,6 +122,9 @@ func TestR4TransportDescriptorsAndRequiredRuntimeValidation(t *testing.T) {
 		if !rules.GetRequired() || rules.GetString().GetConst() != "orchestration-2026-08-07-r4" {
 			t.Fatalf("%s.contract_revision must be required and fixed to r4", responseName)
 		}
+		if !requireR4FieldRules(t, descriptor.(protoreflect.MessageDescriptor), "call_runtime").GetRequired() {
+			t.Fatalf("%s.call_runtime must be required", responseName)
+		}
 	}
 	responseDescriptor, _ := protoregistry.GlobalFiles.FindDescriptorByName("port.api.v1.BootstrapAgentResponse")
 	responseFields := responseDescriptor.(protoreflect.MessageDescriptor).Fields()
@@ -138,7 +141,7 @@ func TestR4TransportDescriptorsAndRequiredRuntimeValidation(t *testing.T) {
 		}
 	}
 	callRuntimeDescriptor, _ := protoregistry.GlobalFiles.FindDescriptorByName("port.api.v1.CallRuntimeSnapshot")
-	for _, fieldName := range []protoreflect.Name{"background_audio", "dtmf"} {
+	for _, fieldName := range []protoreflect.Name{"stt", "tts", "background_audio", "dtmf", "transport", "vad", "speech_policy", "limits"} {
 		if !requireR4FieldRules(t, callRuntimeDescriptor.(protoreflect.MessageDescriptor), fieldName).GetRequired() {
 			t.Fatalf("CallRuntimeSnapshot.%s must be required", fieldName)
 		}
