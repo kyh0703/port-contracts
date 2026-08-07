@@ -34,7 +34,7 @@ function createDirectAgentResponse() {
     agentRuntime: {
       agentId: "agent-1",
       agentVersionId: "agent-version-1",
-      llmWorker: { model: "model-1" },
+      llmWorker: { apiKey: "llm-key", model: "model-1" },
       instructions: { systemPrompt: "Help." },
       contextPolicy: ContextPolicy.CONTEXT_POLICY_CONVERSATION,
     },
@@ -159,8 +159,8 @@ test("supervisor and handoff responses carry exactly one mode snapshot", () => {
     mode: OrchestrationMode.ORCHESTRATION_MODE_SUPERVISOR,
     callRuntime: runtime,
     agentRuntimes: [
-      { agentId: "agent-1", agentVersionId: "agent-version-supervisor", llmWorker: { model: "model-1" }, instructions: { systemPrompt: "Route." }, contextPolicy: ContextPolicy.CONTEXT_POLICY_CONVERSATION },
-      { agentId: "agent-2", agentVersionId: "agent-version-billing", llmWorker: { model: "model-2" }, instructions: { systemPrompt: "Billing." }, contextPolicy: ContextPolicy.CONTEXT_POLICY_CONVERSATION },
+      { agentId: "agent-1", agentVersionId: "agent-version-supervisor", llmWorker: { apiKey: "llm-key", model: "model-1" }, instructions: { systemPrompt: "Route." }, contextPolicy: ContextPolicy.CONTEXT_POLICY_CONVERSATION },
+      { agentId: "agent-2", agentVersionId: "agent-version-billing", llmWorker: { apiKey: "llm-key-2", model: "model-2" }, instructions: { systemPrompt: "Billing." }, contextPolicy: ContextPolicy.CONTEXT_POLICY_CONVERSATION },
     ],
     supervisor: { supervisorAgentVersionId: "agent-version-supervisor", specialists: [{ relationId: "billing", targetAgentVersionId: "agent-version-billing", routeDescription: "Billing", contextPolicy: ContextPolicy.CONTEXT_POLICY_CONVERSATION }] },
   });
@@ -169,8 +169,8 @@ test("supervisor and handoff responses carry exactly one mode snapshot", () => {
     mode: OrchestrationMode.ORCHESTRATION_MODE_HANDOFF,
     supervisor: undefined,
     agentRuntimes: [
-      { agentId: "agent-1", agentVersionId: "agent-version-entry", llmWorker: { model: "model-1" }, instructions: { systemPrompt: "Route." }, contextPolicy: ContextPolicy.CONTEXT_POLICY_CONVERSATION },
-      { agentId: "agent-2", agentVersionId: "agent-version-billing", llmWorker: { model: "model-2" }, instructions: { systemPrompt: "Billing." }, contextPolicy: ContextPolicy.CONTEXT_POLICY_CONVERSATION },
+      { agentId: "agent-1", agentVersionId: "agent-version-entry", llmWorker: { apiKey: "llm-key", model: "model-1" }, instructions: { systemPrompt: "Route." }, contextPolicy: ContextPolicy.CONTEXT_POLICY_CONVERSATION },
+      { agentId: "agent-2", agentVersionId: "agent-version-billing", llmWorker: { apiKey: "llm-key-2", model: "model-2" }, instructions: { systemPrompt: "Billing." }, contextPolicy: ContextPolicy.CONTEXT_POLICY_CONVERSATION },
     ],
     handoff: { entryAgentVersionId: "agent-version-entry", maxHandoffDepth: 2, routes: [{ transitionId: "to-billing", sourceAgentVersionId: "agent-version-entry", targetAgentVersionId: "agent-version-billing", routingDescription: "Billing", contextPolicy: ContextPolicy.CONTEXT_POLICY_CONVERSATION }] },
   });
