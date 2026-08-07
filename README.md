@@ -36,6 +36,14 @@ contract. `AgentSessionService.Bootstrap` admits either a one-time browser
 ticket or a verified SIP LiveKit job and returns the runtime bundle required by
 the worker. It is not a browser-facing API.
 
+> **Retired contract notice — 2026-08-07:** the orchestration graph shipped as
+> `contracts@1.8.0` is historical and must not be used for new
+> Orchestrations. The locked replacement requires a breaking release and
+> separate `BootstrapAgent` and `BootstrapOrchestration` RPCs. See
+> [`docs/contracts/agent-orchestration-v1.md`](docs/contracts/agent-orchestration-v1.md)
+> and
+> [`docs/contracts/agent-orchestration-v1-transport.md`](docs/contracts/agent-orchestration-v1-transport.md).
+
 ```ts
 import { AgentSessionServiceClient } from '@overthinker1127/port-contracts/gen/ts/port/api/v1/agent_session'
 ```

@@ -1,0 +1,52 @@
+# Architecture
+
+## Purpose
+
+이 저장소는 port 서비스 사이의 protobuf 원본과 생성물을 소유한다.
+Agent·Orchestration의 현재 기준은 [공통 계약](contracts/agent-orchestration-v1.md)과
+[transport 상세 계약](contracts/agent-orchestration-v1-transport.md)이다.
+
+## Agent·Orchestration Transport Boundary
+
+```text
+legacy agent.canvas.v1 ──> Bootstrap ──> legacy compiler
+
+AgentVersion ──────────> BootstrapAgent ───────────> direct compiler
+OrchestrationVersion ─> BootstrapOrchestration ──> orchestration compiler
+                         CallRuntime + AgentRuntime inputs
+```
+
+두 경계는 별도 RPC와 response를 사용한다. 신규 Orchestration은
+`contractRevision = "orchestration-2026-08-07-r3"`을 필수로 하며 잘못된 신규
+payload를 legacy decoder로 fallback하지 않는다.
+
+두 신규 response는 Transport, VAD, STT, Voice를 포함한 TTS와 통화 policy를
+CallRuntime snapshot 하나로 전달한다. 각 AgentRuntime 입력은 LLMWorker, Instructions,
+Context 초기화 policy, Tools, MCP를 포함하며 CallRuntime 필드를 중복하지 않는다.
+Orchestration mode payload는 `supervisor | handoff` 중 정확히 하나다.
+
+```text
+CallRuntime — response당 하나
+├─ Transport
+├─ VAD
+├─ STT
+├─ TTS
+│  └─ Voice
+└─ Policies
+   ├─ Interruption
+   └─ Limits / Timeouts
+
+AgentRuntime — AgentVersion별 입력
+├─ LLMWorker
+├─ Instructions
+├─ Context
+├─ Tools
+└─ MCP
+```
+
+## Retired Boundary
+
+`contracts@1.8.0`의 `BootstrapResponse.orchestration_graph`는 역사적 retired
+계약이다. 기존 field와 message는 legacy 통화를 위해 보존할 수 있지만 신규
+Orchestration projection에 사용하지 않는다. 다음 계약 변경은 의도된 breaking
+release다.
