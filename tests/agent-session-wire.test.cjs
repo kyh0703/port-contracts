@@ -47,6 +47,13 @@ function createDirectAgentResponse() {
   });
 }
 
+function createValidAgentRuntimes() {
+  return [
+    { agentId: "agent-1", agentVersionId: "agent-version-1", llmWorker: { apiKey: "llm-key", model: "model-1" }, instructions: { systemPrompt: "Route." }, contextPolicy: ContextPolicy.CONTEXT_POLICY_CONVERSATION },
+    { agentId: "agent-2", agentVersionId: "agent-version-2", llmWorker: { apiKey: "llm-key-2", model: "model-2" }, instructions: { systemPrompt: "Billing." }, contextPolicy: ContextPolicy.CONTEXT_POLICY_CONVERSATION },
+  ];
+}
+
 test("r4 generated symbols and service methods are exported", () => {
   assert.equal(typeof BootstrapAgentResponse?.create, "function");
   assert.equal(typeof BootstrapOrchestrationResponse?.create, "function");
@@ -200,9 +207,9 @@ test("direct, supervisor, and handoff wire fixtures share the complete CallRunti
     contractRevision: "orchestration-2026-08-07-r4", schemaVersion: "agent.orchestration.v1",
     conversationId: "conversation-supervisor-2", sessionId: "session-supervisor-2", orchestrationId: "orchestration-2",
     orchestrationVersionId: "orchestration-version-2", mode: OrchestrationMode.ORCHESTRATION_MODE_SUPERVISOR,
-    callRuntime: direct.callRuntime, agentRuntimes: [], supervisor: { supervisorAgentVersionId: "agent-version-1", specialists: [] },
+    callRuntime: direct.callRuntime, agentRuntimes: createValidAgentRuntimes(), supervisor: { supervisorAgentVersionId: "agent-version-1", specialists: [{ relationId: "billing", targetAgentVersionId: "agent-version-2", routeDescription: "Billing", contextPolicy: ContextPolicy.CONTEXT_POLICY_CONVERSATION }] },
   });
-  const handoff = BootstrapOrchestrationResponse.create({ ...supervisor, mode: OrchestrationMode.ORCHESTRATION_MODE_HANDOFF, supervisor: undefined, handoff: { entryAgentVersionId: "agent-version-1", maxHandoffDepth: 1, routes: [] } });
+  const handoff = BootstrapOrchestrationResponse.create({ ...supervisor, mode: OrchestrationMode.ORCHESTRATION_MODE_HANDOFF, supervisor: undefined, handoff: { entryAgentVersionId: "agent-version-1", maxHandoffDepth: 1, routes: [{ transitionId: "to-billing", sourceAgentVersionId: "agent-version-1", targetAgentVersionId: "agent-version-2", routingDescription: "Billing", contextPolicy: ContextPolicy.CONTEXT_POLICY_CONVERSATION }] } });
   for (const source of [direct, supervisor, handoff]) {
     const runtime = source.callRuntime;
     assert.deepEqual(runtime, createPinnedCallRuntime());

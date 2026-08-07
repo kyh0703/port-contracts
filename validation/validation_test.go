@@ -470,7 +470,7 @@ func TestR4CallRuntimeEnumPresenceAndNumericBoundaries(t *testing.T) {
 			t.Fatalf("Validate(limits=%v) = %v", values, err)
 		}
 	}
-	for _, values := range [][3]uint32{{9, 60, 10}, {90, 901, 300}, {90, 900, 301}} {
+	for _, values := range [][3]uint32{{9, 60, 10}, {10, 59, 10}, {90, 901, 300}, {90, 900, 9}, {90, 900, 301}} {
 		message := dynamicpb.NewMessage(limits)
 		message.Set(limits.Fields().ByName("dial_wait_time_seconds"), protoreflect.ValueOfUint32(values[0]))
 		message.Set(limits.Fields().ByName("max_call_duration_seconds"), protoreflect.ValueOfUint32(values[1]))
@@ -711,11 +711,17 @@ func TestR4CallRuntimeDescriptorRetainsBackgroundAudioAndDtmfBoundaries(t *testi
 		t.Fatal(err)
 	}
 	fields := runtimeDescriptor.(protoreflect.MessageDescriptor).Fields()
-	for _, fieldName := range []protoreflect.Name{"background_audio", "dtmf"} {
-		if fields.ByName(fieldName) == nil {
-			t.Fatalf("CallRuntimeSnapshot missing required field %q", fieldName)
-		}
+	wantFields := map[protoreflect.Name]protoreflect.FieldNumber{"stt": 1, "tts": 2, "background_audio": 3, "dtmf": 4, "transport": 5, "vad": 6, "speech_policy": 7, "limits": 8}
+	for fieldName, number := range wantFields {
+		field := fields.ByName(fieldName)
+		if field == nil || field.Number() != number { t.Fatalf("CallRuntimeSnapshot.%s number = %v, want %d", fieldName, field, number) }
 	}
+	transportField := fields.ByName("transport")
+	if transportField.Enum() != nil || transportField.Message().FullName() != "port.api.v1.TransportRuntime" { t.Fatalf("transport type = %v, want TransportRuntime", transportField.Message()) }
+	vadField := fields.ByName("vad")
+	if vadField.Message().FullName() != "port.api.v1.VadRuntime" { t.Fatalf("vad type = %v, want VadRuntime", vadField.Message()) }
+	if transportField.Message().Fields().ByName("source").Enum().FullName() != "port.api.v1.CallTransportSource" { t.Fatal("transport.source enum FullName mismatch") }
+	if vadField.Message().Fields().ByName("noise_cancellation").Enum().FullName() != "port.api.v1.NoiseCancellationMode" { t.Fatal("vad.noise_cancellation enum FullName mismatch") }
 
 	agentRuntimeDescriptor, err := protoregistry.GlobalFiles.FindDescriptorByName("port.api.v1.AgentRuntime")
 	if err != nil {
@@ -735,16 +741,8 @@ func TestLegacyBootstrapFieldNumbersRemainReserved(t *testing.T) {
 		t.Fatal(err)
 	}
 	f := d.(protoreflect.MessageDescriptor).Fields()
-	for n := protoreflect.FieldNumber(1); n <= 10; n++ {
-		if f.ByNumber(n) == nil {
-			t.Fatalf("BootstrapResponse missing legacy field %d", n)
-		}
-	}
-	for n := protoreflect.FieldNumber(18); n <= 27; n++ {
-		if f.ByNumber(n) == nil {
-			t.Fatalf("BootstrapResponse missing r4 field %d", n)
-		}
-	}
+	want := map[protoreflect.Name]protoreflect.FieldNumber{"conversation_id": 1, "session_id": 2, "source": 3, "room_name": 4, "agent_tool_snapshot_id": 5, "stt": 6, "llm": 7, "tts": 8, "mcp_servers": 9, "agent_id": 10, "supervisor_id": 18, "supervisor_version_id": 19, "supervisor_persona": 20, "supervisor_config": 21, "workers": 22, "canvas": 23, "worker_tool_snapshots": 24, "bootstrap_snapshot_id": 25, "api_tool_runtimes": 26, "orchestration_graph": 27}
+	for name, number := range want { field := f.ByName(name); if field == nil || field.Number() != number { t.Fatalf("BootstrapResponse.%s number = %v, want %d", name, field, number) } }
 	r := d.(protoreflect.MessageDescriptor).ReservedRanges()
 	for _, n := range []protoreflect.FieldNumber{11, 12, 13, 14, 15, 16, 17} {
 		found := false
