@@ -23,8 +23,8 @@ payload를 legacy decoder로 fallback하지 않는다.
 두 신규 response는 API가 통화 시작 시 CallRuntimeConfig에서 고정한
 CallRuntimeSnapshot 하나로 Transport, VAD, STT, Voice를 포함한 TTS와 통화
 policy, BackgroundAudio와 DTMF 입력 설정을 전달한다. 각 AgentRuntime 입력은
-LLMWorker, Instructions,
-Context 초기화 policy, Tools, MCP를 포함하며 CallRuntime 필드를 중복하지 않는다.
+LLMWorker, Instructions, Context 초기화 policy, Tools, MCP와 API tool 단기
+credential을 포함하며 CallRuntime 필드를 중복하지 않는다.
 Orchestration mode payload는 `supervisor | handoff` 중 정확히 하나다.
 
 ```text
@@ -32,6 +32,7 @@ CallRuntimeSnapshot — response당 하나
 ├─ Transport
 ├─ VAD
 ├─ STT
+│  └─ Keyterms
 ├─ TTS
 │  └─ Voice
 ├─ BackgroundAudio
@@ -44,13 +45,15 @@ AgentRuntime — AgentVersion별 입력
 ├─ LLMWorker
 ├─ Instructions
 ├─ Context
-├─ Tools
-└─ MCP
+├─ Tools metadata
+├─ API tool runtime credentials
+└─ MCP runtime bindings
 ```
 
 ## Retired Boundary
 
 `contracts@1.8.0`의 `BootstrapResponse.orchestration_graph`는 역사적 retired
-계약이다. 기존 field와 message는 legacy 통화를 위해 보존할 수 있지만 신규
-Orchestration projection에 사용하지 않는다. 다음 계약 변경은 의도된 breaking
-release다.
+계약이다. 기존 field와 message는 legacy 통화를 위해 보존하지만 신규
+Orchestration projection에 사용하지 않는다. 신규 경계는 `contracts@2.0.0`으로
+출시됐고, 실행 입력을 완결하는 `2.1.0` 후보는 기존 r4 wire에 field만 additive로
+추가한다.

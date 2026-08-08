@@ -1,7 +1,7 @@
 ---
 contract: agent-orchestration-v1-transport
 contract_revision: orchestration-2026-08-07-r4
-status: locked
+status: released
 owner: contracts
 supersedes:
   - contracts@1.8.0 agent.orchestration.v1 graph transport
@@ -9,11 +9,12 @@ supersedes:
 
 # Agent·Orchestration protobuf transport 계약
 
-이 문서는 [공통 계약](./agent-orchestration-v1.md)을 protobuf transport로 옮길 때의
-message 경계와 legacy 분리를 잠근다. 실제 `.proto`와 생성물은 문서 리뷰 후
-breaking release 계획에서 변경한다.
+이 문서는 [공통 계약](./agent-orchestration-v1.md)을 protobuf transport로 옮긴
+message 경계와 legacy 분리를 설명한다. 이 경계는 `contracts@2.0.0`으로 출시됐고,
+`2.1.0` 후보에서 STT keyterms와 API tool runtime credential을 additive로
+보강한다.
 
-## Breaking release
+## Released boundary
 
 `contracts@1.8.0`에 추가된 `BootstrapResponse.orchestration_graph`와
 `OrchestrationGraphSnapshot` 계열은 역사적 retired 계약이다. schema 문자열
@@ -22,7 +23,8 @@ Orchestration shape로 해석하지 않는다.
 
 새 transport는 `contract_revision = "orchestration-2026-08-07-r4"`를 필수로 하고
 누락 또는 다른 값을 거부한다. 이 변경은 additive optional field가 아니라
-breaking package release로 발행한다.
+`contracts@2.0.0` breaking package release로 발행됐다. `2.1.0` 후보는 revision과
+schema 명칭을 유지하고 기존 field number를 바꾸지 않는다.
 
 ## RPC 경계
 
@@ -95,6 +97,7 @@ OrchestrationVersion이나 AgentVersion의 일부가 아니다.
 - Transport와 session binding
 - VAD/endpointing runtime
 - STT runtime
+  - 순서를 보존하는 non-empty keyterms 목록
 - TTS runtime과 그 하위 Voice
 - BackgroundAudio runtime
 - DTMF input runtime
@@ -146,6 +149,7 @@ HTTP의 `endKey = null`은 wire에서 `end_key` absence로 표현한다. `preset
 - Conversation binding과 mode별 `Context` 초기화 policy
 - `Tools` snapshot
 - MCP binding snapshot
+- API tool별 단기 header credential
 - Greeting과 활성화 policy
 - `knowledge_revision_id`와 필요한 immutable retrieval binding
 
@@ -153,6 +157,12 @@ Context의 대화 상태 자체는 wire snapshot에 고정된 Agent 자산이 �
 AgentRuntime이 관리한다. AgentRuntime에는 Transport, STT, TTS, Voice, VAD,
 BackgroundAudio, DTMF 입력, 인터럽션 또는 통화 timeout 필드를 두지 않는다.
 LLMWorker는 optional이 아니며 전역 LLM field를 제공하지 않는다.
+
+API tool의 URL·schema·설명은 `tools[]` metadata에 두고, 실행 시점의 단기 header는
+`api_tool_runtimes[]`에 분리한다. 각 `kind = "api"` tool은 같은 `tool_id`의 runtime
+하나와 정확히 대응해야 한다. MCP tool은 이 목록의 대상이 아니며, 중복·누락·
+dangling runtime과 API runtime이 MCP tool을 참조하는 kind mismatch를 거부한다.
+credential 값은 validation 오류나 로그에 포함하지 않는다.
 
 ## 모드별 snapshot
 
@@ -192,6 +202,10 @@ handoff snapshot에 AgentTask/delegate relation을 표현하지 않는다.
   함께 사용한다.
 - BackgroundAudio와 DTMF message 누락, unknown preset, volume·timeout 범위 오류,
   유효하지 않은 end key를 거부한다.
+- STT keyterms의 빈 항목을 거부한다. 빈 목록은 정상이며 기존 `2.0.0` payload를
+  decode하면 빈 목록이 된다.
+- AgentRuntime의 API tool metadata와 runtime credential은 `tool_id` 기준 양방향
+  1:1이어야 한다. MCP tool은 runtime credential을 요구하지 않는다.
 - producer가 잘못된 신규 response를 만들면 legacy response로 다시 보내지
   않는다.
 - consumer는 알 수 없는 revision을 best-effort로 실행하지 않는다.
@@ -208,9 +222,9 @@ handoff snapshot에 AgentTask/delegate relation을 표현하지 않는다.
 - BackgroundAudio 또는 DTMF를 AgentRuntime이나 mode snapshot에 복사
 - RPC 실패 시 다른 RPC를 암묵적으로 호출
 
-## Release 검증
+## Release와 additive 검증
 
-breaking release 계획은 최소한 다음 fixture를 포함해야 한다.
+`2.0.0` release와 `2.1.0` additive 후보는 최소한 다음 fixture를 포함한다.
 
 - direct Agent, supervisor, handoff response의 언어별 round trip
 - mode별 exactly-one과 required LLM validation
@@ -222,7 +236,11 @@ breaking release 계획은 최소한 다음 fixture를 포함해야 한다.
 - revision 누락·불일치 거부
 - 신규 payload가 legacy decoder/compiler로 fallback하지 않음
 - 기존 `agent.canvas.v1` fixture가 기존 `Bootstrap`에서만 계속 동작
+- direct Agent, supervisor, handoff의 STT keyterms 순서·값 round trip
+- API tool 2개와 MCP tool이 함께 있을 때 API runtime만 정확히 1:1 대응
+- API runtime missing·duplicate·dangling·kind mismatch·orphan 거부
+- `2.0.0` wire layout decode 시 신규 repeated field가 빈 목록으로 초기화
 
-`buf breaking`의 additive compatibility 통과를 이번 release의 성공 조건으로
-삼지 않는다. 의도된 breaking change와 소비자 동시 전환을 release note에
-명시한다.
+`2.0.0`의 breaking change와 소비자 동시 전환은 release note에 기록한다.
+`2.1.0` 후보는 기존 r4 field와 revision을 보존하며, package publish와 소비자
+업데이트는 최종 검증 뒤 진행한다.
