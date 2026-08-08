@@ -465,6 +465,7 @@ export interface AgentRuntime {
    */
   greeting: string;
   knowledgeRevisionId: string;
+  apiToolRuntimes: ApiToolRuntime[];
 }
 
 export interface AgentInstructions {
@@ -2935,6 +2936,7 @@ function createBaseAgentRuntime(): AgentRuntime {
     mcpServers: [],
     greeting: "",
     knowledgeRevisionId: "",
+    apiToolRuntimes: [],
   };
 }
 
@@ -2966,6 +2968,9 @@ export const AgentRuntime: MessageFns<AgentRuntime> = {
     }
     if (message.knowledgeRevisionId !== "") {
       writer.uint32(74).string(message.knowledgeRevisionId);
+    }
+    for (const v of message.apiToolRuntimes) {
+      ApiToolRuntime.encode(v!, writer.uint32(82).fork()).join();
     }
     return writer;
   },
@@ -3049,6 +3054,14 @@ export const AgentRuntime: MessageFns<AgentRuntime> = {
           message.knowledgeRevisionId = reader.string();
           continue;
         }
+        case 10: {
+          if (tag !== 82) {
+            break;
+          }
+
+          message.apiToolRuntimes.push(ApiToolRuntime.decode(reader, reader.uint32()));
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -3093,6 +3106,11 @@ export const AgentRuntime: MessageFns<AgentRuntime> = {
         : isSet(object.knowledge_revision_id)
         ? globalThis.String(object.knowledge_revision_id)
         : "",
+      apiToolRuntimes: globalThis.Array.isArray(object?.apiToolRuntimes)
+        ? object.apiToolRuntimes.map((e: any) => ApiToolRuntime.fromJSON(e))
+        : globalThis.Array.isArray(object?.api_tool_runtimes)
+        ? object.api_tool_runtimes.map((e: any) => ApiToolRuntime.fromJSON(e))
+        : [],
     };
   },
 
@@ -3125,6 +3143,9 @@ export const AgentRuntime: MessageFns<AgentRuntime> = {
     if (message.knowledgeRevisionId !== "") {
       obj.knowledgeRevisionId = message.knowledgeRevisionId;
     }
+    if (message.apiToolRuntimes?.length) {
+      obj.apiToolRuntimes = message.apiToolRuntimes.map((e) => ApiToolRuntime.toJSON(e));
+    }
     return obj;
   },
 
@@ -3146,6 +3167,7 @@ export const AgentRuntime: MessageFns<AgentRuntime> = {
     message.mcpServers = object.mcpServers?.map((e) => McpServerRuntime.fromPartial(e)) || [];
     message.greeting = object.greeting ?? "";
     message.knowledgeRevisionId = object.knowledgeRevisionId ?? "";
+    message.apiToolRuntimes = object.apiToolRuntimes?.map((e) => ApiToolRuntime.fromPartial(e)) || [];
     return message;
   },
 };

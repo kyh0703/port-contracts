@@ -26,6 +26,7 @@ message SttRuntime {
   string api_key = 1 [(buf.validate.field).string.min_len = 1];
   string model = 2 [(buf.validate.field).string.min_len = 1];
   string language = 3 [(buf.validate.field).string.min_len = 1];
+  repeated string keyterms = 4 [(buf.validate.field).repeated.items.string.min_len = 1];
 }
 
 message LlmRuntime {

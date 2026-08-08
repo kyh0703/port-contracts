@@ -37,6 +37,7 @@ export interface SttRuntime {
   apiKey: string;
   model: string;
   language: string;
+  keyterms: string[];
 }
 
 export interface LlmRuntime {
@@ -248,7 +249,7 @@ export const ResolveLeaseResponse: MessageFns<ResolveLeaseResponse> = {
 };
 
 function createBaseSttRuntime(): SttRuntime {
-  return { apiKey: "", model: "", language: "" };
+  return { apiKey: "", model: "", language: "", keyterms: [] };
 }
 
 export const SttRuntime: MessageFns<SttRuntime> = {
@@ -261,6 +262,9 @@ export const SttRuntime: MessageFns<SttRuntime> = {
     }
     if (message.language !== "") {
       writer.uint32(26).string(message.language);
+    }
+    for (const v of message.keyterms) {
+      writer.uint32(34).string(v!);
     }
     return writer;
   },
@@ -296,6 +300,14 @@ export const SttRuntime: MessageFns<SttRuntime> = {
           message.language = reader.string();
           continue;
         }
+        case 4: {
+          if (tag !== 34) {
+            break;
+          }
+
+          message.keyterms.push(reader.string());
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -314,6 +326,7 @@ export const SttRuntime: MessageFns<SttRuntime> = {
         : "",
       model: isSet(object.model) ? globalThis.String(object.model) : "",
       language: isSet(object.language) ? globalThis.String(object.language) : "",
+      keyterms: globalThis.Array.isArray(object?.keyterms) ? object.keyterms.map((e: any) => globalThis.String(e)) : [],
     };
   },
 
@@ -328,6 +341,9 @@ export const SttRuntime: MessageFns<SttRuntime> = {
     if (message.language !== "") {
       obj.language = message.language;
     }
+    if (message.keyterms?.length) {
+      obj.keyterms = message.keyterms;
+    }
     return obj;
   },
 
@@ -339,6 +355,7 @@ export const SttRuntime: MessageFns<SttRuntime> = {
     message.apiKey = object.apiKey ?? "";
     message.model = object.model ?? "";
     message.language = object.language ?? "";
+    message.keyterms = object.keyterms?.map((e) => e) || [];
     return message;
   },
 };

@@ -712,6 +712,113 @@ func TestR4GeneratedGoWireRoundTrip(t *testing.T) {
 	}
 }
 
+func TestAgentRuntimeInputCompletionRoundTripAndLegacyDefaults(t *testing.T) {
+	sttDescriptor, err := protoregistry.GlobalFiles.FindDescriptorByName("port.api.v1.SttRuntime")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if field := sttDescriptor.(protoreflect.MessageDescriptor).Fields().ByName("keyterms"); field == nil || field.Number() != 4 {
+		t.Fatalf("SttRuntime.keyterms number = %v, want 4", field)
+	}
+	agentDescriptor, err := protoregistry.GlobalFiles.FindDescriptorByName("port.api.v1.AgentRuntime")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if field := agentDescriptor.(protoreflect.MessageDescriptor).Fields().ByName("api_tool_runtimes"); field == nil || field.Number() != 10 {
+		t.Fatalf("AgentRuntime.api_tool_runtimes number = %v, want 10", field)
+	}
+
+	direct := validR4DirectResponse()
+	direct.CallRuntime.Stt.Keyterms = []string{"Port", "고객번호", "VIP"}
+	direct.AgentRuntime.Tools, direct.AgentRuntime.ApiToolRuntimes = validAPIToolBindings()
+	wire, err := proto.Marshal(direct)
+	if err != nil {
+		t.Fatal(err)
+	}
+	decoded := &apiv1.BootstrapAgentResponse{}
+	if err := proto.Unmarshal(wire, decoded); err != nil {
+		t.Fatal(err)
+	}
+	if !proto.Equal(decoded, direct) {
+		t.Fatal("keyterms and API runtime changed during wire round-trip")
+	}
+
+	// Golden 2.0.0 field layout legacy wire shape: revision plus empty call/agent envelopes;
+	// no credentials or additive fields are present.
+	legacyWire := []byte{0x0a, 0x02, 'r', '4', 0x2a, 0x04, 0x0a, 0x02, 0x0a, 0x00, 0x32, 0x00}
+	legacyDecoded := &apiv1.BootstrapAgentResponse{}
+	if err := proto.Unmarshal(legacyWire, legacyDecoded); err != nil {
+		t.Fatal(err)
+	}
+	if legacyDecoded.CallRuntime == nil {
+		t.Fatal("2.0.0 CallRuntime envelope disappeared during decode")
+	}
+	if legacyDecoded.CallRuntime.Stt == nil {
+		t.Fatal("2.0.0 CallRuntime.Stt envelope disappeared during decode")
+	}
+	if legacyDecoded.AgentRuntime == nil {
+		t.Fatal("2.0.0 AgentRuntime envelope disappeared during decode")
+	}
+	if got := len(legacyDecoded.CallRuntime.Stt.Keyterms); got != 0 {
+		t.Fatalf("2.0.0 keyterms default length = %d, want 0", got)
+	}
+	if got := len(legacyDecoded.AgentRuntime.ApiToolRuntimes); got != 0 {
+		t.Fatalf("2.0.0 API runtime default length = %d, want 0", got)
+	}
+}
+
+func TestAgentRuntimeApiToolRuntimeMatching(t *testing.T) {
+	valid := validR4DirectResponse()
+	valid.AgentRuntime.Tools, valid.AgentRuntime.ApiToolRuntimes = validAPIToolBindings()
+	if err := Validate(valid); err != nil {
+		t.Fatalf("Validate(valid API metadata/runtime) = %v", err)
+	}
+	legacyMCPWithoutMetadata := proto.Clone(valid).(*apiv1.BootstrapAgentResponse)
+	legacyMCPWithoutMetadata.AgentRuntime.Tools[2].Metadata = nil
+	if err := Validate(legacyMCPWithoutMetadata); err != nil {
+		t.Fatalf("Validate(2.0 MCP tool without metadata) = %v", err)
+	}
+	tests := []struct {
+		name   string
+		mutate func(*apiv1.BootstrapAgentResponse)
+	}{
+		{"missing runtime", func(response *apiv1.BootstrapAgentResponse) { response.AgentRuntime.ApiToolRuntimes = nil }},
+		{"duplicate runtime", func(response *apiv1.BootstrapAgentResponse) { response.AgentRuntime.ApiToolRuntimes = append(response.AgentRuntime.ApiToolRuntimes, proto.Clone(response.AgentRuntime.ApiToolRuntimes[0]).(*apiv1.ApiToolRuntime)) }},
+		{"dangling runtime", func(response *apiv1.BootstrapAgentResponse) { response.AgentRuntime.ApiToolRuntimes[0].ToolId = "missing-tool" }},
+		{"mcp metadata runtime mismatch", func(response *apiv1.BootstrapAgentResponse) { response.AgentRuntime.Tools[0].Kind = "mcp" }},
+		{"api kind with mcp metadata", func(response *apiv1.BootstrapAgentResponse) {
+			response.AgentRuntime.Tools[0].Metadata = &apiv1.NodeToolMetadata_Mcp{Mcp: &apiv1.McpToolMetadata{ServerName: "docs", Transport: "sse", Url: "https://mcp.example.com"}}
+		}},
+		{"mcp kind with api metadata", func(response *apiv1.BootstrapAgentResponse) {
+			response.AgentRuntime.Tools[2].Metadata = &apiv1.NodeToolMetadata_Api{Api: &apiv1.ApiToolMetadata{Method: "GET", Url: "https://api.example.com/docs"}}
+		}},
+		{"duplicate tool id across api and mcp metadata", func(response *apiv1.BootstrapAgentResponse) {
+			response.AgentRuntime.Tools[2].ToolId = response.AgentRuntime.Tools[0].ToolId
+		}},
+		{"orphan runtime without API metadata", func(response *apiv1.BootstrapAgentResponse) { response.AgentRuntime.Tools = nil }},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			candidate := proto.Clone(valid).(*apiv1.BootstrapAgentResponse)
+			tt.mutate(candidate)
+			if err := Validate(candidate); err == nil {
+				t.Fatal("Validate() = nil, want API metadata/runtime matching rejection")
+			}
+		})
+	}
+}
+
+func validAPIToolBindings() ([]*apiv1.NodeToolMetadata, []*apiv1.ApiToolRuntime) {
+	return []*apiv1.NodeToolMetadata{
+		{ToolId: "api-tool-1", Kind: "api", Name: "lookup_invoice", Metadata: &apiv1.NodeToolMetadata_Api{Api: &apiv1.ApiToolMetadata{Method: "GET", Url: "https://api.example.com/invoices"}}},
+		{ToolId: "api-tool-2", Kind: "api", Name: "create_invoice", Metadata: &apiv1.NodeToolMetadata_Api{Api: &apiv1.ApiToolMetadata{Method: "POST", Url: "https://api.example.com/invoices"}}},
+		{ToolId: "mcp-tool-1", Kind: "mcp", Name: "search_docs", Metadata: &apiv1.NodeToolMetadata_Mcp{Mcp: &apiv1.McpToolMetadata{ServerName: "docs", Transport: "sse", Url: "https://mcp.example.com"}}},
+	}, []*apiv1.ApiToolRuntime{
+		{ToolId: "api-tool-1", Headers: map[string]string{"authorization": "Bearer short-lived-token"}},
+		{ToolId: "api-tool-2", Headers: map[string]string{"x-api-key": "short-lived-key"}},
+	}
+}
+
 func TestR4CallRuntimeDescriptorRetainsBackgroundAudioAndDtmfBoundaries(t *testing.T) {
 	runtimeDescriptor, err := protoregistry.GlobalFiles.FindDescriptorByName("port.api.v1.CallRuntimeSnapshot")
 	if err != nil {

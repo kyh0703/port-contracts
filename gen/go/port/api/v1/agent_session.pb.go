@@ -1552,8 +1552,9 @@ type AgentRuntime struct {
 	McpServers     []*McpServerRuntime    `protobuf:"bytes,7,rep,name=mcp_servers,json=mcpServers,proto3" json:"mcp_servers,omitempty"`
 	// Greeting activation is derived from execution context per C17: initial and
 	// handoff activations may play it, while supervisor specialist tasks do not.
-	Greeting            string `protobuf:"bytes,8,opt,name=greeting,proto3" json:"greeting,omitempty"`
-	KnowledgeRevisionId string `protobuf:"bytes,9,opt,name=knowledge_revision_id,json=knowledgeRevisionId,proto3" json:"knowledge_revision_id,omitempty"`
+	Greeting            string            `protobuf:"bytes,8,opt,name=greeting,proto3" json:"greeting,omitempty"`
+	KnowledgeRevisionId string            `protobuf:"bytes,9,opt,name=knowledge_revision_id,json=knowledgeRevisionId,proto3" json:"knowledge_revision_id,omitempty"`
+	ApiToolRuntimes     []*ApiToolRuntime `protobuf:"bytes,10,rep,name=api_tool_runtimes,json=apiToolRuntimes,proto3" json:"api_tool_runtimes,omitempty"`
 	unknownFields       protoimpl.UnknownFields
 	sizeCache           protoimpl.SizeCache
 }
@@ -1649,6 +1650,13 @@ func (x *AgentRuntime) GetKnowledgeRevisionId() string {
 		return x.KnowledgeRevisionId
 	}
 	return ""
+}
+
+func (x *AgentRuntime) GetApiToolRuntimes() []*ApiToolRuntime {
+	if x != nil {
+		return x.ApiToolRuntimes
+	}
+	return nil
 }
 
 type AgentInstructions struct {
@@ -4263,7 +4271,7 @@ const file_port_api_v1_agent_session_proto_rawDesc = "" +
 	"(\x01R\x0etimeoutSeconds\x12.\n" +
 	"\aend_key\x18\x02 \x01(\tB\x10\xbaH\rr\v2\t^[0-9#*]$H\x00R\x06endKey\x88\x01\x01B\n" +
 	"\n" +
-	"\b_end_key\"\x85\x04\n" +
+	"\b_end_key\"\x9f\t\n" +
 	"\fAgentRuntime\x12\"\n" +
 	"\bagent_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\aagentId\x121\n" +
 	"\x10agent_version_id\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x0eagentVersionId\x12>\n" +
@@ -4276,7 +4284,10 @@ const file_port_api_v1_agent_session_proto_rawDesc = "" +
 	"\vmcp_servers\x18\a \x03(\v2\x1d.port.api.v1.McpServerRuntimeR\n" +
 	"mcpServers\x12\x1a\n" +
 	"\bgreeting\x18\b \x01(\tR\bgreeting\x122\n" +
-	"\x15knowledge_revision_id\x18\t \x01(\tR\x13knowledgeRevisionId\"a\n" +
+	"\x15knowledge_revision_id\x18\t \x01(\tR\x13knowledgeRevisionId\x12G\n" +
+	"\x11api_tool_runtimes\x18\n" +
+	" \x03(\v2\x1b.port.api.v1.ApiToolRuntimeR\x0fapiToolRuntimes:\xce\x04\xbaH\xca\x04\x1a\xc7\x04\n" +
+	",agent_runtime.tool_metadata_runtime_bindings\x124API tool metadata and runtime IDs must match exactly\x1a\xe0\x03this.tools.all(t, this.tools.filter(candidate, candidate.tool_id == t.tool_id).size() == 1 && ((t.kind == 'api' && has(t.api)) || (t.kind == 'mcp' && !has(t.api)))) && this.tools.filter(t, t.kind == 'api').all(t, this.api_tool_runtimes.filter(r, r.tool_id == t.tool_id).size() == 1) && this.api_tool_runtimes.all(r, this.tools.filter(t, t.kind == 'api' && t.tool_id == r.tool_id).size() == 1 && this.api_tool_runtimes.filter(candidate, candidate.tool_id == r.tool_id).size() == 1)\"a\n" +
 	"\x11AgentInstructions\x12,\n" +
 	"\rsystem_prompt\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\fsystemPrompt\x12\x1e\n" +
 	"\n" +
@@ -4638,52 +4649,53 @@ var file_port_api_v1_agent_session_proto_depIdxs = []int32{
 	6,  // 34: port.api.v1.AgentRuntime.context_policy:type_name -> port.api.v1.ContextPolicy
 	35, // 35: port.api.v1.AgentRuntime.tools:type_name -> port.api.v1.NodeToolMetadata
 	55, // 36: port.api.v1.AgentRuntime.mcp_servers:type_name -> port.api.v1.McpServerRuntime
-	24, // 37: port.api.v1.SupervisorSnapshot.specialists:type_name -> port.api.v1.SupervisorSpecialist
-	6,  // 38: port.api.v1.SupervisorSpecialist.context_policy:type_name -> port.api.v1.ContextPolicy
-	26, // 39: port.api.v1.HandoffSnapshot.routes:type_name -> port.api.v1.HandoffRoute
-	6,  // 40: port.api.v1.HandoffRoute.context_policy:type_name -> port.api.v1.ContextPolicy
-	28, // 41: port.api.v1.OrchestrationGraphSnapshot.nodes:type_name -> port.api.v1.OrchestrationNode
-	36, // 42: port.api.v1.OrchestrationGraphSnapshot.transitions:type_name -> port.api.v1.OrchestrationTransition
-	34, // 43: port.api.v1.OrchestrationGraphSnapshot.node_tool_snapshots:type_name -> port.api.v1.NodeToolSnapshot
-	4,  // 44: port.api.v1.OrchestrationNode.kind:type_name -> port.api.v1.NodeKind
-	45, // 45: port.api.v1.OrchestrationNode.position:type_name -> port.api.v1.CanvasPosition
-	46, // 46: port.api.v1.OrchestrationNode.size:type_name -> port.api.v1.CanvasSize
-	29, // 47: port.api.v1.OrchestrationNode.agent:type_name -> port.api.v1.OrchestrationAgent
-	30, // 48: port.api.v1.OrchestrationNode.task:type_name -> port.api.v1.OrchestrationTask
-	31, // 49: port.api.v1.OrchestrationNode.group:type_name -> port.api.v1.OrchestrationGroup
-	32, // 50: port.api.v1.OrchestrationAgent.persona:type_name -> port.api.v1.OrchestrationAgentPersona
-	33, // 51: port.api.v1.OrchestrationAgent.execution_profile:type_name -> port.api.v1.OrchestrationExecutionProfile
-	33, // 52: port.api.v1.OrchestrationTask.execution_profile:type_name -> port.api.v1.OrchestrationExecutionProfile
-	35, // 53: port.api.v1.NodeToolSnapshot.tools:type_name -> port.api.v1.NodeToolMetadata
-	49, // 54: port.api.v1.NodeToolMetadata.mcp:type_name -> port.api.v1.McpToolMetadata
-	50, // 55: port.api.v1.NodeToolMetadata.api:type_name -> port.api.v1.ApiToolMetadata
-	5,  // 56: port.api.v1.OrchestrationTransition.kind:type_name -> port.api.v1.TransitionKind
-	6,  // 57: port.api.v1.OrchestrationTransition.context_policy:type_name -> port.api.v1.ContextPolicy
-	52, // 58: port.api.v1.SupervisorConfig.global_actions:type_name -> port.api.v1.AgentGlobalActions
-	40, // 59: port.api.v1.WorkerSnapshot.persona:type_name -> port.api.v1.WorkerPersona
-	42, // 60: port.api.v1.CanvasSnapshot.nodes:type_name -> port.api.v1.CanvasNodeSnapshot
-	45, // 61: port.api.v1.CanvasNodeSnapshot.position:type_name -> port.api.v1.CanvasPosition
-	46, // 62: port.api.v1.CanvasNodeSnapshot.size:type_name -> port.api.v1.CanvasSize
-	43, // 63: port.api.v1.CanvasNodeSnapshot.group:type_name -> port.api.v1.CanvasGroupPlacement
-	44, // 64: port.api.v1.CanvasNodeSnapshot.agent:type_name -> port.api.v1.CanvasAgentPlacement
-	48, // 65: port.api.v1.WorkerToolSnapshot.tools:type_name -> port.api.v1.WorkerToolMetadata
-	49, // 66: port.api.v1.WorkerToolMetadata.mcp:type_name -> port.api.v1.McpToolMetadata
-	50, // 67: port.api.v1.WorkerToolMetadata.api:type_name -> port.api.v1.ApiToolMetadata
-	56, // 68: port.api.v1.ApiToolRuntime.headers:type_name -> port.api.v1.ApiToolRuntime.HeadersEntry
-	53, // 69: port.api.v1.AgentGlobalActions.transfer_to_human:type_name -> port.api.v1.TransferToHumanAction
-	54, // 70: port.api.v1.AgentGlobalActions.end_call:type_name -> port.api.v1.EndCallAction
-	57, // 71: port.api.v1.McpServerRuntime.headers:type_name -> port.api.v1.McpServerRuntime.HeadersEntry
-	7,  // 72: port.api.v1.AgentSessionService.Bootstrap:input_type -> port.api.v1.BootstrapRequest
-	10, // 73: port.api.v1.AgentSessionService.BootstrapAgent:input_type -> port.api.v1.BootstrapAgentRequest
-	12, // 74: port.api.v1.AgentSessionService.BootstrapOrchestration:input_type -> port.api.v1.BootstrapOrchestrationRequest
-	9,  // 75: port.api.v1.AgentSessionService.Bootstrap:output_type -> port.api.v1.BootstrapResponse
-	11, // 76: port.api.v1.AgentSessionService.BootstrapAgent:output_type -> port.api.v1.BootstrapAgentResponse
-	13, // 77: port.api.v1.AgentSessionService.BootstrapOrchestration:output_type -> port.api.v1.BootstrapOrchestrationResponse
-	75, // [75:78] is the sub-list for method output_type
-	72, // [72:75] is the sub-list for method input_type
-	72, // [72:72] is the sub-list for extension type_name
-	72, // [72:72] is the sub-list for extension extendee
-	0,  // [0:72] is the sub-list for field type_name
+	51, // 37: port.api.v1.AgentRuntime.api_tool_runtimes:type_name -> port.api.v1.ApiToolRuntime
+	24, // 38: port.api.v1.SupervisorSnapshot.specialists:type_name -> port.api.v1.SupervisorSpecialist
+	6,  // 39: port.api.v1.SupervisorSpecialist.context_policy:type_name -> port.api.v1.ContextPolicy
+	26, // 40: port.api.v1.HandoffSnapshot.routes:type_name -> port.api.v1.HandoffRoute
+	6,  // 41: port.api.v1.HandoffRoute.context_policy:type_name -> port.api.v1.ContextPolicy
+	28, // 42: port.api.v1.OrchestrationGraphSnapshot.nodes:type_name -> port.api.v1.OrchestrationNode
+	36, // 43: port.api.v1.OrchestrationGraphSnapshot.transitions:type_name -> port.api.v1.OrchestrationTransition
+	34, // 44: port.api.v1.OrchestrationGraphSnapshot.node_tool_snapshots:type_name -> port.api.v1.NodeToolSnapshot
+	4,  // 45: port.api.v1.OrchestrationNode.kind:type_name -> port.api.v1.NodeKind
+	45, // 46: port.api.v1.OrchestrationNode.position:type_name -> port.api.v1.CanvasPosition
+	46, // 47: port.api.v1.OrchestrationNode.size:type_name -> port.api.v1.CanvasSize
+	29, // 48: port.api.v1.OrchestrationNode.agent:type_name -> port.api.v1.OrchestrationAgent
+	30, // 49: port.api.v1.OrchestrationNode.task:type_name -> port.api.v1.OrchestrationTask
+	31, // 50: port.api.v1.OrchestrationNode.group:type_name -> port.api.v1.OrchestrationGroup
+	32, // 51: port.api.v1.OrchestrationAgent.persona:type_name -> port.api.v1.OrchestrationAgentPersona
+	33, // 52: port.api.v1.OrchestrationAgent.execution_profile:type_name -> port.api.v1.OrchestrationExecutionProfile
+	33, // 53: port.api.v1.OrchestrationTask.execution_profile:type_name -> port.api.v1.OrchestrationExecutionProfile
+	35, // 54: port.api.v1.NodeToolSnapshot.tools:type_name -> port.api.v1.NodeToolMetadata
+	49, // 55: port.api.v1.NodeToolMetadata.mcp:type_name -> port.api.v1.McpToolMetadata
+	50, // 56: port.api.v1.NodeToolMetadata.api:type_name -> port.api.v1.ApiToolMetadata
+	5,  // 57: port.api.v1.OrchestrationTransition.kind:type_name -> port.api.v1.TransitionKind
+	6,  // 58: port.api.v1.OrchestrationTransition.context_policy:type_name -> port.api.v1.ContextPolicy
+	52, // 59: port.api.v1.SupervisorConfig.global_actions:type_name -> port.api.v1.AgentGlobalActions
+	40, // 60: port.api.v1.WorkerSnapshot.persona:type_name -> port.api.v1.WorkerPersona
+	42, // 61: port.api.v1.CanvasSnapshot.nodes:type_name -> port.api.v1.CanvasNodeSnapshot
+	45, // 62: port.api.v1.CanvasNodeSnapshot.position:type_name -> port.api.v1.CanvasPosition
+	46, // 63: port.api.v1.CanvasNodeSnapshot.size:type_name -> port.api.v1.CanvasSize
+	43, // 64: port.api.v1.CanvasNodeSnapshot.group:type_name -> port.api.v1.CanvasGroupPlacement
+	44, // 65: port.api.v1.CanvasNodeSnapshot.agent:type_name -> port.api.v1.CanvasAgentPlacement
+	48, // 66: port.api.v1.WorkerToolSnapshot.tools:type_name -> port.api.v1.WorkerToolMetadata
+	49, // 67: port.api.v1.WorkerToolMetadata.mcp:type_name -> port.api.v1.McpToolMetadata
+	50, // 68: port.api.v1.WorkerToolMetadata.api:type_name -> port.api.v1.ApiToolMetadata
+	56, // 69: port.api.v1.ApiToolRuntime.headers:type_name -> port.api.v1.ApiToolRuntime.HeadersEntry
+	53, // 70: port.api.v1.AgentGlobalActions.transfer_to_human:type_name -> port.api.v1.TransferToHumanAction
+	54, // 71: port.api.v1.AgentGlobalActions.end_call:type_name -> port.api.v1.EndCallAction
+	57, // 72: port.api.v1.McpServerRuntime.headers:type_name -> port.api.v1.McpServerRuntime.HeadersEntry
+	7,  // 73: port.api.v1.AgentSessionService.Bootstrap:input_type -> port.api.v1.BootstrapRequest
+	10, // 74: port.api.v1.AgentSessionService.BootstrapAgent:input_type -> port.api.v1.BootstrapAgentRequest
+	12, // 75: port.api.v1.AgentSessionService.BootstrapOrchestration:input_type -> port.api.v1.BootstrapOrchestrationRequest
+	9,  // 76: port.api.v1.AgentSessionService.Bootstrap:output_type -> port.api.v1.BootstrapResponse
+	11, // 77: port.api.v1.AgentSessionService.BootstrapAgent:output_type -> port.api.v1.BootstrapAgentResponse
+	13, // 78: port.api.v1.AgentSessionService.BootstrapOrchestration:output_type -> port.api.v1.BootstrapOrchestrationResponse
+	76, // [76:79] is the sub-list for method output_type
+	73, // [73:76] is the sub-list for method input_type
+	73, // [73:73] is the sub-list for extension type_name
+	73, // [73:73] is the sub-list for extension extendee
+	0,  // [0:73] is the sub-list for field type_name
 }
 
 func init() { file_port_api_v1_agent_session_proto_init() }

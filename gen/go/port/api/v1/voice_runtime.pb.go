@@ -147,6 +147,7 @@ type SttRuntime struct {
 	ApiKey        string                 `protobuf:"bytes,1,opt,name=api_key,json=apiKey,proto3" json:"api_key,omitempty"`
 	Model         string                 `protobuf:"bytes,2,opt,name=model,proto3" json:"model,omitempty"`
 	Language      string                 `protobuf:"bytes,3,opt,name=language,proto3" json:"language,omitempty"`
+	Keyterms      []string               `protobuf:"bytes,4,rep,name=keyterms,proto3" json:"keyterms,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -200,6 +201,13 @@ func (x *SttRuntime) GetLanguage() string {
 		return x.Language
 	}
 	return ""
+}
+
+func (x *SttRuntime) GetKeyterms() []string {
+	if x != nil {
+		return x.Keyterms
+	}
+	return nil
 }
 
 type LlmRuntime struct {
@@ -335,12 +343,13 @@ const file_port_api_v1_voice_runtime_proto_rawDesc = "" +
 	"\x14ResolveLeaseResponse\x121\n" +
 	"\x03stt\x18\x01 \x01(\v2\x17.port.api.v1.SttRuntimeB\x06\xbaH\x03\xc8\x01\x01R\x03stt\x121\n" +
 	"\x03llm\x18\x02 \x01(\v2\x17.port.api.v1.LlmRuntimeB\x06\xbaH\x03\xc8\x01\x01R\x03llm\x121\n" +
-	"\x03tts\x18\x03 \x01(\v2\x17.port.api.v1.TtsRuntimeB\x06\xbaH\x03\xc8\x01\x01R\x03tts\"r\n" +
+	"\x03tts\x18\x03 \x01(\v2\x17.port.api.v1.TtsRuntimeB\x06\xbaH\x03\xc8\x01\x01R\x03tts\"\x9c\x01\n" +
 	"\n" +
 	"SttRuntime\x12 \n" +
 	"\aapi_key\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x06apiKey\x12\x1d\n" +
 	"\x05model\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x05model\x12#\n" +
-	"\blanguage\x18\x03 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\blanguage\"M\n" +
+	"\blanguage\x18\x03 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\blanguage\x12(\n" +
+	"\bkeyterms\x18\x04 \x03(\tB\f\xbaH\t\x92\x01\x06\"\x04r\x02\x10\x01R\bkeyterms\"M\n" +
 	"\n" +
 	"LlmRuntime\x12 \n" +
 	"\aapi_key\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x06apiKey\x12\x1d\n" +
