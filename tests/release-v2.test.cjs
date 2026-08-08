@@ -9,13 +9,13 @@ function read(relativePath) {
   return readFileSync(path.join(root, relativePath), "utf8");
 }
 
-test("npm release metadata is pinned to 2.0.0", () => {
+test("npm release metadata is pinned to 2.1.0", () => {
   const packageJson = JSON.parse(read("package.json"));
   const packageLock = JSON.parse(read("package-lock.json"));
 
-  assert.equal(packageJson.version, "2.0.0");
-  assert.equal(packageLock.version, "2.0.0");
-  assert.equal(packageLock.packages[""].version, "2.0.0");
+  assert.equal(packageJson.version, "2.1.0");
+  assert.equal(packageLock.version, "2.1.0");
+  assert.equal(packageLock.packages[""].version, "2.1.0");
 });
 
 test("Go module uses the v2 import boundary", () => {

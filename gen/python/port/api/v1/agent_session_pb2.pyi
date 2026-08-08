@@ -297,7 +297,7 @@ class DtmfInputRuntime(_message.Message):
     def __init__(self, timeout_seconds: _Optional[int] = ..., end_key: _Optional[str] = ...) -> None: ...
 
 class AgentRuntime(_message.Message):
-    __slots__ = ("agent_id", "agent_version_id", "llm_worker", "instructions", "context_policy", "tools", "mcp_servers", "greeting", "knowledge_revision_id")
+    __slots__ = ("agent_id", "agent_version_id", "llm_worker", "instructions", "context_policy", "tools", "mcp_servers", "greeting", "knowledge_revision_id", "api_tool_runtimes")
     AGENT_ID_FIELD_NUMBER: _ClassVar[int]
     AGENT_VERSION_ID_FIELD_NUMBER: _ClassVar[int]
     LLM_WORKER_FIELD_NUMBER: _ClassVar[int]
@@ -307,6 +307,7 @@ class AgentRuntime(_message.Message):
     MCP_SERVERS_FIELD_NUMBER: _ClassVar[int]
     GREETING_FIELD_NUMBER: _ClassVar[int]
     KNOWLEDGE_REVISION_ID_FIELD_NUMBER: _ClassVar[int]
+    API_TOOL_RUNTIMES_FIELD_NUMBER: _ClassVar[int]
     agent_id: str
     agent_version_id: str
     llm_worker: _voice_runtime_pb2.LlmRuntime
@@ -316,7 +317,8 @@ class AgentRuntime(_message.Message):
     mcp_servers: _containers.RepeatedCompositeFieldContainer[McpServerRuntime]
     greeting: str
     knowledge_revision_id: str
-    def __init__(self, agent_id: _Optional[str] = ..., agent_version_id: _Optional[str] = ..., llm_worker: _Optional[_Union[_voice_runtime_pb2.LlmRuntime, _Mapping]] = ..., instructions: _Optional[_Union[AgentInstructions, _Mapping]] = ..., context_policy: _Optional[_Union[ContextPolicy, str]] = ..., tools: _Optional[_Iterable[_Union[NodeToolMetadata, _Mapping]]] = ..., mcp_servers: _Optional[_Iterable[_Union[McpServerRuntime, _Mapping]]] = ..., greeting: _Optional[str] = ..., knowledge_revision_id: _Optional[str] = ...) -> None: ...
+    api_tool_runtimes: _containers.RepeatedCompositeFieldContainer[ApiToolRuntime]
+    def __init__(self, agent_id: _Optional[str] = ..., agent_version_id: _Optional[str] = ..., llm_worker: _Optional[_Union[_voice_runtime_pb2.LlmRuntime, _Mapping]] = ..., instructions: _Optional[_Union[AgentInstructions, _Mapping]] = ..., context_policy: _Optional[_Union[ContextPolicy, str]] = ..., tools: _Optional[_Iterable[_Union[NodeToolMetadata, _Mapping]]] = ..., mcp_servers: _Optional[_Iterable[_Union[McpServerRuntime, _Mapping]]] = ..., greeting: _Optional[str] = ..., knowledge_revision_id: _Optional[str] = ..., api_tool_runtimes: _Optional[_Iterable[_Union[ApiToolRuntime, _Mapping]]] = ...) -> None: ...
 
 class AgentInstructions(_message.Message):
     __slots__ = ("system_prompt", "guardrails")

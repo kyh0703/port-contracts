@@ -227,6 +227,11 @@ message DtmfInputRuntime {
 }
 
 message AgentRuntime {
+  option (buf.validate.message).cel = {
+    id: "agent_runtime.tool_metadata_runtime_bindings"
+    message: "API tool metadata and runtime IDs must match exactly"
+    expression: "this.tools.all(t, this.tools.filter(candidate, candidate.tool_id == t.tool_id).size() == 1 && ((t.kind == 'api' && has(t.api)) || (t.kind == 'mcp' && !has(t.api)))) && this.tools.filter(t, t.kind == 'api').all(t, this.api_tool_runtimes.filter(r, r.tool_id == t.tool_id).size() == 1) && this.api_tool_runtimes.all(r, this.tools.filter(t, t.kind == 'api' && t.tool_id == r.tool_id).size() == 1 && this.api_tool_runtimes.filter(candidate, candidate.tool_id == r.tool_id).size() == 1)"
+  };
   string agent_id = 1 [(buf.validate.field).string.min_len = 1];
   string agent_version_id = 2 [(buf.validate.field).string.min_len = 1];
   LlmRuntime llm_worker = 3 [(buf.validate.field).required = true];
@@ -238,6 +243,7 @@ message AgentRuntime {
   // handoff activations may play it, while supervisor specialist tasks do not.
   string greeting = 8;
   string knowledge_revision_id = 9;
+  repeated ApiToolRuntime api_tool_runtimes = 10;
 }
 
 message AgentInstructions {

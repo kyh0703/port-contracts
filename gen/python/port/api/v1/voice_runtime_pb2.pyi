@@ -1,7 +1,8 @@
 from buf.validate import validate_pb2 as _validate_pb2
+from google.protobuf.internal import containers as _containers
 from google.protobuf import descriptor as _descriptor
 from google.protobuf import message as _message
-from collections.abc import Mapping as _Mapping
+from collections.abc import Iterable as _Iterable, Mapping as _Mapping
 from typing import ClassVar as _ClassVar, Optional as _Optional, Union as _Union
 
 DESCRIPTOR: _descriptor.FileDescriptor
@@ -27,14 +28,16 @@ class ResolveLeaseResponse(_message.Message):
     def __init__(self, stt: _Optional[_Union[SttRuntime, _Mapping]] = ..., llm: _Optional[_Union[LlmRuntime, _Mapping]] = ..., tts: _Optional[_Union[TtsRuntime, _Mapping]] = ...) -> None: ...
 
 class SttRuntime(_message.Message):
-    __slots__ = ("api_key", "model", "language")
+    __slots__ = ("api_key", "model", "language", "keyterms")
     API_KEY_FIELD_NUMBER: _ClassVar[int]
     MODEL_FIELD_NUMBER: _ClassVar[int]
     LANGUAGE_FIELD_NUMBER: _ClassVar[int]
+    KEYTERMS_FIELD_NUMBER: _ClassVar[int]
     api_key: str
     model: str
     language: str
-    def __init__(self, api_key: _Optional[str] = ..., model: _Optional[str] = ..., language: _Optional[str] = ...) -> None: ...
+    keyterms: _containers.RepeatedScalarFieldContainer[str]
+    def __init__(self, api_key: _Optional[str] = ..., model: _Optional[str] = ..., language: _Optional[str] = ..., keyterms: _Optional[_Iterable[str]] = ...) -> None: ...
 
 class LlmRuntime(_message.Message):
     __slots__ = ("api_key", "model")

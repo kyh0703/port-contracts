@@ -19,7 +19,7 @@ const {
 
 function createPinnedCallRuntime() {
   return {
-    stt: { apiKey: "stt-key", model: "stt-model", language: "ko" },
+    stt: { apiKey: "stt-key", model: "stt-model", language: "ko", keyterms: [] },
     tts: { apiKey: "tts-key", model: "tts-model", language: "ko", voiceId: "voice-1" },
     backgroundAudio: { preset: BackgroundAudioPreset.BACKGROUND_AUDIO_PRESET_CONTACT_CENTER, volume: 1 },
     dtmf: DtmfInputRuntime.create({ timeoutSeconds: 10, endKey: "*" }),
@@ -159,6 +159,63 @@ test("direct Agent response carries one pinned CallRuntime and AgentRuntime", ()
   const decoded = BootstrapAgentResponse.decode(BootstrapAgentResponse.encode(source).finish());
   assert.deepEqual(decoded, source);
   assert.equal(decoded.agentRuntime?.callRuntime, undefined);
+});
+
+test("AgentRuntime STT keyterms preserve order and values across direct and orchestration modes", () => {
+  const direct = createDirectAgentResponse();
+  const supervisor = BootstrapOrchestrationResponse.create({
+    contractRevision: "orchestration-2026-08-07-r4", schemaVersion: "agent.orchestration.v1",
+    conversationId: "conversation-keyterms-supervisor", sessionId: "session-keyterms-supervisor",
+    orchestrationId: "orchestration-keyterms", orchestrationVersionId: "orchestration-version-keyterms",
+    mode: OrchestrationMode.ORCHESTRATION_MODE_SUPERVISOR, callRuntime: createPinnedCallRuntime(),
+    agentRuntimes: createValidAgentRuntimes(),
+    supervisor: { supervisorAgentVersionId: "agent-version-1", specialists: [{ relationId: "billing", targetAgentVersionId: "agent-version-2", routeDescription: "Billing", contextPolicy: ContextPolicy.CONTEXT_POLICY_CONVERSATION }] },
+  });
+  const handoff = BootstrapOrchestrationResponse.create({ ...supervisor, mode: OrchestrationMode.ORCHESTRATION_MODE_HANDOFF, supervisor: undefined, handoff: { entryAgentVersionId: "agent-version-1", maxHandoffDepth: 1, routes: [{ transitionId: "to-billing", sourceAgentVersionId: "agent-version-1", targetAgentVersionId: "agent-version-2", routingDescription: "Billing", contextPolicy: ContextPolicy.CONTEXT_POLICY_CONVERSATION }] } });
+  for (const source of [direct, supervisor, handoff]) {
+    source.callRuntime.stt.keyterms = ["Port", "고객번호", "VIP"];
+    const codec = source.agentRuntime ? BootstrapAgentResponse : BootstrapOrchestrationResponse;
+    const decoded = codec.decode(codec.encode(source).finish());
+    assert.deepEqual(decoded.callRuntime.stt.keyterms, ["Port", "고객번호", "VIP"]);
+  }
+});
+
+test("2.0.0 payload decodes with empty keyterms and API runtime defaults", () => {
+  const source = BootstrapAgentResponse.create({ ...createDirectAgentResponse(), callRuntime: createPinnedCallRuntime() });
+  const decoded = BootstrapAgentResponse.decode(BootstrapAgentResponse.encode(source).finish());
+  assert.deepEqual(decoded.callRuntime.stt.keyterms, []);
+  assert.deepEqual(decoded.agentRuntime.apiToolRuntimes, []);
+});
+
+test("direct, supervisor, and handoff API tool metadata match exactly one runtime", () => {
+  const apiTools = [
+    { toolId: "api-tool-1", kind: "api", name: "lookup_invoice", api: { method: "GET", url: "https://api.example.com/invoices" } },
+    { toolId: "api-tool-2", kind: "api", name: "create_invoice", api: { method: "POST", url: "https://api.example.com/invoices" } },
+  ];
+  const allTools = [...apiTools, { toolId: "mcp-tool-1", kind: "mcp", name: "search_docs", mcp: { serverName: "docs", transport: "sse", url: "https://mcp.example.com" } }];
+  const runtimes = [
+    { toolId: "api-tool-1", headers: { authorization: "Bearer short-lived-token" } },
+    { toolId: "api-tool-2", headers: { "x-api-key": "short-lived-key" } },
+  ];
+  const direct = createDirectAgentResponse();
+  direct.agentRuntime.tools = allTools;
+  direct.agentRuntime.apiToolRuntimes = runtimes;
+  const supervisor = BootstrapOrchestrationResponse.create({
+    contractRevision: "orchestration-2026-08-07-r4", schemaVersion: "agent.orchestration.v1",
+    conversationId: "conversation-api-supervisor", sessionId: "session-api-supervisor", orchestrationId: "orchestration-api", orchestrationVersionId: "orchestration-version-api",
+    mode: OrchestrationMode.ORCHESTRATION_MODE_SUPERVISOR, callRuntime: createPinnedCallRuntime(),
+    agentRuntimes: createValidAgentRuntimes().map((agent, index) => index === 0 ? { ...agent, tools: allTools, apiToolRuntimes: runtimes } : agent),
+    supervisor: { supervisorAgentVersionId: "agent-version-1", specialists: [{ relationId: "billing", targetAgentVersionId: "agent-version-2", routeDescription: "Billing", contextPolicy: ContextPolicy.CONTEXT_POLICY_CONVERSATION }] },
+  });
+  const handoff = BootstrapOrchestrationResponse.create({ ...supervisor, mode: OrchestrationMode.ORCHESTRATION_MODE_HANDOFF, supervisor: undefined, handoff: { entryAgentVersionId: "agent-version-1", maxHandoffDepth: 1, routes: [{ transitionId: "to-billing", sourceAgentVersionId: "agent-version-1", targetAgentVersionId: "agent-version-2", routingDescription: "Billing", contextPolicy: ContextPolicy.CONTEXT_POLICY_CONVERSATION }] } });
+  for (const source of [direct, supervisor, handoff]) {
+    const codec = source.agentRuntime ? BootstrapAgentResponse : BootstrapOrchestrationResponse;
+    const decoded = codec.decode(codec.encode(source).finish());
+    const decodedAgent = decoded.agentRuntime ?? decoded.agentRuntimes[0];
+    assert.deepEqual(decodedAgent.tools.filter((tool) => tool.kind === "api").map((tool) => tool.toolId), ["api-tool-1", "api-tool-2"]);
+    assert.deepEqual(decodedAgent.apiToolRuntimes, runtimes);
+    assert.deepEqual(decodedAgent.apiToolRuntimes.map((entry) => entry.toolId), decodedAgent.tools.filter((tool) => tool.kind === "api").map((tool) => tool.toolId));
+  }
 });
 
 test("supervisor and handoff responses carry exactly one mode snapshot", () => {
