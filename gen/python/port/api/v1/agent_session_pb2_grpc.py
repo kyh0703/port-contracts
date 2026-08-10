@@ -20,6 +20,11 @@ class AgentSessionServiceStub:
                 request_serializer=port_dot_api_dot_v1_dot_agent__session__pb2.BootstrapRequest.SerializeToString,
                 response_deserializer=port_dot_api_dot_v1_dot_agent__session__pb2.BootstrapResponse.FromString,
                 _registered_method=True)
+        self.BootstrapSip = channel.unary_unary(
+                '/port.api.v1.AgentSessionService/BootstrapSip',
+                request_serializer=port_dot_api_dot_v1_dot_agent__session__pb2.BootstrapSipRequest.SerializeToString,
+                response_deserializer=port_dot_api_dot_v1_dot_agent__session__pb2.BootstrapSipResponse.FromString,
+                _registered_method=True)
         self.BootstrapAgent = channel.unary_unary(
                 '/port.api.v1.AgentSessionService/BootstrapAgent',
                 request_serializer=port_dot_api_dot_v1_dot_agent__session__pb2.BootstrapAgentRequest.SerializeToString,
@@ -37,6 +42,12 @@ class AgentSessionServiceServicer:
     """
 
     def Bootstrap(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def BootstrapSip(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -61,6 +72,11 @@ def add_AgentSessionServiceServicer_to_server(servicer, server):
                     servicer.Bootstrap,
                     request_deserializer=port_dot_api_dot_v1_dot_agent__session__pb2.BootstrapRequest.FromString,
                     response_serializer=port_dot_api_dot_v1_dot_agent__session__pb2.BootstrapResponse.SerializeToString,
+            ),
+            'BootstrapSip': grpc.unary_unary_rpc_method_handler(
+                    servicer.BootstrapSip,
+                    request_deserializer=port_dot_api_dot_v1_dot_agent__session__pb2.BootstrapSipRequest.FromString,
+                    response_serializer=port_dot_api_dot_v1_dot_agent__session__pb2.BootstrapSipResponse.SerializeToString,
             ),
             'BootstrapAgent': grpc.unary_unary_rpc_method_handler(
                     servicer.BootstrapAgent,
@@ -101,6 +117,33 @@ class AgentSessionService:
             '/port.api.v1.AgentSessionService/Bootstrap',
             port_dot_api_dot_v1_dot_agent__session__pb2.BootstrapRequest.SerializeToString,
             port_dot_api_dot_v1_dot_agent__session__pb2.BootstrapResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def BootstrapSip(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/port.api.v1.AgentSessionService/BootstrapSip',
+            port_dot_api_dot_v1_dot_agent__session__pb2.BootstrapSipRequest.SerializeToString,
+            port_dot_api_dot_v1_dot_agent__session__pb2.BootstrapSipResponse.FromString,
             options,
             channel_credentials,
             insecure,

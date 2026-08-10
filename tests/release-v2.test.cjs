@@ -9,13 +9,13 @@ function read(relativePath) {
   return readFileSync(path.join(root, relativePath), "utf8");
 }
 
-test("npm release metadata is pinned to 2.1.0", () => {
+test("npm release metadata is pinned to 2.2.0", () => {
   const packageJson = JSON.parse(read("package.json"));
   const packageLock = JSON.parse(read("package-lock.json"));
 
-  assert.equal(packageJson.version, "2.1.0");
-  assert.equal(packageLock.version, "2.1.0");
-  assert.equal(packageLock.packages[""].version, "2.1.0");
+  assert.equal(packageJson.version, "2.2.0");
+  assert.equal(packageLock.version, "2.2.0");
+  assert.equal(packageLock.packages[""].version, "2.2.0");
 });
 
 test("Go module uses the v2 import boundary", () => {
@@ -40,9 +40,9 @@ test("protobuf Go packages use the v2 module path", () => {
 test("r4 revision and CallRuntimeSnapshot field identifiers stay unchanged", () => {
   const agentSession = read("proto/port/api/v1/agent_session.proto");
   const r4RevisionMatches = agentSession.match(
-    /string contract_revision = (?:1|5) \[[\s\S]*?\(buf\.validate\.field\)\.string\.const = "orchestration-2026-08-07-r4"[\s\S]*?\];/g,
+    /string contract_revision = (?:1|2|5) \[[\s\S]*?\(buf\.validate\.field\)\.string\.const = "orchestration-2026-08-07-r4"[\s\S]*?\];/g,
   );
-  assert.equal(r4RevisionMatches?.length, 4);
+  assert.equal(r4RevisionMatches?.length, 5);
 
   const snapshotBody = agentSession.match(/message CallRuntimeSnapshot \{([\s\S]*?)\n\}/)?.[1];
   assert.ok(snapshotBody, "CallRuntimeSnapshot message is missing");

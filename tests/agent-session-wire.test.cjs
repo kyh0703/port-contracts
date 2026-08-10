@@ -3,6 +3,8 @@ const test = require("node:test");
 
 const {
   BootstrapResponse,
+  BootstrapSipRequest,
+  BootstrapSipResponse,
   BootstrapAgentResponse,
   BootstrapOrchestrationResponse,
   BackgroundAudioPreset,
@@ -55,6 +57,8 @@ function createValidAgentRuntimes() {
 }
 
 test("r4 generated symbols and service methods are exported", () => {
+  assert.equal(typeof BootstrapSipRequest?.create, "function");
+  assert.equal(typeof BootstrapSipResponse?.create, "function");
   assert.equal(typeof BootstrapAgentResponse?.create, "function");
   assert.equal(typeof BootstrapOrchestrationResponse?.create, "function");
   assert.equal(typeof BackgroundAudioPreset, "object");
@@ -64,6 +68,44 @@ test("r4 generated symbols and service methods are exported", () => {
   const { AgentSessionServiceService } = require("../dist/gen/ts/port/api/v1/agent_session.js");
   assert.equal(typeof AgentSessionServiceService?.bootstrapAgent, "object");
   assert.equal(typeof AgentSessionServiceService?.bootstrapOrchestration, "object");
+  assert.equal(typeof AgentSessionServiceService?.bootstrapSip, "object");
+});
+
+test("BootstrapSip request and response preserve the additive envelope on the wire", () => {
+  const request = BootstrapSipRequest.create({
+    sip: { jobId: "job-1", dispatchId: "dispatch-1", roomName: "room-1", participantIdentity: "sip-1", trunkId: "trunk-1", trunkPhoneNumber: "+8210", callIdFull: "call-1" },
+    contractRevision: "orchestration-2026-08-07-r4",
+  });
+  const decodedRequest = BootstrapSipRequest.decode(BootstrapSipRequest.encode(request).finish());
+  assert.deepEqual(decodedRequest, request);
+
+  const agent = createDirectAgentResponse();
+  const response = BootstrapSipResponse.create({ agent });
+  const decodedResponse = BootstrapSipResponse.decode(BootstrapSipResponse.encode(response).finish());
+  assert.deepEqual(decodedResponse, response);
+  assert.equal(decodedResponse.orchestration, undefined);
+});
+
+test("BootstrapSip orchestration payload preserves its oneof branch on the wire", () => {
+  const orchestration = BootstrapOrchestrationResponse.create({
+    contractRevision: "orchestration-2026-08-07-r4",
+    schemaVersion: "agent.orchestration.v1",
+    conversationId: "conversation-sip-orchestration",
+    sessionId: "session-sip-orchestration",
+    orchestrationId: "orchestration-sip-1",
+    orchestrationVersionId: "orchestration-version-sip-1",
+    mode: OrchestrationMode.ORCHESTRATION_MODE_SUPERVISOR,
+    callRuntime: createPinnedCallRuntime(),
+    agentRuntimes: createValidAgentRuntimes(),
+    supervisor: {
+      supervisorAgentVersionId: "agent-version-1",
+      specialists: [{ relationId: "billing", targetAgentVersionId: "agent-version-2", routeDescription: "Billing", contextPolicy: ContextPolicy.CONTEXT_POLICY_CONVERSATION }],
+    },
+  });
+  const source = BootstrapSipResponse.create({ orchestration });
+  const decoded = BootstrapSipResponse.decode(BootstrapSipResponse.encode(source).finish());
+  assert.deepEqual(decoded, source);
+  assert.equal(decoded.agent, undefined);
 });
 
 test("supervisor/worker bootstrap fields survive protobuf wire round-trip", () => {

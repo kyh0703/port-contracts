@@ -346,6 +346,16 @@ export interface SipBootstrapContext {
   callIdFull: string;
 }
 
+export interface BootstrapSipRequest {
+  sip?: SipBootstrapContext | undefined;
+  contractRevision: string;
+}
+
+export interface BootstrapSipResponse {
+  agent?: BootstrapAgentResponse | undefined;
+  orchestration?: BootstrapOrchestrationResponse | undefined;
+}
+
 export interface BootstrapResponse {
   conversationId: string;
   sessionId: string;
@@ -1010,6 +1020,170 @@ export const SipBootstrapContext: MessageFns<SipBootstrapContext> = {
     message.trunkId = object.trunkId ?? "";
     message.trunkPhoneNumber = object.trunkPhoneNumber ?? "";
     message.callIdFull = object.callIdFull ?? "";
+    return message;
+  },
+};
+
+function createBaseBootstrapSipRequest(): BootstrapSipRequest {
+  return { sip: undefined, contractRevision: "" };
+}
+
+export const BootstrapSipRequest: MessageFns<BootstrapSipRequest> = {
+  encode(message: BootstrapSipRequest, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.sip !== undefined) {
+      SipBootstrapContext.encode(message.sip, writer.uint32(10).fork()).join();
+    }
+    if (message.contractRevision !== "") {
+      writer.uint32(18).string(message.contractRevision);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): BootstrapSipRequest {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseBootstrapSipRequest();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.sip = SipBootstrapContext.decode(reader, reader.uint32());
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.contractRevision = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): BootstrapSipRequest {
+    return {
+      sip: isSet(object.sip) ? SipBootstrapContext.fromJSON(object.sip) : undefined,
+      contractRevision: isSet(object.contractRevision)
+        ? globalThis.String(object.contractRevision)
+        : isSet(object.contract_revision)
+        ? globalThis.String(object.contract_revision)
+        : "",
+    };
+  },
+
+  toJSON(message: BootstrapSipRequest): unknown {
+    const obj: any = {};
+    if (message.sip !== undefined) {
+      obj.sip = SipBootstrapContext.toJSON(message.sip);
+    }
+    if (message.contractRevision !== "") {
+      obj.contractRevision = message.contractRevision;
+    }
+    return obj;
+  },
+
+  create(base?: DeepPartial<BootstrapSipRequest>): BootstrapSipRequest {
+    return BootstrapSipRequest.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<BootstrapSipRequest>): BootstrapSipRequest {
+    const message = createBaseBootstrapSipRequest();
+    message.sip = (object.sip !== undefined && object.sip !== null)
+      ? SipBootstrapContext.fromPartial(object.sip)
+      : undefined;
+    message.contractRevision = object.contractRevision ?? "";
+    return message;
+  },
+};
+
+function createBaseBootstrapSipResponse(): BootstrapSipResponse {
+  return { agent: undefined, orchestration: undefined };
+}
+
+export const BootstrapSipResponse: MessageFns<BootstrapSipResponse> = {
+  encode(message: BootstrapSipResponse, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.agent !== undefined) {
+      BootstrapAgentResponse.encode(message.agent, writer.uint32(10).fork()).join();
+    }
+    if (message.orchestration !== undefined) {
+      BootstrapOrchestrationResponse.encode(message.orchestration, writer.uint32(18).fork()).join();
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): BootstrapSipResponse {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseBootstrapSipResponse();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.agent = BootstrapAgentResponse.decode(reader, reader.uint32());
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.orchestration = BootstrapOrchestrationResponse.decode(reader, reader.uint32());
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): BootstrapSipResponse {
+    return {
+      agent: isSet(object.agent) ? BootstrapAgentResponse.fromJSON(object.agent) : undefined,
+      orchestration: isSet(object.orchestration)
+        ? BootstrapOrchestrationResponse.fromJSON(object.orchestration)
+        : undefined,
+    };
+  },
+
+  toJSON(message: BootstrapSipResponse): unknown {
+    const obj: any = {};
+    if (message.agent !== undefined) {
+      obj.agent = BootstrapAgentResponse.toJSON(message.agent);
+    }
+    if (message.orchestration !== undefined) {
+      obj.orchestration = BootstrapOrchestrationResponse.toJSON(message.orchestration);
+    }
+    return obj;
+  },
+
+  create(base?: DeepPartial<BootstrapSipResponse>): BootstrapSipResponse {
+    return BootstrapSipResponse.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<BootstrapSipResponse>): BootstrapSipResponse {
+    const message = createBaseBootstrapSipResponse();
+    message.agent = (object.agent !== undefined && object.agent !== null)
+      ? BootstrapAgentResponse.fromPartial(object.agent)
+      : undefined;
+    message.orchestration = (object.orchestration !== undefined && object.orchestration !== null)
+      ? BootstrapOrchestrationResponse.fromPartial(object.orchestration)
+      : undefined;
     return message;
   },
 };
@@ -7476,6 +7650,16 @@ export const AgentSessionServiceService = {
     responseSerialize: (value: BootstrapResponse): Buffer => Buffer.from(BootstrapResponse.encode(value).finish()),
     responseDeserialize: (value: Buffer): BootstrapResponse => BootstrapResponse.decode(value),
   },
+  bootstrapSip: {
+    path: "/port.api.v1.AgentSessionService/BootstrapSip" as const,
+    requestStream: false as const,
+    responseStream: false as const,
+    requestSerialize: (value: BootstrapSipRequest): Buffer => Buffer.from(BootstrapSipRequest.encode(value).finish()),
+    requestDeserialize: (value: Buffer): BootstrapSipRequest => BootstrapSipRequest.decode(value),
+    responseSerialize: (value: BootstrapSipResponse): Buffer =>
+      Buffer.from(BootstrapSipResponse.encode(value).finish()),
+    responseDeserialize: (value: Buffer): BootstrapSipResponse => BootstrapSipResponse.decode(value),
+  },
   bootstrapAgent: {
     path: "/port.api.v1.AgentSessionService/BootstrapAgent" as const,
     requestStream: false as const,
@@ -7503,6 +7687,7 @@ export const AgentSessionServiceService = {
 
 export interface AgentSessionServiceServer extends UntypedServiceImplementation {
   bootstrap: handleUnaryCall<BootstrapRequest, BootstrapResponse>;
+  bootstrapSip: handleUnaryCall<BootstrapSipRequest, BootstrapSipResponse>;
   bootstrapAgent: handleUnaryCall<BootstrapAgentRequest, BootstrapAgentResponse>;
   bootstrapOrchestration: handleUnaryCall<BootstrapOrchestrationRequest, BootstrapOrchestrationResponse>;
 }
@@ -7522,6 +7707,21 @@ export interface AgentSessionServiceClient extends Client {
     metadata: Metadata,
     options: Partial<CallOptions>,
     callback: (error: ServiceError | null, response: BootstrapResponse) => void,
+  ): ClientUnaryCall;
+  bootstrapSip(
+    request: BootstrapSipRequest,
+    callback: (error: ServiceError | null, response: BootstrapSipResponse) => void,
+  ): ClientUnaryCall;
+  bootstrapSip(
+    request: BootstrapSipRequest,
+    metadata: Metadata,
+    callback: (error: ServiceError | null, response: BootstrapSipResponse) => void,
+  ): ClientUnaryCall;
+  bootstrapSip(
+    request: BootstrapSipRequest,
+    metadata: Metadata,
+    options: Partial<CallOptions>,
+    callback: (error: ServiceError | null, response: BootstrapSipResponse) => void,
   ): ClientUnaryCall;
   bootstrapAgent(
     request: BootstrapAgentRequest,

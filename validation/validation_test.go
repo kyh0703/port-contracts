@@ -54,6 +54,8 @@ func requireR4MessageRules(t *testing.T, message protoreflect.MessageDescriptor)
 
 func TestR4TransportDescriptorsAndRequiredRuntimeValidation(t *testing.T) {
 	messageNames := []protoreflect.FullName{
+		"port.api.v1.BootstrapSipRequest",
+		"port.api.v1.BootstrapSipResponse",
 		"port.api.v1.BootstrapAgentRequest",
 		"port.api.v1.BootstrapAgentResponse",
 		"port.api.v1.BootstrapOrchestrationRequest",
@@ -85,6 +87,7 @@ func TestR4TransportDescriptorsAndRequiredRuntimeValidation(t *testing.T) {
 		{"Bootstrap", "port.api.v1.BootstrapRequest", "port.api.v1.BootstrapResponse"},
 		{"BootstrapAgent", "port.api.v1.BootstrapAgentRequest", "port.api.v1.BootstrapAgentResponse"},
 		{"BootstrapOrchestration", "port.api.v1.BootstrapOrchestrationRequest", "port.api.v1.BootstrapOrchestrationResponse"},
+		{"BootstrapSip", "port.api.v1.BootstrapSipRequest", "port.api.v1.BootstrapSipResponse"},
 	} {
 		methodDescriptor := service.Methods().ByName(protoreflect.Name(method.name))
 		if methodDescriptor == nil {
@@ -172,6 +175,41 @@ func TestR4TransportDescriptorsAndRequiredRuntimeValidation(t *testing.T) {
 	if !foundModeConsistency {
 		t.Fatal("BootstrapOrchestrationResponse must validate mode/snapshot consistency")
 	}
+	sipRequestDescriptor, _ := protoregistry.GlobalFiles.FindDescriptorByName("port.api.v1.BootstrapSipRequest")
+	sipRequest := sipRequestDescriptor.(protoreflect.MessageDescriptor)
+	if got := sipRequest.Fields().Len(); got != 2 {
+		t.Fatalf("BootstrapSipRequest has %d fields, want exactly SIP admission plus revision", got)
+	}
+	for _, fieldName := range []protoreflect.Name{"sip", "contract_revision"} {
+		if !requireR4FieldRules(t, sipRequest, fieldName).GetRequired() {
+			t.Fatalf("BootstrapSipRequest.%s must be required", fieldName)
+		}
+	}
+	if got := requireR4FieldRules(t, sipRequest, "contract_revision").GetString().GetConst(); got != "orchestration-2026-08-07-r4" {
+		t.Fatalf("BootstrapSipRequest.contract_revision const = %q, want r4", got)
+	}
+	sipResponseDescriptor, _ := protoregistry.GlobalFiles.FindDescriptorByName("port.api.v1.BootstrapSipResponse")
+	sipResponse := sipResponseDescriptor.(protoreflect.MessageDescriptor)
+	payloadOneof := sipResponse.Oneofs().ByName("payload")
+	if payloadOneof == nil || payloadOneof.Fields().Len() != 2 {
+		t.Fatal("BootstrapSipResponse.payload must be a two-field protobuf oneof")
+	}
+	for _, fieldName := range []protoreflect.Name{"agent", "orchestration"} {
+		field := sipResponse.Fields().ByName(fieldName)
+		if field == nil || field.ContainingOneof() != payloadOneof {
+			t.Fatalf("BootstrapSipResponse.%s must belong to payload oneof", fieldName)
+		}
+	}
+	sipResponseRules := requireR4MessageRules(t, sipResponse)
+	foundPayloadOneof := false
+	for _, rule := range sipResponseRules.GetOneof() {
+		if reflect.DeepEqual(rule.GetFields(), []string{"agent", "orchestration"}) && rule.GetRequired() {
+			foundPayloadOneof = true
+		}
+	}
+	if !foundPayloadOneof {
+		t.Fatal("BootstrapSipResponse must require exactly one agent or orchestration payload")
+	}
 }
 
 func TestR4AdmissionOneofRequired(t *testing.T) {
@@ -192,6 +230,49 @@ func TestR4AdmissionOneofRequired(t *testing.T) {
 		if err := Validate(request); err == nil {
 			t.Fatalf("Validate(empty admission %T) = nil, want rejection", request)
 		}
+	}
+}
+
+func TestR4SipBootstrapEnvelopeValidation(t *testing.T) {
+	validSip := &apiv1.SipBootstrapContext{JobId: "job-1", DispatchId: "dispatch-1", RoomName: "room-1", ParticipantIdentity: "sip-1", TrunkId: "trunk-1", TrunkPhoneNumber: "+8210", CallIdFull: "call-1"}
+	valid := &apiv1.BootstrapSipRequest{Sip: validSip, ContractRevision: "orchestration-2026-08-07-r4"}
+	if err := Validate(valid); err != nil {
+		t.Fatalf("Validate(valid BootstrapSipRequest) = %v", err)
+	}
+	for _, request := range []*apiv1.BootstrapSipRequest{
+		{Sip: validSip},
+		{Sip: validSip, ContractRevision: "orchestration-2026-08-06-r3"},
+		{ContractRevision: "orchestration-2026-08-07-r4"},
+		{Sip: &apiv1.SipBootstrapContext{DispatchId: "dispatch-1", RoomName: "room-1", ParticipantIdentity: "sip-1", TrunkId: "trunk-1", TrunkPhoneNumber: "+8210", CallIdFull: "call-1"}, ContractRevision: "orchestration-2026-08-07-r4"},
+	} {
+		if err := Validate(request); err == nil {
+			t.Fatalf("Validate(invalid BootstrapSipRequest %+v) = nil", request)
+		}
+	}
+	if err := Validate(&apiv1.BootstrapSipResponse{}); err == nil {
+		t.Fatal("Validate(empty BootstrapSipResponse) = nil")
+	}
+}
+
+func TestR4SipBootstrapResponseNestedValidation(t *testing.T) {
+	validAgent := &apiv1.BootstrapSipResponse{Payload: &apiv1.BootstrapSipResponse_Agent{Agent: validR4DirectResponse()}}
+	validOrchestration := &apiv1.BootstrapSipResponse{Payload: &apiv1.BootstrapSipResponse_Orchestration{Orchestration: validR4SupervisorResponse()}}
+	for _, response := range []*apiv1.BootstrapSipResponse{validAgent, validOrchestration} {
+		if err := Validate(response); err != nil {
+			t.Fatalf("Validate(valid %T BootstrapSipResponse) = %v", response.GetPayload(), err)
+		}
+	}
+
+	invalidRevision := proto.Clone(validAgent).(*apiv1.BootstrapSipResponse)
+	invalidRevision.GetAgent().ContractRevision = "orchestration-unsupported"
+	if err := Validate(invalidRevision); err == nil {
+		t.Fatal("Validate(SIP response with invalid nested revision) = nil")
+	}
+
+	missingRuntime := proto.Clone(validOrchestration).(*apiv1.BootstrapSipResponse)
+	missingRuntime.GetOrchestration().CallRuntime = nil
+	if err := Validate(missingRuntime); err == nil {
+		t.Fatal("Validate(SIP response with missing nested runtime) = nil")
 	}
 }
 

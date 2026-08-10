@@ -110,6 +110,22 @@ class SipBootstrapContext(_message.Message):
     call_id_full: str
     def __init__(self, job_id: _Optional[str] = ..., dispatch_id: _Optional[str] = ..., room_name: _Optional[str] = ..., participant_identity: _Optional[str] = ..., trunk_id: _Optional[str] = ..., trunk_phone_number: _Optional[str] = ..., call_id_full: _Optional[str] = ...) -> None: ...
 
+class BootstrapSipRequest(_message.Message):
+    __slots__ = ("sip", "contract_revision")
+    SIP_FIELD_NUMBER: _ClassVar[int]
+    CONTRACT_REVISION_FIELD_NUMBER: _ClassVar[int]
+    sip: SipBootstrapContext
+    contract_revision: str
+    def __init__(self, sip: _Optional[_Union[SipBootstrapContext, _Mapping]] = ..., contract_revision: _Optional[str] = ...) -> None: ...
+
+class BootstrapSipResponse(_message.Message):
+    __slots__ = ("agent", "orchestration")
+    AGENT_FIELD_NUMBER: _ClassVar[int]
+    ORCHESTRATION_FIELD_NUMBER: _ClassVar[int]
+    agent: BootstrapAgentResponse
+    orchestration: BootstrapOrchestrationResponse
+    def __init__(self, agent: _Optional[_Union[BootstrapAgentResponse, _Mapping]] = ..., orchestration: _Optional[_Union[BootstrapOrchestrationResponse, _Mapping]] = ...) -> None: ...
+
 class BootstrapResponse(_message.Message):
     __slots__ = ("conversation_id", "session_id", "source", "room_name", "agent_tool_snapshot_id", "stt", "llm", "tts", "mcp_servers", "agent_id", "supervisor_id", "supervisor_version_id", "supervisor_persona", "supervisor_config", "workers", "canvas", "worker_tool_snapshots", "bootstrap_snapshot_id", "api_tool_runtimes", "orchestration_graph")
     CONVERSATION_ID_FIELD_NUMBER: _ClassVar[int]

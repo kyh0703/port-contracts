@@ -10,6 +10,7 @@ option go_package = "github.com/kyh0703/port-contracts/v2/gen/go/port/api/v1;api
 // AgentSessionService is the worker-only API boundary for LiveKit jobs.
 service AgentSessionService {
   rpc Bootstrap(BootstrapRequest) returns (BootstrapResponse);
+  rpc BootstrapSip(BootstrapSipRequest) returns (BootstrapSipResponse);
   rpc BootstrapAgent(BootstrapAgentRequest) returns (BootstrapAgentResponse);
   rpc BootstrapOrchestration(BootstrapOrchestrationRequest) returns (BootstrapOrchestrationResponse);
 }
@@ -30,6 +31,27 @@ message SipBootstrapContext {
   string trunk_id = 5 [(buf.validate.field).string.min_len = 1];
   string trunk_phone_number = 6 [(buf.validate.field).string.min_len = 1];
   string call_id_full = 7 [(buf.validate.field).string.min_len = 1];
+}
+
+message BootstrapSipRequest {
+  SipBootstrapContext sip = 1 [(buf.validate.field).required = true];
+  string contract_revision = 2 [
+    (buf.validate.field).required = true,
+    (buf.validate.field).string.const = "orchestration-2026-08-07-r4"
+  ];
+}
+
+message BootstrapSipResponse {
+  option (buf.validate.message).oneof = {
+    fields: ["agent", "orchestration"]
+    required: true
+  };
+
+  oneof payload {
+    option (buf.validate.oneof).required = true;
+    BootstrapAgentResponse agent = 1;
+    BootstrapOrchestrationResponse orchestration = 2;
+  }
 }
 
 message BootstrapResponse {

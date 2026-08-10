@@ -34,7 +34,13 @@ import { ApiEventServiceClient } from '@overthinker1127/port-contracts/gen/ts/po
 `port/api/v1/agent_session.proto` is the API's worker-only session bootstrap
 contract. `AgentSessionService.Bootstrap` admits either a one-time browser
 ticket or a verified SIP LiveKit job and returns the runtime bundle required by
-the worker. It is not a browser-facing API.
+the worker. Its SIP admission is legacy `agent.canvas.v1` only; r4 SIP consumers
+must use `AgentSessionService.BootstrapSip`. It is not a browser-facing API.
+
+`AgentSessionService.BootstrapSip` is the additive SIP-only r4 bootstrap boundary:
+its request contains only `SipBootstrapContext` and the exact
+`orchestration-2026-08-07-r4` revision, and its response contains exactly one
+`BootstrapAgentResponse` or `BootstrapOrchestrationResponse` payload.
 
 > **Retired contract notice — 2026-08-07:** the orchestration graph shipped as
 > `contracts@1.8.0` is historical and must not be used for new
