@@ -129,6 +129,19 @@ func TestR4TransportDescriptorsAndRequiredRuntimeValidation(t *testing.T) {
 			t.Fatalf("%s.call_runtime must be required", responseName)
 		}
 	}
+	for _, target := range []struct {
+		name   protoreflect.FullName
+		number protoreflect.FieldNumber
+	}{
+		{"port.api.v1.BootstrapAgentResponse", 7},
+		{"port.api.v1.BootstrapOrchestrationResponse", 12},
+	} {
+		descriptor, _ := protoregistry.GlobalFiles.FindDescriptorByName(target.name)
+		field := descriptor.(protoreflect.MessageDescriptor).Fields().ByName("global_actions")
+		if field == nil || field.Number() != target.number || !requireR4FieldRules(t, descriptor.(protoreflect.MessageDescriptor), "global_actions").GetRequired() {
+			t.Fatalf("%s.global_actions must be required field %d", target.name, target.number)
+		}
+	}
 	responseDescriptor, _ := protoregistry.GlobalFiles.FindDescriptorByName("port.api.v1.BootstrapAgentResponse")
 	responseFields := responseDescriptor.(protoreflect.MessageDescriptor).Fields()
 	for _, forbidden := range []protoreflect.Name{"agent_id", "agent_version_id"} {
@@ -273,6 +286,18 @@ func TestR4SipBootstrapResponseNestedValidation(t *testing.T) {
 	missingRuntime.GetOrchestration().CallRuntime = nil
 	if err := Validate(missingRuntime); err == nil {
 		t.Fatal("Validate(SIP response with missing nested runtime) = nil")
+	}
+
+	missingActions := proto.Clone(validAgent).(*apiv1.BootstrapSipResponse)
+	missingActions.GetAgent().GlobalActions = nil
+	if err := Validate(missingActions); err == nil {
+		t.Fatal("Validate(SIP response with missing nested global actions) = nil")
+	}
+
+	missingOrchestrationActions := proto.Clone(validOrchestration).(*apiv1.BootstrapSipResponse)
+	missingOrchestrationActions.GetOrchestration().GlobalActions = nil
+	if err := Validate(missingOrchestrationActions); err == nil {
+		t.Fatal("Validate(SIP orchestration response with missing nested global actions) = nil")
 	}
 }
 
@@ -589,6 +614,13 @@ func validR4SpecialistRuntime() *apiv1.AgentRuntime {
 	}
 }
 
+func validR4GlobalActions() *apiv1.AgentGlobalActions {
+	return &apiv1.AgentGlobalActions{
+		TransferToHuman: &apiv1.TransferToHumanAction{Enabled: true, SipCallTo: "+8210", HoldPhrase: "Please hold.", RingingTimeoutMs: 3000},
+		EndCall:         &apiv1.EndCallAction{Enabled: true, ClosingPhrase: "Goodbye.", Confirm: false},
+	}
+}
+
 func validR4DirectResponse() *apiv1.BootstrapAgentResponse {
 	return &apiv1.BootstrapAgentResponse{
 		ContractRevision: "orchestration-2026-08-07-r4",
@@ -597,6 +629,7 @@ func validR4DirectResponse() *apiv1.BootstrapAgentResponse {
 		SessionId:        "session-1",
 		CallRuntime:      validR4CallRuntime(),
 		AgentRuntime:     validR4AgentRuntime(),
+		GlobalActions:    validR4GlobalActions(),
 	}
 }
 
@@ -611,6 +644,7 @@ func validR4SupervisorResponse() *apiv1.BootstrapOrchestrationResponse {
 		Mode:                   apiv1.OrchestrationMode_ORCHESTRATION_MODE_SUPERVISOR,
 		CallRuntime:            validR4CallRuntime(),
 		AgentRuntimes:          []*apiv1.AgentRuntime{validR4AgentRuntime(), validR4SpecialistRuntime()},
+		GlobalActions:          validR4GlobalActions(),
 		Supervisor: &apiv1.SupervisorSnapshot{
 			SupervisorAgentVersionId: "agent-version-1",
 			Specialists: []*apiv1.SupervisorSpecialist{{
@@ -680,6 +714,7 @@ func TestR4RevisionSchemaAndAgentRuntimeValidation(t *testing.T) {
 	}{
 		{"missing LLM worker", func(response *apiv1.BootstrapAgentResponse) { response.AgentRuntime.LlmWorker = nil }},
 		{"missing instructions", func(response *apiv1.BootstrapAgentResponse) { response.AgentRuntime.Instructions = nil }},
+		{"missing global actions", func(response *apiv1.BootstrapAgentResponse) { response.GlobalActions = nil }},
 	}
 	for _, tt := range agentRuntimeTests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -718,6 +753,7 @@ func TestR4OrchestrationValidation(t *testing.T) {
 		}},
 		{"both snapshots", func(response *apiv1.BootstrapOrchestrationResponse) { response.Handoff = validHandoff.Handoff }},
 		{"missing snapshot", func(response *apiv1.BootstrapOrchestrationResponse) { response.Supervisor = nil }},
+		{"missing global actions", func(response *apiv1.BootstrapOrchestrationResponse) { response.GlobalActions = nil }},
 		{"unspecified mode", func(response *apiv1.BootstrapOrchestrationResponse) {
 			response.Mode = apiv1.OrchestrationMode_ORCHESTRATION_MODE_UNSPECIFIED
 		}},
@@ -845,6 +881,26 @@ func TestAgentRuntimeInputCompletionRoundTripAndLegacyDefaults(t *testing.T) {
 	}
 	if got := len(legacyDecoded.AgentRuntime.ApiToolRuntimes); got != 0 {
 		t.Fatalf("2.0.0 API runtime default length = %d, want 0", got)
+	}
+	if err := Validate(legacyDecoded); err == nil {
+		t.Fatal("Validate(2.0.0 decoded BootstrapAgentResponse) = nil, want missing global_actions rejection")
+	}
+
+	withoutActions := proto.Clone(validR4DirectResponse()).(*apiv1.BootstrapAgentResponse)
+	withoutActions.GlobalActions = nil
+	legacyBytes, err := proto.Marshal(withoutActions)
+	if err != nil {
+		t.Fatal(err)
+	}
+	decodedWithoutActions := &apiv1.BootstrapAgentResponse{}
+	if err := proto.Unmarshal(legacyBytes, decodedWithoutActions); err != nil {
+		t.Fatal(err)
+	}
+	if decodedWithoutActions.GlobalActions != nil {
+		t.Fatal("2.2.0-compatible bytes unexpectedly gained global_actions during decode")
+	}
+	if err := Validate(decodedWithoutActions); err == nil {
+		t.Fatal("Validate(2.2.0 decoded BootstrapAgentResponse) = nil, want missing global_actions rejection")
 	}
 }
 

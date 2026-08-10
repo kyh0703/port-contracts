@@ -394,6 +394,7 @@ export interface BootstrapAgentResponse {
   sessionId: string;
   callRuntime?: CallRuntimeSnapshot | undefined;
   agentRuntime?: AgentRuntime | undefined;
+  globalActions?: AgentGlobalActions | undefined;
 }
 
 export interface BootstrapOrchestrationRequest {
@@ -416,6 +417,7 @@ export interface BootstrapOrchestrationResponse {
   agentRuntimes: AgentRuntime[];
   supervisor?: SupervisorSnapshot | undefined;
   handoff?: HandoffSnapshot | undefined;
+  globalActions?: AgentGlobalActions | undefined;
 }
 
 export interface CallRuntimeSnapshot {
@@ -1789,6 +1791,7 @@ function createBaseBootstrapAgentResponse(): BootstrapAgentResponse {
     sessionId: "",
     callRuntime: undefined,
     agentRuntime: undefined,
+    globalActions: undefined,
   };
 }
 
@@ -1811,6 +1814,9 @@ export const BootstrapAgentResponse: MessageFns<BootstrapAgentResponse> = {
     }
     if (message.agentRuntime !== undefined) {
       AgentRuntime.encode(message.agentRuntime, writer.uint32(50).fork()).join();
+    }
+    if (message.globalActions !== undefined) {
+      AgentGlobalActions.encode(message.globalActions, writer.uint32(58).fork()).join();
     }
     return writer;
   },
@@ -1870,6 +1876,14 @@ export const BootstrapAgentResponse: MessageFns<BootstrapAgentResponse> = {
           message.agentRuntime = AgentRuntime.decode(reader, reader.uint32());
           continue;
         }
+        case 7: {
+          if (tag !== 58) {
+            break;
+          }
+
+          message.globalActions = AgentGlobalActions.decode(reader, reader.uint32());
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -1911,6 +1925,11 @@ export const BootstrapAgentResponse: MessageFns<BootstrapAgentResponse> = {
         : isSet(object.agent_runtime)
         ? AgentRuntime.fromJSON(object.agent_runtime)
         : undefined,
+      globalActions: isSet(object.globalActions)
+        ? AgentGlobalActions.fromJSON(object.globalActions)
+        : isSet(object.global_actions)
+        ? AgentGlobalActions.fromJSON(object.global_actions)
+        : undefined,
     };
   },
 
@@ -1934,6 +1953,9 @@ export const BootstrapAgentResponse: MessageFns<BootstrapAgentResponse> = {
     if (message.agentRuntime !== undefined) {
       obj.agentRuntime = AgentRuntime.toJSON(message.agentRuntime);
     }
+    if (message.globalActions !== undefined) {
+      obj.globalActions = AgentGlobalActions.toJSON(message.globalActions);
+    }
     return obj;
   },
 
@@ -1951,6 +1973,9 @@ export const BootstrapAgentResponse: MessageFns<BootstrapAgentResponse> = {
       : undefined;
     message.agentRuntime = (object.agentRuntime !== undefined && object.agentRuntime !== null)
       ? AgentRuntime.fromPartial(object.agentRuntime)
+      : undefined;
+    message.globalActions = (object.globalActions !== undefined && object.globalActions !== null)
+      ? AgentGlobalActions.fromPartial(object.globalActions)
       : undefined;
     return message;
   },
@@ -2111,6 +2136,7 @@ function createBaseBootstrapOrchestrationResponse(): BootstrapOrchestrationRespo
     agentRuntimes: [],
     supervisor: undefined,
     handoff: undefined,
+    globalActions: undefined,
   };
 }
 
@@ -2148,6 +2174,9 @@ export const BootstrapOrchestrationResponse: MessageFns<BootstrapOrchestrationRe
     }
     if (message.handoff !== undefined) {
       HandoffSnapshot.encode(message.handoff, writer.uint32(90).fork()).join();
+    }
+    if (message.globalActions !== undefined) {
+      AgentGlobalActions.encode(message.globalActions, writer.uint32(98).fork()).join();
     }
     return writer;
   },
@@ -2247,6 +2276,14 @@ export const BootstrapOrchestrationResponse: MessageFns<BootstrapOrchestrationRe
           message.handoff = HandoffSnapshot.decode(reader, reader.uint32());
           continue;
         }
+        case 12: {
+          if (tag !== 98) {
+            break;
+          }
+
+          message.globalActions = AgentGlobalActions.decode(reader, reader.uint32());
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -2301,6 +2338,11 @@ export const BootstrapOrchestrationResponse: MessageFns<BootstrapOrchestrationRe
         : [],
       supervisor: isSet(object.supervisor) ? SupervisorSnapshot.fromJSON(object.supervisor) : undefined,
       handoff: isSet(object.handoff) ? HandoffSnapshot.fromJSON(object.handoff) : undefined,
+      globalActions: isSet(object.globalActions)
+        ? AgentGlobalActions.fromJSON(object.globalActions)
+        : isSet(object.global_actions)
+        ? AgentGlobalActions.fromJSON(object.global_actions)
+        : undefined,
     };
   },
 
@@ -2339,6 +2381,9 @@ export const BootstrapOrchestrationResponse: MessageFns<BootstrapOrchestrationRe
     if (message.handoff !== undefined) {
       obj.handoff = HandoffSnapshot.toJSON(message.handoff);
     }
+    if (message.globalActions !== undefined) {
+      obj.globalActions = AgentGlobalActions.toJSON(message.globalActions);
+    }
     return obj;
   },
 
@@ -2363,6 +2408,9 @@ export const BootstrapOrchestrationResponse: MessageFns<BootstrapOrchestrationRe
       : undefined;
     message.handoff = (object.handoff !== undefined && object.handoff !== null)
       ? HandoffSnapshot.fromPartial(object.handoff)
+      : undefined;
+    message.globalActions = (object.globalActions !== undefined && object.globalActions !== null)
+      ? AgentGlobalActions.fromPartial(object.globalActions)
       : undefined;
     return message;
   },

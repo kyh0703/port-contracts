@@ -40,7 +40,8 @@ must use `AgentSessionService.BootstrapSip`. It is not a browser-facing API.
 `AgentSessionService.BootstrapSip` is the additive SIP-only r4 bootstrap boundary:
 its request contains only `SipBootstrapContext` and the exact
 `orchestration-2026-08-07-r4` revision, and its response contains exactly one
-`BootstrapAgentResponse` or `BootstrapOrchestrationResponse` payload.
+`BootstrapAgentResponse` or `BootstrapOrchestrationResponse` payload. Both r4
+responses also carry the required `AgentGlobalActions` snapshot.
 
 > **Retired contract notice — 2026-08-07:** the orchestration graph shipped as
 > `contracts@1.8.0` is historical and must not be used for new

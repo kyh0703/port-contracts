@@ -39,6 +39,7 @@ function createDirectAgentResponse() {
     conversationId: "conversation-agent-1",
     sessionId: "session-agent-1",
     callRuntime: createPinnedCallRuntime(),
+    globalActions: { transferToHuman: { enabled: true, sipCallTo: "+8210", holdPhrase: "Please hold.", ringingTimeoutMs: 3000 }, endCall: { enabled: true, closingPhrase: "Goodbye.", confirm: false } },
     agentRuntime: {
       agentId: "agent-1",
       agentVersionId: "agent-version-1",
@@ -96,6 +97,7 @@ test("BootstrapSip orchestration payload preserves its oneof branch on the wire"
     orchestrationVersionId: "orchestration-version-sip-1",
     mode: OrchestrationMode.ORCHESTRATION_MODE_SUPERVISOR,
     callRuntime: createPinnedCallRuntime(),
+    globalActions: { transferToHuman: { enabled: true, sipCallTo: "+8210", holdPhrase: "Please hold.", ringingTimeoutMs: 3000 }, endCall: { enabled: true, closingPhrase: "Goodbye.", confirm: false } },
     agentRuntimes: createValidAgentRuntimes(),
     supervisor: {
       supervisorAgentVersionId: "agent-version-1",
@@ -106,6 +108,7 @@ test("BootstrapSip orchestration payload preserves its oneof branch on the wire"
   const decoded = BootstrapSipResponse.decode(BootstrapSipResponse.encode(source).finish());
   assert.deepEqual(decoded, source);
   assert.equal(decoded.agent, undefined);
+  assert.deepEqual(decoded.orchestration.globalActions, source.orchestration.globalActions);
 });
 
 test("supervisor/worker bootstrap fields survive protobuf wire round-trip", () => {
@@ -272,6 +275,7 @@ test("supervisor and handoff responses carry exactly one mode snapshot", () => {
     orchestrationVersionId: "orchestration-version-1",
     mode: OrchestrationMode.ORCHESTRATION_MODE_SUPERVISOR,
     callRuntime: runtime,
+    globalActions: { endCall: { enabled: true, closingPhrase: "Goodbye.", confirm: false } },
     agentRuntimes: [
       { agentId: "agent-1", agentVersionId: "agent-version-supervisor", llmWorker: { apiKey: "llm-key", model: "model-1" }, instructions: { systemPrompt: "Route." }, contextPolicy: ContextPolicy.CONTEXT_POLICY_CONVERSATION },
       { agentId: "agent-2", agentVersionId: "agent-version-billing", llmWorker: { apiKey: "llm-key-2", model: "model-2" }, instructions: { systemPrompt: "Billing." }, contextPolicy: ContextPolicy.CONTEXT_POLICY_CONVERSATION },
@@ -297,6 +301,7 @@ test("supervisor and handoff responses carry exactly one mode snapshot", () => {
     assert.ok(decoded.agentRuntimes?.length);
     assert.equal(decoded.agentRuntimes[0]?.callRuntime, undefined);
     assert.deepEqual(decoded.callRuntime, direct.callRuntime);
+    assert.ok(decoded.globalActions);
   }
 });
 

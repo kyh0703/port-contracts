@@ -111,6 +111,7 @@ message BootstrapAgentResponse {
   string session_id = 4 [(buf.validate.field).required = true, (buf.validate.field).string.min_len = 1];
   CallRuntimeSnapshot call_runtime = 5 [(buf.validate.field).required = true];
   AgentRuntime agent_runtime = 6 [(buf.validate.field).required = true];
+  AgentGlobalActions global_actions = 7 [(buf.validate.field).required = true];
 }
 
 message BootstrapOrchestrationRequest {
@@ -155,6 +156,7 @@ message BootstrapOrchestrationResponse {
   repeated AgentRuntime agent_runtimes = 9 [(buf.validate.field).repeated.min_items = 2];
   SupervisorSnapshot supervisor = 10;
   HandoffSnapshot handoff = 11;
+  AgentGlobalActions global_actions = 12 [(buf.validate.field).required = true];
 
   option (buf.validate.message).cel = {
     id: "bootstrap_orchestration_response.unique_runtime_versions"

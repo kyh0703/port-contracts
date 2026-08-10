@@ -185,20 +185,22 @@ class BootstrapAgentRequest(_message.Message):
     def __init__(self, admission: _Optional[_Union[BootstrapRequest, _Mapping]] = ..., conversation_id: _Optional[str] = ..., session_id: _Optional[str] = ..., agent_version_id: _Optional[str] = ..., contract_revision: _Optional[str] = ...) -> None: ...
 
 class BootstrapAgentResponse(_message.Message):
-    __slots__ = ("contract_revision", "schema_version", "conversation_id", "session_id", "call_runtime", "agent_runtime")
+    __slots__ = ("contract_revision", "schema_version", "conversation_id", "session_id", "call_runtime", "agent_runtime", "global_actions")
     CONTRACT_REVISION_FIELD_NUMBER: _ClassVar[int]
     SCHEMA_VERSION_FIELD_NUMBER: _ClassVar[int]
     CONVERSATION_ID_FIELD_NUMBER: _ClassVar[int]
     SESSION_ID_FIELD_NUMBER: _ClassVar[int]
     CALL_RUNTIME_FIELD_NUMBER: _ClassVar[int]
     AGENT_RUNTIME_FIELD_NUMBER: _ClassVar[int]
+    GLOBAL_ACTIONS_FIELD_NUMBER: _ClassVar[int]
     contract_revision: str
     schema_version: str
     conversation_id: str
     session_id: str
     call_runtime: CallRuntimeSnapshot
     agent_runtime: AgentRuntime
-    def __init__(self, contract_revision: _Optional[str] = ..., schema_version: _Optional[str] = ..., conversation_id: _Optional[str] = ..., session_id: _Optional[str] = ..., call_runtime: _Optional[_Union[CallRuntimeSnapshot, _Mapping]] = ..., agent_runtime: _Optional[_Union[AgentRuntime, _Mapping]] = ...) -> None: ...
+    global_actions: AgentGlobalActions
+    def __init__(self, contract_revision: _Optional[str] = ..., schema_version: _Optional[str] = ..., conversation_id: _Optional[str] = ..., session_id: _Optional[str] = ..., call_runtime: _Optional[_Union[CallRuntimeSnapshot, _Mapping]] = ..., agent_runtime: _Optional[_Union[AgentRuntime, _Mapping]] = ..., global_actions: _Optional[_Union[AgentGlobalActions, _Mapping]] = ...) -> None: ...
 
 class BootstrapOrchestrationRequest(_message.Message):
     __slots__ = ("admission", "conversation_id", "session_id", "orchestration_version_id", "contract_revision")
@@ -215,7 +217,7 @@ class BootstrapOrchestrationRequest(_message.Message):
     def __init__(self, admission: _Optional[_Union[BootstrapRequest, _Mapping]] = ..., conversation_id: _Optional[str] = ..., session_id: _Optional[str] = ..., orchestration_version_id: _Optional[str] = ..., contract_revision: _Optional[str] = ...) -> None: ...
 
 class BootstrapOrchestrationResponse(_message.Message):
-    __slots__ = ("contract_revision", "schema_version", "conversation_id", "session_id", "orchestration_id", "orchestration_version_id", "mode", "call_runtime", "agent_runtimes", "supervisor", "handoff")
+    __slots__ = ("contract_revision", "schema_version", "conversation_id", "session_id", "orchestration_id", "orchestration_version_id", "mode", "call_runtime", "agent_runtimes", "supervisor", "handoff", "global_actions")
     CONTRACT_REVISION_FIELD_NUMBER: _ClassVar[int]
     SCHEMA_VERSION_FIELD_NUMBER: _ClassVar[int]
     CONVERSATION_ID_FIELD_NUMBER: _ClassVar[int]
@@ -227,6 +229,7 @@ class BootstrapOrchestrationResponse(_message.Message):
     AGENT_RUNTIMES_FIELD_NUMBER: _ClassVar[int]
     SUPERVISOR_FIELD_NUMBER: _ClassVar[int]
     HANDOFF_FIELD_NUMBER: _ClassVar[int]
+    GLOBAL_ACTIONS_FIELD_NUMBER: _ClassVar[int]
     contract_revision: str
     schema_version: str
     conversation_id: str
@@ -238,7 +241,8 @@ class BootstrapOrchestrationResponse(_message.Message):
     agent_runtimes: _containers.RepeatedCompositeFieldContainer[AgentRuntime]
     supervisor: SupervisorSnapshot
     handoff: HandoffSnapshot
-    def __init__(self, contract_revision: _Optional[str] = ..., schema_version: _Optional[str] = ..., conversation_id: _Optional[str] = ..., session_id: _Optional[str] = ..., orchestration_id: _Optional[str] = ..., orchestration_version_id: _Optional[str] = ..., mode: _Optional[_Union[OrchestrationMode, str]] = ..., call_runtime: _Optional[_Union[CallRuntimeSnapshot, _Mapping]] = ..., agent_runtimes: _Optional[_Iterable[_Union[AgentRuntime, _Mapping]]] = ..., supervisor: _Optional[_Union[SupervisorSnapshot, _Mapping]] = ..., handoff: _Optional[_Union[HandoffSnapshot, _Mapping]] = ...) -> None: ...
+    global_actions: AgentGlobalActions
+    def __init__(self, contract_revision: _Optional[str] = ..., schema_version: _Optional[str] = ..., conversation_id: _Optional[str] = ..., session_id: _Optional[str] = ..., orchestration_id: _Optional[str] = ..., orchestration_version_id: _Optional[str] = ..., mode: _Optional[_Union[OrchestrationMode, str]] = ..., call_runtime: _Optional[_Union[CallRuntimeSnapshot, _Mapping]] = ..., agent_runtimes: _Optional[_Iterable[_Union[AgentRuntime, _Mapping]]] = ..., supervisor: _Optional[_Union[SupervisorSnapshot, _Mapping]] = ..., handoff: _Optional[_Union[HandoffSnapshot, _Mapping]] = ..., global_actions: _Optional[_Union[AgentGlobalActions, _Mapping]] = ...) -> None: ...
 
 class CallRuntimeSnapshot(_message.Message):
     __slots__ = ("stt", "tts", "background_audio", "dtmf", "transport", "vad", "speech_policy", "limits")

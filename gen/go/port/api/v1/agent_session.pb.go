@@ -971,6 +971,7 @@ type BootstrapAgentResponse struct {
 	SessionId        string                 `protobuf:"bytes,4,opt,name=session_id,json=sessionId,proto3" json:"session_id,omitempty"`
 	CallRuntime      *CallRuntimeSnapshot   `protobuf:"bytes,5,opt,name=call_runtime,json=callRuntime,proto3" json:"call_runtime,omitempty"`
 	AgentRuntime     *AgentRuntime          `protobuf:"bytes,6,opt,name=agent_runtime,json=agentRuntime,proto3" json:"agent_runtime,omitempty"`
+	GlobalActions    *AgentGlobalActions    `protobuf:"bytes,7,opt,name=global_actions,json=globalActions,proto3" json:"global_actions,omitempty"`
 	unknownFields    protoimpl.UnknownFields
 	sizeCache        protoimpl.SizeCache
 }
@@ -1043,6 +1044,13 @@ func (x *BootstrapAgentResponse) GetCallRuntime() *CallRuntimeSnapshot {
 func (x *BootstrapAgentResponse) GetAgentRuntime() *AgentRuntime {
 	if x != nil {
 		return x.AgentRuntime
+	}
+	return nil
+}
+
+func (x *BootstrapAgentResponse) GetGlobalActions() *AgentGlobalActions {
+	if x != nil {
+		return x.GlobalActions
 	}
 	return nil
 }
@@ -1136,6 +1144,7 @@ type BootstrapOrchestrationResponse struct {
 	AgentRuntimes          []*AgentRuntime        `protobuf:"bytes,9,rep,name=agent_runtimes,json=agentRuntimes,proto3" json:"agent_runtimes,omitempty"`
 	Supervisor             *SupervisorSnapshot    `protobuf:"bytes,10,opt,name=supervisor,proto3" json:"supervisor,omitempty"`
 	Handoff                *HandoffSnapshot       `protobuf:"bytes,11,opt,name=handoff,proto3" json:"handoff,omitempty"`
+	GlobalActions          *AgentGlobalActions    `protobuf:"bytes,12,opt,name=global_actions,json=globalActions,proto3" json:"global_actions,omitempty"`
 	unknownFields          protoimpl.UnknownFields
 	sizeCache              protoimpl.SizeCache
 }
@@ -1243,6 +1252,13 @@ func (x *BootstrapOrchestrationResponse) GetSupervisor() *SupervisorSnapshot {
 func (x *BootstrapOrchestrationResponse) GetHandoff() *HandoffSnapshot {
 	if x != nil {
 		return x.Handoff
+	}
+	return nil
+}
+
+func (x *BootstrapOrchestrationResponse) GetGlobalActions() *AgentGlobalActions {
+	if x != nil {
+		return x.GlobalActions
 	}
 	return nil
 }
@@ -4318,7 +4334,7 @@ const file_port_api_v1_agent_session_proto_rawDesc = "" +
 	"\x10agent_version_id\x18\x04 \x01(\tB\n" +
 	"\xbaH\a\xc8\x01\x01r\x02\x10\x01R\x0eagentVersionId\x12R\n" +
 	"\x11contract_revision\x18\x05 \x01(\tB%\xbaH\"\xc8\x01\x01r\x1d\n" +
-	"\x1borchestration-2026-08-07-r4R\x10contractRevision\"\xaa\x03\n" +
+	"\x1borchestration-2026-08-07-r4R\x10contractRevision\"\xfa\x03\n" +
 	"\x16BootstrapAgentResponse\x12R\n" +
 	"\x11contract_revision\x18\x01 \x01(\tB%\xbaH\"\xc8\x01\x01r\x1d\n" +
 	"\x1borchestration-2026-08-07-r4R\x10contractRevision\x12G\n" +
@@ -4330,7 +4346,8 @@ const file_port_api_v1_agent_session_proto_rawDesc = "" +
 	"session_id\x18\x04 \x01(\tB\n" +
 	"\xbaH\a\xc8\x01\x01r\x02\x10\x01R\tsessionId\x12K\n" +
 	"\fcall_runtime\x18\x05 \x01(\v2 .port.api.v1.CallRuntimeSnapshotB\x06\xbaH\x03\xc8\x01\x01R\vcallRuntime\x12F\n" +
-	"\ragent_runtime\x18\x06 \x01(\v2\x19.port.api.v1.AgentRuntimeB\x06\xbaH\x03\xc8\x01\x01R\fagentRuntime\"\xde\x02\n" +
+	"\ragent_runtime\x18\x06 \x01(\v2\x19.port.api.v1.AgentRuntimeB\x06\xbaH\x03\xc8\x01\x01R\fagentRuntime\x12N\n" +
+	"\x0eglobal_actions\x18\a \x01(\v2\x1f.port.api.v1.AgentGlobalActionsB\x06\xbaH\x03\xc8\x01\x01R\rglobalActions\"\xde\x02\n" +
 	"\x1dBootstrapOrchestrationRequest\x12C\n" +
 	"\tadmission\x18\x01 \x01(\v2\x1d.port.api.v1.BootstrapRequestB\x06\xbaH\x03\xc8\x01\x01R\tadmission\x123\n" +
 	"\x0fconversation_id\x18\x02 \x01(\tB\n" +
@@ -4341,7 +4358,7 @@ const file_port_api_v1_agent_session_proto_rawDesc = "" +
 	"\x18orchestration_version_id\x18\x04 \x01(\tB\n" +
 	"\xbaH\a\xc8\x01\x01r\x02\x10\x01R\x16orchestrationVersionId\x12R\n" +
 	"\x11contract_revision\x18\x05 \x01(\tB%\xbaH\"\xc8\x01\x01r\x1d\n" +
-	"\x1borchestration-2026-08-07-r4R\x10contractRevision\"\xfb\x11\n" +
+	"\x1borchestration-2026-08-07-r4R\x10contractRevision\"\xcb\x12\n" +
 	"\x1eBootstrapOrchestrationResponse\x12R\n" +
 	"\x11contract_revision\x18\x01 \x01(\tB%\xbaH\"\xc8\x01\x01r\x1d\n" +
 	"\x1borchestration-2026-08-07-r4R\x10contractRevision\x12G\n" +
@@ -4364,7 +4381,8 @@ const file_port_api_v1_agent_session_proto_rawDesc = "" +
 	"supervisor\x18\n" +
 	" \x01(\v2\x1f.port.api.v1.SupervisorSnapshotR\n" +
 	"supervisor\x126\n" +
-	"\ahandoff\x18\v \x01(\v2\x1c.port.api.v1.HandoffSnapshotR\ahandoff:\x89\f\xbaH\x85\f\x1a\xb8\x01\n" +
+	"\ahandoff\x18\v \x01(\v2\x1c.port.api.v1.HandoffSnapshotR\ahandoff\x12N\n" +
+	"\x0eglobal_actions\x18\f \x01(\v2\x1f.port.api.v1.AgentGlobalActionsB\x06\xbaH\x03\xc8\x01\x01R\rglobalActions:\x89\f\xbaH\x85\f\x1a\xb8\x01\n" +
 	".bootstrap_orchestration_response.mode_snapshot\x123mode must match the selected orchestration snapshot\x1aQ(this.mode == 1 && has(this.supervisor)) || (this.mode == 2 && has(this.handoff))\x1a\xe5\x01\n" +
 	"8bootstrap_orchestration_response.unique_runtime_versions\x12(agent runtime version IDs must be unique\x1a\x7fthis.agent_runtimes.all(r, this.agent_runtimes.filter(candidate, candidate.agent_version_id == r.agent_version_id).size() == 1)\x1a\xf5\x03\n" +
 	"6bootstrap_orchestration_response.supervisor_references\x12>supervisor snapshot references must resolve to unique runtimes\x1a\xfa\x02!has(this.supervisor) || (this.agent_runtimes.exists(r, r.agent_version_id == this.supervisor.supervisor_agent_version_id) && this.supervisor.specialists.all(s, this.supervisor.specialists.filter(candidate, candidate.relation_id == s.relation_id).size() == 1) && this.supervisor.specialists.all(s, this.agent_runtimes.exists(r, r.agent_version_id == s.target_agent_version_id)))\x1a\xce\x04\n" +
@@ -4777,77 +4795,79 @@ var file_port_api_v1_agent_session_proto_depIdxs = []int32{
 	7,  // 15: port.api.v1.BootstrapAgentRequest.admission:type_name -> port.api.v1.BootstrapRequest
 	16, // 16: port.api.v1.BootstrapAgentResponse.call_runtime:type_name -> port.api.v1.CallRuntimeSnapshot
 	23, // 17: port.api.v1.BootstrapAgentResponse.agent_runtime:type_name -> port.api.v1.AgentRuntime
-	7,  // 18: port.api.v1.BootstrapOrchestrationRequest.admission:type_name -> port.api.v1.BootstrapRequest
-	3,  // 19: port.api.v1.BootstrapOrchestrationResponse.mode:type_name -> port.api.v1.OrchestrationMode
-	16, // 20: port.api.v1.BootstrapOrchestrationResponse.call_runtime:type_name -> port.api.v1.CallRuntimeSnapshot
-	23, // 21: port.api.v1.BootstrapOrchestrationResponse.agent_runtimes:type_name -> port.api.v1.AgentRuntime
-	25, // 22: port.api.v1.BootstrapOrchestrationResponse.supervisor:type_name -> port.api.v1.SupervisorSnapshot
-	27, // 23: port.api.v1.BootstrapOrchestrationResponse.handoff:type_name -> port.api.v1.HandoffSnapshot
-	60, // 24: port.api.v1.CallRuntimeSnapshot.stt:type_name -> port.api.v1.SttRuntime
-	62, // 25: port.api.v1.CallRuntimeSnapshot.tts:type_name -> port.api.v1.TtsRuntime
-	21, // 26: port.api.v1.CallRuntimeSnapshot.background_audio:type_name -> port.api.v1.BackgroundAudioRuntime
-	22, // 27: port.api.v1.CallRuntimeSnapshot.dtmf:type_name -> port.api.v1.DtmfInputRuntime
-	17, // 28: port.api.v1.CallRuntimeSnapshot.transport:type_name -> port.api.v1.TransportRuntime
-	18, // 29: port.api.v1.CallRuntimeSnapshot.vad:type_name -> port.api.v1.VadRuntime
-	19, // 30: port.api.v1.CallRuntimeSnapshot.speech_policy:type_name -> port.api.v1.SpeechPolicyRuntime
-	20, // 31: port.api.v1.CallRuntimeSnapshot.limits:type_name -> port.api.v1.CallLimitsRuntime
-	0,  // 32: port.api.v1.TransportRuntime.source:type_name -> port.api.v1.CallTransportSource
-	1,  // 33: port.api.v1.VadRuntime.noise_cancellation:type_name -> port.api.v1.NoiseCancellationMode
-	2,  // 34: port.api.v1.BackgroundAudioRuntime.preset:type_name -> port.api.v1.BackgroundAudioPreset
-	61, // 35: port.api.v1.AgentRuntime.llm_worker:type_name -> port.api.v1.LlmRuntime
-	24, // 36: port.api.v1.AgentRuntime.instructions:type_name -> port.api.v1.AgentInstructions
-	6,  // 37: port.api.v1.AgentRuntime.context_policy:type_name -> port.api.v1.ContextPolicy
-	37, // 38: port.api.v1.AgentRuntime.tools:type_name -> port.api.v1.NodeToolMetadata
-	57, // 39: port.api.v1.AgentRuntime.mcp_servers:type_name -> port.api.v1.McpServerRuntime
-	53, // 40: port.api.v1.AgentRuntime.api_tool_runtimes:type_name -> port.api.v1.ApiToolRuntime
-	26, // 41: port.api.v1.SupervisorSnapshot.specialists:type_name -> port.api.v1.SupervisorSpecialist
-	6,  // 42: port.api.v1.SupervisorSpecialist.context_policy:type_name -> port.api.v1.ContextPolicy
-	28, // 43: port.api.v1.HandoffSnapshot.routes:type_name -> port.api.v1.HandoffRoute
-	6,  // 44: port.api.v1.HandoffRoute.context_policy:type_name -> port.api.v1.ContextPolicy
-	30, // 45: port.api.v1.OrchestrationGraphSnapshot.nodes:type_name -> port.api.v1.OrchestrationNode
-	38, // 46: port.api.v1.OrchestrationGraphSnapshot.transitions:type_name -> port.api.v1.OrchestrationTransition
-	36, // 47: port.api.v1.OrchestrationGraphSnapshot.node_tool_snapshots:type_name -> port.api.v1.NodeToolSnapshot
-	4,  // 48: port.api.v1.OrchestrationNode.kind:type_name -> port.api.v1.NodeKind
-	47, // 49: port.api.v1.OrchestrationNode.position:type_name -> port.api.v1.CanvasPosition
-	48, // 50: port.api.v1.OrchestrationNode.size:type_name -> port.api.v1.CanvasSize
-	31, // 51: port.api.v1.OrchestrationNode.agent:type_name -> port.api.v1.OrchestrationAgent
-	32, // 52: port.api.v1.OrchestrationNode.task:type_name -> port.api.v1.OrchestrationTask
-	33, // 53: port.api.v1.OrchestrationNode.group:type_name -> port.api.v1.OrchestrationGroup
-	34, // 54: port.api.v1.OrchestrationAgent.persona:type_name -> port.api.v1.OrchestrationAgentPersona
-	35, // 55: port.api.v1.OrchestrationAgent.execution_profile:type_name -> port.api.v1.OrchestrationExecutionProfile
-	35, // 56: port.api.v1.OrchestrationTask.execution_profile:type_name -> port.api.v1.OrchestrationExecutionProfile
-	37, // 57: port.api.v1.NodeToolSnapshot.tools:type_name -> port.api.v1.NodeToolMetadata
-	51, // 58: port.api.v1.NodeToolMetadata.mcp:type_name -> port.api.v1.McpToolMetadata
-	52, // 59: port.api.v1.NodeToolMetadata.api:type_name -> port.api.v1.ApiToolMetadata
-	5,  // 60: port.api.v1.OrchestrationTransition.kind:type_name -> port.api.v1.TransitionKind
-	6,  // 61: port.api.v1.OrchestrationTransition.context_policy:type_name -> port.api.v1.ContextPolicy
-	54, // 62: port.api.v1.SupervisorConfig.global_actions:type_name -> port.api.v1.AgentGlobalActions
-	42, // 63: port.api.v1.WorkerSnapshot.persona:type_name -> port.api.v1.WorkerPersona
-	44, // 64: port.api.v1.CanvasSnapshot.nodes:type_name -> port.api.v1.CanvasNodeSnapshot
-	47, // 65: port.api.v1.CanvasNodeSnapshot.position:type_name -> port.api.v1.CanvasPosition
-	48, // 66: port.api.v1.CanvasNodeSnapshot.size:type_name -> port.api.v1.CanvasSize
-	45, // 67: port.api.v1.CanvasNodeSnapshot.group:type_name -> port.api.v1.CanvasGroupPlacement
-	46, // 68: port.api.v1.CanvasNodeSnapshot.agent:type_name -> port.api.v1.CanvasAgentPlacement
-	50, // 69: port.api.v1.WorkerToolSnapshot.tools:type_name -> port.api.v1.WorkerToolMetadata
-	51, // 70: port.api.v1.WorkerToolMetadata.mcp:type_name -> port.api.v1.McpToolMetadata
-	52, // 71: port.api.v1.WorkerToolMetadata.api:type_name -> port.api.v1.ApiToolMetadata
-	58, // 72: port.api.v1.ApiToolRuntime.headers:type_name -> port.api.v1.ApiToolRuntime.HeadersEntry
-	55, // 73: port.api.v1.AgentGlobalActions.transfer_to_human:type_name -> port.api.v1.TransferToHumanAction
-	56, // 74: port.api.v1.AgentGlobalActions.end_call:type_name -> port.api.v1.EndCallAction
-	59, // 75: port.api.v1.McpServerRuntime.headers:type_name -> port.api.v1.McpServerRuntime.HeadersEntry
-	7,  // 76: port.api.v1.AgentSessionService.Bootstrap:input_type -> port.api.v1.BootstrapRequest
-	9,  // 77: port.api.v1.AgentSessionService.BootstrapSip:input_type -> port.api.v1.BootstrapSipRequest
-	12, // 78: port.api.v1.AgentSessionService.BootstrapAgent:input_type -> port.api.v1.BootstrapAgentRequest
-	14, // 79: port.api.v1.AgentSessionService.BootstrapOrchestration:input_type -> port.api.v1.BootstrapOrchestrationRequest
-	11, // 80: port.api.v1.AgentSessionService.Bootstrap:output_type -> port.api.v1.BootstrapResponse
-	10, // 81: port.api.v1.AgentSessionService.BootstrapSip:output_type -> port.api.v1.BootstrapSipResponse
-	13, // 82: port.api.v1.AgentSessionService.BootstrapAgent:output_type -> port.api.v1.BootstrapAgentResponse
-	15, // 83: port.api.v1.AgentSessionService.BootstrapOrchestration:output_type -> port.api.v1.BootstrapOrchestrationResponse
-	80, // [80:84] is the sub-list for method output_type
-	76, // [76:80] is the sub-list for method input_type
-	76, // [76:76] is the sub-list for extension type_name
-	76, // [76:76] is the sub-list for extension extendee
-	0,  // [0:76] is the sub-list for field type_name
+	54, // 18: port.api.v1.BootstrapAgentResponse.global_actions:type_name -> port.api.v1.AgentGlobalActions
+	7,  // 19: port.api.v1.BootstrapOrchestrationRequest.admission:type_name -> port.api.v1.BootstrapRequest
+	3,  // 20: port.api.v1.BootstrapOrchestrationResponse.mode:type_name -> port.api.v1.OrchestrationMode
+	16, // 21: port.api.v1.BootstrapOrchestrationResponse.call_runtime:type_name -> port.api.v1.CallRuntimeSnapshot
+	23, // 22: port.api.v1.BootstrapOrchestrationResponse.agent_runtimes:type_name -> port.api.v1.AgentRuntime
+	25, // 23: port.api.v1.BootstrapOrchestrationResponse.supervisor:type_name -> port.api.v1.SupervisorSnapshot
+	27, // 24: port.api.v1.BootstrapOrchestrationResponse.handoff:type_name -> port.api.v1.HandoffSnapshot
+	54, // 25: port.api.v1.BootstrapOrchestrationResponse.global_actions:type_name -> port.api.v1.AgentGlobalActions
+	60, // 26: port.api.v1.CallRuntimeSnapshot.stt:type_name -> port.api.v1.SttRuntime
+	62, // 27: port.api.v1.CallRuntimeSnapshot.tts:type_name -> port.api.v1.TtsRuntime
+	21, // 28: port.api.v1.CallRuntimeSnapshot.background_audio:type_name -> port.api.v1.BackgroundAudioRuntime
+	22, // 29: port.api.v1.CallRuntimeSnapshot.dtmf:type_name -> port.api.v1.DtmfInputRuntime
+	17, // 30: port.api.v1.CallRuntimeSnapshot.transport:type_name -> port.api.v1.TransportRuntime
+	18, // 31: port.api.v1.CallRuntimeSnapshot.vad:type_name -> port.api.v1.VadRuntime
+	19, // 32: port.api.v1.CallRuntimeSnapshot.speech_policy:type_name -> port.api.v1.SpeechPolicyRuntime
+	20, // 33: port.api.v1.CallRuntimeSnapshot.limits:type_name -> port.api.v1.CallLimitsRuntime
+	0,  // 34: port.api.v1.TransportRuntime.source:type_name -> port.api.v1.CallTransportSource
+	1,  // 35: port.api.v1.VadRuntime.noise_cancellation:type_name -> port.api.v1.NoiseCancellationMode
+	2,  // 36: port.api.v1.BackgroundAudioRuntime.preset:type_name -> port.api.v1.BackgroundAudioPreset
+	61, // 37: port.api.v1.AgentRuntime.llm_worker:type_name -> port.api.v1.LlmRuntime
+	24, // 38: port.api.v1.AgentRuntime.instructions:type_name -> port.api.v1.AgentInstructions
+	6,  // 39: port.api.v1.AgentRuntime.context_policy:type_name -> port.api.v1.ContextPolicy
+	37, // 40: port.api.v1.AgentRuntime.tools:type_name -> port.api.v1.NodeToolMetadata
+	57, // 41: port.api.v1.AgentRuntime.mcp_servers:type_name -> port.api.v1.McpServerRuntime
+	53, // 42: port.api.v1.AgentRuntime.api_tool_runtimes:type_name -> port.api.v1.ApiToolRuntime
+	26, // 43: port.api.v1.SupervisorSnapshot.specialists:type_name -> port.api.v1.SupervisorSpecialist
+	6,  // 44: port.api.v1.SupervisorSpecialist.context_policy:type_name -> port.api.v1.ContextPolicy
+	28, // 45: port.api.v1.HandoffSnapshot.routes:type_name -> port.api.v1.HandoffRoute
+	6,  // 46: port.api.v1.HandoffRoute.context_policy:type_name -> port.api.v1.ContextPolicy
+	30, // 47: port.api.v1.OrchestrationGraphSnapshot.nodes:type_name -> port.api.v1.OrchestrationNode
+	38, // 48: port.api.v1.OrchestrationGraphSnapshot.transitions:type_name -> port.api.v1.OrchestrationTransition
+	36, // 49: port.api.v1.OrchestrationGraphSnapshot.node_tool_snapshots:type_name -> port.api.v1.NodeToolSnapshot
+	4,  // 50: port.api.v1.OrchestrationNode.kind:type_name -> port.api.v1.NodeKind
+	47, // 51: port.api.v1.OrchestrationNode.position:type_name -> port.api.v1.CanvasPosition
+	48, // 52: port.api.v1.OrchestrationNode.size:type_name -> port.api.v1.CanvasSize
+	31, // 53: port.api.v1.OrchestrationNode.agent:type_name -> port.api.v1.OrchestrationAgent
+	32, // 54: port.api.v1.OrchestrationNode.task:type_name -> port.api.v1.OrchestrationTask
+	33, // 55: port.api.v1.OrchestrationNode.group:type_name -> port.api.v1.OrchestrationGroup
+	34, // 56: port.api.v1.OrchestrationAgent.persona:type_name -> port.api.v1.OrchestrationAgentPersona
+	35, // 57: port.api.v1.OrchestrationAgent.execution_profile:type_name -> port.api.v1.OrchestrationExecutionProfile
+	35, // 58: port.api.v1.OrchestrationTask.execution_profile:type_name -> port.api.v1.OrchestrationExecutionProfile
+	37, // 59: port.api.v1.NodeToolSnapshot.tools:type_name -> port.api.v1.NodeToolMetadata
+	51, // 60: port.api.v1.NodeToolMetadata.mcp:type_name -> port.api.v1.McpToolMetadata
+	52, // 61: port.api.v1.NodeToolMetadata.api:type_name -> port.api.v1.ApiToolMetadata
+	5,  // 62: port.api.v1.OrchestrationTransition.kind:type_name -> port.api.v1.TransitionKind
+	6,  // 63: port.api.v1.OrchestrationTransition.context_policy:type_name -> port.api.v1.ContextPolicy
+	54, // 64: port.api.v1.SupervisorConfig.global_actions:type_name -> port.api.v1.AgentGlobalActions
+	42, // 65: port.api.v1.WorkerSnapshot.persona:type_name -> port.api.v1.WorkerPersona
+	44, // 66: port.api.v1.CanvasSnapshot.nodes:type_name -> port.api.v1.CanvasNodeSnapshot
+	47, // 67: port.api.v1.CanvasNodeSnapshot.position:type_name -> port.api.v1.CanvasPosition
+	48, // 68: port.api.v1.CanvasNodeSnapshot.size:type_name -> port.api.v1.CanvasSize
+	45, // 69: port.api.v1.CanvasNodeSnapshot.group:type_name -> port.api.v1.CanvasGroupPlacement
+	46, // 70: port.api.v1.CanvasNodeSnapshot.agent:type_name -> port.api.v1.CanvasAgentPlacement
+	50, // 71: port.api.v1.WorkerToolSnapshot.tools:type_name -> port.api.v1.WorkerToolMetadata
+	51, // 72: port.api.v1.WorkerToolMetadata.mcp:type_name -> port.api.v1.McpToolMetadata
+	52, // 73: port.api.v1.WorkerToolMetadata.api:type_name -> port.api.v1.ApiToolMetadata
+	58, // 74: port.api.v1.ApiToolRuntime.headers:type_name -> port.api.v1.ApiToolRuntime.HeadersEntry
+	55, // 75: port.api.v1.AgentGlobalActions.transfer_to_human:type_name -> port.api.v1.TransferToHumanAction
+	56, // 76: port.api.v1.AgentGlobalActions.end_call:type_name -> port.api.v1.EndCallAction
+	59, // 77: port.api.v1.McpServerRuntime.headers:type_name -> port.api.v1.McpServerRuntime.HeadersEntry
+	7,  // 78: port.api.v1.AgentSessionService.Bootstrap:input_type -> port.api.v1.BootstrapRequest
+	9,  // 79: port.api.v1.AgentSessionService.BootstrapSip:input_type -> port.api.v1.BootstrapSipRequest
+	12, // 80: port.api.v1.AgentSessionService.BootstrapAgent:input_type -> port.api.v1.BootstrapAgentRequest
+	14, // 81: port.api.v1.AgentSessionService.BootstrapOrchestration:input_type -> port.api.v1.BootstrapOrchestrationRequest
+	11, // 82: port.api.v1.AgentSessionService.Bootstrap:output_type -> port.api.v1.BootstrapResponse
+	10, // 83: port.api.v1.AgentSessionService.BootstrapSip:output_type -> port.api.v1.BootstrapSipResponse
+	13, // 84: port.api.v1.AgentSessionService.BootstrapAgent:output_type -> port.api.v1.BootstrapAgentResponse
+	15, // 85: port.api.v1.AgentSessionService.BootstrapOrchestration:output_type -> port.api.v1.BootstrapOrchestrationResponse
+	82, // [82:86] is the sub-list for method output_type
+	78, // [78:82] is the sub-list for method input_type
+	78, // [78:78] is the sub-list for extension type_name
+	78, // [78:78] is the sub-list for extension extendee
+	0,  // [0:78] is the sub-list for field type_name
 }
 
 func init() { file_port_api_v1_agent_session_proto_init() }
