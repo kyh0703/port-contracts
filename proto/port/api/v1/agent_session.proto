@@ -5,14 +5,11 @@ package port.api.v1;
 import "buf/validate/validate.proto";
 import "port/api/v1/voice_runtime.proto";
 
-option go_package = "github.com/kyh0703/port-contracts/v2/gen/go/port/api/v1;apiv1";
+option go_package = "github.com/kyh0703/port-contracts/v3/gen/go/port/api/v1;apiv1";
 
 // AgentSessionService is the worker-only API boundary for LiveKit jobs.
 service AgentSessionService {
-  rpc Bootstrap(BootstrapRequest) returns (BootstrapResponse);
-  rpc BootstrapSip(BootstrapSipRequest) returns (BootstrapSipResponse);
-  rpc BootstrapAgent(BootstrapAgentRequest) returns (BootstrapAgentResponse);
-  rpc BootstrapOrchestration(BootstrapOrchestrationRequest) returns (BootstrapOrchestrationResponse);
+  rpc BootstrapPublished(BootstrapPublishedRequest) returns (BootstrapPublishedResponse);
 }
 
 message BootstrapRequest {
@@ -33,146 +30,116 @@ message SipBootstrapContext {
   string call_id_full = 7 [(buf.validate.field).string.min_len = 1];
 }
 
-message BootstrapSipRequest {
-  SipBootstrapContext sip = 1 [(buf.validate.field).required = true];
-  string contract_revision = 2 [
+// published_id is the only execution identity accepted by a runtime session.
+message BootstrapPublishedRequest {
+  BootstrapRequest admission = 1 [(buf.validate.field).required = true];
+  string conversation_id = 2 [(buf.validate.field).required = true, (buf.validate.field).string.min_len = 1];
+  string session_id = 3 [(buf.validate.field).required = true, (buf.validate.field).string.min_len = 1];
+  string published_id = 4 [(buf.validate.field).required = true, (buf.validate.field).string.min_len = 1];
+  string contract_revision = 5 [
     (buf.validate.field).required = true,
-    (buf.validate.field).string.const = "orchestration-2026-08-07-r4"
+    (buf.validate.field).string.const = "execution-publication-2026-08-11-r1"
   ];
 }
 
-message BootstrapSipResponse {
+message BootstrapPublishedResponse {
   option (buf.validate.message).oneof = {
     fields: ["agent", "orchestration"]
     required: true
   };
+  option (buf.validate.message).oneof = {
+    fields: ["voice_runtime", "text_runtime"]
+    required: true
+  };
 
-  oneof payload {
-    option (buf.validate.oneof).required = true;
-    BootstrapAgentResponse agent = 1;
-    BootstrapOrchestrationResponse orchestration = 2;
-  }
-}
-
-message BootstrapResponse {
-  string conversation_id = 1 [(buf.validate.field).string.min_len = 1];
-  string session_id = 2 [(buf.validate.field).string.min_len = 1];
-  string source = 3 [(buf.validate.field).string.in = "webrtc", (buf.validate.field).string.in = "sip", (buf.validate.field).string.in = "text_stream"];
-  string room_name = 4 [(buf.validate.field).string.min_len = 1];
-  string agent_tool_snapshot_id = 5 [(buf.validate.field).string.min_len = 1];
-  SttRuntime stt = 6 [(buf.validate.field).required = true];
-  LlmRuntime llm = 7 [(buf.validate.field).required = true];
-  TtsRuntime tts = 8 [(buf.validate.field).required = true];
-  repeated McpServerRuntime mcp_servers = 9;
-  string agent_id = 10 [(buf.validate.field).string.min_len = 1];
-  // 11 and 12 were flow_id / flow_version_id, shipped in 1.2.3. The Flow layer
-  // is gone, and reusing those numbers for other types would misparse on any
-  // client still running that release.
-  reserved 11, 12;
-  reserved "flow_id", "flow_version_id";
-  // Specialist/workflow fields shipped in earlier releases. Keep their wire
-  // numbers unavailable; the supervisor/worker snapshot starts at 18.
-  reserved 13, 14, 15, 16, 17;
-  reserved "persona", "specialists", "global_actions", "agent_version_id", "workflow";
-
-  string supervisor_id = 18 [(buf.validate.field).string.min_len = 1];
-  string supervisor_version_id = 19 [(buf.validate.field).string.min_len = 1];
-  SupervisorPersona supervisor_persona = 20 [(buf.validate.field).required = true];
-  SupervisorConfig supervisor_config = 21 [(buf.validate.field).required = true];
-  repeated WorkerSnapshot workers = 22;
-  CanvasSnapshot canvas = 23 [(buf.validate.field).required = true];
-  repeated WorkerToolSnapshot worker_tool_snapshots = 24;
-  string bootstrap_snapshot_id = 25 [(buf.validate.field).string.min_len = 1];
-  repeated ApiToolRuntime api_tool_runtimes = 26;
-  OrchestrationGraphSnapshot orchestration_graph = 27;
-}
-
-message BootstrapAgentRequest {
-  BootstrapRequest admission = 1 [(buf.validate.field).required = true];
-  string conversation_id = 2 [(buf.validate.field).required = true, (buf.validate.field).string.min_len = 1];
-  string session_id = 3 [(buf.validate.field).required = true, (buf.validate.field).string.min_len = 1];
-  string agent_version_id = 4 [(buf.validate.field).required = true, (buf.validate.field).string.min_len = 1];
-  string contract_revision = 5 [
-    (buf.validate.field).required = true,
-    (buf.validate.field).string.const = "orchestration-2026-08-07-r4"
-  ];
-}
-
-message BootstrapAgentResponse {
   string contract_revision = 1 [
     (buf.validate.field).required = true,
-    (buf.validate.field).string.const = "orchestration-2026-08-07-r4"
+    (buf.validate.field).string.const = "execution-publication-2026-08-11-r1"
   ];
-  string schema_version = 2 [
-    (buf.validate.field).required = true,
-    (buf.validate.field).string.const = "agent.orchestration.v1"
-  ];
-  string conversation_id = 3 [(buf.validate.field).required = true, (buf.validate.field).string.min_len = 1];
-  string session_id = 4 [(buf.validate.field).required = true, (buf.validate.field).string.min_len = 1];
-  CallRuntimeSnapshot call_runtime = 5 [(buf.validate.field).required = true];
-  AgentRuntime agent_runtime = 6 [(buf.validate.field).required = true];
-  AgentGlobalActions global_actions = 7 [(buf.validate.field).required = true];
-}
-
-message BootstrapOrchestrationRequest {
-  BootstrapRequest admission = 1 [(buf.validate.field).required = true];
   string conversation_id = 2 [(buf.validate.field).required = true, (buf.validate.field).string.min_len = 1];
   string session_id = 3 [(buf.validate.field).required = true, (buf.validate.field).string.min_len = 1];
-  string orchestration_version_id = 4 [(buf.validate.field).required = true, (buf.validate.field).string.min_len = 1];
-  string contract_revision = 5 [
-    (buf.validate.field).required = true,
-    (buf.validate.field).string.const = "orchestration-2026-08-07-r4"
-  ];
+  string published_id = 4 [(buf.validate.field).required = true, (buf.validate.field).string.min_len = 1];
+
+  oneof execution {
+    option (buf.validate.oneof).required = true;
+    PublishedAgentExecution agent = 5;
+    PublishedOrchestrationExecution orchestration = 6;
+  }
+  oneof runtime {
+    option (buf.validate.oneof).required = true;
+    CallRuntimeSnapshot voice_runtime = 7;
+    TextRuntimeSnapshot text_runtime = 8;
+  }
+  AgentGlobalActions global_actions = 9 [(buf.validate.field).required = true];
 }
 
-message BootstrapOrchestrationResponse {
+message PublishedAgentExecution {
+  PublishedAgentRuntime runtime = 1 [(buf.validate.field).required = true];
+}
+
+message PublishedOrchestrationExecution {
   option (buf.validate.message).oneof = {
     fields: ["supervisor", "handoff"]
     required: true
   };
   option (buf.validate.message).cel = {
-    id: "bootstrap_orchestration_response.mode_snapshot"
-    message: "mode must match the selected orchestration snapshot"
+    id: "published_orchestration_execution.mode_snapshot"
+    message: "mode must match the selected publication topology"
     expression: "(this.mode == 1 && has(this.supervisor)) || (this.mode == 2 && has(this.handoff))"
   };
 
-  string contract_revision = 1 [
-    (buf.validate.field).required = true,
-    (buf.validate.field).string.const = "orchestration-2026-08-07-r4"
-  ];
-  string schema_version = 2 [
-    (buf.validate.field).required = true,
-    (buf.validate.field).string.const = "agent.orchestration.v1"
-  ];
-  string conversation_id = 3 [(buf.validate.field).required = true, (buf.validate.field).string.min_len = 1];
-  string session_id = 4 [(buf.validate.field).required = true, (buf.validate.field).string.min_len = 1];
-  string orchestration_id = 5 [(buf.validate.field).required = true, (buf.validate.field).string.min_len = 1];
-  string orchestration_version_id = 6 [(buf.validate.field).required = true, (buf.validate.field).string.min_len = 1];
-  OrchestrationMode mode = 7 [
-    (buf.validate.field).required = true,
-    (buf.validate.field).enum = {defined_only: true not_in: 0}
-  ];
-  CallRuntimeSnapshot call_runtime = 8 [(buf.validate.field).required = true];
-  repeated AgentRuntime agent_runtimes = 9 [(buf.validate.field).repeated.min_items = 2];
-  SupervisorSnapshot supervisor = 10;
-  HandoffSnapshot handoff = 11;
-  AgentGlobalActions global_actions = 12 [(buf.validate.field).required = true];
+  OrchestrationMode mode = 1 [(buf.validate.field).required = true, (buf.validate.field).enum = {defined_only: true not_in: 0}];
+  repeated PublishedAgentRuntime agent_runtimes = 2 [(buf.validate.field).repeated.min_items = 2];
+  PublishedSupervisorSnapshot supervisor = 3;
+  PublishedHandoffSnapshot handoff = 4;
+}
 
-  option (buf.validate.message).cel = {
-    id: "bootstrap_orchestration_response.unique_runtime_versions"
-    message: "agent runtime version IDs must be unique"
-    expression: "this.agent_runtimes.all(r, this.agent_runtimes.filter(candidate, candidate.agent_version_id == r.agent_version_id).size() == 1)"
-  };
-  option (buf.validate.message).cel = {
-    id: "bootstrap_orchestration_response.supervisor_references"
-    message: "supervisor snapshot references must resolve to unique runtimes"
-    expression: "!has(this.supervisor) || (this.agent_runtimes.exists(r, r.agent_version_id == this.supervisor.supervisor_agent_version_id) && this.supervisor.specialists.all(s, this.supervisor.specialists.filter(candidate, candidate.relation_id == s.relation_id).size() == 1) && this.supervisor.specialists.all(s, this.agent_runtimes.exists(r, r.agent_version_id == s.target_agent_version_id)))"
-  };
-  option (buf.validate.message).cel = {
-    id: "bootstrap_orchestration_response.handoff_references"
-    message: "handoff snapshot references must resolve to unique runtimes"
-    expression: "!has(this.handoff) || (this.agent_runtimes.exists(r, r.agent_version_id == this.handoff.entry_agent_version_id) && this.handoff.routes.all(route, this.handoff.routes.filter(candidate, candidate.transition_id == route.transition_id).size() == 1) && this.handoff.routes.all(route, this.agent_runtimes.exists(runtime, runtime.agent_version_id == route.source_agent_version_id) && this.agent_runtimes.exists(runtime, runtime.agent_version_id == route.target_agent_version_id)))"
-  };
+message PublishedAgentRuntime {
+  string agent_published_id = 1 [(buf.validate.field).string.min_len = 1];
+  LlmRuntime llm_worker = 2 [(buf.validate.field).required = true];
+  AgentInstructions instructions = 3 [(buf.validate.field).required = true];
+  ContextPolicy context_policy = 4 [(buf.validate.field).enum = {defined_only: true not_in: 0}];
+  repeated NodeToolMetadata tools = 5;
+  repeated McpServerRuntime mcp_servers = 6;
+  string greeting = 7;
+  string knowledge_revision_id = 8;
+  repeated ApiToolRuntime api_tool_runtimes = 9;
+  string knowledge_retrieval_capability = 10;
+}
+
+message PublishedSupervisorSnapshot {
+  string supervisor_agent_published_id = 1 [(buf.validate.field).string.min_len = 1];
+  repeated PublishedSupervisorSpecialist specialists = 2 [(buf.validate.field).repeated.min_items = 1];
+}
+
+message PublishedSupervisorSpecialist {
+  string relation_id = 1 [(buf.validate.field).string.min_len = 1];
+  string target_agent_published_id = 2 [(buf.validate.field).string.min_len = 1];
+  string route_description = 3 [(buf.validate.field).string.min_len = 1];
+  ContextPolicy context_policy = 4 [(buf.validate.field).enum = {defined_only: true not_in: 0}];
+}
+
+message PublishedHandoffSnapshot {
+  string entry_agent_published_id = 1 [(buf.validate.field).string.min_len = 1];
+  uint32 max_handoff_depth = 2 [(buf.validate.field).uint32.gt = 0];
+  repeated PublishedHandoffRoute routes = 3 [(buf.validate.field).repeated.min_items = 1];
+}
+
+message PublishedHandoffRoute {
+  string transition_id = 1 [(buf.validate.field).string.min_len = 1];
+  string source_agent_published_id = 2 [(buf.validate.field).string.min_len = 1];
+  string target_agent_published_id = 3 [(buf.validate.field).string.min_len = 1];
+  string routing_description = 4 [(buf.validate.field).string.min_len = 1];
+  ContextPolicy context_policy = 5 [(buf.validate.field).enum = {defined_only: true not_in: 0}];
+  string announcement = 6;
+}
+
+message TextRuntimeSnapshot {
+  string transport = 1 [(buf.validate.field).string.const = "text_stream"];
+  string room_name = 2 [(buf.validate.field).string.min_len = 1];
+  string participant_identity = 3 [(buf.validate.field).string.min_len = 1];
+  uint32 idle_timeout_seconds = 4 [(buf.validate.field).uint32.gt = 0];
+  uint32 max_session_duration_seconds = 5 [(buf.validate.field).uint32.gt = 0];
 }
 
 message CallRuntimeSnapshot {
@@ -250,26 +217,6 @@ message DtmfInputRuntime {
   optional string end_key = 2 [(buf.validate.field).string.pattern = "^[0-9#*]$"];
 }
 
-message AgentRuntime {
-  option (buf.validate.message).cel = {
-    id: "agent_runtime.tool_metadata_runtime_bindings"
-    message: "API tool metadata and runtime IDs must match exactly"
-    expression: "this.tools.all(t, this.tools.filter(candidate, candidate.tool_id == t.tool_id).size() == 1 && ((t.kind == 'api' && has(t.api)) || (t.kind == 'mcp' && !has(t.api)))) && this.tools.filter(t, t.kind == 'api').all(t, this.api_tool_runtimes.filter(r, r.tool_id == t.tool_id).size() == 1) && this.api_tool_runtimes.all(r, this.tools.filter(t, t.kind == 'api' && t.tool_id == r.tool_id).size() == 1 && this.api_tool_runtimes.filter(candidate, candidate.tool_id == r.tool_id).size() == 1)"
-  };
-  string agent_id = 1 [(buf.validate.field).string.min_len = 1];
-  string agent_version_id = 2 [(buf.validate.field).string.min_len = 1];
-  LlmRuntime llm_worker = 3 [(buf.validate.field).required = true];
-  AgentInstructions instructions = 4 [(buf.validate.field).required = true];
-  ContextPolicy context_policy = 5 [(buf.validate.field).enum = {defined_only: true not_in: 0}];
-  repeated NodeToolMetadata tools = 6;
-  repeated McpServerRuntime mcp_servers = 7;
-  // Greeting activation is derived from execution context per C17: initial and
-  // handoff activations may play it, while supervisor specialist tasks do not.
-  string greeting = 8;
-  string knowledge_revision_id = 9;
-  repeated ApiToolRuntime api_tool_runtimes = 10;
-}
-
 message AgentInstructions {
   string system_prompt = 1 [(buf.validate.field).string.min_len = 1];
   repeated string guardrails = 2;
@@ -279,97 +226,6 @@ enum OrchestrationMode {
   ORCHESTRATION_MODE_UNSPECIFIED = 0;
   ORCHESTRATION_MODE_SUPERVISOR = 1;
   ORCHESTRATION_MODE_HANDOFF = 2;
-}
-
-message SupervisorSnapshot {
-  string supervisor_agent_version_id = 1 [(buf.validate.field).string.min_len = 1];
-  repeated SupervisorSpecialist specialists = 2 [(buf.validate.field).repeated.min_items = 1];
-}
-
-message SupervisorSpecialist {
-  string relation_id = 1 [(buf.validate.field).string.min_len = 1];
-  string target_agent_version_id = 2 [(buf.validate.field).string.min_len = 1];
-  string route_description = 3 [(buf.validate.field).string.min_len = 1];
-  ContextPolicy context_policy = 4 [(buf.validate.field).enum = {defined_only: true not_in: 0}];
-}
-
-message HandoffSnapshot {
-  string entry_agent_version_id = 1 [(buf.validate.field).string.min_len = 1];
-  uint32 max_handoff_depth = 2 [(buf.validate.field).uint32.gt = 0];
-  repeated HandoffRoute routes = 3 [(buf.validate.field).repeated.min_items = 1];
-}
-
-message HandoffRoute {
-  string transition_id = 1 [(buf.validate.field).string.min_len = 1];
-  string source_agent_version_id = 2 [(buf.validate.field).string.min_len = 1];
-  string target_agent_version_id = 3 [(buf.validate.field).string.min_len = 1];
-  string routing_description = 4 [(buf.validate.field).string.min_len = 1];
-  ContextPolicy context_policy = 5 [(buf.validate.field).enum = {defined_only: true not_in: 0}];
-  string announcement = 6;
-}
-
-message OrchestrationGraphSnapshot {
-  string snapshot_id = 1 [(buf.validate.field).string.min_len = 1];
-  string version_id = 2 [(buf.validate.field).string.min_len = 1];
-  string schema_version = 3 [(buf.validate.field).string.const = "agent.orchestration.v1"];
-  string entry_node_id = 4 [(buf.validate.field).string.min_len = 1];
-  uint32 max_handoff_depth = 5 [(buf.validate.field).uint32.gt = 0];
-  repeated OrchestrationNode nodes = 6;
-  repeated OrchestrationTransition transitions = 7;
-  repeated NodeToolSnapshot node_tool_snapshots = 8;
-}
-
-message OrchestrationNode {
-  string node_id = 1 [(buf.validate.field).string.min_len = 1];
-  NodeKind kind = 2 [(buf.validate.field).enum = {defined_only: true not_in: 0}];
-  string parent_node_id = 3;
-  CanvasPosition position = 4 [(buf.validate.field).required = true];
-  CanvasSize size = 5 [(buf.validate.field).required = true];
-  oneof payload {
-    OrchestrationAgent agent = 6;
-    OrchestrationTask task = 7;
-    OrchestrationGroup group = 8;
-  }
-}
-
-message OrchestrationAgent {
-  string agent_id = 1 [(buf.validate.field).string.min_len = 1];
-  string agent_version_id = 2 [(buf.validate.field).string.min_len = 1];
-  OrchestrationAgentPersona persona = 3 [(buf.validate.field).required = true];
-  OrchestrationExecutionProfile execution_profile = 4 [(buf.validate.field).required = true];
-  string tool_snapshot_id = 5 [(buf.validate.field).string.min_len = 1];
-}
-
-message OrchestrationTask {
-  string name = 1 [(buf.validate.field).string.min_len = 1];
-  string instructions = 2 [(buf.validate.field).string.min_len = 1];
-  string completion_instructions = 3 [(buf.validate.field).string.min_len = 1];
-  OrchestrationExecutionProfile execution_profile = 4;
-  string tool_snapshot_id = 5 [(buf.validate.field).string.min_len = 1];
-}
-
-message OrchestrationGroup {
-  string label = 1;
-}
-
-message OrchestrationAgentPersona {
-  string display_name = 1 [(buf.validate.field).string.min_len = 1];
-  string system_prompt = 2 [(buf.validate.field).string.min_len = 1];
-  string greeting = 3;
-}
-
-message OrchestrationExecutionProfile {
-  string llm_model = 1;
-  string tts_model = 2;
-  string voice_id = 3;
-  string language = 4;
-}
-
-message NodeToolSnapshot {
-  string snapshot_id = 1 [(buf.validate.field).string.min_len = 1];
-  string version_id = 2 [(buf.validate.field).string.min_len = 1];
-  string node_id = 3 [(buf.validate.field).string.min_len = 1];
-  repeated NodeToolMetadata tools = 4;
 }
 
 message NodeToolMetadata {
@@ -386,130 +242,10 @@ message NodeToolMetadata {
   }
 }
 
-message OrchestrationTransition {
-  string transition_id = 1 [(buf.validate.field).string.min_len = 1];
-  string source_node_id = 2 [(buf.validate.field).string.min_len = 1];
-  string target_node_id = 3 [(buf.validate.field).string.min_len = 1];
-  TransitionKind kind = 4 [(buf.validate.field).enum = {defined_only: true not_in: 0}];
-  string description = 5 [(buf.validate.field).string.min_len = 1];
-  ContextPolicy context_policy = 6 [(buf.validate.field).enum = {defined_only: true not_in: 0}];
-  string announcement = 7;
-}
-
-enum NodeKind {
-  NODE_KIND_UNSPECIFIED = 0;
-  NODE_KIND_AGENT = 1;
-  NODE_KIND_TASK = 2;
-  NODE_KIND_GROUP = 3;
-}
-
-enum TransitionKind {
-  TRANSITION_KIND_UNSPECIFIED = 0;
-  TRANSITION_KIND_DELEGATE = 1;
-  TRANSITION_KIND_HANDOFF = 2;
-}
-
 enum ContextPolicy {
   CONTEXT_POLICY_UNSPECIFIED = 0;
   CONTEXT_POLICY_NONE = 1;
   CONTEXT_POLICY_CONVERSATION = 2;
-}
-
-message SupervisorPersona {
-  string display_name = 1 [(buf.validate.field).string.min_len = 1];
-  string system_prompt = 2 [(buf.validate.field).string.min_len = 1];
-  string voice_id = 3;
-  string language = 4;
-}
-
-message SupervisorConfig {
-  string routing_instructions = 1;
-  uint32 max_handoff_depth = 2;
-  AgentGlobalActions global_actions = 3;
-}
-
-// Frozen at publish time. The worker uses routing_text to decide when a
-// supervisor should hand a turn to this worker; description is display text.
-message WorkerSnapshot {
-  string worker_id = 1 [(buf.validate.field).string.min_len = 1];
-  string version_id = 2 [(buf.validate.field).string.min_len = 1];
-  string description = 3;
-  string routing_text = 4 [(buf.validate.field).string.min_len = 1];
-  WorkerPersona persona = 5 [(buf.validate.field).required = true];
-  string role = 6 [(buf.validate.field).string.in = "worker"];
-  string runtime_identity = 7 [(buf.validate.field).string.min_len = 1];
-  string tool_snapshot_id = 8;
-}
-
-message WorkerPersona {
-  string display_name = 1 [(buf.validate.field).string.min_len = 1];
-  string system_prompt = 2 [(buf.validate.field).string.min_len = 1];
-  string greeting = 3;
-  string voice_id = 4;
-  string language = 5;
-}
-
-// Immutable xyflow placement snapshot. parent_node_id points to another group
-// node, and an empty value means the node is at the canvas root.
-message CanvasSnapshot {
-  string snapshot_id = 1 [(buf.validate.field).string.min_len = 1];
-  string version_id = 2 [(buf.validate.field).string.min_len = 1];
-  string schema_version = 3 [(buf.validate.field).string.min_len = 1];
-  repeated CanvasNodeSnapshot nodes = 4;
-}
-
-message CanvasNodeSnapshot {
-  string node_id = 1 [(buf.validate.field).string.min_len = 1];
-  string parent_node_id = 2;
-  CanvasPosition position = 3 [(buf.validate.field).required = true];
-  CanvasSize size = 4 [(buf.validate.field).required = true];
-  bool is_entry = 5;
-  oneof placement {
-    CanvasGroupPlacement group = 6;
-    CanvasAgentPlacement agent = 7;
-  }
-}
-
-message CanvasGroupPlacement {
-  string label = 1;
-}
-
-message CanvasAgentPlacement {
-  string agent_id = 1 [(buf.validate.field).string.min_len = 1];
-}
-
-message CanvasPosition {
-  double x = 1;
-  double y = 2;
-}
-
-message CanvasSize {
-  double width = 1;
-  double height = 2;
-}
-
-// Tool metadata is scoped to a Worker. URLs and schemas describe the mounted
-// tool; credentials and provider secrets must never be included in this
-// snapshot.
-message WorkerToolSnapshot {
-  string snapshot_id = 1 [(buf.validate.field).string.min_len = 1];
-  string version_id = 2 [(buf.validate.field).string.min_len = 1];
-  string worker_id = 3 [(buf.validate.field).string.min_len = 1];
-  repeated WorkerToolMetadata tools = 4;
-}
-
-message WorkerToolMetadata {
-  string tool_id = 1 [(buf.validate.field).string.min_len = 1];
-  string kind = 2 [
-    (buf.validate.field).string.in = "mcp",
-    (buf.validate.field).string.in = "api"
-  ];
-  string name = 3 [(buf.validate.field).string.min_len = 1];
-  string description = 4;
-  oneof metadata {
-    McpToolMetadata mcp = 5;
-    ApiToolMetadata api = 6;
-  }
 }
 
 message McpToolMetadata {
@@ -528,15 +264,12 @@ message ApiToolMetadata {
   string response_schema_json = 4;
 }
 
-// Short-lived execution credentials for API tools. These are not part of the
-// immutable WorkerToolSnapshot and are scoped to the bootstrap lease.
+// Short-lived execution credentials for API tools, scoped to the bootstrap lease.
 message ApiToolRuntime {
   string tool_id = 1 [(buf.validate.field).string.min_len = 1];
   map<string, string> headers = 2;
 }
 
-// Mounted as AgentSession-level tools so they stay callable while a Worker
-// holds the turn — a caller can ask for a human or hang up mid-step.
 message AgentGlobalActions {
   TransferToHumanAction transfer_to_human = 1;
   EndCallAction end_call = 2;

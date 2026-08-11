@@ -19,10 +19,7 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	AgentSessionService_Bootstrap_FullMethodName              = "/port.api.v1.AgentSessionService/Bootstrap"
-	AgentSessionService_BootstrapSip_FullMethodName           = "/port.api.v1.AgentSessionService/BootstrapSip"
-	AgentSessionService_BootstrapAgent_FullMethodName         = "/port.api.v1.AgentSessionService/BootstrapAgent"
-	AgentSessionService_BootstrapOrchestration_FullMethodName = "/port.api.v1.AgentSessionService/BootstrapOrchestration"
+	AgentSessionService_BootstrapPublished_FullMethodName = "/port.api.v1.AgentSessionService/BootstrapPublished"
 )
 
 // AgentSessionServiceClient is the client API for AgentSessionService service.
@@ -31,10 +28,7 @@ const (
 //
 // AgentSessionService is the worker-only API boundary for LiveKit jobs.
 type AgentSessionServiceClient interface {
-	Bootstrap(ctx context.Context, in *BootstrapRequest, opts ...grpc.CallOption) (*BootstrapResponse, error)
-	BootstrapSip(ctx context.Context, in *BootstrapSipRequest, opts ...grpc.CallOption) (*BootstrapSipResponse, error)
-	BootstrapAgent(ctx context.Context, in *BootstrapAgentRequest, opts ...grpc.CallOption) (*BootstrapAgentResponse, error)
-	BootstrapOrchestration(ctx context.Context, in *BootstrapOrchestrationRequest, opts ...grpc.CallOption) (*BootstrapOrchestrationResponse, error)
+	BootstrapPublished(ctx context.Context, in *BootstrapPublishedRequest, opts ...grpc.CallOption) (*BootstrapPublishedResponse, error)
 }
 
 type agentSessionServiceClient struct {
@@ -45,40 +39,10 @@ func NewAgentSessionServiceClient(cc grpc.ClientConnInterface) AgentSessionServi
 	return &agentSessionServiceClient{cc}
 }
 
-func (c *agentSessionServiceClient) Bootstrap(ctx context.Context, in *BootstrapRequest, opts ...grpc.CallOption) (*BootstrapResponse, error) {
+func (c *agentSessionServiceClient) BootstrapPublished(ctx context.Context, in *BootstrapPublishedRequest, opts ...grpc.CallOption) (*BootstrapPublishedResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(BootstrapResponse)
-	err := c.cc.Invoke(ctx, AgentSessionService_Bootstrap_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *agentSessionServiceClient) BootstrapSip(ctx context.Context, in *BootstrapSipRequest, opts ...grpc.CallOption) (*BootstrapSipResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(BootstrapSipResponse)
-	err := c.cc.Invoke(ctx, AgentSessionService_BootstrapSip_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *agentSessionServiceClient) BootstrapAgent(ctx context.Context, in *BootstrapAgentRequest, opts ...grpc.CallOption) (*BootstrapAgentResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(BootstrapAgentResponse)
-	err := c.cc.Invoke(ctx, AgentSessionService_BootstrapAgent_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *agentSessionServiceClient) BootstrapOrchestration(ctx context.Context, in *BootstrapOrchestrationRequest, opts ...grpc.CallOption) (*BootstrapOrchestrationResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(BootstrapOrchestrationResponse)
-	err := c.cc.Invoke(ctx, AgentSessionService_BootstrapOrchestration_FullMethodName, in, out, cOpts...)
+	out := new(BootstrapPublishedResponse)
+	err := c.cc.Invoke(ctx, AgentSessionService_BootstrapPublished_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -91,10 +55,7 @@ func (c *agentSessionServiceClient) BootstrapOrchestration(ctx context.Context, 
 //
 // AgentSessionService is the worker-only API boundary for LiveKit jobs.
 type AgentSessionServiceServer interface {
-	Bootstrap(context.Context, *BootstrapRequest) (*BootstrapResponse, error)
-	BootstrapSip(context.Context, *BootstrapSipRequest) (*BootstrapSipResponse, error)
-	BootstrapAgent(context.Context, *BootstrapAgentRequest) (*BootstrapAgentResponse, error)
-	BootstrapOrchestration(context.Context, *BootstrapOrchestrationRequest) (*BootstrapOrchestrationResponse, error)
+	BootstrapPublished(context.Context, *BootstrapPublishedRequest) (*BootstrapPublishedResponse, error)
 	mustEmbedUnimplementedAgentSessionServiceServer()
 }
 
@@ -105,17 +66,8 @@ type AgentSessionServiceServer interface {
 // pointer dereference when methods are called.
 type UnimplementedAgentSessionServiceServer struct{}
 
-func (UnimplementedAgentSessionServiceServer) Bootstrap(context.Context, *BootstrapRequest) (*BootstrapResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "method Bootstrap not implemented")
-}
-func (UnimplementedAgentSessionServiceServer) BootstrapSip(context.Context, *BootstrapSipRequest) (*BootstrapSipResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "method BootstrapSip not implemented")
-}
-func (UnimplementedAgentSessionServiceServer) BootstrapAgent(context.Context, *BootstrapAgentRequest) (*BootstrapAgentResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "method BootstrapAgent not implemented")
-}
-func (UnimplementedAgentSessionServiceServer) BootstrapOrchestration(context.Context, *BootstrapOrchestrationRequest) (*BootstrapOrchestrationResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "method BootstrapOrchestration not implemented")
+func (UnimplementedAgentSessionServiceServer) BootstrapPublished(context.Context, *BootstrapPublishedRequest) (*BootstrapPublishedResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method BootstrapPublished not implemented")
 }
 func (UnimplementedAgentSessionServiceServer) mustEmbedUnimplementedAgentSessionServiceServer() {}
 func (UnimplementedAgentSessionServiceServer) testEmbeddedByValue()                             {}
@@ -138,74 +90,20 @@ func RegisterAgentSessionServiceServer(s grpc.ServiceRegistrar, srv AgentSession
 	s.RegisterService(&AgentSessionService_ServiceDesc, srv)
 }
 
-func _AgentSessionService_Bootstrap_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(BootstrapRequest)
+func _AgentSessionService_BootstrapPublished_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(BootstrapPublishedRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(AgentSessionServiceServer).Bootstrap(ctx, in)
+		return srv.(AgentSessionServiceServer).BootstrapPublished(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: AgentSessionService_Bootstrap_FullMethodName,
+		FullMethod: AgentSessionService_BootstrapPublished_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AgentSessionServiceServer).Bootstrap(ctx, req.(*BootstrapRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _AgentSessionService_BootstrapSip_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(BootstrapSipRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(AgentSessionServiceServer).BootstrapSip(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: AgentSessionService_BootstrapSip_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AgentSessionServiceServer).BootstrapSip(ctx, req.(*BootstrapSipRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _AgentSessionService_BootstrapAgent_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(BootstrapAgentRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(AgentSessionServiceServer).BootstrapAgent(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: AgentSessionService_BootstrapAgent_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AgentSessionServiceServer).BootstrapAgent(ctx, req.(*BootstrapAgentRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _AgentSessionService_BootstrapOrchestration_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(BootstrapOrchestrationRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(AgentSessionServiceServer).BootstrapOrchestration(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: AgentSessionService_BootstrapOrchestration_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AgentSessionServiceServer).BootstrapOrchestration(ctx, req.(*BootstrapOrchestrationRequest))
+		return srv.(AgentSessionServiceServer).BootstrapPublished(ctx, req.(*BootstrapPublishedRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -218,20 +116,8 @@ var AgentSessionService_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*AgentSessionServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "Bootstrap",
-			Handler:    _AgentSessionService_Bootstrap_Handler,
-		},
-		{
-			MethodName: "BootstrapSip",
-			Handler:    _AgentSessionService_BootstrapSip_Handler,
-		},
-		{
-			MethodName: "BootstrapAgent",
-			Handler:    _AgentSessionService_BootstrapAgent_Handler,
-		},
-		{
-			MethodName: "BootstrapOrchestration",
-			Handler:    _AgentSessionService_BootstrapOrchestration_Handler,
+			MethodName: "BootstrapPublished",
+			Handler:    _AgentSessionService_BootstrapPublished_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

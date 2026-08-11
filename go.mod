@@ -1,4 +1,4 @@
-module github.com/kyh0703/port-contracts/v2
+module github.com/kyh0703/port-contracts/v3
 
 go 1.25.0
 
