@@ -1270,17 +1270,18 @@ func (x *TextRuntimeSnapshot) GetMaxSessionDurationSeconds() uint32 {
 }
 
 type CallRuntimeSnapshot struct {
-	state           protoimpl.MessageState  `protogen:"open.v1"`
-	Stt             *SttRuntime             `protobuf:"bytes,1,opt,name=stt,proto3" json:"stt,omitempty"`
-	Tts             *TtsRuntime             `protobuf:"bytes,2,opt,name=tts,proto3" json:"tts,omitempty"`
-	BackgroundAudio *BackgroundAudioRuntime `protobuf:"bytes,3,opt,name=background_audio,json=backgroundAudio,proto3" json:"background_audio,omitempty"`
-	Dtmf            *DtmfInputRuntime       `protobuf:"bytes,4,opt,name=dtmf,proto3" json:"dtmf,omitempty"`
-	Transport       *TransportRuntime       `protobuf:"bytes,5,opt,name=transport,proto3" json:"transport,omitempty"`
-	Vad             *VadRuntime             `protobuf:"bytes,6,opt,name=vad,proto3" json:"vad,omitempty"`
-	SpeechPolicy    *SpeechPolicyRuntime    `protobuf:"bytes,7,opt,name=speech_policy,json=speechPolicy,proto3" json:"speech_policy,omitempty"`
-	Limits          *CallLimitsRuntime      `protobuf:"bytes,8,opt,name=limits,proto3" json:"limits,omitempty"`
-	unknownFields   protoimpl.UnknownFields
-	sizeCache       protoimpl.SizeCache
+	state              protoimpl.MessageState     `protogen:"open.v1"`
+	Stt                *SttRuntime                `protobuf:"bytes,1,opt,name=stt,proto3" json:"stt,omitempty"`
+	Tts                *TtsRuntime                `protobuf:"bytes,2,opt,name=tts,proto3" json:"tts,omitempty"`
+	BackgroundAudio    *BackgroundAudioRuntime    `protobuf:"bytes,3,opt,name=background_audio,json=backgroundAudio,proto3" json:"background_audio,omitempty"`
+	Dtmf               *DtmfInputRuntime          `protobuf:"bytes,4,opt,name=dtmf,proto3" json:"dtmf,omitempty"`
+	Transport          *TransportRuntime          `protobuf:"bytes,5,opt,name=transport,proto3" json:"transport,omitempty"`
+	Vad                *VadRuntime                `protobuf:"bytes,6,opt,name=vad,proto3" json:"vad,omitempty"`
+	SpeechPolicy       *SpeechPolicyRuntime       `protobuf:"bytes,7,opt,name=speech_policy,json=speechPolicy,proto3" json:"speech_policy,omitempty"`
+	Limits             *CallLimitsRuntime         `protobuf:"bytes,8,opt,name=limits,proto3" json:"limits,omitempty"`
+	ConversationFiller *ConversationFillerRuntime `protobuf:"bytes,9,opt,name=conversation_filler,json=conversationFiller,proto3" json:"conversation_filler,omitempty"`
+	unknownFields      protoimpl.UnknownFields
+	sizeCache          protoimpl.SizeCache
 }
 
 func (x *CallRuntimeSnapshot) Reset() {
@@ -1365,6 +1366,13 @@ func (x *CallRuntimeSnapshot) GetSpeechPolicy() *SpeechPolicyRuntime {
 func (x *CallRuntimeSnapshot) GetLimits() *CallLimitsRuntime {
 	if x != nil {
 		return x.Limits
+	}
+	return nil
+}
+
+func (x *CallRuntimeSnapshot) GetConversationFiller() *ConversationFillerRuntime {
+	if x != nil {
+		return x.ConversationFiller
 	}
 	return nil
 }
@@ -2294,6 +2302,50 @@ func (x *McpServerRuntime) GetHeaders() map[string]string {
 	return nil
 }
 
+type ConversationFillerRuntime struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Phrase        string                 `protobuf:"bytes,1,opt,name=phrase,proto3" json:"phrase,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ConversationFillerRuntime) Reset() {
+	*x = ConversationFillerRuntime{}
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[28]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ConversationFillerRuntime) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ConversationFillerRuntime) ProtoMessage() {}
+
+func (x *ConversationFillerRuntime) ProtoReflect() protoreflect.Message {
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[28]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ConversationFillerRuntime.ProtoReflect.Descriptor instead.
+func (*ConversationFillerRuntime) Descriptor() ([]byte, []int) {
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{28}
+}
+
+func (x *ConversationFillerRuntime) GetPhrase() string {
+	if x != nil {
+		return x.Phrase
+	}
+	return ""
+}
+
 var File_port_api_v1_agent_session_proto protoreflect.FileDescriptor
 
 const file_port_api_v1_agent_session_proto_rawDesc = "" +
@@ -2402,7 +2454,7 @@ const file_port_api_v1_agent_session_proto_rawDesc = "" +
 	"\troom_name\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\broomName\x12:\n" +
 	"\x14participant_identity\x18\x03 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x13participantIdentity\x129\n" +
 	"\x14idle_timeout_seconds\x18\x04 \x01(\rB\a\xbaH\x04*\x02 \x00R\x12idleTimeoutSeconds\x12H\n" +
-	"\x1cmax_session_duration_seconds\x18\x05 \x01(\rB\a\xbaH\x04*\x02 \x00R\x19maxSessionDurationSeconds\"\x95\x04\n" +
+	"\x1cmax_session_duration_seconds\x18\x05 \x01(\rB\a\xbaH\x04*\x02 \x00R\x19maxSessionDurationSeconds\"\xee\x04\n" +
 	"\x13CallRuntimeSnapshot\x121\n" +
 	"\x03stt\x18\x01 \x01(\v2\x17.port.api.v1.SttRuntimeB\x06\xbaH\x03\xc8\x01\x01R\x03stt\x121\n" +
 	"\x03tts\x18\x02 \x01(\v2\x17.port.api.v1.TtsRuntimeB\x06\xbaH\x03\xc8\x01\x01R\x03tts\x12V\n" +
@@ -2411,7 +2463,8 @@ const file_port_api_v1_agent_session_proto_rawDesc = "" +
 	"\ttransport\x18\x05 \x01(\v2\x1d.port.api.v1.TransportRuntimeB\x06\xbaH\x03\xc8\x01\x01R\ttransport\x121\n" +
 	"\x03vad\x18\x06 \x01(\v2\x17.port.api.v1.VadRuntimeB\x06\xbaH\x03\xc8\x01\x01R\x03vad\x12M\n" +
 	"\rspeech_policy\x18\a \x01(\v2 .port.api.v1.SpeechPolicyRuntimeB\x06\xbaH\x03\xc8\x01\x01R\fspeechPolicy\x12>\n" +
-	"\x06limits\x18\b \x01(\v2\x1e.port.api.v1.CallLimitsRuntimeB\x06\xbaH\x03\xc8\x01\x01R\x06limits\"\xc7\x01\n" +
+	"\x06limits\x18\b \x01(\v2\x1e.port.api.v1.CallLimitsRuntimeB\x06\xbaH\x03\xc8\x01\x01R\x06limits\x12W\n" +
+	"\x13conversation_filler\x18\t \x01(\v2&.port.api.v1.ConversationFillerRuntimeR\x12conversationFiller\"\xc7\x01\n" +
 	"\x10TransportRuntime\x12D\n" +
 	"\x06source\x18\x01 \x01(\x0e2 .port.api.v1.CallTransportSourceB\n" +
 	"\xbaH\a\x82\x01\x04\x10\x01 \x00R\x06source\x12$\n" +
@@ -2498,7 +2551,10 @@ const file_port_api_v1_agent_session_proto_rawDesc = "" +
 	"\aheaders\x18\x04 \x03(\v2*.port.api.v1.McpServerRuntime.HeadersEntryR\aheaders\x1a:\n" +
 	"\fHeadersEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
-	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01*\xa4\x01\n" +
+	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"?\n" +
+	"\x19ConversationFillerRuntime\x12\"\n" +
+	"\x06phrase\x18\x01 \x01(\tB\n" +
+	"\xbaH\ar\x05\x10\x01\x18\xc8\x01R\x06phrase*\xa4\x01\n" +
 	"\x13CallTransportSource\x12%\n" +
 	"!CALL_TRANSPORT_SOURCE_UNSPECIFIED\x10\x00\x12 \n" +
 	"\x1cCALL_TRANSPORT_SOURCE_WEBRTC\x10\x01\x12\x1d\n" +
@@ -2540,7 +2596,7 @@ func file_port_api_v1_agent_session_proto_rawDescGZIP() []byte {
 }
 
 var file_port_api_v1_agent_session_proto_enumTypes = make([]protoimpl.EnumInfo, 5)
-var file_port_api_v1_agent_session_proto_msgTypes = make([]protoimpl.MessageInfo, 30)
+var file_port_api_v1_agent_session_proto_msgTypes = make([]protoimpl.MessageInfo, 31)
 var file_port_api_v1_agent_session_proto_goTypes = []any{
 	(CallTransportSource)(0),                // 0: port.api.v1.CallTransportSource
 	(NoiseCancellationMode)(0),              // 1: port.api.v1.NoiseCancellationMode
@@ -2575,11 +2631,12 @@ var file_port_api_v1_agent_session_proto_goTypes = []any{
 	(*TransferToHumanAction)(nil),           // 30: port.api.v1.TransferToHumanAction
 	(*EndCallAction)(nil),                   // 31: port.api.v1.EndCallAction
 	(*McpServerRuntime)(nil),                // 32: port.api.v1.McpServerRuntime
-	nil,                                     // 33: port.api.v1.ApiToolRuntime.HeadersEntry
-	nil,                                     // 34: port.api.v1.McpServerRuntime.HeadersEntry
-	(*LlmRuntime)(nil),                      // 35: port.api.v1.LlmRuntime
-	(*SttRuntime)(nil),                      // 36: port.api.v1.SttRuntime
-	(*TtsRuntime)(nil),                      // 37: port.api.v1.TtsRuntime
+	(*ConversationFillerRuntime)(nil),       // 33: port.api.v1.ConversationFillerRuntime
+	nil,                                     // 34: port.api.v1.ApiToolRuntime.HeadersEntry
+	nil,                                     // 35: port.api.v1.McpServerRuntime.HeadersEntry
+	(*LlmRuntime)(nil),                      // 36: port.api.v1.LlmRuntime
+	(*SttRuntime)(nil),                      // 37: port.api.v1.SttRuntime
+	(*TtsRuntime)(nil),                      // 38: port.api.v1.TtsRuntime
 }
 var file_port_api_v1_agent_session_proto_depIdxs = []int32{
 	6,  // 0: port.api.v1.BootstrapRequest.sip:type_name -> port.api.v1.SipBootstrapContext
@@ -2594,7 +2651,7 @@ var file_port_api_v1_agent_session_proto_depIdxs = []int32{
 	11, // 9: port.api.v1.PublishedOrchestrationExecution.agent_runtimes:type_name -> port.api.v1.PublishedAgentRuntime
 	12, // 10: port.api.v1.PublishedOrchestrationExecution.supervisor:type_name -> port.api.v1.PublishedSupervisorSnapshot
 	14, // 11: port.api.v1.PublishedOrchestrationExecution.handoff:type_name -> port.api.v1.PublishedHandoffSnapshot
-	35, // 12: port.api.v1.PublishedAgentRuntime.llm_worker:type_name -> port.api.v1.LlmRuntime
+	36, // 12: port.api.v1.PublishedAgentRuntime.llm_worker:type_name -> port.api.v1.LlmRuntime
 	24, // 13: port.api.v1.PublishedAgentRuntime.instructions:type_name -> port.api.v1.AgentInstructions
 	4,  // 14: port.api.v1.PublishedAgentRuntime.context_policy:type_name -> port.api.v1.ContextPolicy
 	25, // 15: port.api.v1.PublishedAgentRuntime.tools:type_name -> port.api.v1.NodeToolMetadata
@@ -2604,30 +2661,31 @@ var file_port_api_v1_agent_session_proto_depIdxs = []int32{
 	4,  // 19: port.api.v1.PublishedSupervisorSpecialist.context_policy:type_name -> port.api.v1.ContextPolicy
 	15, // 20: port.api.v1.PublishedHandoffSnapshot.routes:type_name -> port.api.v1.PublishedHandoffRoute
 	4,  // 21: port.api.v1.PublishedHandoffRoute.context_policy:type_name -> port.api.v1.ContextPolicy
-	36, // 22: port.api.v1.CallRuntimeSnapshot.stt:type_name -> port.api.v1.SttRuntime
-	37, // 23: port.api.v1.CallRuntimeSnapshot.tts:type_name -> port.api.v1.TtsRuntime
+	37, // 22: port.api.v1.CallRuntimeSnapshot.stt:type_name -> port.api.v1.SttRuntime
+	38, // 23: port.api.v1.CallRuntimeSnapshot.tts:type_name -> port.api.v1.TtsRuntime
 	22, // 24: port.api.v1.CallRuntimeSnapshot.background_audio:type_name -> port.api.v1.BackgroundAudioRuntime
 	23, // 25: port.api.v1.CallRuntimeSnapshot.dtmf:type_name -> port.api.v1.DtmfInputRuntime
 	18, // 26: port.api.v1.CallRuntimeSnapshot.transport:type_name -> port.api.v1.TransportRuntime
 	19, // 27: port.api.v1.CallRuntimeSnapshot.vad:type_name -> port.api.v1.VadRuntime
 	20, // 28: port.api.v1.CallRuntimeSnapshot.speech_policy:type_name -> port.api.v1.SpeechPolicyRuntime
 	21, // 29: port.api.v1.CallRuntimeSnapshot.limits:type_name -> port.api.v1.CallLimitsRuntime
-	0,  // 30: port.api.v1.TransportRuntime.source:type_name -> port.api.v1.CallTransportSource
-	1,  // 31: port.api.v1.VadRuntime.noise_cancellation:type_name -> port.api.v1.NoiseCancellationMode
-	2,  // 32: port.api.v1.BackgroundAudioRuntime.preset:type_name -> port.api.v1.BackgroundAudioPreset
-	26, // 33: port.api.v1.NodeToolMetadata.mcp:type_name -> port.api.v1.McpToolMetadata
-	27, // 34: port.api.v1.NodeToolMetadata.api:type_name -> port.api.v1.ApiToolMetadata
-	33, // 35: port.api.v1.ApiToolRuntime.headers:type_name -> port.api.v1.ApiToolRuntime.HeadersEntry
-	30, // 36: port.api.v1.AgentGlobalActions.transfer_to_human:type_name -> port.api.v1.TransferToHumanAction
-	31, // 37: port.api.v1.AgentGlobalActions.end_call:type_name -> port.api.v1.EndCallAction
-	34, // 38: port.api.v1.McpServerRuntime.headers:type_name -> port.api.v1.McpServerRuntime.HeadersEntry
-	7,  // 39: port.api.v1.AgentSessionService.BootstrapPublished:input_type -> port.api.v1.BootstrapPublishedRequest
-	8,  // 40: port.api.v1.AgentSessionService.BootstrapPublished:output_type -> port.api.v1.BootstrapPublishedResponse
-	40, // [40:41] is the sub-list for method output_type
-	39, // [39:40] is the sub-list for method input_type
-	39, // [39:39] is the sub-list for extension type_name
-	39, // [39:39] is the sub-list for extension extendee
-	0,  // [0:39] is the sub-list for field type_name
+	33, // 30: port.api.v1.CallRuntimeSnapshot.conversation_filler:type_name -> port.api.v1.ConversationFillerRuntime
+	0,  // 31: port.api.v1.TransportRuntime.source:type_name -> port.api.v1.CallTransportSource
+	1,  // 32: port.api.v1.VadRuntime.noise_cancellation:type_name -> port.api.v1.NoiseCancellationMode
+	2,  // 33: port.api.v1.BackgroundAudioRuntime.preset:type_name -> port.api.v1.BackgroundAudioPreset
+	26, // 34: port.api.v1.NodeToolMetadata.mcp:type_name -> port.api.v1.McpToolMetadata
+	27, // 35: port.api.v1.NodeToolMetadata.api:type_name -> port.api.v1.ApiToolMetadata
+	34, // 36: port.api.v1.ApiToolRuntime.headers:type_name -> port.api.v1.ApiToolRuntime.HeadersEntry
+	30, // 37: port.api.v1.AgentGlobalActions.transfer_to_human:type_name -> port.api.v1.TransferToHumanAction
+	31, // 38: port.api.v1.AgentGlobalActions.end_call:type_name -> port.api.v1.EndCallAction
+	35, // 39: port.api.v1.McpServerRuntime.headers:type_name -> port.api.v1.McpServerRuntime.HeadersEntry
+	7,  // 40: port.api.v1.AgentSessionService.BootstrapPublished:input_type -> port.api.v1.BootstrapPublishedRequest
+	8,  // 41: port.api.v1.AgentSessionService.BootstrapPublished:output_type -> port.api.v1.BootstrapPublishedResponse
+	41, // [41:42] is the sub-list for method output_type
+	40, // [40:41] is the sub-list for method input_type
+	40, // [40:40] is the sub-list for extension type_name
+	40, // [40:40] is the sub-list for extension extendee
+	0,  // [0:40] is the sub-list for field type_name
 }
 
 func init() { file_port_api_v1_agent_session_proto_init() }
@@ -2660,7 +2718,7 @@ func file_port_api_v1_agent_session_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_port_api_v1_agent_session_proto_rawDesc), len(file_port_api_v1_agent_session_proto_rawDesc)),
 			NumEnums:      5,
-			NumMessages:   30,
+			NumMessages:   31,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

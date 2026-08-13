@@ -6,9 +6,24 @@ const {
   AgentSessionServiceService,
   BootstrapPublishedRequest,
   BootstrapPublishedResponse,
+  CallRuntimeSnapshot,
   OrchestrationMode,
   ContextPolicy,
 } = contracts;
+
+test("call runtime filler settings are optional and preserve the configured phrase", () => {
+  const disabled = CallRuntimeSnapshot.create({});
+  const disabledDecoded = CallRuntimeSnapshot.decode(CallRuntimeSnapshot.encode(disabled).finish());
+  assert.deepEqual(disabledDecoded, disabled);
+  assert.equal(disabledDecoded.conversationFiller, undefined);
+
+  const enabled = CallRuntimeSnapshot.create({
+    conversationFiller: { phrase: "One moment while I look that up." },
+  });
+  const enabledDecoded = CallRuntimeSnapshot.decode(CallRuntimeSnapshot.encode(enabled).finish());
+  assert.deepEqual(enabledDecoded, enabled);
+  assert.equal(enabledDecoded.conversationFiller.phrase, "One moment while I look that up.");
+});
 
 test("the worker contract exposes only canonical publication bootstrap", () => {
   assert.deepEqual(Object.keys(AgentSessionServiceService), ["bootstrapPublished"]);

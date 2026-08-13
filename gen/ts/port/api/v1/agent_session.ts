@@ -351,6 +351,7 @@ export interface CallRuntimeSnapshot {
   vad?: VadRuntime | undefined;
   speechPolicy?: SpeechPolicyRuntime | undefined;
   limits?: CallLimitsRuntime | undefined;
+  conversationFiller?: ConversationFillerRuntime | undefined;
 }
 
 export interface TransportRuntime {
@@ -453,6 +454,10 @@ export interface McpServerRuntime {
 export interface McpServerRuntime_HeadersEntry {
   key: string;
   value: string;
+}
+
+export interface ConversationFillerRuntime {
+  phrase: string;
 }
 
 function createBaseBootstrapRequest(): BootstrapRequest {
@@ -2157,6 +2162,7 @@ function createBaseCallRuntimeSnapshot(): CallRuntimeSnapshot {
     vad: undefined,
     speechPolicy: undefined,
     limits: undefined,
+    conversationFiller: undefined,
   };
 }
 
@@ -2185,6 +2191,9 @@ export const CallRuntimeSnapshot: MessageFns<CallRuntimeSnapshot> = {
     }
     if (message.limits !== undefined) {
       CallLimitsRuntime.encode(message.limits, writer.uint32(66).fork()).join();
+    }
+    if (message.conversationFiller !== undefined) {
+      ConversationFillerRuntime.encode(message.conversationFiller, writer.uint32(74).fork()).join();
     }
     return writer;
   },
@@ -2260,6 +2269,14 @@ export const CallRuntimeSnapshot: MessageFns<CallRuntimeSnapshot> = {
           message.limits = CallLimitsRuntime.decode(reader, reader.uint32());
           continue;
         }
+        case 9: {
+          if (tag !== 74) {
+            break;
+          }
+
+          message.conversationFiller = ConversationFillerRuntime.decode(reader, reader.uint32());
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -2287,6 +2304,11 @@ export const CallRuntimeSnapshot: MessageFns<CallRuntimeSnapshot> = {
         ? SpeechPolicyRuntime.fromJSON(object.speech_policy)
         : undefined,
       limits: isSet(object.limits) ? CallLimitsRuntime.fromJSON(object.limits) : undefined,
+      conversationFiller: isSet(object.conversationFiller)
+        ? ConversationFillerRuntime.fromJSON(object.conversationFiller)
+        : isSet(object.conversation_filler)
+        ? ConversationFillerRuntime.fromJSON(object.conversation_filler)
+        : undefined,
     };
   },
 
@@ -2316,6 +2338,9 @@ export const CallRuntimeSnapshot: MessageFns<CallRuntimeSnapshot> = {
     if (message.limits !== undefined) {
       obj.limits = CallLimitsRuntime.toJSON(message.limits);
     }
+    if (message.conversationFiller !== undefined) {
+      obj.conversationFiller = ConversationFillerRuntime.toJSON(message.conversationFiller);
+    }
     return obj;
   },
 
@@ -2341,6 +2366,9 @@ export const CallRuntimeSnapshot: MessageFns<CallRuntimeSnapshot> = {
       : undefined;
     message.limits = (object.limits !== undefined && object.limits !== null)
       ? CallLimitsRuntime.fromPartial(object.limits)
+      : undefined;
+    message.conversationFiller = (object.conversationFiller !== undefined && object.conversationFiller !== null)
+      ? ConversationFillerRuntime.fromPartial(object.conversationFiller)
       : undefined;
     return message;
   },
@@ -4010,6 +4038,64 @@ export const McpServerRuntime_HeadersEntry: MessageFns<McpServerRuntime_HeadersE
     const message = createBaseMcpServerRuntime_HeadersEntry();
     message.key = object.key ?? "";
     message.value = object.value ?? "";
+    return message;
+  },
+};
+
+function createBaseConversationFillerRuntime(): ConversationFillerRuntime {
+  return { phrase: "" };
+}
+
+export const ConversationFillerRuntime: MessageFns<ConversationFillerRuntime> = {
+  encode(message: ConversationFillerRuntime, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.phrase !== "") {
+      writer.uint32(10).string(message.phrase);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): ConversationFillerRuntime {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseConversationFillerRuntime();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.phrase = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): ConversationFillerRuntime {
+    return { phrase: isSet(object.phrase) ? globalThis.String(object.phrase) : "" };
+  },
+
+  toJSON(message: ConversationFillerRuntime): unknown {
+    const obj: any = {};
+    if (message.phrase !== "") {
+      obj.phrase = message.phrase;
+    }
+    return obj;
+  },
+
+  create(base?: DeepPartial<ConversationFillerRuntime>): ConversationFillerRuntime {
+    return ConversationFillerRuntime.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<ConversationFillerRuntime>): ConversationFillerRuntime {
+    const message = createBaseConversationFillerRuntime();
+    message.phrase = object.phrase ?? "";
     return message;
   },
 };

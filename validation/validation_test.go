@@ -1,6 +1,7 @@
 package validation
 
 import (
+	"strings"
 	"testing"
 
 	apiv1 "github.com/kyh0703/port-contracts/v3/gen/go/port/api/v1"
@@ -145,6 +146,35 @@ func TestPublishedVoiceRuntimeRequiresAllComponents(t *testing.T) {
 				runtime.Limits = nil
 			}
 			if err := Validate(response); err == nil {
+				t.Fatal("Validate() = nil, want rejection")
+			}
+		})
+	}
+}
+
+func TestConversationFillerRuntimeValidation(t *testing.T) {
+	tests := []struct {
+		name   string
+		phrase string
+		valid  bool
+	}{
+		{name: "absent", valid: true},
+		{name: "configured", phrase: "One moment while I look that up.", valid: true},
+		{name: "empty", phrase: "", valid: false},
+		{name: "over max length", phrase: strings.Repeat("a", 201), valid: false},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			runtime := validCallRuntime()
+			if tt.name != "absent" {
+				runtime.ConversationFiller = &apiv1.ConversationFillerRuntime{Phrase: tt.phrase}
+			}
+			err := Validate(runtime)
+			if tt.valid && err != nil {
+				t.Fatalf("Validate() error = %v, want nil", err)
+			}
+			if !tt.valid && err == nil {
 				t.Fatal("Validate() = nil, want rejection")
 			}
 		})

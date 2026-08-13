@@ -151,6 +151,7 @@ message CallRuntimeSnapshot {
   VadRuntime vad = 6 [(buf.validate.field).required = true];
   SpeechPolicyRuntime speech_policy = 7 [(buf.validate.field).required = true];
   CallLimitsRuntime limits = 8 [(buf.validate.field).required = true];
+  ConversationFillerRuntime conversation_filler = 9;
 }
 
 enum CallTransportSource {
@@ -295,4 +296,8 @@ message McpServerRuntime {
   string transport = 2 [(buf.validate.field).string.in = "sse", (buf.validate.field).string.in = "streamable-http"];
   string url = 3 [(buf.validate.field).string.min_len = 1];
   map<string, string> headers = 4;
+}
+
+message ConversationFillerRuntime {
+  string phrase = 1 [(buf.validate.field).string = {min_len: 1 max_len: 200}];
 }

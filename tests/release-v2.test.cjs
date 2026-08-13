@@ -9,13 +9,13 @@ function read(relativePath) {
   return readFileSync(path.join(root, relativePath), "utf8");
 }
 
-test("npm release metadata is pinned to 3.0.0", () => {
+test("npm release metadata is pinned to 3.1.0", () => {
   const packageJson = JSON.parse(read("package.json"));
   const packageLock = JSON.parse(read("package-lock.json"));
 
-  assert.equal(packageJson.version, "3.0.0");
-  assert.equal(packageLock.version, "3.0.0");
-  assert.equal(packageLock.packages[""].version, "3.0.0");
+  assert.equal(packageJson.version, "3.1.0");
+  assert.equal(packageLock.version, "3.1.0");
+  assert.equal(packageLock.packages[""].version, "3.1.0");
 });
 
 test("Go module uses the v3 import boundary", () => {
@@ -48,7 +48,7 @@ test("publication revision and CallRuntimeSnapshot field identifiers stay unchan
   const snapshotBody = agentSession.match(/message CallRuntimeSnapshot \{([\s\S]*?)\n\}/)?.[1];
   assert.ok(snapshotBody, "CallRuntimeSnapshot message is missing");
 
-  const fields = [...snapshotBody.matchAll(/^  (\w+) (\w+) = (\d+) /gm)].map((match) => ({
+  const fields = [...snapshotBody.matchAll(/^  (\w+) (\w+) = (\d+)(?: |;)/gm)].map((match) => ({
     type: match[1],
     name: match[2],
     number: Number(match[3]),
@@ -62,5 +62,6 @@ test("publication revision and CallRuntimeSnapshot field identifiers stay unchan
     { type: "VadRuntime", name: "vad", number: 6 },
     { type: "SpeechPolicyRuntime", name: "speech_policy", number: 7 },
     { type: "CallLimitsRuntime", name: "limits", number: 8 },
+    { type: "ConversationFillerRuntime", name: "conversation_filler", number: 9 },
   ]);
 });

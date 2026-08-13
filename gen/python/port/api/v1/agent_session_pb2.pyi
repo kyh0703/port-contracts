@@ -229,7 +229,7 @@ class TextRuntimeSnapshot(_message.Message):
     def __init__(self, transport: _Optional[str] = ..., room_name: _Optional[str] = ..., participant_identity: _Optional[str] = ..., idle_timeout_seconds: _Optional[int] = ..., max_session_duration_seconds: _Optional[int] = ...) -> None: ...
 
 class CallRuntimeSnapshot(_message.Message):
-    __slots__ = ("stt", "tts", "background_audio", "dtmf", "transport", "vad", "speech_policy", "limits")
+    __slots__ = ("stt", "tts", "background_audio", "dtmf", "transport", "vad", "speech_policy", "limits", "conversation_filler")
     STT_FIELD_NUMBER: _ClassVar[int]
     TTS_FIELD_NUMBER: _ClassVar[int]
     BACKGROUND_AUDIO_FIELD_NUMBER: _ClassVar[int]
@@ -238,6 +238,7 @@ class CallRuntimeSnapshot(_message.Message):
     VAD_FIELD_NUMBER: _ClassVar[int]
     SPEECH_POLICY_FIELD_NUMBER: _ClassVar[int]
     LIMITS_FIELD_NUMBER: _ClassVar[int]
+    CONVERSATION_FILLER_FIELD_NUMBER: _ClassVar[int]
     stt: _voice_runtime_pb2.SttRuntime
     tts: _voice_runtime_pb2.TtsRuntime
     background_audio: BackgroundAudioRuntime
@@ -246,7 +247,8 @@ class CallRuntimeSnapshot(_message.Message):
     vad: VadRuntime
     speech_policy: SpeechPolicyRuntime
     limits: CallLimitsRuntime
-    def __init__(self, stt: _Optional[_Union[_voice_runtime_pb2.SttRuntime, _Mapping]] = ..., tts: _Optional[_Union[_voice_runtime_pb2.TtsRuntime, _Mapping]] = ..., background_audio: _Optional[_Union[BackgroundAudioRuntime, _Mapping]] = ..., dtmf: _Optional[_Union[DtmfInputRuntime, _Mapping]] = ..., transport: _Optional[_Union[TransportRuntime, _Mapping]] = ..., vad: _Optional[_Union[VadRuntime, _Mapping]] = ..., speech_policy: _Optional[_Union[SpeechPolicyRuntime, _Mapping]] = ..., limits: _Optional[_Union[CallLimitsRuntime, _Mapping]] = ...) -> None: ...
+    conversation_filler: ConversationFillerRuntime
+    def __init__(self, stt: _Optional[_Union[_voice_runtime_pb2.SttRuntime, _Mapping]] = ..., tts: _Optional[_Union[_voice_runtime_pb2.TtsRuntime, _Mapping]] = ..., background_audio: _Optional[_Union[BackgroundAudioRuntime, _Mapping]] = ..., dtmf: _Optional[_Union[DtmfInputRuntime, _Mapping]] = ..., transport: _Optional[_Union[TransportRuntime, _Mapping]] = ..., vad: _Optional[_Union[VadRuntime, _Mapping]] = ..., speech_policy: _Optional[_Union[SpeechPolicyRuntime, _Mapping]] = ..., limits: _Optional[_Union[CallLimitsRuntime, _Mapping]] = ..., conversation_filler: _Optional[_Union[ConversationFillerRuntime, _Mapping]] = ...) -> None: ...
 
 class TransportRuntime(_message.Message):
     __slots__ = ("source", "room_name", "caller_participant_identity")
@@ -409,3 +411,9 @@ class McpServerRuntime(_message.Message):
     url: str
     headers: _containers.ScalarMap[str, str]
     def __init__(self, name: _Optional[str] = ..., transport: _Optional[str] = ..., url: _Optional[str] = ..., headers: _Optional[_Mapping[str, str]] = ...) -> None: ...
+
+class ConversationFillerRuntime(_message.Message):
+    __slots__ = ("phrase",)
+    PHRASE_FIELD_NUMBER: _ClassVar[int]
+    phrase: str
+    def __init__(self, phrase: _Optional[str] = ...) -> None: ...
