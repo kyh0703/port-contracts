@@ -32,27 +32,14 @@ import { ApiEventServiceClient } from '@overthinker1127/port-contracts/gen/ts/po
 ```
 
 `port/api/v1/agent_session.proto` is the API's worker-only session bootstrap
-contract. `AgentSessionService.Bootstrap` admits either a one-time browser
-ticket or a verified SIP LiveKit job and returns the runtime bundle required by
-the worker. Its SIP admission is legacy `agent.canvas.v1` only; r4 SIP consumers
-must use `AgentSessionService.BootstrapSip`. It is not a browser-facing API.
-
-`AgentSessionService.BootstrapSip` is the additive SIP-only r4 bootstrap boundary:
-its request contains only `SipBootstrapContext` and the exact
-`orchestration-2026-08-07-r4` revision, and its response contains exactly one
-`BootstrapAgentResponse` or `BootstrapOrchestrationResponse` payload. Both r4
-responses also carry the required `AgentGlobalActions` snapshot.
-
-> **Retired contract notice — 2026-08-07:** the orchestration graph shipped as
-> `contracts@1.8.0` is historical and must not be used for new
-> Orchestrations. The locked replacement requires a breaking release and
-> separate `BootstrapAgent` and `BootstrapOrchestration` RPCs. See
-> [`docs/contracts/agent-orchestration-v1.md`](docs/contracts/agent-orchestration-v1.md)
-> and
-> [`docs/contracts/agent-orchestration-v1-transport.md`](docs/contracts/agent-orchestration-v1-transport.md).
+contract. `ExecutionSessionService.BootstrapPublished` admits either a one-time
+browser ticket or a verified SIP LiveKit job and returns one exact Prompt Agent
+or inline Orchestration runtime. The required revision is
+`execution-publication-2026-08-14-r1`; older Agent bootstrap services and
+revision fallbacks are intentionally unavailable.
 
 ```ts
-import { AgentSessionServiceClient } from '@overthinker1127/port-contracts/gen/ts/port/api/v1/agent_session'
+import { ExecutionSessionServiceClient } from '@overthinker1127/port-contracts/gen/ts/port/api/v1/agent_session'
 ```
 
 ## Go
@@ -60,13 +47,13 @@ import { AgentSessionServiceClient } from '@overthinker1127/port-contracts/gen/t
 Example import:
 
 ```go
-import apiv1 "github.com/kyh0703/port-contracts/v3/gen/go/port/api/v1"
+import apiv1 "github.com/kyh0703/port-contracts/v4/gen/go/port/api/v1"
 ```
 
 Validation:
 
 ```go
-import "github.com/kyh0703/port-contracts/v3/validation"
+import "github.com/kyh0703/port-contracts/v4/validation"
 
 err := validation.Validate(&apiv1.RecordGatewayEventRequest{
     EventType: apiv1.GatewayLifecycleEventType_GATEWAY_LIFECYCLE_EVENT_TYPE_AGENT_STARTED,

@@ -4,14 +4,14 @@ import (
 	"strings"
 	"testing"
 
-	apiv1 "github.com/kyh0703/port-contracts/v3/gen/go/port/api/v1"
+	apiv1 "github.com/kyh0703/port-contracts/v4/gen/go/port/api/v1"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/reflect/protoreflect"
 	"google.golang.org/protobuf/reflect/protoregistry"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-const publicationContractRevision = "execution-publication-2026-08-11-r1"
+const publicationContractRevision = "execution-publication-2026-08-14-r1"
 
 func TestValidateRejectsMissingRequiredFields(t *testing.T) {
 	if err := Validate(&apiv1.RecordGatewayEventRequest{}); err == nil {
@@ -30,14 +30,14 @@ func TestValidateAcceptsValidGatewayEvent(t *testing.T) {
 	}
 }
 
-func TestAgentSessionServiceExposesOnlyPublishedBootstrap(t *testing.T) {
-	descriptor, err := protoregistry.GlobalFiles.FindDescriptorByName("port.api.v1.AgentSessionService")
+func TestExecutionSessionServiceExposesOnlyPublishedBootstrap(t *testing.T) {
+	descriptor, err := protoregistry.GlobalFiles.FindDescriptorByName("port.api.v1.ExecutionSessionService")
 	if err != nil {
 		t.Fatal(err)
 	}
 	service := descriptor.(protoreflect.ServiceDescriptor)
 	if service.Methods().Len() != 1 {
-		t.Fatalf("AgentSessionService method count = %d, want 1", service.Methods().Len())
+		t.Fatalf("ExecutionSessionService method count = %d, want 1", service.Methods().Len())
 	}
 	method := service.Methods().ByName("BootstrapPublished")
 	if method == nil {
@@ -102,8 +102,7 @@ func TestPublishedDirectTextResponseValidation(t *testing.T) {
 		{"wrong revision", func(response *apiv1.BootstrapPublishedResponse) { response.ContractRevision = "legacy" }},
 		{"missing execution", func(response *apiv1.BootstrapPublishedResponse) { response.Execution = nil }},
 		{"missing runtime", func(response *apiv1.BootstrapPublishedResponse) { response.Runtime = nil }},
-		{"missing global actions", func(response *apiv1.BootstrapPublishedResponse) { response.GlobalActions = nil }},
-		{"missing agent runtime", func(response *apiv1.BootstrapPublishedResponse) { response.GetAgent().Runtime = nil }},
+		{"missing prompt agent runtime", func(response *apiv1.BootstrapPublishedResponse) { response.GetPromptAgent().Runtime = nil }},
 		{"wrong text transport", func(response *apiv1.BootstrapPublishedResponse) { response.GetTextRuntime().Transport = "audio" }},
 	}
 	for _, tt := range tests {
@@ -238,19 +237,21 @@ func validPublishedRequest() *apiv1.BootstrapPublishedRequest {
 	}
 }
 
-func validAgentRuntime(id string) *apiv1.PublishedAgentRuntime {
-	return &apiv1.PublishedAgentRuntime{
-		AgentPublishedId: id,
-		LlmWorker:        &apiv1.LlmRuntime{ApiKey: "llm-key", Model: "llm-model"},
-		Instructions:     &apiv1.AgentInstructions{SystemPrompt: "Help."},
-		ContextPolicy:    apiv1.ContextPolicy_CONTEXT_POLICY_CONVERSATION,
+func validPromptAgentRuntime(id string) *apiv1.PublishedPromptAgentRuntime {
+	return &apiv1.PublishedPromptAgentRuntime{
+		PromptAgentPublishedId: id,
+		LlmWorker:              &apiv1.LlmRuntime{ApiKey: "llm-key", Model: "llm-model"},
+		Instructions:           &apiv1.PromptInstructions{SystemPrompt: "Help."},
+		ContextPolicy:          apiv1.ContextPolicy_CONTEXT_POLICY_CONVERSATION,
 	}
 }
 
-func validGlobalActions() *apiv1.AgentGlobalActions {
-	return &apiv1.AgentGlobalActions{
-		TransferToHuman: &apiv1.TransferToHumanAction{Enabled: false},
-		EndCall:         &apiv1.EndCallAction{Enabled: true, Confirm: true},
+func validInlineRuntime(id string) *apiv1.PublishedInlinePromptRuntime {
+	return &apiv1.PublishedInlinePromptRuntime{
+		NodeId:        id,
+		LlmWorker:     &apiv1.LlmRuntime{ApiKey: "llm-key", Model: "llm-model"},
+		Instructions:  &apiv1.InlinePromptInstructions{SystemPrompt: "Help."},
+		ContextPolicy: apiv1.ContextPolicy_CONTEXT_POLICY_CONVERSATION,
 	}
 }
 
@@ -286,14 +287,13 @@ func basePublishedResponse() *apiv1.BootstrapPublishedResponse {
 		ConversationId:   "conversation-1",
 		SessionId:        "session-1",
 		PublishedId:      "publication-1",
-		GlobalActions:    validGlobalActions(),
 	}
 }
 
 func validDirectTextResponse() *apiv1.BootstrapPublishedResponse {
 	response := basePublishedResponse()
-	response.Execution = &apiv1.BootstrapPublishedResponse_Agent{
-		Agent: &apiv1.PublishedAgentExecution{Runtime: validAgentRuntime("agent-publication-1")},
+	response.Execution = &apiv1.BootstrapPublishedResponse_PromptAgent{
+		PromptAgent: &apiv1.PublishedPromptAgentExecution{Runtime: validPromptAgentRuntime("prompt-agent-publication-1")},
 	}
 	response.Runtime = &apiv1.BootstrapPublishedResponse_TextRuntime{TextRuntime: validTextRuntime()}
 	return response
@@ -309,15 +309,15 @@ func validSupervisorTextResponse() *apiv1.BootstrapPublishedResponse {
 	response := basePublishedResponse()
 	response.Execution = &apiv1.BootstrapPublishedResponse_Orchestration{
 		Orchestration: &apiv1.PublishedOrchestrationExecution{
-			Mode:          apiv1.OrchestrationMode_ORCHESTRATION_MODE_SUPERVISOR,
-			AgentRuntimes: []*apiv1.PublishedAgentRuntime{validAgentRuntime("supervisor-publication"), validAgentRuntime("specialist-publication")},
+			Mode:         apiv1.OrchestrationMode_ORCHESTRATION_MODE_SUPERVISOR,
+			NodeRuntimes: []*apiv1.PublishedInlinePromptRuntime{validInlineRuntime("supervisor-node"), validInlineRuntime("specialist-node")},
 			Supervisor: &apiv1.PublishedSupervisorSnapshot{
-				SupervisorAgentPublishedId: "supervisor-publication",
+				SupervisorNodeId: "supervisor-node",
 				Specialists: []*apiv1.PublishedSupervisorSpecialist{{
-					RelationId:             "billing",
-					TargetAgentPublishedId: "specialist-publication",
-					RouteDescription:       "Handle billing",
-					ContextPolicy:          apiv1.ContextPolicy_CONTEXT_POLICY_CONVERSATION,
+					RelationId:       "billing",
+					TargetNodeId:     "specialist-node",
+					RouteDescription: "Handle billing",
+					ContextPolicy:    apiv1.ContextPolicy_CONTEXT_POLICY_CONVERSATION,
 				}},
 			},
 		},
@@ -330,17 +330,17 @@ func validHandoffTextResponse() *apiv1.BootstrapPublishedResponse {
 	response := basePublishedResponse()
 	response.Execution = &apiv1.BootstrapPublishedResponse_Orchestration{
 		Orchestration: &apiv1.PublishedOrchestrationExecution{
-			Mode:          apiv1.OrchestrationMode_ORCHESTRATION_MODE_HANDOFF,
-			AgentRuntimes: []*apiv1.PublishedAgentRuntime{validAgentRuntime("entry-publication"), validAgentRuntime("target-publication")},
+			Mode:         apiv1.OrchestrationMode_ORCHESTRATION_MODE_HANDOFF,
+			NodeRuntimes: []*apiv1.PublishedInlinePromptRuntime{validInlineRuntime("entry-node"), validInlineRuntime("target-node")},
 			Handoff: &apiv1.PublishedHandoffSnapshot{
-				EntryAgentPublishedId: "entry-publication",
-				MaxHandoffDepth:       2,
+				EntryNodeId:      "entry-node",
+				MaxHandoffDepth: 2,
 				Routes: []*apiv1.PublishedHandoffRoute{{
-					TransitionId:           "billing",
-					SourceAgentPublishedId: "entry-publication",
-					TargetAgentPublishedId: "target-publication",
-					RoutingDescription:     "Handle billing",
-					ContextPolicy:          apiv1.ContextPolicy_CONTEXT_POLICY_CONVERSATION,
+					TransitionId:       "billing",
+					SourceNodeId:       "entry-node",
+					TargetNodeId:       "target-node",
+					RoutingDescription: "Handle billing",
+					ContextPolicy:      apiv1.ContextPolicy_CONTEXT_POLICY_CONVERSATION,
 				}},
 			},
 		},

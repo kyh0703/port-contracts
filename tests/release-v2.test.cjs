@@ -9,26 +9,26 @@ function read(relativePath) {
   return readFileSync(path.join(root, relativePath), "utf8");
 }
 
-test("npm release metadata is pinned to 3.1.0", () => {
+test("npm release metadata is pinned to 4.0.0", () => {
   const packageJson = JSON.parse(read("package.json"));
   const packageLock = JSON.parse(read("package-lock.json"));
 
-  assert.equal(packageJson.version, "3.1.0");
-  assert.equal(packageLock.version, "3.1.0");
-  assert.equal(packageLock.packages[""].version, "3.1.0");
+  assert.equal(packageJson.version, "4.0.0");
+  assert.equal(packageLock.version, "4.0.0");
+  assert.equal(packageLock.packages[""].version, "4.0.0");
 });
 
-test("Go module uses the v3 import boundary", () => {
+test("Go module uses the v4 import boundary", () => {
   const moduleDeclaration = read("go.mod").split("\n", 1)[0];
-  assert.equal(moduleDeclaration, "module github.com/kyh0703/port-contracts/v3");
+  assert.equal(moduleDeclaration, "module github.com/kyh0703/port-contracts/v4");
 });
 
-test("protobuf Go packages use the v3 module path", () => {
+test("protobuf Go packages use the v4 module path", () => {
   const expectedPackages = new Map([
-    ["proto/port/api/v1/agent_session.proto", "github.com/kyh0703/port-contracts/v3/gen/go/port/api/v1;apiv1"],
-    ["proto/port/api/v1/gateway_events.proto", "github.com/kyh0703/port-contracts/v3/gen/go/port/api/v1;apiv1"],
-    ["proto/port/api/v1/voice_runtime.proto", "github.com/kyh0703/port-contracts/v3/gen/go/port/api/v1;apiv1"],
-    ["proto/port/reg/v1/reg.proto", "github.com/kyh0703/port-contracts/v3/gen/go/port/reg/v1;regv1"],
+    ["proto/port/api/v1/agent_session.proto", "github.com/kyh0703/port-contracts/v4/gen/go/port/api/v1;apiv1"],
+    ["proto/port/api/v1/gateway_events.proto", "github.com/kyh0703/port-contracts/v4/gen/go/port/api/v1;apiv1"],
+    ["proto/port/api/v1/voice_runtime.proto", "github.com/kyh0703/port-contracts/v4/gen/go/port/api/v1;apiv1"],
+    ["proto/port/reg/v1/reg.proto", "github.com/kyh0703/port-contracts/v4/gen/go/port/reg/v1;regv1"],
   ]);
 
   for (const [protoPath, expectedPackage] of expectedPackages) {
@@ -37,10 +37,10 @@ test("protobuf Go packages use the v3 module path", () => {
   }
 });
 
-test("publication revision and CallRuntimeSnapshot field identifiers stay unchanged", () => {
+test("publication revision is the Prompt Agent inline orchestration cutover", () => {
   const agentSession = read("proto/port/api/v1/agent_session.proto");
   const publicationRevisionMatches = agentSession.match(
-    /\(buf\.validate\.field\)\.string\.const = "execution-publication-2026-08-11-r1"/g,
+    /\(buf\.validate\.field\)\.string\.const = "execution-publication-2026-08-14-r1"/g,
   );
   assert.equal(publicationRevisionMatches?.length, 2);
   assert.doesNotMatch(agentSession, /orchestration-2026-08-07-r4|agent_version_id|orchestration_version_id/);

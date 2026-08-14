@@ -19,105 +19,106 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	AgentSessionService_BootstrapPublished_FullMethodName = "/port.api.v1.AgentSessionService/BootstrapPublished"
+	ExecutionSessionService_BootstrapPublished_FullMethodName = "/port.api.v1.ExecutionSessionService/BootstrapPublished"
 )
 
-// AgentSessionServiceClient is the client API for AgentSessionService service.
+// ExecutionSessionServiceClient is the client API for ExecutionSessionService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 //
-// AgentSessionService is the worker-only API boundary for LiveKit jobs.
-type AgentSessionServiceClient interface {
+// ExecutionSessionService is the worker-only API boundary for LiveKit jobs.
+type ExecutionSessionServiceClient interface {
 	BootstrapPublished(ctx context.Context, in *BootstrapPublishedRequest, opts ...grpc.CallOption) (*BootstrapPublishedResponse, error)
 }
 
-type agentSessionServiceClient struct {
+type executionSessionServiceClient struct {
 	cc grpc.ClientConnInterface
 }
 
-func NewAgentSessionServiceClient(cc grpc.ClientConnInterface) AgentSessionServiceClient {
-	return &agentSessionServiceClient{cc}
+func NewExecutionSessionServiceClient(cc grpc.ClientConnInterface) ExecutionSessionServiceClient {
+	return &executionSessionServiceClient{cc}
 }
 
-func (c *agentSessionServiceClient) BootstrapPublished(ctx context.Context, in *BootstrapPublishedRequest, opts ...grpc.CallOption) (*BootstrapPublishedResponse, error) {
+func (c *executionSessionServiceClient) BootstrapPublished(ctx context.Context, in *BootstrapPublishedRequest, opts ...grpc.CallOption) (*BootstrapPublishedResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(BootstrapPublishedResponse)
-	err := c.cc.Invoke(ctx, AgentSessionService_BootstrapPublished_FullMethodName, in, out, cOpts...)
+	err := c.cc.Invoke(ctx, ExecutionSessionService_BootstrapPublished_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-// AgentSessionServiceServer is the server API for AgentSessionService service.
-// All implementations must embed UnimplementedAgentSessionServiceServer
+// ExecutionSessionServiceServer is the server API for ExecutionSessionService service.
+// All implementations must embed UnimplementedExecutionSessionServiceServer
 // for forward compatibility.
 //
-// AgentSessionService is the worker-only API boundary for LiveKit jobs.
-type AgentSessionServiceServer interface {
+// ExecutionSessionService is the worker-only API boundary for LiveKit jobs.
+type ExecutionSessionServiceServer interface {
 	BootstrapPublished(context.Context, *BootstrapPublishedRequest) (*BootstrapPublishedResponse, error)
-	mustEmbedUnimplementedAgentSessionServiceServer()
+	mustEmbedUnimplementedExecutionSessionServiceServer()
 }
 
-// UnimplementedAgentSessionServiceServer must be embedded to have
+// UnimplementedExecutionSessionServiceServer must be embedded to have
 // forward compatible implementations.
 //
 // NOTE: this should be embedded by value instead of pointer to avoid a nil
 // pointer dereference when methods are called.
-type UnimplementedAgentSessionServiceServer struct{}
+type UnimplementedExecutionSessionServiceServer struct{}
 
-func (UnimplementedAgentSessionServiceServer) BootstrapPublished(context.Context, *BootstrapPublishedRequest) (*BootstrapPublishedResponse, error) {
+func (UnimplementedExecutionSessionServiceServer) BootstrapPublished(context.Context, *BootstrapPublishedRequest) (*BootstrapPublishedResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method BootstrapPublished not implemented")
 }
-func (UnimplementedAgentSessionServiceServer) mustEmbedUnimplementedAgentSessionServiceServer() {}
-func (UnimplementedAgentSessionServiceServer) testEmbeddedByValue()                             {}
+func (UnimplementedExecutionSessionServiceServer) mustEmbedUnimplementedExecutionSessionServiceServer() {
+}
+func (UnimplementedExecutionSessionServiceServer) testEmbeddedByValue() {}
 
-// UnsafeAgentSessionServiceServer may be embedded to opt out of forward compatibility for this service.
-// Use of this interface is not recommended, as added methods to AgentSessionServiceServer will
+// UnsafeExecutionSessionServiceServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to ExecutionSessionServiceServer will
 // result in compilation errors.
-type UnsafeAgentSessionServiceServer interface {
-	mustEmbedUnimplementedAgentSessionServiceServer()
+type UnsafeExecutionSessionServiceServer interface {
+	mustEmbedUnimplementedExecutionSessionServiceServer()
 }
 
-func RegisterAgentSessionServiceServer(s grpc.ServiceRegistrar, srv AgentSessionServiceServer) {
-	// If the following call panics, it indicates UnimplementedAgentSessionServiceServer was
+func RegisterExecutionSessionServiceServer(s grpc.ServiceRegistrar, srv ExecutionSessionServiceServer) {
+	// If the following call panics, it indicates UnimplementedExecutionSessionServiceServer was
 	// embedded by pointer and is nil.  This will cause panics if an
 	// unimplemented method is ever invoked, so we test this at initialization
 	// time to prevent it from happening at runtime later due to I/O.
 	if t, ok := srv.(interface{ testEmbeddedByValue() }); ok {
 		t.testEmbeddedByValue()
 	}
-	s.RegisterService(&AgentSessionService_ServiceDesc, srv)
+	s.RegisterService(&ExecutionSessionService_ServiceDesc, srv)
 }
 
-func _AgentSessionService_BootstrapPublished_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _ExecutionSessionService_BootstrapPublished_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(BootstrapPublishedRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(AgentSessionServiceServer).BootstrapPublished(ctx, in)
+		return srv.(ExecutionSessionServiceServer).BootstrapPublished(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: AgentSessionService_BootstrapPublished_FullMethodName,
+		FullMethod: ExecutionSessionService_BootstrapPublished_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AgentSessionServiceServer).BootstrapPublished(ctx, req.(*BootstrapPublishedRequest))
+		return srv.(ExecutionSessionServiceServer).BootstrapPublished(ctx, req.(*BootstrapPublishedRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-// AgentSessionService_ServiceDesc is the grpc.ServiceDesc for AgentSessionService service.
+// ExecutionSessionService_ServiceDesc is the grpc.ServiceDesc for ExecutionSessionService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
-var AgentSessionService_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "port.api.v1.AgentSessionService",
-	HandlerType: (*AgentSessionServiceServer)(nil),
+var ExecutionSessionService_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "port.api.v1.ExecutionSessionService",
+	HandlerType: (*ExecutionSessionServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
 			MethodName: "BootstrapPublished",
-			Handler:    _AgentSessionService_BootstrapPublished_Handler,
+			Handler:    _ExecutionSessionService_BootstrapPublished_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

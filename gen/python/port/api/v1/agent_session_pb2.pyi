@@ -105,48 +105,46 @@ class BootstrapPublishedRequest(_message.Message):
     def __init__(self, admission: _Optional[_Union[BootstrapRequest, _Mapping]] = ..., conversation_id: _Optional[str] = ..., session_id: _Optional[str] = ..., published_id: _Optional[str] = ..., contract_revision: _Optional[str] = ...) -> None: ...
 
 class BootstrapPublishedResponse(_message.Message):
-    __slots__ = ("contract_revision", "conversation_id", "session_id", "published_id", "agent", "orchestration", "voice_runtime", "text_runtime", "global_actions")
+    __slots__ = ("contract_revision", "conversation_id", "session_id", "published_id", "prompt_agent", "orchestration", "voice_runtime", "text_runtime")
     CONTRACT_REVISION_FIELD_NUMBER: _ClassVar[int]
     CONVERSATION_ID_FIELD_NUMBER: _ClassVar[int]
     SESSION_ID_FIELD_NUMBER: _ClassVar[int]
     PUBLISHED_ID_FIELD_NUMBER: _ClassVar[int]
-    AGENT_FIELD_NUMBER: _ClassVar[int]
+    PROMPT_AGENT_FIELD_NUMBER: _ClassVar[int]
     ORCHESTRATION_FIELD_NUMBER: _ClassVar[int]
     VOICE_RUNTIME_FIELD_NUMBER: _ClassVar[int]
     TEXT_RUNTIME_FIELD_NUMBER: _ClassVar[int]
-    GLOBAL_ACTIONS_FIELD_NUMBER: _ClassVar[int]
     contract_revision: str
     conversation_id: str
     session_id: str
     published_id: str
-    agent: PublishedAgentExecution
+    prompt_agent: PublishedPromptAgentExecution
     orchestration: PublishedOrchestrationExecution
     voice_runtime: CallRuntimeSnapshot
     text_runtime: TextRuntimeSnapshot
-    global_actions: AgentGlobalActions
-    def __init__(self, contract_revision: _Optional[str] = ..., conversation_id: _Optional[str] = ..., session_id: _Optional[str] = ..., published_id: _Optional[str] = ..., agent: _Optional[_Union[PublishedAgentExecution, _Mapping]] = ..., orchestration: _Optional[_Union[PublishedOrchestrationExecution, _Mapping]] = ..., voice_runtime: _Optional[_Union[CallRuntimeSnapshot, _Mapping]] = ..., text_runtime: _Optional[_Union[TextRuntimeSnapshot, _Mapping]] = ..., global_actions: _Optional[_Union[AgentGlobalActions, _Mapping]] = ...) -> None: ...
+    def __init__(self, contract_revision: _Optional[str] = ..., conversation_id: _Optional[str] = ..., session_id: _Optional[str] = ..., published_id: _Optional[str] = ..., prompt_agent: _Optional[_Union[PublishedPromptAgentExecution, _Mapping]] = ..., orchestration: _Optional[_Union[PublishedOrchestrationExecution, _Mapping]] = ..., voice_runtime: _Optional[_Union[CallRuntimeSnapshot, _Mapping]] = ..., text_runtime: _Optional[_Union[TextRuntimeSnapshot, _Mapping]] = ...) -> None: ...
 
-class PublishedAgentExecution(_message.Message):
+class PublishedPromptAgentExecution(_message.Message):
     __slots__ = ("runtime",)
     RUNTIME_FIELD_NUMBER: _ClassVar[int]
-    runtime: PublishedAgentRuntime
-    def __init__(self, runtime: _Optional[_Union[PublishedAgentRuntime, _Mapping]] = ...) -> None: ...
+    runtime: PublishedPromptAgentRuntime
+    def __init__(self, runtime: _Optional[_Union[PublishedPromptAgentRuntime, _Mapping]] = ...) -> None: ...
 
 class PublishedOrchestrationExecution(_message.Message):
-    __slots__ = ("mode", "agent_runtimes", "supervisor", "handoff")
+    __slots__ = ("mode", "node_runtimes", "supervisor", "handoff")
     MODE_FIELD_NUMBER: _ClassVar[int]
-    AGENT_RUNTIMES_FIELD_NUMBER: _ClassVar[int]
+    NODE_RUNTIMES_FIELD_NUMBER: _ClassVar[int]
     SUPERVISOR_FIELD_NUMBER: _ClassVar[int]
     HANDOFF_FIELD_NUMBER: _ClassVar[int]
     mode: OrchestrationMode
-    agent_runtimes: _containers.RepeatedCompositeFieldContainer[PublishedAgentRuntime]
+    node_runtimes: _containers.RepeatedCompositeFieldContainer[PublishedInlinePromptRuntime]
     supervisor: PublishedSupervisorSnapshot
     handoff: PublishedHandoffSnapshot
-    def __init__(self, mode: _Optional[_Union[OrchestrationMode, str]] = ..., agent_runtimes: _Optional[_Iterable[_Union[PublishedAgentRuntime, _Mapping]]] = ..., supervisor: _Optional[_Union[PublishedSupervisorSnapshot, _Mapping]] = ..., handoff: _Optional[_Union[PublishedHandoffSnapshot, _Mapping]] = ...) -> None: ...
+    def __init__(self, mode: _Optional[_Union[OrchestrationMode, str]] = ..., node_runtimes: _Optional[_Iterable[_Union[PublishedInlinePromptRuntime, _Mapping]]] = ..., supervisor: _Optional[_Union[PublishedSupervisorSnapshot, _Mapping]] = ..., handoff: _Optional[_Union[PublishedHandoffSnapshot, _Mapping]] = ...) -> None: ...
 
-class PublishedAgentRuntime(_message.Message):
-    __slots__ = ("agent_published_id", "llm_worker", "instructions", "context_policy", "tools", "mcp_servers", "greeting", "knowledge_revision_id", "api_tool_runtimes", "knowledge_retrieval_capability")
-    AGENT_PUBLISHED_ID_FIELD_NUMBER: _ClassVar[int]
+class PublishedPromptAgentRuntime(_message.Message):
+    __slots__ = ("prompt_agent_published_id", "llm_worker", "instructions", "context_policy", "tools", "mcp_servers", "greeting", "knowledge_revision_id", "api_tool_runtimes", "knowledge_retrieval_capability", "a2a_tool_runtimes", "built_in_tools")
+    PROMPT_AGENT_PUBLISHED_ID_FIELD_NUMBER: _ClassVar[int]
     LLM_WORKER_FIELD_NUMBER: _ClassVar[int]
     INSTRUCTIONS_FIELD_NUMBER: _ClassVar[int]
     CONTEXT_POLICY_FIELD_NUMBER: _ClassVar[int]
@@ -156,9 +154,11 @@ class PublishedAgentRuntime(_message.Message):
     KNOWLEDGE_REVISION_ID_FIELD_NUMBER: _ClassVar[int]
     API_TOOL_RUNTIMES_FIELD_NUMBER: _ClassVar[int]
     KNOWLEDGE_RETRIEVAL_CAPABILITY_FIELD_NUMBER: _ClassVar[int]
-    agent_published_id: str
+    A2A_TOOL_RUNTIMES_FIELD_NUMBER: _ClassVar[int]
+    BUILT_IN_TOOLS_FIELD_NUMBER: _ClassVar[int]
+    prompt_agent_published_id: str
     llm_worker: _voice_runtime_pb2.LlmRuntime
-    instructions: AgentInstructions
+    instructions: PromptInstructions
     context_policy: ContextPolicy
     tools: _containers.RepeatedCompositeFieldContainer[NodeToolMetadata]
     mcp_servers: _containers.RepeatedCompositeFieldContainer[McpServerRuntime]
@@ -166,53 +166,77 @@ class PublishedAgentRuntime(_message.Message):
     knowledge_revision_id: str
     api_tool_runtimes: _containers.RepeatedCompositeFieldContainer[ApiToolRuntime]
     knowledge_retrieval_capability: str
-    def __init__(self, agent_published_id: _Optional[str] = ..., llm_worker: _Optional[_Union[_voice_runtime_pb2.LlmRuntime, _Mapping]] = ..., instructions: _Optional[_Union[AgentInstructions, _Mapping]] = ..., context_policy: _Optional[_Union[ContextPolicy, str]] = ..., tools: _Optional[_Iterable[_Union[NodeToolMetadata, _Mapping]]] = ..., mcp_servers: _Optional[_Iterable[_Union[McpServerRuntime, _Mapping]]] = ..., greeting: _Optional[str] = ..., knowledge_revision_id: _Optional[str] = ..., api_tool_runtimes: _Optional[_Iterable[_Union[ApiToolRuntime, _Mapping]]] = ..., knowledge_retrieval_capability: _Optional[str] = ...) -> None: ...
+    a2a_tool_runtimes: _containers.RepeatedCompositeFieldContainer[A2aToolRuntime]
+    built_in_tools: _containers.RepeatedCompositeFieldContainer[BuiltInTool]
+    def __init__(self, prompt_agent_published_id: _Optional[str] = ..., llm_worker: _Optional[_Union[_voice_runtime_pb2.LlmRuntime, _Mapping]] = ..., instructions: _Optional[_Union[PromptInstructions, _Mapping]] = ..., context_policy: _Optional[_Union[ContextPolicy, str]] = ..., tools: _Optional[_Iterable[_Union[NodeToolMetadata, _Mapping]]] = ..., mcp_servers: _Optional[_Iterable[_Union[McpServerRuntime, _Mapping]]] = ..., greeting: _Optional[str] = ..., knowledge_revision_id: _Optional[str] = ..., api_tool_runtimes: _Optional[_Iterable[_Union[ApiToolRuntime, _Mapping]]] = ..., knowledge_retrieval_capability: _Optional[str] = ..., a2a_tool_runtimes: _Optional[_Iterable[_Union[A2aToolRuntime, _Mapping]]] = ..., built_in_tools: _Optional[_Iterable[_Union[BuiltInTool, _Mapping]]] = ...) -> None: ...
+
+class PublishedInlinePromptRuntime(_message.Message):
+    __slots__ = ("node_id", "llm_worker", "instructions", "context_policy", "tools", "mcp_servers", "api_tool_runtimes", "a2a_tool_runtimes", "built_in_tools")
+    NODE_ID_FIELD_NUMBER: _ClassVar[int]
+    LLM_WORKER_FIELD_NUMBER: _ClassVar[int]
+    INSTRUCTIONS_FIELD_NUMBER: _ClassVar[int]
+    CONTEXT_POLICY_FIELD_NUMBER: _ClassVar[int]
+    TOOLS_FIELD_NUMBER: _ClassVar[int]
+    MCP_SERVERS_FIELD_NUMBER: _ClassVar[int]
+    API_TOOL_RUNTIMES_FIELD_NUMBER: _ClassVar[int]
+    A2A_TOOL_RUNTIMES_FIELD_NUMBER: _ClassVar[int]
+    BUILT_IN_TOOLS_FIELD_NUMBER: _ClassVar[int]
+    node_id: str
+    llm_worker: _voice_runtime_pb2.LlmRuntime
+    instructions: InlinePromptInstructions
+    context_policy: ContextPolicy
+    tools: _containers.RepeatedCompositeFieldContainer[NodeToolMetadata]
+    mcp_servers: _containers.RepeatedCompositeFieldContainer[McpServerRuntime]
+    api_tool_runtimes: _containers.RepeatedCompositeFieldContainer[ApiToolRuntime]
+    a2a_tool_runtimes: _containers.RepeatedCompositeFieldContainer[A2aToolRuntime]
+    built_in_tools: _containers.RepeatedCompositeFieldContainer[BuiltInTool]
+    def __init__(self, node_id: _Optional[str] = ..., llm_worker: _Optional[_Union[_voice_runtime_pb2.LlmRuntime, _Mapping]] = ..., instructions: _Optional[_Union[InlinePromptInstructions, _Mapping]] = ..., context_policy: _Optional[_Union[ContextPolicy, str]] = ..., tools: _Optional[_Iterable[_Union[NodeToolMetadata, _Mapping]]] = ..., mcp_servers: _Optional[_Iterable[_Union[McpServerRuntime, _Mapping]]] = ..., api_tool_runtimes: _Optional[_Iterable[_Union[ApiToolRuntime, _Mapping]]] = ..., a2a_tool_runtimes: _Optional[_Iterable[_Union[A2aToolRuntime, _Mapping]]] = ..., built_in_tools: _Optional[_Iterable[_Union[BuiltInTool, _Mapping]]] = ...) -> None: ...
 
 class PublishedSupervisorSnapshot(_message.Message):
-    __slots__ = ("supervisor_agent_published_id", "specialists")
-    SUPERVISOR_AGENT_PUBLISHED_ID_FIELD_NUMBER: _ClassVar[int]
+    __slots__ = ("supervisor_node_id", "specialists")
+    SUPERVISOR_NODE_ID_FIELD_NUMBER: _ClassVar[int]
     SPECIALISTS_FIELD_NUMBER: _ClassVar[int]
-    supervisor_agent_published_id: str
+    supervisor_node_id: str
     specialists: _containers.RepeatedCompositeFieldContainer[PublishedSupervisorSpecialist]
-    def __init__(self, supervisor_agent_published_id: _Optional[str] = ..., specialists: _Optional[_Iterable[_Union[PublishedSupervisorSpecialist, _Mapping]]] = ...) -> None: ...
+    def __init__(self, supervisor_node_id: _Optional[str] = ..., specialists: _Optional[_Iterable[_Union[PublishedSupervisorSpecialist, _Mapping]]] = ...) -> None: ...
 
 class PublishedSupervisorSpecialist(_message.Message):
-    __slots__ = ("relation_id", "target_agent_published_id", "route_description", "context_policy")
+    __slots__ = ("relation_id", "target_node_id", "route_description", "context_policy")
     RELATION_ID_FIELD_NUMBER: _ClassVar[int]
-    TARGET_AGENT_PUBLISHED_ID_FIELD_NUMBER: _ClassVar[int]
+    TARGET_NODE_ID_FIELD_NUMBER: _ClassVar[int]
     ROUTE_DESCRIPTION_FIELD_NUMBER: _ClassVar[int]
     CONTEXT_POLICY_FIELD_NUMBER: _ClassVar[int]
     relation_id: str
-    target_agent_published_id: str
+    target_node_id: str
     route_description: str
     context_policy: ContextPolicy
-    def __init__(self, relation_id: _Optional[str] = ..., target_agent_published_id: _Optional[str] = ..., route_description: _Optional[str] = ..., context_policy: _Optional[_Union[ContextPolicy, str]] = ...) -> None: ...
+    def __init__(self, relation_id: _Optional[str] = ..., target_node_id: _Optional[str] = ..., route_description: _Optional[str] = ..., context_policy: _Optional[_Union[ContextPolicy, str]] = ...) -> None: ...
 
 class PublishedHandoffSnapshot(_message.Message):
-    __slots__ = ("entry_agent_published_id", "max_handoff_depth", "routes")
-    ENTRY_AGENT_PUBLISHED_ID_FIELD_NUMBER: _ClassVar[int]
+    __slots__ = ("entry_node_id", "max_handoff_depth", "routes")
+    ENTRY_NODE_ID_FIELD_NUMBER: _ClassVar[int]
     MAX_HANDOFF_DEPTH_FIELD_NUMBER: _ClassVar[int]
     ROUTES_FIELD_NUMBER: _ClassVar[int]
-    entry_agent_published_id: str
+    entry_node_id: str
     max_handoff_depth: int
     routes: _containers.RepeatedCompositeFieldContainer[PublishedHandoffRoute]
-    def __init__(self, entry_agent_published_id: _Optional[str] = ..., max_handoff_depth: _Optional[int] = ..., routes: _Optional[_Iterable[_Union[PublishedHandoffRoute, _Mapping]]] = ...) -> None: ...
+    def __init__(self, entry_node_id: _Optional[str] = ..., max_handoff_depth: _Optional[int] = ..., routes: _Optional[_Iterable[_Union[PublishedHandoffRoute, _Mapping]]] = ...) -> None: ...
 
 class PublishedHandoffRoute(_message.Message):
-    __slots__ = ("transition_id", "source_agent_published_id", "target_agent_published_id", "routing_description", "context_policy", "announcement")
+    __slots__ = ("transition_id", "source_node_id", "target_node_id", "routing_description", "context_policy", "announcement")
     TRANSITION_ID_FIELD_NUMBER: _ClassVar[int]
-    SOURCE_AGENT_PUBLISHED_ID_FIELD_NUMBER: _ClassVar[int]
-    TARGET_AGENT_PUBLISHED_ID_FIELD_NUMBER: _ClassVar[int]
+    SOURCE_NODE_ID_FIELD_NUMBER: _ClassVar[int]
+    TARGET_NODE_ID_FIELD_NUMBER: _ClassVar[int]
     ROUTING_DESCRIPTION_FIELD_NUMBER: _ClassVar[int]
     CONTEXT_POLICY_FIELD_NUMBER: _ClassVar[int]
     ANNOUNCEMENT_FIELD_NUMBER: _ClassVar[int]
     transition_id: str
-    source_agent_published_id: str
-    target_agent_published_id: str
+    source_node_id: str
+    target_node_id: str
     routing_description: str
     context_policy: ContextPolicy
     announcement: str
-    def __init__(self, transition_id: _Optional[str] = ..., source_agent_published_id: _Optional[str] = ..., target_agent_published_id: _Optional[str] = ..., routing_description: _Optional[str] = ..., context_policy: _Optional[_Union[ContextPolicy, str]] = ..., announcement: _Optional[str] = ...) -> None: ...
+    def __init__(self, transition_id: _Optional[str] = ..., source_node_id: _Optional[str] = ..., target_node_id: _Optional[str] = ..., routing_description: _Optional[str] = ..., context_policy: _Optional[_Union[ContextPolicy, str]] = ..., announcement: _Optional[str] = ...) -> None: ...
 
 class TextRuntimeSnapshot(_message.Message):
     __slots__ = ("transport", "room_name", "participant_identity", "idle_timeout_seconds", "max_session_duration_seconds")
@@ -302,7 +326,7 @@ class DtmfInputRuntime(_message.Message):
     end_key: str
     def __init__(self, timeout_seconds: _Optional[int] = ..., end_key: _Optional[str] = ...) -> None: ...
 
-class AgentInstructions(_message.Message):
+class PromptInstructions(_message.Message):
     __slots__ = ("system_prompt", "guardrails")
     SYSTEM_PROMPT_FIELD_NUMBER: _ClassVar[int]
     GUARDRAILS_FIELD_NUMBER: _ClassVar[int]
@@ -310,21 +334,29 @@ class AgentInstructions(_message.Message):
     guardrails: _containers.RepeatedScalarFieldContainer[str]
     def __init__(self, system_prompt: _Optional[str] = ..., guardrails: _Optional[_Iterable[str]] = ...) -> None: ...
 
+class InlinePromptInstructions(_message.Message):
+    __slots__ = ("system_prompt",)
+    SYSTEM_PROMPT_FIELD_NUMBER: _ClassVar[int]
+    system_prompt: str
+    def __init__(self, system_prompt: _Optional[str] = ...) -> None: ...
+
 class NodeToolMetadata(_message.Message):
-    __slots__ = ("tool_id", "kind", "name", "description", "mcp", "api")
+    __slots__ = ("tool_id", "kind", "name", "description", "mcp", "api", "a2a")
     TOOL_ID_FIELD_NUMBER: _ClassVar[int]
     KIND_FIELD_NUMBER: _ClassVar[int]
     NAME_FIELD_NUMBER: _ClassVar[int]
     DESCRIPTION_FIELD_NUMBER: _ClassVar[int]
     MCP_FIELD_NUMBER: _ClassVar[int]
     API_FIELD_NUMBER: _ClassVar[int]
+    A2A_FIELD_NUMBER: _ClassVar[int]
     tool_id: str
     kind: str
     name: str
     description: str
     mcp: McpToolMetadata
     api: ApiToolMetadata
-    def __init__(self, tool_id: _Optional[str] = ..., kind: _Optional[str] = ..., name: _Optional[str] = ..., description: _Optional[str] = ..., mcp: _Optional[_Union[McpToolMetadata, _Mapping]] = ..., api: _Optional[_Union[ApiToolMetadata, _Mapping]] = ...) -> None: ...
+    a2a: A2aToolMetadata
+    def __init__(self, tool_id: _Optional[str] = ..., kind: _Optional[str] = ..., name: _Optional[str] = ..., description: _Optional[str] = ..., mcp: _Optional[_Union[McpToolMetadata, _Mapping]] = ..., api: _Optional[_Union[ApiToolMetadata, _Mapping]] = ..., a2a: _Optional[_Union[A2aToolMetadata, _Mapping]] = ...) -> None: ...
 
 class McpToolMetadata(_message.Message):
     __slots__ = ("server_name", "transport", "url")
@@ -348,6 +380,12 @@ class ApiToolMetadata(_message.Message):
     response_schema_json: str
     def __init__(self, method: _Optional[str] = ..., url: _Optional[str] = ..., request_schema_json: _Optional[str] = ..., response_schema_json: _Optional[str] = ...) -> None: ...
 
+class A2aToolMetadata(_message.Message):
+    __slots__ = ("agent_card_url",)
+    AGENT_CARD_URL_FIELD_NUMBER: _ClassVar[int]
+    agent_card_url: str
+    def __init__(self, agent_card_url: _Optional[str] = ...) -> None: ...
+
 class ApiToolRuntime(_message.Message):
     __slots__ = ("tool_id", "headers")
     class HeadersEntry(_message.Message):
@@ -363,35 +401,48 @@ class ApiToolRuntime(_message.Message):
     headers: _containers.ScalarMap[str, str]
     def __init__(self, tool_id: _Optional[str] = ..., headers: _Optional[_Mapping[str, str]] = ...) -> None: ...
 
-class AgentGlobalActions(_message.Message):
-    __slots__ = ("transfer_to_human", "end_call")
-    TRANSFER_TO_HUMAN_FIELD_NUMBER: _ClassVar[int]
-    END_CALL_FIELD_NUMBER: _ClassVar[int]
-    transfer_to_human: TransferToHumanAction
-    end_call: EndCallAction
-    def __init__(self, transfer_to_human: _Optional[_Union[TransferToHumanAction, _Mapping]] = ..., end_call: _Optional[_Union[EndCallAction, _Mapping]] = ...) -> None: ...
+class A2aToolRuntime(_message.Message):
+    __slots__ = ("tool_id", "headers", "timeout_ms")
+    class HeadersEntry(_message.Message):
+        __slots__ = ("key", "value")
+        KEY_FIELD_NUMBER: _ClassVar[int]
+        VALUE_FIELD_NUMBER: _ClassVar[int]
+        key: str
+        value: str
+        def __init__(self, key: _Optional[str] = ..., value: _Optional[str] = ...) -> None: ...
+    TOOL_ID_FIELD_NUMBER: _ClassVar[int]
+    HEADERS_FIELD_NUMBER: _ClassVar[int]
+    TIMEOUT_MS_FIELD_NUMBER: _ClassVar[int]
+    tool_id: str
+    headers: _containers.ScalarMap[str, str]
+    timeout_ms: int
+    def __init__(self, tool_id: _Optional[str] = ..., headers: _Optional[_Mapping[str, str]] = ..., timeout_ms: _Optional[int] = ...) -> None: ...
 
-class TransferToHumanAction(_message.Message):
-    __slots__ = ("enabled", "sip_call_to", "hold_phrase", "ringing_timeout_ms")
-    ENABLED_FIELD_NUMBER: _ClassVar[int]
+class BuiltInTool(_message.Message):
+    __slots__ = ("end_call", "transfer_to_human")
+    END_CALL_FIELD_NUMBER: _ClassVar[int]
+    TRANSFER_TO_HUMAN_FIELD_NUMBER: _ClassVar[int]
+    end_call: EndCallTool
+    transfer_to_human: TransferToHumanTool
+    def __init__(self, end_call: _Optional[_Union[EndCallTool, _Mapping]] = ..., transfer_to_human: _Optional[_Union[TransferToHumanTool, _Mapping]] = ...) -> None: ...
+
+class EndCallTool(_message.Message):
+    __slots__ = ("closing_phrase", "confirm")
+    CLOSING_PHRASE_FIELD_NUMBER: _ClassVar[int]
+    CONFIRM_FIELD_NUMBER: _ClassVar[int]
+    closing_phrase: str
+    confirm: bool
+    def __init__(self, closing_phrase: _Optional[str] = ..., confirm: _Optional[bool] = ...) -> None: ...
+
+class TransferToHumanTool(_message.Message):
+    __slots__ = ("sip_call_to", "hold_phrase", "ringing_timeout_ms")
     SIP_CALL_TO_FIELD_NUMBER: _ClassVar[int]
     HOLD_PHRASE_FIELD_NUMBER: _ClassVar[int]
     RINGING_TIMEOUT_MS_FIELD_NUMBER: _ClassVar[int]
-    enabled: bool
     sip_call_to: str
     hold_phrase: str
     ringing_timeout_ms: int
-    def __init__(self, enabled: _Optional[bool] = ..., sip_call_to: _Optional[str] = ..., hold_phrase: _Optional[str] = ..., ringing_timeout_ms: _Optional[int] = ...) -> None: ...
-
-class EndCallAction(_message.Message):
-    __slots__ = ("enabled", "closing_phrase", "confirm")
-    ENABLED_FIELD_NUMBER: _ClassVar[int]
-    CLOSING_PHRASE_FIELD_NUMBER: _ClassVar[int]
-    CONFIRM_FIELD_NUMBER: _ClassVar[int]
-    enabled: bool
-    closing_phrase: str
-    confirm: bool
-    def __init__(self, enabled: _Optional[bool] = ..., closing_phrase: _Optional[str] = ..., confirm: _Optional[bool] = ...) -> None: ...
+    def __init__(self, sip_call_to: _Optional[str] = ..., hold_phrase: _Optional[str] = ..., ringing_timeout_ms: _Optional[int] = ...) -> None: ...
 
 class McpServerRuntime(_message.Message):
     __slots__ = ("name", "transport", "url", "headers")

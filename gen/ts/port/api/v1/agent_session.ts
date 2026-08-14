@@ -276,28 +276,27 @@ export interface BootstrapPublishedResponse {
   conversationId: string;
   sessionId: string;
   publishedId: string;
-  agent?: PublishedAgentExecution | undefined;
+  promptAgent?: PublishedPromptAgentExecution | undefined;
   orchestration?: PublishedOrchestrationExecution | undefined;
   voiceRuntime?: CallRuntimeSnapshot | undefined;
   textRuntime?: TextRuntimeSnapshot | undefined;
-  globalActions?: AgentGlobalActions | undefined;
 }
 
-export interface PublishedAgentExecution {
-  runtime?: PublishedAgentRuntime | undefined;
+export interface PublishedPromptAgentExecution {
+  runtime?: PublishedPromptAgentRuntime | undefined;
 }
 
 export interface PublishedOrchestrationExecution {
   mode: OrchestrationMode;
-  agentRuntimes: PublishedAgentRuntime[];
+  nodeRuntimes: PublishedInlinePromptRuntime[];
   supervisor?: PublishedSupervisorSnapshot | undefined;
   handoff?: PublishedHandoffSnapshot | undefined;
 }
 
-export interface PublishedAgentRuntime {
-  agentPublishedId: string;
+export interface PublishedPromptAgentRuntime {
+  promptAgentPublishedId: string;
   llmWorker?: LlmRuntime | undefined;
-  instructions?: AgentInstructions | undefined;
+  instructions?: PromptInstructions | undefined;
   contextPolicy: ContextPolicy;
   tools: NodeToolMetadata[];
   mcpServers: McpServerRuntime[];
@@ -305,30 +304,48 @@ export interface PublishedAgentRuntime {
   knowledgeRevisionId: string;
   apiToolRuntimes: ApiToolRuntime[];
   knowledgeRetrievalCapability: string;
+  a2aToolRuntimes: A2aToolRuntime[];
+  builtInTools: BuiltInTool[];
+}
+
+/**
+ * Inline orchestration nodes intentionally do not expose greeting, knowledge,
+ * or guardrails fields. Those capabilities belong only to Prompt Agents.
+ */
+export interface PublishedInlinePromptRuntime {
+  nodeId: string;
+  llmWorker?: LlmRuntime | undefined;
+  instructions?: InlinePromptInstructions | undefined;
+  contextPolicy: ContextPolicy;
+  tools: NodeToolMetadata[];
+  mcpServers: McpServerRuntime[];
+  apiToolRuntimes: ApiToolRuntime[];
+  a2aToolRuntimes: A2aToolRuntime[];
+  builtInTools: BuiltInTool[];
 }
 
 export interface PublishedSupervisorSnapshot {
-  supervisorAgentPublishedId: string;
+  supervisorNodeId: string;
   specialists: PublishedSupervisorSpecialist[];
 }
 
 export interface PublishedSupervisorSpecialist {
   relationId: string;
-  targetAgentPublishedId: string;
+  targetNodeId: string;
   routeDescription: string;
   contextPolicy: ContextPolicy;
 }
 
 export interface PublishedHandoffSnapshot {
-  entryAgentPublishedId: string;
+  entryNodeId: string;
   maxHandoffDepth: number;
   routes: PublishedHandoffRoute[];
 }
 
 export interface PublishedHandoffRoute {
   transitionId: string;
-  sourceAgentPublishedId: string;
-  targetAgentPublishedId: string;
+  sourceNodeId: string;
+  targetNodeId: string;
   routingDescription: string;
   contextPolicy: ContextPolicy;
   announcement: string;
@@ -386,9 +403,13 @@ export interface DtmfInputRuntime {
   endKey?: string | undefined;
 }
 
-export interface AgentInstructions {
+export interface PromptInstructions {
   systemPrompt: string;
   guardrails: string[];
+}
+
+export interface InlinePromptInstructions {
+  systemPrompt: string;
 }
 
 export interface NodeToolMetadata {
@@ -398,6 +419,7 @@ export interface NodeToolMetadata {
   description: string;
   mcp?: McpToolMetadata | undefined;
   api?: ApiToolMetadata | undefined;
+  a2a?: A2aToolMetadata | undefined;
 }
 
 export interface McpToolMetadata {
@@ -413,6 +435,10 @@ export interface ApiToolMetadata {
   responseSchemaJson: string;
 }
 
+export interface A2aToolMetadata {
+  agentCardUrl: string;
+}
+
 /** Short-lived execution credentials for API tools, scoped to the bootstrap lease. */
 export interface ApiToolRuntime {
   toolId: string;
@@ -424,24 +450,31 @@ export interface ApiToolRuntime_HeadersEntry {
   value: string;
 }
 
-export interface AgentGlobalActions {
-  transferToHuman?: TransferToHumanAction | undefined;
-  endCall?: EndCallAction | undefined;
+export interface A2aToolRuntime {
+  toolId: string;
+  headers: { [key: string]: string };
+  timeoutMs: number;
 }
 
-export interface TransferToHumanAction {
-  enabled: boolean;
-  /** Empty when disabled. SIP destination for the warm transfer. */
-  sipCallTo: string;
-  holdPhrase: string;
-  ringingTimeoutMs: number;
+export interface A2aToolRuntime_HeadersEntry {
+  key: string;
+  value: string;
 }
 
-export interface EndCallAction {
-  enabled: boolean;
-  closingPhrase: string;
-  /** Ask once before hanging up instead of ending immediately. */
+export interface BuiltInTool {
+  endCall?: EndCallTool | undefined;
+  transferToHuman?: TransferToHumanTool | undefined;
+}
+
+export interface EndCallTool {
+  closingPhrase?: string | undefined;
   confirm: boolean;
+}
+
+export interface TransferToHumanTool {
+  sipCallTo: string;
+  holdPhrase?: string | undefined;
+  ringingTimeoutMs: number;
 }
 
 export interface McpServerRuntime {
@@ -882,11 +915,10 @@ function createBaseBootstrapPublishedResponse(): BootstrapPublishedResponse {
     conversationId: "",
     sessionId: "",
     publishedId: "",
-    agent: undefined,
+    promptAgent: undefined,
     orchestration: undefined,
     voiceRuntime: undefined,
     textRuntime: undefined,
-    globalActions: undefined,
   };
 }
 
@@ -904,8 +936,8 @@ export const BootstrapPublishedResponse: MessageFns<BootstrapPublishedResponse> 
     if (message.publishedId !== "") {
       writer.uint32(34).string(message.publishedId);
     }
-    if (message.agent !== undefined) {
-      PublishedAgentExecution.encode(message.agent, writer.uint32(42).fork()).join();
+    if (message.promptAgent !== undefined) {
+      PublishedPromptAgentExecution.encode(message.promptAgent, writer.uint32(42).fork()).join();
     }
     if (message.orchestration !== undefined) {
       PublishedOrchestrationExecution.encode(message.orchestration, writer.uint32(50).fork()).join();
@@ -915,9 +947,6 @@ export const BootstrapPublishedResponse: MessageFns<BootstrapPublishedResponse> 
     }
     if (message.textRuntime !== undefined) {
       TextRuntimeSnapshot.encode(message.textRuntime, writer.uint32(66).fork()).join();
-    }
-    if (message.globalActions !== undefined) {
-      AgentGlobalActions.encode(message.globalActions, writer.uint32(74).fork()).join();
     }
     return writer;
   },
@@ -966,7 +995,7 @@ export const BootstrapPublishedResponse: MessageFns<BootstrapPublishedResponse> 
             break;
           }
 
-          message.agent = PublishedAgentExecution.decode(reader, reader.uint32());
+          message.promptAgent = PublishedPromptAgentExecution.decode(reader, reader.uint32());
           continue;
         }
         case 6: {
@@ -991,14 +1020,6 @@ export const BootstrapPublishedResponse: MessageFns<BootstrapPublishedResponse> 
           }
 
           message.textRuntime = TextRuntimeSnapshot.decode(reader, reader.uint32());
-          continue;
-        }
-        case 9: {
-          if (tag !== 74) {
-            break;
-          }
-
-          message.globalActions = AgentGlobalActions.decode(reader, reader.uint32());
           continue;
         }
       }
@@ -1032,7 +1053,11 @@ export const BootstrapPublishedResponse: MessageFns<BootstrapPublishedResponse> 
         : isSet(object.published_id)
         ? globalThis.String(object.published_id)
         : "",
-      agent: isSet(object.agent) ? PublishedAgentExecution.fromJSON(object.agent) : undefined,
+      promptAgent: isSet(object.promptAgent)
+        ? PublishedPromptAgentExecution.fromJSON(object.promptAgent)
+        : isSet(object.prompt_agent)
+        ? PublishedPromptAgentExecution.fromJSON(object.prompt_agent)
+        : undefined,
       orchestration: isSet(object.orchestration)
         ? PublishedOrchestrationExecution.fromJSON(object.orchestration)
         : undefined,
@@ -1045,11 +1070,6 @@ export const BootstrapPublishedResponse: MessageFns<BootstrapPublishedResponse> 
         ? TextRuntimeSnapshot.fromJSON(object.textRuntime)
         : isSet(object.text_runtime)
         ? TextRuntimeSnapshot.fromJSON(object.text_runtime)
-        : undefined,
-      globalActions: isSet(object.globalActions)
-        ? AgentGlobalActions.fromJSON(object.globalActions)
-        : isSet(object.global_actions)
-        ? AgentGlobalActions.fromJSON(object.global_actions)
         : undefined,
     };
   },
@@ -1068,8 +1088,8 @@ export const BootstrapPublishedResponse: MessageFns<BootstrapPublishedResponse> 
     if (message.publishedId !== "") {
       obj.publishedId = message.publishedId;
     }
-    if (message.agent !== undefined) {
-      obj.agent = PublishedAgentExecution.toJSON(message.agent);
+    if (message.promptAgent !== undefined) {
+      obj.promptAgent = PublishedPromptAgentExecution.toJSON(message.promptAgent);
     }
     if (message.orchestration !== undefined) {
       obj.orchestration = PublishedOrchestrationExecution.toJSON(message.orchestration);
@@ -1079,9 +1099,6 @@ export const BootstrapPublishedResponse: MessageFns<BootstrapPublishedResponse> 
     }
     if (message.textRuntime !== undefined) {
       obj.textRuntime = TextRuntimeSnapshot.toJSON(message.textRuntime);
-    }
-    if (message.globalActions !== undefined) {
-      obj.globalActions = AgentGlobalActions.toJSON(message.globalActions);
     }
     return obj;
   },
@@ -1095,8 +1112,8 @@ export const BootstrapPublishedResponse: MessageFns<BootstrapPublishedResponse> 
     message.conversationId = object.conversationId ?? "";
     message.sessionId = object.sessionId ?? "";
     message.publishedId = object.publishedId ?? "";
-    message.agent = (object.agent !== undefined && object.agent !== null)
-      ? PublishedAgentExecution.fromPartial(object.agent)
+    message.promptAgent = (object.promptAgent !== undefined && object.promptAgent !== null)
+      ? PublishedPromptAgentExecution.fromPartial(object.promptAgent)
       : undefined;
     message.orchestration = (object.orchestration !== undefined && object.orchestration !== null)
       ? PublishedOrchestrationExecution.fromPartial(object.orchestration)
@@ -1107,29 +1124,26 @@ export const BootstrapPublishedResponse: MessageFns<BootstrapPublishedResponse> 
     message.textRuntime = (object.textRuntime !== undefined && object.textRuntime !== null)
       ? TextRuntimeSnapshot.fromPartial(object.textRuntime)
       : undefined;
-    message.globalActions = (object.globalActions !== undefined && object.globalActions !== null)
-      ? AgentGlobalActions.fromPartial(object.globalActions)
-      : undefined;
     return message;
   },
 };
 
-function createBasePublishedAgentExecution(): PublishedAgentExecution {
+function createBasePublishedPromptAgentExecution(): PublishedPromptAgentExecution {
   return { runtime: undefined };
 }
 
-export const PublishedAgentExecution: MessageFns<PublishedAgentExecution> = {
-  encode(message: PublishedAgentExecution, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+export const PublishedPromptAgentExecution: MessageFns<PublishedPromptAgentExecution> = {
+  encode(message: PublishedPromptAgentExecution, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
     if (message.runtime !== undefined) {
-      PublishedAgentRuntime.encode(message.runtime, writer.uint32(10).fork()).join();
+      PublishedPromptAgentRuntime.encode(message.runtime, writer.uint32(10).fork()).join();
     }
     return writer;
   },
 
-  decode(input: BinaryReader | Uint8Array, length?: number): PublishedAgentExecution {
+  decode(input: BinaryReader | Uint8Array, length?: number): PublishedPromptAgentExecution {
     const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
     const end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBasePublishedAgentExecution();
+    const message = createBasePublishedPromptAgentExecution();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
@@ -1138,7 +1152,7 @@ export const PublishedAgentExecution: MessageFns<PublishedAgentExecution> = {
             break;
           }
 
-          message.runtime = PublishedAgentRuntime.decode(reader, reader.uint32());
+          message.runtime = PublishedPromptAgentRuntime.decode(reader, reader.uint32());
           continue;
         }
       }
@@ -1150,32 +1164,32 @@ export const PublishedAgentExecution: MessageFns<PublishedAgentExecution> = {
     return message;
   },
 
-  fromJSON(object: any): PublishedAgentExecution {
-    return { runtime: isSet(object.runtime) ? PublishedAgentRuntime.fromJSON(object.runtime) : undefined };
+  fromJSON(object: any): PublishedPromptAgentExecution {
+    return { runtime: isSet(object.runtime) ? PublishedPromptAgentRuntime.fromJSON(object.runtime) : undefined };
   },
 
-  toJSON(message: PublishedAgentExecution): unknown {
+  toJSON(message: PublishedPromptAgentExecution): unknown {
     const obj: any = {};
     if (message.runtime !== undefined) {
-      obj.runtime = PublishedAgentRuntime.toJSON(message.runtime);
+      obj.runtime = PublishedPromptAgentRuntime.toJSON(message.runtime);
     }
     return obj;
   },
 
-  create(base?: DeepPartial<PublishedAgentExecution>): PublishedAgentExecution {
-    return PublishedAgentExecution.fromPartial(base ?? {});
+  create(base?: DeepPartial<PublishedPromptAgentExecution>): PublishedPromptAgentExecution {
+    return PublishedPromptAgentExecution.fromPartial(base ?? {});
   },
-  fromPartial(object: DeepPartial<PublishedAgentExecution>): PublishedAgentExecution {
-    const message = createBasePublishedAgentExecution();
+  fromPartial(object: DeepPartial<PublishedPromptAgentExecution>): PublishedPromptAgentExecution {
+    const message = createBasePublishedPromptAgentExecution();
     message.runtime = (object.runtime !== undefined && object.runtime !== null)
-      ? PublishedAgentRuntime.fromPartial(object.runtime)
+      ? PublishedPromptAgentRuntime.fromPartial(object.runtime)
       : undefined;
     return message;
   },
 };
 
 function createBasePublishedOrchestrationExecution(): PublishedOrchestrationExecution {
-  return { mode: 0, agentRuntimes: [], supervisor: undefined, handoff: undefined };
+  return { mode: 0, nodeRuntimes: [], supervisor: undefined, handoff: undefined };
 }
 
 export const PublishedOrchestrationExecution: MessageFns<PublishedOrchestrationExecution> = {
@@ -1183,8 +1197,8 @@ export const PublishedOrchestrationExecution: MessageFns<PublishedOrchestrationE
     if (message.mode !== 0) {
       writer.uint32(8).int32(message.mode);
     }
-    for (const v of message.agentRuntimes) {
-      PublishedAgentRuntime.encode(v!, writer.uint32(18).fork()).join();
+    for (const v of message.nodeRuntimes) {
+      PublishedInlinePromptRuntime.encode(v!, writer.uint32(18).fork()).join();
     }
     if (message.supervisor !== undefined) {
       PublishedSupervisorSnapshot.encode(message.supervisor, writer.uint32(26).fork()).join();
@@ -1215,7 +1229,7 @@ export const PublishedOrchestrationExecution: MessageFns<PublishedOrchestrationE
             break;
           }
 
-          message.agentRuntimes.push(PublishedAgentRuntime.decode(reader, reader.uint32()));
+          message.nodeRuntimes.push(PublishedInlinePromptRuntime.decode(reader, reader.uint32()));
           continue;
         }
         case 3: {
@@ -1246,10 +1260,10 @@ export const PublishedOrchestrationExecution: MessageFns<PublishedOrchestrationE
   fromJSON(object: any): PublishedOrchestrationExecution {
     return {
       mode: isSet(object.mode) ? orchestrationModeFromJSON(object.mode) : 0,
-      agentRuntimes: globalThis.Array.isArray(object?.agentRuntimes)
-        ? object.agentRuntimes.map((e: any) => PublishedAgentRuntime.fromJSON(e))
-        : globalThis.Array.isArray(object?.agent_runtimes)
-        ? object.agent_runtimes.map((e: any) => PublishedAgentRuntime.fromJSON(e))
+      nodeRuntimes: globalThis.Array.isArray(object?.nodeRuntimes)
+        ? object.nodeRuntimes.map((e: any) => PublishedInlinePromptRuntime.fromJSON(e))
+        : globalThis.Array.isArray(object?.node_runtimes)
+        ? object.node_runtimes.map((e: any) => PublishedInlinePromptRuntime.fromJSON(e))
         : [],
       supervisor: isSet(object.supervisor) ? PublishedSupervisorSnapshot.fromJSON(object.supervisor) : undefined,
       handoff: isSet(object.handoff) ? PublishedHandoffSnapshot.fromJSON(object.handoff) : undefined,
@@ -1261,8 +1275,8 @@ export const PublishedOrchestrationExecution: MessageFns<PublishedOrchestrationE
     if (message.mode !== 0) {
       obj.mode = orchestrationModeToJSON(message.mode);
     }
-    if (message.agentRuntimes?.length) {
-      obj.agentRuntimes = message.agentRuntimes.map((e) => PublishedAgentRuntime.toJSON(e));
+    if (message.nodeRuntimes?.length) {
+      obj.nodeRuntimes = message.nodeRuntimes.map((e) => PublishedInlinePromptRuntime.toJSON(e));
     }
     if (message.supervisor !== undefined) {
       obj.supervisor = PublishedSupervisorSnapshot.toJSON(message.supervisor);
@@ -1279,7 +1293,7 @@ export const PublishedOrchestrationExecution: MessageFns<PublishedOrchestrationE
   fromPartial(object: DeepPartial<PublishedOrchestrationExecution>): PublishedOrchestrationExecution {
     const message = createBasePublishedOrchestrationExecution();
     message.mode = object.mode ?? 0;
-    message.agentRuntimes = object.agentRuntimes?.map((e) => PublishedAgentRuntime.fromPartial(e)) || [];
+    message.nodeRuntimes = object.nodeRuntimes?.map((e) => PublishedInlinePromptRuntime.fromPartial(e)) || [];
     message.supervisor = (object.supervisor !== undefined && object.supervisor !== null)
       ? PublishedSupervisorSnapshot.fromPartial(object.supervisor)
       : undefined;
@@ -1290,9 +1304,9 @@ export const PublishedOrchestrationExecution: MessageFns<PublishedOrchestrationE
   },
 };
 
-function createBasePublishedAgentRuntime(): PublishedAgentRuntime {
+function createBasePublishedPromptAgentRuntime(): PublishedPromptAgentRuntime {
   return {
-    agentPublishedId: "",
+    promptAgentPublishedId: "",
     llmWorker: undefined,
     instructions: undefined,
     contextPolicy: 0,
@@ -1302,19 +1316,21 @@ function createBasePublishedAgentRuntime(): PublishedAgentRuntime {
     knowledgeRevisionId: "",
     apiToolRuntimes: [],
     knowledgeRetrievalCapability: "",
+    a2aToolRuntimes: [],
+    builtInTools: [],
   };
 }
 
-export const PublishedAgentRuntime: MessageFns<PublishedAgentRuntime> = {
-  encode(message: PublishedAgentRuntime, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
-    if (message.agentPublishedId !== "") {
-      writer.uint32(10).string(message.agentPublishedId);
+export const PublishedPromptAgentRuntime: MessageFns<PublishedPromptAgentRuntime> = {
+  encode(message: PublishedPromptAgentRuntime, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.promptAgentPublishedId !== "") {
+      writer.uint32(10).string(message.promptAgentPublishedId);
     }
     if (message.llmWorker !== undefined) {
       LlmRuntime.encode(message.llmWorker, writer.uint32(18).fork()).join();
     }
     if (message.instructions !== undefined) {
-      AgentInstructions.encode(message.instructions, writer.uint32(26).fork()).join();
+      PromptInstructions.encode(message.instructions, writer.uint32(26).fork()).join();
     }
     if (message.contextPolicy !== 0) {
       writer.uint32(32).int32(message.contextPolicy);
@@ -1337,13 +1353,19 @@ export const PublishedAgentRuntime: MessageFns<PublishedAgentRuntime> = {
     if (message.knowledgeRetrievalCapability !== "") {
       writer.uint32(82).string(message.knowledgeRetrievalCapability);
     }
+    for (const v of message.a2aToolRuntimes) {
+      A2aToolRuntime.encode(v!, writer.uint32(90).fork()).join();
+    }
+    for (const v of message.builtInTools) {
+      BuiltInTool.encode(v!, writer.uint32(98).fork()).join();
+    }
     return writer;
   },
 
-  decode(input: BinaryReader | Uint8Array, length?: number): PublishedAgentRuntime {
+  decode(input: BinaryReader | Uint8Array, length?: number): PublishedPromptAgentRuntime {
     const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
     const end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBasePublishedAgentRuntime();
+    const message = createBasePublishedPromptAgentRuntime();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
@@ -1352,7 +1374,7 @@ export const PublishedAgentRuntime: MessageFns<PublishedAgentRuntime> = {
             break;
           }
 
-          message.agentPublishedId = reader.string();
+          message.promptAgentPublishedId = reader.string();
           continue;
         }
         case 2: {
@@ -1368,7 +1390,7 @@ export const PublishedAgentRuntime: MessageFns<PublishedAgentRuntime> = {
             break;
           }
 
-          message.instructions = AgentInstructions.decode(reader, reader.uint32());
+          message.instructions = PromptInstructions.decode(reader, reader.uint32());
           continue;
         }
         case 4: {
@@ -1427,6 +1449,22 @@ export const PublishedAgentRuntime: MessageFns<PublishedAgentRuntime> = {
           message.knowledgeRetrievalCapability = reader.string();
           continue;
         }
+        case 11: {
+          if (tag !== 90) {
+            break;
+          }
+
+          message.a2aToolRuntimes.push(A2aToolRuntime.decode(reader, reader.uint32()));
+          continue;
+        }
+        case 12: {
+          if (tag !== 98) {
+            break;
+          }
+
+          message.builtInTools.push(BuiltInTool.decode(reader, reader.uint32()));
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -1436,19 +1474,19 @@ export const PublishedAgentRuntime: MessageFns<PublishedAgentRuntime> = {
     return message;
   },
 
-  fromJSON(object: any): PublishedAgentRuntime {
+  fromJSON(object: any): PublishedPromptAgentRuntime {
     return {
-      agentPublishedId: isSet(object.agentPublishedId)
-        ? globalThis.String(object.agentPublishedId)
-        : isSet(object.agent_published_id)
-        ? globalThis.String(object.agent_published_id)
+      promptAgentPublishedId: isSet(object.promptAgentPublishedId)
+        ? globalThis.String(object.promptAgentPublishedId)
+        : isSet(object.prompt_agent_published_id)
+        ? globalThis.String(object.prompt_agent_published_id)
         : "",
       llmWorker: isSet(object.llmWorker)
         ? LlmRuntime.fromJSON(object.llmWorker)
         : isSet(object.llm_worker)
         ? LlmRuntime.fromJSON(object.llm_worker)
         : undefined,
-      instructions: isSet(object.instructions) ? AgentInstructions.fromJSON(object.instructions) : undefined,
+      instructions: isSet(object.instructions) ? PromptInstructions.fromJSON(object.instructions) : undefined,
       contextPolicy: isSet(object.contextPolicy)
         ? contextPolicyFromJSON(object.contextPolicy)
         : isSet(object.context_policy)
@@ -1476,19 +1514,29 @@ export const PublishedAgentRuntime: MessageFns<PublishedAgentRuntime> = {
         : isSet(object.knowledge_retrieval_capability)
         ? globalThis.String(object.knowledge_retrieval_capability)
         : "",
+      a2aToolRuntimes: globalThis.Array.isArray(object?.a2aToolRuntimes)
+        ? object.a2aToolRuntimes.map((e: any) => A2aToolRuntime.fromJSON(e))
+        : globalThis.Array.isArray(object?.a2a_tool_runtimes)
+        ? object.a2a_tool_runtimes.map((e: any) => A2aToolRuntime.fromJSON(e))
+        : [],
+      builtInTools: globalThis.Array.isArray(object?.builtInTools)
+        ? object.builtInTools.map((e: any) => BuiltInTool.fromJSON(e))
+        : globalThis.Array.isArray(object?.built_in_tools)
+        ? object.built_in_tools.map((e: any) => BuiltInTool.fromJSON(e))
+        : [],
     };
   },
 
-  toJSON(message: PublishedAgentRuntime): unknown {
+  toJSON(message: PublishedPromptAgentRuntime): unknown {
     const obj: any = {};
-    if (message.agentPublishedId !== "") {
-      obj.agentPublishedId = message.agentPublishedId;
+    if (message.promptAgentPublishedId !== "") {
+      obj.promptAgentPublishedId = message.promptAgentPublishedId;
     }
     if (message.llmWorker !== undefined) {
       obj.llmWorker = LlmRuntime.toJSON(message.llmWorker);
     }
     if (message.instructions !== undefined) {
-      obj.instructions = AgentInstructions.toJSON(message.instructions);
+      obj.instructions = PromptInstructions.toJSON(message.instructions);
     }
     if (message.contextPolicy !== 0) {
       obj.contextPolicy = contextPolicyToJSON(message.contextPolicy);
@@ -1511,20 +1559,26 @@ export const PublishedAgentRuntime: MessageFns<PublishedAgentRuntime> = {
     if (message.knowledgeRetrievalCapability !== "") {
       obj.knowledgeRetrievalCapability = message.knowledgeRetrievalCapability;
     }
+    if (message.a2aToolRuntimes?.length) {
+      obj.a2aToolRuntimes = message.a2aToolRuntimes.map((e) => A2aToolRuntime.toJSON(e));
+    }
+    if (message.builtInTools?.length) {
+      obj.builtInTools = message.builtInTools.map((e) => BuiltInTool.toJSON(e));
+    }
     return obj;
   },
 
-  create(base?: DeepPartial<PublishedAgentRuntime>): PublishedAgentRuntime {
-    return PublishedAgentRuntime.fromPartial(base ?? {});
+  create(base?: DeepPartial<PublishedPromptAgentRuntime>): PublishedPromptAgentRuntime {
+    return PublishedPromptAgentRuntime.fromPartial(base ?? {});
   },
-  fromPartial(object: DeepPartial<PublishedAgentRuntime>): PublishedAgentRuntime {
-    const message = createBasePublishedAgentRuntime();
-    message.agentPublishedId = object.agentPublishedId ?? "";
+  fromPartial(object: DeepPartial<PublishedPromptAgentRuntime>): PublishedPromptAgentRuntime {
+    const message = createBasePublishedPromptAgentRuntime();
+    message.promptAgentPublishedId = object.promptAgentPublishedId ?? "";
     message.llmWorker = (object.llmWorker !== undefined && object.llmWorker !== null)
       ? LlmRuntime.fromPartial(object.llmWorker)
       : undefined;
     message.instructions = (object.instructions !== undefined && object.instructions !== null)
-      ? AgentInstructions.fromPartial(object.instructions)
+      ? PromptInstructions.fromPartial(object.instructions)
       : undefined;
     message.contextPolicy = object.contextPolicy ?? 0;
     message.tools = object.tools?.map((e) => NodeToolMetadata.fromPartial(e)) || [];
@@ -1533,18 +1587,250 @@ export const PublishedAgentRuntime: MessageFns<PublishedAgentRuntime> = {
     message.knowledgeRevisionId = object.knowledgeRevisionId ?? "";
     message.apiToolRuntimes = object.apiToolRuntimes?.map((e) => ApiToolRuntime.fromPartial(e)) || [];
     message.knowledgeRetrievalCapability = object.knowledgeRetrievalCapability ?? "";
+    message.a2aToolRuntimes = object.a2aToolRuntimes?.map((e) => A2aToolRuntime.fromPartial(e)) || [];
+    message.builtInTools = object.builtInTools?.map((e) => BuiltInTool.fromPartial(e)) || [];
+    return message;
+  },
+};
+
+function createBasePublishedInlinePromptRuntime(): PublishedInlinePromptRuntime {
+  return {
+    nodeId: "",
+    llmWorker: undefined,
+    instructions: undefined,
+    contextPolicy: 0,
+    tools: [],
+    mcpServers: [],
+    apiToolRuntimes: [],
+    a2aToolRuntimes: [],
+    builtInTools: [],
+  };
+}
+
+export const PublishedInlinePromptRuntime: MessageFns<PublishedInlinePromptRuntime> = {
+  encode(message: PublishedInlinePromptRuntime, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.nodeId !== "") {
+      writer.uint32(10).string(message.nodeId);
+    }
+    if (message.llmWorker !== undefined) {
+      LlmRuntime.encode(message.llmWorker, writer.uint32(18).fork()).join();
+    }
+    if (message.instructions !== undefined) {
+      InlinePromptInstructions.encode(message.instructions, writer.uint32(26).fork()).join();
+    }
+    if (message.contextPolicy !== 0) {
+      writer.uint32(32).int32(message.contextPolicy);
+    }
+    for (const v of message.tools) {
+      NodeToolMetadata.encode(v!, writer.uint32(42).fork()).join();
+    }
+    for (const v of message.mcpServers) {
+      McpServerRuntime.encode(v!, writer.uint32(50).fork()).join();
+    }
+    for (const v of message.apiToolRuntimes) {
+      ApiToolRuntime.encode(v!, writer.uint32(58).fork()).join();
+    }
+    for (const v of message.a2aToolRuntimes) {
+      A2aToolRuntime.encode(v!, writer.uint32(66).fork()).join();
+    }
+    for (const v of message.builtInTools) {
+      BuiltInTool.encode(v!, writer.uint32(74).fork()).join();
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): PublishedInlinePromptRuntime {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBasePublishedInlinePromptRuntime();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.nodeId = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.llmWorker = LlmRuntime.decode(reader, reader.uint32());
+          continue;
+        }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.instructions = InlinePromptInstructions.decode(reader, reader.uint32());
+          continue;
+        }
+        case 4: {
+          if (tag !== 32) {
+            break;
+          }
+
+          message.contextPolicy = reader.int32() as any;
+          continue;
+        }
+        case 5: {
+          if (tag !== 42) {
+            break;
+          }
+
+          message.tools.push(NodeToolMetadata.decode(reader, reader.uint32()));
+          continue;
+        }
+        case 6: {
+          if (tag !== 50) {
+            break;
+          }
+
+          message.mcpServers.push(McpServerRuntime.decode(reader, reader.uint32()));
+          continue;
+        }
+        case 7: {
+          if (tag !== 58) {
+            break;
+          }
+
+          message.apiToolRuntimes.push(ApiToolRuntime.decode(reader, reader.uint32()));
+          continue;
+        }
+        case 8: {
+          if (tag !== 66) {
+            break;
+          }
+
+          message.a2aToolRuntimes.push(A2aToolRuntime.decode(reader, reader.uint32()));
+          continue;
+        }
+        case 9: {
+          if (tag !== 74) {
+            break;
+          }
+
+          message.builtInTools.push(BuiltInTool.decode(reader, reader.uint32()));
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): PublishedInlinePromptRuntime {
+    return {
+      nodeId: isSet(object.nodeId)
+        ? globalThis.String(object.nodeId)
+        : isSet(object.node_id)
+        ? globalThis.String(object.node_id)
+        : "",
+      llmWorker: isSet(object.llmWorker)
+        ? LlmRuntime.fromJSON(object.llmWorker)
+        : isSet(object.llm_worker)
+        ? LlmRuntime.fromJSON(object.llm_worker)
+        : undefined,
+      instructions: isSet(object.instructions) ? InlinePromptInstructions.fromJSON(object.instructions) : undefined,
+      contextPolicy: isSet(object.contextPolicy)
+        ? contextPolicyFromJSON(object.contextPolicy)
+        : isSet(object.context_policy)
+        ? contextPolicyFromJSON(object.context_policy)
+        : 0,
+      tools: globalThis.Array.isArray(object?.tools) ? object.tools.map((e: any) => NodeToolMetadata.fromJSON(e)) : [],
+      mcpServers: globalThis.Array.isArray(object?.mcpServers)
+        ? object.mcpServers.map((e: any) => McpServerRuntime.fromJSON(e))
+        : globalThis.Array.isArray(object?.mcp_servers)
+        ? object.mcp_servers.map((e: any) => McpServerRuntime.fromJSON(e))
+        : [],
+      apiToolRuntimes: globalThis.Array.isArray(object?.apiToolRuntimes)
+        ? object.apiToolRuntimes.map((e: any) => ApiToolRuntime.fromJSON(e))
+        : globalThis.Array.isArray(object?.api_tool_runtimes)
+        ? object.api_tool_runtimes.map((e: any) => ApiToolRuntime.fromJSON(e))
+        : [],
+      a2aToolRuntimes: globalThis.Array.isArray(object?.a2aToolRuntimes)
+        ? object.a2aToolRuntimes.map((e: any) => A2aToolRuntime.fromJSON(e))
+        : globalThis.Array.isArray(object?.a2a_tool_runtimes)
+        ? object.a2a_tool_runtimes.map((e: any) => A2aToolRuntime.fromJSON(e))
+        : [],
+      builtInTools: globalThis.Array.isArray(object?.builtInTools)
+        ? object.builtInTools.map((e: any) => BuiltInTool.fromJSON(e))
+        : globalThis.Array.isArray(object?.built_in_tools)
+        ? object.built_in_tools.map((e: any) => BuiltInTool.fromJSON(e))
+        : [],
+    };
+  },
+
+  toJSON(message: PublishedInlinePromptRuntime): unknown {
+    const obj: any = {};
+    if (message.nodeId !== "") {
+      obj.nodeId = message.nodeId;
+    }
+    if (message.llmWorker !== undefined) {
+      obj.llmWorker = LlmRuntime.toJSON(message.llmWorker);
+    }
+    if (message.instructions !== undefined) {
+      obj.instructions = InlinePromptInstructions.toJSON(message.instructions);
+    }
+    if (message.contextPolicy !== 0) {
+      obj.contextPolicy = contextPolicyToJSON(message.contextPolicy);
+    }
+    if (message.tools?.length) {
+      obj.tools = message.tools.map((e) => NodeToolMetadata.toJSON(e));
+    }
+    if (message.mcpServers?.length) {
+      obj.mcpServers = message.mcpServers.map((e) => McpServerRuntime.toJSON(e));
+    }
+    if (message.apiToolRuntimes?.length) {
+      obj.apiToolRuntimes = message.apiToolRuntimes.map((e) => ApiToolRuntime.toJSON(e));
+    }
+    if (message.a2aToolRuntimes?.length) {
+      obj.a2aToolRuntimes = message.a2aToolRuntimes.map((e) => A2aToolRuntime.toJSON(e));
+    }
+    if (message.builtInTools?.length) {
+      obj.builtInTools = message.builtInTools.map((e) => BuiltInTool.toJSON(e));
+    }
+    return obj;
+  },
+
+  create(base?: DeepPartial<PublishedInlinePromptRuntime>): PublishedInlinePromptRuntime {
+    return PublishedInlinePromptRuntime.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<PublishedInlinePromptRuntime>): PublishedInlinePromptRuntime {
+    const message = createBasePublishedInlinePromptRuntime();
+    message.nodeId = object.nodeId ?? "";
+    message.llmWorker = (object.llmWorker !== undefined && object.llmWorker !== null)
+      ? LlmRuntime.fromPartial(object.llmWorker)
+      : undefined;
+    message.instructions = (object.instructions !== undefined && object.instructions !== null)
+      ? InlinePromptInstructions.fromPartial(object.instructions)
+      : undefined;
+    message.contextPolicy = object.contextPolicy ?? 0;
+    message.tools = object.tools?.map((e) => NodeToolMetadata.fromPartial(e)) || [];
+    message.mcpServers = object.mcpServers?.map((e) => McpServerRuntime.fromPartial(e)) || [];
+    message.apiToolRuntimes = object.apiToolRuntimes?.map((e) => ApiToolRuntime.fromPartial(e)) || [];
+    message.a2aToolRuntimes = object.a2aToolRuntimes?.map((e) => A2aToolRuntime.fromPartial(e)) || [];
+    message.builtInTools = object.builtInTools?.map((e) => BuiltInTool.fromPartial(e)) || [];
     return message;
   },
 };
 
 function createBasePublishedSupervisorSnapshot(): PublishedSupervisorSnapshot {
-  return { supervisorAgentPublishedId: "", specialists: [] };
+  return { supervisorNodeId: "", specialists: [] };
 }
 
 export const PublishedSupervisorSnapshot: MessageFns<PublishedSupervisorSnapshot> = {
   encode(message: PublishedSupervisorSnapshot, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
-    if (message.supervisorAgentPublishedId !== "") {
-      writer.uint32(10).string(message.supervisorAgentPublishedId);
+    if (message.supervisorNodeId !== "") {
+      writer.uint32(10).string(message.supervisorNodeId);
     }
     for (const v of message.specialists) {
       PublishedSupervisorSpecialist.encode(v!, writer.uint32(18).fork()).join();
@@ -1564,7 +1850,7 @@ export const PublishedSupervisorSnapshot: MessageFns<PublishedSupervisorSnapshot
             break;
           }
 
-          message.supervisorAgentPublishedId = reader.string();
+          message.supervisorNodeId = reader.string();
           continue;
         }
         case 2: {
@@ -1586,10 +1872,10 @@ export const PublishedSupervisorSnapshot: MessageFns<PublishedSupervisorSnapshot
 
   fromJSON(object: any): PublishedSupervisorSnapshot {
     return {
-      supervisorAgentPublishedId: isSet(object.supervisorAgentPublishedId)
-        ? globalThis.String(object.supervisorAgentPublishedId)
-        : isSet(object.supervisor_agent_published_id)
-        ? globalThis.String(object.supervisor_agent_published_id)
+      supervisorNodeId: isSet(object.supervisorNodeId)
+        ? globalThis.String(object.supervisorNodeId)
+        : isSet(object.supervisor_node_id)
+        ? globalThis.String(object.supervisor_node_id)
         : "",
       specialists: globalThis.Array.isArray(object?.specialists)
         ? object.specialists.map((e: any) => PublishedSupervisorSpecialist.fromJSON(e))
@@ -1599,8 +1885,8 @@ export const PublishedSupervisorSnapshot: MessageFns<PublishedSupervisorSnapshot
 
   toJSON(message: PublishedSupervisorSnapshot): unknown {
     const obj: any = {};
-    if (message.supervisorAgentPublishedId !== "") {
-      obj.supervisorAgentPublishedId = message.supervisorAgentPublishedId;
+    if (message.supervisorNodeId !== "") {
+      obj.supervisorNodeId = message.supervisorNodeId;
     }
     if (message.specialists?.length) {
       obj.specialists = message.specialists.map((e) => PublishedSupervisorSpecialist.toJSON(e));
@@ -1613,14 +1899,14 @@ export const PublishedSupervisorSnapshot: MessageFns<PublishedSupervisorSnapshot
   },
   fromPartial(object: DeepPartial<PublishedSupervisorSnapshot>): PublishedSupervisorSnapshot {
     const message = createBasePublishedSupervisorSnapshot();
-    message.supervisorAgentPublishedId = object.supervisorAgentPublishedId ?? "";
+    message.supervisorNodeId = object.supervisorNodeId ?? "";
     message.specialists = object.specialists?.map((e) => PublishedSupervisorSpecialist.fromPartial(e)) || [];
     return message;
   },
 };
 
 function createBasePublishedSupervisorSpecialist(): PublishedSupervisorSpecialist {
-  return { relationId: "", targetAgentPublishedId: "", routeDescription: "", contextPolicy: 0 };
+  return { relationId: "", targetNodeId: "", routeDescription: "", contextPolicy: 0 };
 }
 
 export const PublishedSupervisorSpecialist: MessageFns<PublishedSupervisorSpecialist> = {
@@ -1628,8 +1914,8 @@ export const PublishedSupervisorSpecialist: MessageFns<PublishedSupervisorSpecia
     if (message.relationId !== "") {
       writer.uint32(10).string(message.relationId);
     }
-    if (message.targetAgentPublishedId !== "") {
-      writer.uint32(18).string(message.targetAgentPublishedId);
+    if (message.targetNodeId !== "") {
+      writer.uint32(18).string(message.targetNodeId);
     }
     if (message.routeDescription !== "") {
       writer.uint32(26).string(message.routeDescription);
@@ -1660,7 +1946,7 @@ export const PublishedSupervisorSpecialist: MessageFns<PublishedSupervisorSpecia
             break;
           }
 
-          message.targetAgentPublishedId = reader.string();
+          message.targetNodeId = reader.string();
           continue;
         }
         case 3: {
@@ -1695,10 +1981,10 @@ export const PublishedSupervisorSpecialist: MessageFns<PublishedSupervisorSpecia
         : isSet(object.relation_id)
         ? globalThis.String(object.relation_id)
         : "",
-      targetAgentPublishedId: isSet(object.targetAgentPublishedId)
-        ? globalThis.String(object.targetAgentPublishedId)
-        : isSet(object.target_agent_published_id)
-        ? globalThis.String(object.target_agent_published_id)
+      targetNodeId: isSet(object.targetNodeId)
+        ? globalThis.String(object.targetNodeId)
+        : isSet(object.target_node_id)
+        ? globalThis.String(object.target_node_id)
         : "",
       routeDescription: isSet(object.routeDescription)
         ? globalThis.String(object.routeDescription)
@@ -1718,8 +2004,8 @@ export const PublishedSupervisorSpecialist: MessageFns<PublishedSupervisorSpecia
     if (message.relationId !== "") {
       obj.relationId = message.relationId;
     }
-    if (message.targetAgentPublishedId !== "") {
-      obj.targetAgentPublishedId = message.targetAgentPublishedId;
+    if (message.targetNodeId !== "") {
+      obj.targetNodeId = message.targetNodeId;
     }
     if (message.routeDescription !== "") {
       obj.routeDescription = message.routeDescription;
@@ -1736,7 +2022,7 @@ export const PublishedSupervisorSpecialist: MessageFns<PublishedSupervisorSpecia
   fromPartial(object: DeepPartial<PublishedSupervisorSpecialist>): PublishedSupervisorSpecialist {
     const message = createBasePublishedSupervisorSpecialist();
     message.relationId = object.relationId ?? "";
-    message.targetAgentPublishedId = object.targetAgentPublishedId ?? "";
+    message.targetNodeId = object.targetNodeId ?? "";
     message.routeDescription = object.routeDescription ?? "";
     message.contextPolicy = object.contextPolicy ?? 0;
     return message;
@@ -1744,13 +2030,13 @@ export const PublishedSupervisorSpecialist: MessageFns<PublishedSupervisorSpecia
 };
 
 function createBasePublishedHandoffSnapshot(): PublishedHandoffSnapshot {
-  return { entryAgentPublishedId: "", maxHandoffDepth: 0, routes: [] };
+  return { entryNodeId: "", maxHandoffDepth: 0, routes: [] };
 }
 
 export const PublishedHandoffSnapshot: MessageFns<PublishedHandoffSnapshot> = {
   encode(message: PublishedHandoffSnapshot, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
-    if (message.entryAgentPublishedId !== "") {
-      writer.uint32(10).string(message.entryAgentPublishedId);
+    if (message.entryNodeId !== "") {
+      writer.uint32(10).string(message.entryNodeId);
     }
     if (message.maxHandoffDepth !== 0) {
       writer.uint32(16).uint32(message.maxHandoffDepth);
@@ -1773,7 +2059,7 @@ export const PublishedHandoffSnapshot: MessageFns<PublishedHandoffSnapshot> = {
             break;
           }
 
-          message.entryAgentPublishedId = reader.string();
+          message.entryNodeId = reader.string();
           continue;
         }
         case 2: {
@@ -1803,10 +2089,10 @@ export const PublishedHandoffSnapshot: MessageFns<PublishedHandoffSnapshot> = {
 
   fromJSON(object: any): PublishedHandoffSnapshot {
     return {
-      entryAgentPublishedId: isSet(object.entryAgentPublishedId)
-        ? globalThis.String(object.entryAgentPublishedId)
-        : isSet(object.entry_agent_published_id)
-        ? globalThis.String(object.entry_agent_published_id)
+      entryNodeId: isSet(object.entryNodeId)
+        ? globalThis.String(object.entryNodeId)
+        : isSet(object.entry_node_id)
+        ? globalThis.String(object.entry_node_id)
         : "",
       maxHandoffDepth: isSet(object.maxHandoffDepth)
         ? globalThis.Number(object.maxHandoffDepth)
@@ -1821,8 +2107,8 @@ export const PublishedHandoffSnapshot: MessageFns<PublishedHandoffSnapshot> = {
 
   toJSON(message: PublishedHandoffSnapshot): unknown {
     const obj: any = {};
-    if (message.entryAgentPublishedId !== "") {
-      obj.entryAgentPublishedId = message.entryAgentPublishedId;
+    if (message.entryNodeId !== "") {
+      obj.entryNodeId = message.entryNodeId;
     }
     if (message.maxHandoffDepth !== 0) {
       obj.maxHandoffDepth = Math.round(message.maxHandoffDepth);
@@ -1838,7 +2124,7 @@ export const PublishedHandoffSnapshot: MessageFns<PublishedHandoffSnapshot> = {
   },
   fromPartial(object: DeepPartial<PublishedHandoffSnapshot>): PublishedHandoffSnapshot {
     const message = createBasePublishedHandoffSnapshot();
-    message.entryAgentPublishedId = object.entryAgentPublishedId ?? "";
+    message.entryNodeId = object.entryNodeId ?? "";
     message.maxHandoffDepth = object.maxHandoffDepth ?? 0;
     message.routes = object.routes?.map((e) => PublishedHandoffRoute.fromPartial(e)) || [];
     return message;
@@ -1848,8 +2134,8 @@ export const PublishedHandoffSnapshot: MessageFns<PublishedHandoffSnapshot> = {
 function createBasePublishedHandoffRoute(): PublishedHandoffRoute {
   return {
     transitionId: "",
-    sourceAgentPublishedId: "",
-    targetAgentPublishedId: "",
+    sourceNodeId: "",
+    targetNodeId: "",
     routingDescription: "",
     contextPolicy: 0,
     announcement: "",
@@ -1861,11 +2147,11 @@ export const PublishedHandoffRoute: MessageFns<PublishedHandoffRoute> = {
     if (message.transitionId !== "") {
       writer.uint32(10).string(message.transitionId);
     }
-    if (message.sourceAgentPublishedId !== "") {
-      writer.uint32(18).string(message.sourceAgentPublishedId);
+    if (message.sourceNodeId !== "") {
+      writer.uint32(18).string(message.sourceNodeId);
     }
-    if (message.targetAgentPublishedId !== "") {
-      writer.uint32(26).string(message.targetAgentPublishedId);
+    if (message.targetNodeId !== "") {
+      writer.uint32(26).string(message.targetNodeId);
     }
     if (message.routingDescription !== "") {
       writer.uint32(34).string(message.routingDescription);
@@ -1899,7 +2185,7 @@ export const PublishedHandoffRoute: MessageFns<PublishedHandoffRoute> = {
             break;
           }
 
-          message.sourceAgentPublishedId = reader.string();
+          message.sourceNodeId = reader.string();
           continue;
         }
         case 3: {
@@ -1907,7 +2193,7 @@ export const PublishedHandoffRoute: MessageFns<PublishedHandoffRoute> = {
             break;
           }
 
-          message.targetAgentPublishedId = reader.string();
+          message.targetNodeId = reader.string();
           continue;
         }
         case 4: {
@@ -1950,15 +2236,15 @@ export const PublishedHandoffRoute: MessageFns<PublishedHandoffRoute> = {
         : isSet(object.transition_id)
         ? globalThis.String(object.transition_id)
         : "",
-      sourceAgentPublishedId: isSet(object.sourceAgentPublishedId)
-        ? globalThis.String(object.sourceAgentPublishedId)
-        : isSet(object.source_agent_published_id)
-        ? globalThis.String(object.source_agent_published_id)
+      sourceNodeId: isSet(object.sourceNodeId)
+        ? globalThis.String(object.sourceNodeId)
+        : isSet(object.source_node_id)
+        ? globalThis.String(object.source_node_id)
         : "",
-      targetAgentPublishedId: isSet(object.targetAgentPublishedId)
-        ? globalThis.String(object.targetAgentPublishedId)
-        : isSet(object.target_agent_published_id)
-        ? globalThis.String(object.target_agent_published_id)
+      targetNodeId: isSet(object.targetNodeId)
+        ? globalThis.String(object.targetNodeId)
+        : isSet(object.target_node_id)
+        ? globalThis.String(object.target_node_id)
         : "",
       routingDescription: isSet(object.routingDescription)
         ? globalThis.String(object.routingDescription)
@@ -1979,11 +2265,11 @@ export const PublishedHandoffRoute: MessageFns<PublishedHandoffRoute> = {
     if (message.transitionId !== "") {
       obj.transitionId = message.transitionId;
     }
-    if (message.sourceAgentPublishedId !== "") {
-      obj.sourceAgentPublishedId = message.sourceAgentPublishedId;
+    if (message.sourceNodeId !== "") {
+      obj.sourceNodeId = message.sourceNodeId;
     }
-    if (message.targetAgentPublishedId !== "") {
-      obj.targetAgentPublishedId = message.targetAgentPublishedId;
+    if (message.targetNodeId !== "") {
+      obj.targetNodeId = message.targetNodeId;
     }
     if (message.routingDescription !== "") {
       obj.routingDescription = message.routingDescription;
@@ -2003,8 +2289,8 @@ export const PublishedHandoffRoute: MessageFns<PublishedHandoffRoute> = {
   fromPartial(object: DeepPartial<PublishedHandoffRoute>): PublishedHandoffRoute {
     const message = createBasePublishedHandoffRoute();
     message.transitionId = object.transitionId ?? "";
-    message.sourceAgentPublishedId = object.sourceAgentPublishedId ?? "";
-    message.targetAgentPublishedId = object.targetAgentPublishedId ?? "";
+    message.sourceNodeId = object.sourceNodeId ?? "";
+    message.targetNodeId = object.targetNodeId ?? "";
     message.routingDescription = object.routingDescription ?? "";
     message.contextPolicy = object.contextPolicy ?? 0;
     message.announcement = object.announcement ?? "";
@@ -2906,12 +3192,12 @@ export const DtmfInputRuntime: MessageFns<DtmfInputRuntime> = {
   },
 };
 
-function createBaseAgentInstructions(): AgentInstructions {
+function createBasePromptInstructions(): PromptInstructions {
   return { systemPrompt: "", guardrails: [] };
 }
 
-export const AgentInstructions: MessageFns<AgentInstructions> = {
-  encode(message: AgentInstructions, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+export const PromptInstructions: MessageFns<PromptInstructions> = {
+  encode(message: PromptInstructions, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
     if (message.systemPrompt !== "") {
       writer.uint32(10).string(message.systemPrompt);
     }
@@ -2921,10 +3207,10 @@ export const AgentInstructions: MessageFns<AgentInstructions> = {
     return writer;
   },
 
-  decode(input: BinaryReader | Uint8Array, length?: number): AgentInstructions {
+  decode(input: BinaryReader | Uint8Array, length?: number): PromptInstructions {
     const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
     const end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBaseAgentInstructions();
+    const message = createBasePromptInstructions();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
@@ -2953,7 +3239,7 @@ export const AgentInstructions: MessageFns<AgentInstructions> = {
     return message;
   },
 
-  fromJSON(object: any): AgentInstructions {
+  fromJSON(object: any): PromptInstructions {
     return {
       systemPrompt: isSet(object.systemPrompt)
         ? globalThis.String(object.systemPrompt)
@@ -2966,7 +3252,7 @@ export const AgentInstructions: MessageFns<AgentInstructions> = {
     };
   },
 
-  toJSON(message: AgentInstructions): unknown {
+  toJSON(message: PromptInstructions): unknown {
     const obj: any = {};
     if (message.systemPrompt !== "") {
       obj.systemPrompt = message.systemPrompt;
@@ -2977,19 +3263,83 @@ export const AgentInstructions: MessageFns<AgentInstructions> = {
     return obj;
   },
 
-  create(base?: DeepPartial<AgentInstructions>): AgentInstructions {
-    return AgentInstructions.fromPartial(base ?? {});
+  create(base?: DeepPartial<PromptInstructions>): PromptInstructions {
+    return PromptInstructions.fromPartial(base ?? {});
   },
-  fromPartial(object: DeepPartial<AgentInstructions>): AgentInstructions {
-    const message = createBaseAgentInstructions();
+  fromPartial(object: DeepPartial<PromptInstructions>): PromptInstructions {
+    const message = createBasePromptInstructions();
     message.systemPrompt = object.systemPrompt ?? "";
     message.guardrails = object.guardrails?.map((e) => e) || [];
     return message;
   },
 };
 
+function createBaseInlinePromptInstructions(): InlinePromptInstructions {
+  return { systemPrompt: "" };
+}
+
+export const InlinePromptInstructions: MessageFns<InlinePromptInstructions> = {
+  encode(message: InlinePromptInstructions, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.systemPrompt !== "") {
+      writer.uint32(10).string(message.systemPrompt);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): InlinePromptInstructions {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseInlinePromptInstructions();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.systemPrompt = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): InlinePromptInstructions {
+    return {
+      systemPrompt: isSet(object.systemPrompt)
+        ? globalThis.String(object.systemPrompt)
+        : isSet(object.system_prompt)
+        ? globalThis.String(object.system_prompt)
+        : "",
+    };
+  },
+
+  toJSON(message: InlinePromptInstructions): unknown {
+    const obj: any = {};
+    if (message.systemPrompt !== "") {
+      obj.systemPrompt = message.systemPrompt;
+    }
+    return obj;
+  },
+
+  create(base?: DeepPartial<InlinePromptInstructions>): InlinePromptInstructions {
+    return InlinePromptInstructions.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<InlinePromptInstructions>): InlinePromptInstructions {
+    const message = createBaseInlinePromptInstructions();
+    message.systemPrompt = object.systemPrompt ?? "";
+    return message;
+  },
+};
+
 function createBaseNodeToolMetadata(): NodeToolMetadata {
-  return { toolId: "", kind: "", name: "", description: "", mcp: undefined, api: undefined };
+  return { toolId: "", kind: "", name: "", description: "", mcp: undefined, api: undefined, a2a: undefined };
 }
 
 export const NodeToolMetadata: MessageFns<NodeToolMetadata> = {
@@ -3011,6 +3361,9 @@ export const NodeToolMetadata: MessageFns<NodeToolMetadata> = {
     }
     if (message.api !== undefined) {
       ApiToolMetadata.encode(message.api, writer.uint32(50).fork()).join();
+    }
+    if (message.a2a !== undefined) {
+      A2aToolMetadata.encode(message.a2a, writer.uint32(58).fork()).join();
     }
     return writer;
   },
@@ -3070,6 +3423,14 @@ export const NodeToolMetadata: MessageFns<NodeToolMetadata> = {
           message.api = ApiToolMetadata.decode(reader, reader.uint32());
           continue;
         }
+        case 7: {
+          if (tag !== 58) {
+            break;
+          }
+
+          message.a2a = A2aToolMetadata.decode(reader, reader.uint32());
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -3091,6 +3452,7 @@ export const NodeToolMetadata: MessageFns<NodeToolMetadata> = {
       description: isSet(object.description) ? globalThis.String(object.description) : "",
       mcp: isSet(object.mcp) ? McpToolMetadata.fromJSON(object.mcp) : undefined,
       api: isSet(object.api) ? ApiToolMetadata.fromJSON(object.api) : undefined,
+      a2a: isSet(object.a2a) ? A2aToolMetadata.fromJSON(object.a2a) : undefined,
     };
   },
 
@@ -3114,6 +3476,9 @@ export const NodeToolMetadata: MessageFns<NodeToolMetadata> = {
     if (message.api !== undefined) {
       obj.api = ApiToolMetadata.toJSON(message.api);
     }
+    if (message.a2a !== undefined) {
+      obj.a2a = A2aToolMetadata.toJSON(message.a2a);
+    }
     return obj;
   },
 
@@ -3131,6 +3496,9 @@ export const NodeToolMetadata: MessageFns<NodeToolMetadata> = {
       : undefined;
     message.api = (object.api !== undefined && object.api !== null)
       ? ApiToolMetadata.fromPartial(object.api)
+      : undefined;
+    message.a2a = (object.a2a !== undefined && object.a2a !== null)
+      ? A2aToolMetadata.fromPartial(object.a2a)
       : undefined;
     return message;
   },
@@ -3348,6 +3716,70 @@ export const ApiToolMetadata: MessageFns<ApiToolMetadata> = {
   },
 };
 
+function createBaseA2aToolMetadata(): A2aToolMetadata {
+  return { agentCardUrl: "" };
+}
+
+export const A2aToolMetadata: MessageFns<A2aToolMetadata> = {
+  encode(message: A2aToolMetadata, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.agentCardUrl !== "") {
+      writer.uint32(10).string(message.agentCardUrl);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): A2aToolMetadata {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseA2aToolMetadata();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.agentCardUrl = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): A2aToolMetadata {
+    return {
+      agentCardUrl: isSet(object.agentCardUrl)
+        ? globalThis.String(object.agentCardUrl)
+        : isSet(object.agent_card_url)
+        ? globalThis.String(object.agent_card_url)
+        : "",
+    };
+  },
+
+  toJSON(message: A2aToolMetadata): unknown {
+    const obj: any = {};
+    if (message.agentCardUrl !== "") {
+      obj.agentCardUrl = message.agentCardUrl;
+    }
+    return obj;
+  },
+
+  create(base?: DeepPartial<A2aToolMetadata>): A2aToolMetadata {
+    return A2aToolMetadata.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<A2aToolMetadata>): A2aToolMetadata {
+    const message = createBaseA2aToolMetadata();
+    message.agentCardUrl = object.agentCardUrl ?? "";
+    return message;
+  },
+};
+
 function createBaseApiToolRuntime(): ApiToolRuntime {
   return { toolId: "", headers: {} };
 }
@@ -3529,25 +3961,28 @@ export const ApiToolRuntime_HeadersEntry: MessageFns<ApiToolRuntime_HeadersEntry
   },
 };
 
-function createBaseAgentGlobalActions(): AgentGlobalActions {
-  return { transferToHuman: undefined, endCall: undefined };
+function createBaseA2aToolRuntime(): A2aToolRuntime {
+  return { toolId: "", headers: {}, timeoutMs: 0 };
 }
 
-export const AgentGlobalActions: MessageFns<AgentGlobalActions> = {
-  encode(message: AgentGlobalActions, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
-    if (message.transferToHuman !== undefined) {
-      TransferToHumanAction.encode(message.transferToHuman, writer.uint32(10).fork()).join();
+export const A2aToolRuntime: MessageFns<A2aToolRuntime> = {
+  encode(message: A2aToolRuntime, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.toolId !== "") {
+      writer.uint32(10).string(message.toolId);
     }
-    if (message.endCall !== undefined) {
-      EndCallAction.encode(message.endCall, writer.uint32(18).fork()).join();
+    globalThis.Object.entries(message.headers).forEach(([key, value]: [string, string]) => {
+      A2aToolRuntime_HeadersEntry.encode({ key: key as any, value }, writer.uint32(18).fork()).join();
+    });
+    if (message.timeoutMs !== 0) {
+      writer.uint32(24).uint32(message.timeoutMs);
     }
     return writer;
   },
 
-  decode(input: BinaryReader | Uint8Array, length?: number): AgentGlobalActions {
+  decode(input: BinaryReader | Uint8Array, length?: number): A2aToolRuntime {
     const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
     const end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBaseAgentGlobalActions();
+    const message = createBaseA2aToolRuntime();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
@@ -3556,7 +3991,7 @@ export const AgentGlobalActions: MessageFns<AgentGlobalActions> = {
             break;
           }
 
-          message.transferToHuman = TransferToHumanAction.decode(reader, reader.uint32());
+          message.toolId = reader.string();
           continue;
         }
         case 2: {
@@ -3564,117 +3999,18 @@ export const AgentGlobalActions: MessageFns<AgentGlobalActions> = {
             break;
           }
 
-          message.endCall = EndCallAction.decode(reader, reader.uint32());
-          continue;
-        }
-      }
-      if ((tag & 7) === 4 || tag === 0) {
-        break;
-      }
-      reader.skip(tag & 7);
-    }
-    return message;
-  },
-
-  fromJSON(object: any): AgentGlobalActions {
-    return {
-      transferToHuman: isSet(object.transferToHuman)
-        ? TransferToHumanAction.fromJSON(object.transferToHuman)
-        : isSet(object.transfer_to_human)
-        ? TransferToHumanAction.fromJSON(object.transfer_to_human)
-        : undefined,
-      endCall: isSet(object.endCall)
-        ? EndCallAction.fromJSON(object.endCall)
-        : isSet(object.end_call)
-        ? EndCallAction.fromJSON(object.end_call)
-        : undefined,
-    };
-  },
-
-  toJSON(message: AgentGlobalActions): unknown {
-    const obj: any = {};
-    if (message.transferToHuman !== undefined) {
-      obj.transferToHuman = TransferToHumanAction.toJSON(message.transferToHuman);
-    }
-    if (message.endCall !== undefined) {
-      obj.endCall = EndCallAction.toJSON(message.endCall);
-    }
-    return obj;
-  },
-
-  create(base?: DeepPartial<AgentGlobalActions>): AgentGlobalActions {
-    return AgentGlobalActions.fromPartial(base ?? {});
-  },
-  fromPartial(object: DeepPartial<AgentGlobalActions>): AgentGlobalActions {
-    const message = createBaseAgentGlobalActions();
-    message.transferToHuman = (object.transferToHuman !== undefined && object.transferToHuman !== null)
-      ? TransferToHumanAction.fromPartial(object.transferToHuman)
-      : undefined;
-    message.endCall = (object.endCall !== undefined && object.endCall !== null)
-      ? EndCallAction.fromPartial(object.endCall)
-      : undefined;
-    return message;
-  },
-};
-
-function createBaseTransferToHumanAction(): TransferToHumanAction {
-  return { enabled: false, sipCallTo: "", holdPhrase: "", ringingTimeoutMs: 0 };
-}
-
-export const TransferToHumanAction: MessageFns<TransferToHumanAction> = {
-  encode(message: TransferToHumanAction, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
-    if (message.enabled !== false) {
-      writer.uint32(8).bool(message.enabled);
-    }
-    if (message.sipCallTo !== "") {
-      writer.uint32(18).string(message.sipCallTo);
-    }
-    if (message.holdPhrase !== "") {
-      writer.uint32(26).string(message.holdPhrase);
-    }
-    if (message.ringingTimeoutMs !== 0) {
-      writer.uint32(32).int32(message.ringingTimeoutMs);
-    }
-    return writer;
-  },
-
-  decode(input: BinaryReader | Uint8Array, length?: number): TransferToHumanAction {
-    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
-    const end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBaseTransferToHumanAction();
-    while (reader.pos < end) {
-      const tag = reader.uint32();
-      switch (tag >>> 3) {
-        case 1: {
-          if (tag !== 8) {
-            break;
+          const entry2 = A2aToolRuntime_HeadersEntry.decode(reader, reader.uint32());
+          if (entry2.value !== undefined) {
+            message.headers[entry2.key] = entry2.value;
           }
-
-          message.enabled = reader.bool();
-          continue;
-        }
-        case 2: {
-          if (tag !== 18) {
-            break;
-          }
-
-          message.sipCallTo = reader.string();
           continue;
         }
         case 3: {
-          if (tag !== 26) {
+          if (tag !== 24) {
             break;
           }
 
-          message.holdPhrase = reader.string();
-          continue;
-        }
-        case 4: {
-          if (tag !== 32) {
-            break;
-          }
-
-          message.ringingTimeoutMs = reader.int32();
+          message.timeoutMs = reader.uint32();
           continue;
         }
       }
@@ -3686,100 +4022,266 @@ export const TransferToHumanAction: MessageFns<TransferToHumanAction> = {
     return message;
   },
 
-  fromJSON(object: any): TransferToHumanAction {
+  fromJSON(object: any): A2aToolRuntime {
     return {
-      enabled: isSet(object.enabled) ? globalThis.Boolean(object.enabled) : false,
-      sipCallTo: isSet(object.sipCallTo)
-        ? globalThis.String(object.sipCallTo)
-        : isSet(object.sip_call_to)
-        ? globalThis.String(object.sip_call_to)
+      toolId: isSet(object.toolId)
+        ? globalThis.String(object.toolId)
+        : isSet(object.tool_id)
+        ? globalThis.String(object.tool_id)
         : "",
-      holdPhrase: isSet(object.holdPhrase)
-        ? globalThis.String(object.holdPhrase)
-        : isSet(object.hold_phrase)
-        ? globalThis.String(object.hold_phrase)
-        : "",
-      ringingTimeoutMs: isSet(object.ringingTimeoutMs)
-        ? globalThis.Number(object.ringingTimeoutMs)
-        : isSet(object.ringing_timeout_ms)
-        ? globalThis.Number(object.ringing_timeout_ms)
+      headers: isObject(object.headers)
+        ? (globalThis.Object.entries(object.headers) as [string, any][]).reduce(
+          (acc: { [key: string]: string }, [key, value]: [string, any]) => {
+            acc[key] = globalThis.String(value);
+            return acc;
+          },
+          {},
+        )
+        : {},
+      timeoutMs: isSet(object.timeoutMs)
+        ? globalThis.Number(object.timeoutMs)
+        : isSet(object.timeout_ms)
+        ? globalThis.Number(object.timeout_ms)
         : 0,
     };
   },
 
-  toJSON(message: TransferToHumanAction): unknown {
+  toJSON(message: A2aToolRuntime): unknown {
     const obj: any = {};
-    if (message.enabled !== false) {
-      obj.enabled = message.enabled;
+    if (message.toolId !== "") {
+      obj.toolId = message.toolId;
     }
-    if (message.sipCallTo !== "") {
-      obj.sipCallTo = message.sipCallTo;
+    if (message.headers) {
+      const entries = globalThis.Object.entries(message.headers) as [string, string][];
+      if (entries.length > 0) {
+        obj.headers = {};
+        entries.forEach(([k, v]) => {
+          obj.headers[k] = v;
+        });
+      }
     }
-    if (message.holdPhrase !== "") {
-      obj.holdPhrase = message.holdPhrase;
-    }
-    if (message.ringingTimeoutMs !== 0) {
-      obj.ringingTimeoutMs = Math.round(message.ringingTimeoutMs);
+    if (message.timeoutMs !== 0) {
+      obj.timeoutMs = Math.round(message.timeoutMs);
     }
     return obj;
   },
 
-  create(base?: DeepPartial<TransferToHumanAction>): TransferToHumanAction {
-    return TransferToHumanAction.fromPartial(base ?? {});
+  create(base?: DeepPartial<A2aToolRuntime>): A2aToolRuntime {
+    return A2aToolRuntime.fromPartial(base ?? {});
   },
-  fromPartial(object: DeepPartial<TransferToHumanAction>): TransferToHumanAction {
-    const message = createBaseTransferToHumanAction();
-    message.enabled = object.enabled ?? false;
-    message.sipCallTo = object.sipCallTo ?? "";
-    message.holdPhrase = object.holdPhrase ?? "";
-    message.ringingTimeoutMs = object.ringingTimeoutMs ?? 0;
+  fromPartial(object: DeepPartial<A2aToolRuntime>): A2aToolRuntime {
+    const message = createBaseA2aToolRuntime();
+    message.toolId = object.toolId ?? "";
+    message.headers = (globalThis.Object.entries(object.headers ?? {}) as [string, string][]).reduce(
+      (acc: { [key: string]: string }, [key, value]: [string, string]) => {
+        if (value !== undefined) {
+          acc[key] = globalThis.String(value);
+        }
+        return acc;
+      },
+      {},
+    );
+    message.timeoutMs = object.timeoutMs ?? 0;
     return message;
   },
 };
 
-function createBaseEndCallAction(): EndCallAction {
-  return { enabled: false, closingPhrase: "", confirm: false };
+function createBaseA2aToolRuntime_HeadersEntry(): A2aToolRuntime_HeadersEntry {
+  return { key: "", value: "" };
 }
 
-export const EndCallAction: MessageFns<EndCallAction> = {
-  encode(message: EndCallAction, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
-    if (message.enabled !== false) {
-      writer.uint32(8).bool(message.enabled);
+export const A2aToolRuntime_HeadersEntry: MessageFns<A2aToolRuntime_HeadersEntry> = {
+  encode(message: A2aToolRuntime_HeadersEntry, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.key !== "") {
+      writer.uint32(10).string(message.key);
     }
-    if (message.closingPhrase !== "") {
-      writer.uint32(18).string(message.closingPhrase);
-    }
-    if (message.confirm !== false) {
-      writer.uint32(24).bool(message.confirm);
+    if (message.value !== "") {
+      writer.uint32(18).string(message.value);
     }
     return writer;
   },
 
-  decode(input: BinaryReader | Uint8Array, length?: number): EndCallAction {
+  decode(input: BinaryReader | Uint8Array, length?: number): A2aToolRuntime_HeadersEntry {
     const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
     const end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBaseEndCallAction();
+    const message = createBaseA2aToolRuntime_HeadersEntry();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
         case 1: {
-          if (tag !== 8) {
+          if (tag !== 10) {
             break;
           }
 
-          message.enabled = reader.bool();
+          message.key = reader.string();
           continue;
         }
         case 2: {
           if (tag !== 18) {
+            break;
+          }
+
+          message.value = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): A2aToolRuntime_HeadersEntry {
+    return {
+      key: isSet(object.key) ? globalThis.String(object.key) : "",
+      value: isSet(object.value) ? globalThis.String(object.value) : "",
+    };
+  },
+
+  toJSON(message: A2aToolRuntime_HeadersEntry): unknown {
+    const obj: any = {};
+    if (message.key !== "") {
+      obj.key = message.key;
+    }
+    if (message.value !== "") {
+      obj.value = message.value;
+    }
+    return obj;
+  },
+
+  create(base?: DeepPartial<A2aToolRuntime_HeadersEntry>): A2aToolRuntime_HeadersEntry {
+    return A2aToolRuntime_HeadersEntry.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<A2aToolRuntime_HeadersEntry>): A2aToolRuntime_HeadersEntry {
+    const message = createBaseA2aToolRuntime_HeadersEntry();
+    message.key = object.key ?? "";
+    message.value = object.value ?? "";
+    return message;
+  },
+};
+
+function createBaseBuiltInTool(): BuiltInTool {
+  return { endCall: undefined, transferToHuman: undefined };
+}
+
+export const BuiltInTool: MessageFns<BuiltInTool> = {
+  encode(message: BuiltInTool, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.endCall !== undefined) {
+      EndCallTool.encode(message.endCall, writer.uint32(10).fork()).join();
+    }
+    if (message.transferToHuman !== undefined) {
+      TransferToHumanTool.encode(message.transferToHuman, writer.uint32(18).fork()).join();
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): BuiltInTool {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseBuiltInTool();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.endCall = EndCallTool.decode(reader, reader.uint32());
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.transferToHuman = TransferToHumanTool.decode(reader, reader.uint32());
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): BuiltInTool {
+    return {
+      endCall: isSet(object.endCall)
+        ? EndCallTool.fromJSON(object.endCall)
+        : isSet(object.end_call)
+        ? EndCallTool.fromJSON(object.end_call)
+        : undefined,
+      transferToHuman: isSet(object.transferToHuman)
+        ? TransferToHumanTool.fromJSON(object.transferToHuman)
+        : isSet(object.transfer_to_human)
+        ? TransferToHumanTool.fromJSON(object.transfer_to_human)
+        : undefined,
+    };
+  },
+
+  toJSON(message: BuiltInTool): unknown {
+    const obj: any = {};
+    if (message.endCall !== undefined) {
+      obj.endCall = EndCallTool.toJSON(message.endCall);
+    }
+    if (message.transferToHuman !== undefined) {
+      obj.transferToHuman = TransferToHumanTool.toJSON(message.transferToHuman);
+    }
+    return obj;
+  },
+
+  create(base?: DeepPartial<BuiltInTool>): BuiltInTool {
+    return BuiltInTool.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<BuiltInTool>): BuiltInTool {
+    const message = createBaseBuiltInTool();
+    message.endCall = (object.endCall !== undefined && object.endCall !== null)
+      ? EndCallTool.fromPartial(object.endCall)
+      : undefined;
+    message.transferToHuman = (object.transferToHuman !== undefined && object.transferToHuman !== null)
+      ? TransferToHumanTool.fromPartial(object.transferToHuman)
+      : undefined;
+    return message;
+  },
+};
+
+function createBaseEndCallTool(): EndCallTool {
+  return { closingPhrase: undefined, confirm: false };
+}
+
+export const EndCallTool: MessageFns<EndCallTool> = {
+  encode(message: EndCallTool, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.closingPhrase !== undefined) {
+      writer.uint32(10).string(message.closingPhrase);
+    }
+    if (message.confirm !== false) {
+      writer.uint32(16).bool(message.confirm);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): EndCallTool {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseEndCallTool();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
             break;
           }
 
           message.closingPhrase = reader.string();
           continue;
         }
-        case 3: {
-          if (tag !== 24) {
+        case 2: {
+          if (tag !== 16) {
             break;
           }
 
@@ -3795,24 +4297,20 @@ export const EndCallAction: MessageFns<EndCallAction> = {
     return message;
   },
 
-  fromJSON(object: any): EndCallAction {
+  fromJSON(object: any): EndCallTool {
     return {
-      enabled: isSet(object.enabled) ? globalThis.Boolean(object.enabled) : false,
       closingPhrase: isSet(object.closingPhrase)
         ? globalThis.String(object.closingPhrase)
         : isSet(object.closing_phrase)
         ? globalThis.String(object.closing_phrase)
-        : "",
+        : undefined,
       confirm: isSet(object.confirm) ? globalThis.Boolean(object.confirm) : false,
     };
   },
 
-  toJSON(message: EndCallAction): unknown {
+  toJSON(message: EndCallTool): unknown {
     const obj: any = {};
-    if (message.enabled !== false) {
-      obj.enabled = message.enabled;
-    }
-    if (message.closingPhrase !== "") {
+    if (message.closingPhrase !== undefined) {
       obj.closingPhrase = message.closingPhrase;
     }
     if (message.confirm !== false) {
@@ -3821,14 +4319,117 @@ export const EndCallAction: MessageFns<EndCallAction> = {
     return obj;
   },
 
-  create(base?: DeepPartial<EndCallAction>): EndCallAction {
-    return EndCallAction.fromPartial(base ?? {});
+  create(base?: DeepPartial<EndCallTool>): EndCallTool {
+    return EndCallTool.fromPartial(base ?? {});
   },
-  fromPartial(object: DeepPartial<EndCallAction>): EndCallAction {
-    const message = createBaseEndCallAction();
-    message.enabled = object.enabled ?? false;
-    message.closingPhrase = object.closingPhrase ?? "";
+  fromPartial(object: DeepPartial<EndCallTool>): EndCallTool {
+    const message = createBaseEndCallTool();
+    message.closingPhrase = object.closingPhrase ?? undefined;
     message.confirm = object.confirm ?? false;
+    return message;
+  },
+};
+
+function createBaseTransferToHumanTool(): TransferToHumanTool {
+  return { sipCallTo: "", holdPhrase: undefined, ringingTimeoutMs: 0 };
+}
+
+export const TransferToHumanTool: MessageFns<TransferToHumanTool> = {
+  encode(message: TransferToHumanTool, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.sipCallTo !== "") {
+      writer.uint32(10).string(message.sipCallTo);
+    }
+    if (message.holdPhrase !== undefined) {
+      writer.uint32(18).string(message.holdPhrase);
+    }
+    if (message.ringingTimeoutMs !== 0) {
+      writer.uint32(24).uint32(message.ringingTimeoutMs);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): TransferToHumanTool {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseTransferToHumanTool();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.sipCallTo = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.holdPhrase = reader.string();
+          continue;
+        }
+        case 3: {
+          if (tag !== 24) {
+            break;
+          }
+
+          message.ringingTimeoutMs = reader.uint32();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): TransferToHumanTool {
+    return {
+      sipCallTo: isSet(object.sipCallTo)
+        ? globalThis.String(object.sipCallTo)
+        : isSet(object.sip_call_to)
+        ? globalThis.String(object.sip_call_to)
+        : "",
+      holdPhrase: isSet(object.holdPhrase)
+        ? globalThis.String(object.holdPhrase)
+        : isSet(object.hold_phrase)
+        ? globalThis.String(object.hold_phrase)
+        : undefined,
+      ringingTimeoutMs: isSet(object.ringingTimeoutMs)
+        ? globalThis.Number(object.ringingTimeoutMs)
+        : isSet(object.ringing_timeout_ms)
+        ? globalThis.Number(object.ringing_timeout_ms)
+        : 0,
+    };
+  },
+
+  toJSON(message: TransferToHumanTool): unknown {
+    const obj: any = {};
+    if (message.sipCallTo !== "") {
+      obj.sipCallTo = message.sipCallTo;
+    }
+    if (message.holdPhrase !== undefined) {
+      obj.holdPhrase = message.holdPhrase;
+    }
+    if (message.ringingTimeoutMs !== 0) {
+      obj.ringingTimeoutMs = Math.round(message.ringingTimeoutMs);
+    }
+    return obj;
+  },
+
+  create(base?: DeepPartial<TransferToHumanTool>): TransferToHumanTool {
+    return TransferToHumanTool.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<TransferToHumanTool>): TransferToHumanTool {
+    const message = createBaseTransferToHumanTool();
+    message.sipCallTo = object.sipCallTo ?? "";
+    message.holdPhrase = object.holdPhrase ?? undefined;
+    message.ringingTimeoutMs = object.ringingTimeoutMs ?? 0;
     return message;
   },
 };
@@ -4100,11 +4701,11 @@ export const ConversationFillerRuntime: MessageFns<ConversationFillerRuntime> = 
   },
 };
 
-/** AgentSessionService is the worker-only API boundary for LiveKit jobs. */
-export type AgentSessionServiceService = typeof AgentSessionServiceService;
-export const AgentSessionServiceService = {
+/** ExecutionSessionService is the worker-only API boundary for LiveKit jobs. */
+export type ExecutionSessionServiceService = typeof ExecutionSessionServiceService;
+export const ExecutionSessionServiceService = {
   bootstrapPublished: {
-    path: "/port.api.v1.AgentSessionService/BootstrapPublished" as const,
+    path: "/port.api.v1.ExecutionSessionService/BootstrapPublished" as const,
     requestStream: false as const,
     responseStream: false as const,
     requestSerialize: (value: BootstrapPublishedRequest): Buffer =>
@@ -4116,11 +4717,11 @@ export const AgentSessionServiceService = {
   },
 } as const;
 
-export interface AgentSessionServiceServer extends UntypedServiceImplementation {
+export interface ExecutionSessionServiceServer extends UntypedServiceImplementation {
   bootstrapPublished: handleUnaryCall<BootstrapPublishedRequest, BootstrapPublishedResponse>;
 }
 
-export interface AgentSessionServiceClient extends Client {
+export interface ExecutionSessionServiceClient extends Client {
   bootstrapPublished(
     request: BootstrapPublishedRequest,
     callback: (error: ServiceError | null, response: BootstrapPublishedResponse) => void,
@@ -4138,12 +4739,16 @@ export interface AgentSessionServiceClient extends Client {
   ): ClientUnaryCall;
 }
 
-export const AgentSessionServiceClient = makeGenericClientConstructor(
-  AgentSessionServiceService,
-  "port.api.v1.AgentSessionService",
+export const ExecutionSessionServiceClient = makeGenericClientConstructor(
+  ExecutionSessionServiceService,
+  "port.api.v1.ExecutionSessionService",
 ) as unknown as {
-  new (address: string, credentials: ChannelCredentials, options?: Partial<ClientOptions>): AgentSessionServiceClient;
-  service: typeof AgentSessionServiceService;
+  new (
+    address: string,
+    credentials: ChannelCredentials,
+    options?: Partial<ClientOptions>,
+  ): ExecutionSessionServiceClient;
+  service: typeof ExecutionSessionServiceService;
   serviceName: string;
 };
 

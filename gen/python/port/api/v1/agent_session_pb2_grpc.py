@@ -5,8 +5,8 @@ import grpc
 from port.api.v1 import agent_session_pb2 as port_dot_api_dot_v1_dot_agent__session__pb2
 
 
-class AgentSessionServiceStub:
-    """AgentSessionService is the worker-only API boundary for LiveKit jobs.
+class ExecutionSessionServiceStub:
+    """ExecutionSessionService is the worker-only API boundary for LiveKit jobs.
     """
 
     def __init__(self, channel):
@@ -16,14 +16,14 @@ class AgentSessionServiceStub:
             channel: A grpc.Channel.
         """
         self.BootstrapPublished = channel.unary_unary(
-                '/port.api.v1.AgentSessionService/BootstrapPublished',
+                '/port.api.v1.ExecutionSessionService/BootstrapPublished',
                 request_serializer=port_dot_api_dot_v1_dot_agent__session__pb2.BootstrapPublishedRequest.SerializeToString,
                 response_deserializer=port_dot_api_dot_v1_dot_agent__session__pb2.BootstrapPublishedResponse.FromString,
                 _registered_method=True)
 
 
-class AgentSessionServiceServicer:
-    """AgentSessionService is the worker-only API boundary for LiveKit jobs.
+class ExecutionSessionServiceServicer:
+    """ExecutionSessionService is the worker-only API boundary for LiveKit jobs.
     """
 
     def BootstrapPublished(self, request, context):
@@ -33,7 +33,7 @@ class AgentSessionServiceServicer:
         raise NotImplementedError('Method not implemented!')
 
 
-def add_AgentSessionServiceServicer_to_server(servicer, server):
+def add_ExecutionSessionServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
             'BootstrapPublished': grpc.unary_unary_rpc_method_handler(
                     servicer.BootstrapPublished,
@@ -42,14 +42,14 @@ def add_AgentSessionServiceServicer_to_server(servicer, server):
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
-            'port.api.v1.AgentSessionService', rpc_method_handlers)
+            'port.api.v1.ExecutionSessionService', rpc_method_handlers)
     server.add_generic_rpc_handlers((generic_handler,))
-    server.add_registered_method_handlers('port.api.v1.AgentSessionService', rpc_method_handlers)
+    server.add_registered_method_handlers('port.api.v1.ExecutionSessionService', rpc_method_handlers)
 
 
  # This class is part of an EXPERIMENTAL API.
-class AgentSessionService:
-    """AgentSessionService is the worker-only API boundary for LiveKit jobs.
+class ExecutionSessionService:
+    """ExecutionSessionService is the worker-only API boundary for LiveKit jobs.
     """
 
     @staticmethod
@@ -66,7 +66,7 @@ class AgentSessionService:
         return grpc.experimental.unary_unary(
             request,
             target,
-            '/port.api.v1.AgentSessionService/BootstrapPublished',
+            '/port.api.v1.ExecutionSessionService/BootstrapPublished',
             port_dot_api_dot_v1_dot_agent__session__pb2.BootstrapPublishedRequest.SerializeToString,
             port_dot_api_dot_v1_dot_agent__session__pb2.BootstrapPublishedResponse.FromString,
             options,

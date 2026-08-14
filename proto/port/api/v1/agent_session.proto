@@ -5,10 +5,10 @@ package port.api.v1;
 import "buf/validate/validate.proto";
 import "port/api/v1/voice_runtime.proto";
 
-option go_package = "github.com/kyh0703/port-contracts/v3/gen/go/port/api/v1;apiv1";
+option go_package = "github.com/kyh0703/port-contracts/v4/gen/go/port/api/v1;apiv1";
 
-// AgentSessionService is the worker-only API boundary for LiveKit jobs.
-service AgentSessionService {
+// ExecutionSessionService is the worker-only API boundary for LiveKit jobs.
+service ExecutionSessionService {
   rpc BootstrapPublished(BootstrapPublishedRequest) returns (BootstrapPublishedResponse);
 }
 
@@ -38,13 +38,13 @@ message BootstrapPublishedRequest {
   string published_id = 4 [(buf.validate.field).required = true, (buf.validate.field).string.min_len = 1];
   string contract_revision = 5 [
     (buf.validate.field).required = true,
-    (buf.validate.field).string.const = "execution-publication-2026-08-11-r1"
+    (buf.validate.field).string.const = "execution-publication-2026-08-14-r1"
   ];
 }
 
 message BootstrapPublishedResponse {
   option (buf.validate.message).oneof = {
-    fields: ["agent", "orchestration"]
+    fields: ["prompt_agent", "orchestration"]
     required: true
   };
   option (buf.validate.message).oneof = {
@@ -54,7 +54,7 @@ message BootstrapPublishedResponse {
 
   string contract_revision = 1 [
     (buf.validate.field).required = true,
-    (buf.validate.field).string.const = "execution-publication-2026-08-11-r1"
+    (buf.validate.field).string.const = "execution-publication-2026-08-14-r1"
   ];
   string conversation_id = 2 [(buf.validate.field).required = true, (buf.validate.field).string.min_len = 1];
   string session_id = 3 [(buf.validate.field).required = true, (buf.validate.field).string.min_len = 1];
@@ -62,7 +62,7 @@ message BootstrapPublishedResponse {
 
   oneof execution {
     option (buf.validate.oneof).required = true;
-    PublishedAgentExecution agent = 5;
+    PublishedPromptAgentExecution prompt_agent = 5;
     PublishedOrchestrationExecution orchestration = 6;
   }
   oneof runtime {
@@ -70,11 +70,10 @@ message BootstrapPublishedResponse {
     CallRuntimeSnapshot voice_runtime = 7;
     TextRuntimeSnapshot text_runtime = 8;
   }
-  AgentGlobalActions global_actions = 9 [(buf.validate.field).required = true];
 }
 
-message PublishedAgentExecution {
-  PublishedAgentRuntime runtime = 1 [(buf.validate.field).required = true];
+message PublishedPromptAgentExecution {
+  PublishedPromptAgentRuntime runtime = 1 [(buf.validate.field).required = true];
 }
 
 message PublishedOrchestrationExecution {
@@ -89,15 +88,15 @@ message PublishedOrchestrationExecution {
   };
 
   OrchestrationMode mode = 1 [(buf.validate.field).required = true, (buf.validate.field).enum = {defined_only: true not_in: 0}];
-  repeated PublishedAgentRuntime agent_runtimes = 2 [(buf.validate.field).repeated.min_items = 2];
+  repeated PublishedInlinePromptRuntime node_runtimes = 2 [(buf.validate.field).repeated.min_items = 2];
   PublishedSupervisorSnapshot supervisor = 3;
   PublishedHandoffSnapshot handoff = 4;
 }
 
-message PublishedAgentRuntime {
-  string agent_published_id = 1 [(buf.validate.field).string.min_len = 1];
+message PublishedPromptAgentRuntime {
+  string prompt_agent_published_id = 1 [(buf.validate.field).string.min_len = 1];
   LlmRuntime llm_worker = 2 [(buf.validate.field).required = true];
-  AgentInstructions instructions = 3 [(buf.validate.field).required = true];
+  PromptInstructions instructions = 3 [(buf.validate.field).required = true];
   ContextPolicy context_policy = 4 [(buf.validate.field).enum = {defined_only: true not_in: 0}];
   repeated NodeToolMetadata tools = 5;
   repeated McpServerRuntime mcp_servers = 6;
@@ -105,30 +104,46 @@ message PublishedAgentRuntime {
   string knowledge_revision_id = 8;
   repeated ApiToolRuntime api_tool_runtimes = 9;
   string knowledge_retrieval_capability = 10;
+  repeated A2aToolRuntime a2a_tool_runtimes = 11;
+  repeated BuiltInTool built_in_tools = 12;
+}
+
+// Inline orchestration nodes intentionally do not expose greeting, knowledge,
+// or guardrails fields. Those capabilities belong only to Prompt Agents.
+message PublishedInlinePromptRuntime {
+  string node_id = 1 [(buf.validate.field).string.min_len = 1];
+  LlmRuntime llm_worker = 2 [(buf.validate.field).required = true];
+  InlinePromptInstructions instructions = 3 [(buf.validate.field).required = true];
+  ContextPolicy context_policy = 4 [(buf.validate.field).enum = {defined_only: true not_in: 0}];
+  repeated NodeToolMetadata tools = 5;
+  repeated McpServerRuntime mcp_servers = 6;
+  repeated ApiToolRuntime api_tool_runtimes = 7;
+  repeated A2aToolRuntime a2a_tool_runtimes = 8;
+  repeated BuiltInTool built_in_tools = 9;
 }
 
 message PublishedSupervisorSnapshot {
-  string supervisor_agent_published_id = 1 [(buf.validate.field).string.min_len = 1];
+  string supervisor_node_id = 1 [(buf.validate.field).string.min_len = 1];
   repeated PublishedSupervisorSpecialist specialists = 2 [(buf.validate.field).repeated.min_items = 1];
 }
 
 message PublishedSupervisorSpecialist {
   string relation_id = 1 [(buf.validate.field).string.min_len = 1];
-  string target_agent_published_id = 2 [(buf.validate.field).string.min_len = 1];
+  string target_node_id = 2 [(buf.validate.field).string.min_len = 1];
   string route_description = 3 [(buf.validate.field).string.min_len = 1];
   ContextPolicy context_policy = 4 [(buf.validate.field).enum = {defined_only: true not_in: 0}];
 }
 
 message PublishedHandoffSnapshot {
-  string entry_agent_published_id = 1 [(buf.validate.field).string.min_len = 1];
+  string entry_node_id = 1 [(buf.validate.field).string.min_len = 1];
   uint32 max_handoff_depth = 2 [(buf.validate.field).uint32.gt = 0];
   repeated PublishedHandoffRoute routes = 3 [(buf.validate.field).repeated.min_items = 1];
 }
 
 message PublishedHandoffRoute {
   string transition_id = 1 [(buf.validate.field).string.min_len = 1];
-  string source_agent_published_id = 2 [(buf.validate.field).string.min_len = 1];
-  string target_agent_published_id = 3 [(buf.validate.field).string.min_len = 1];
+  string source_node_id = 2 [(buf.validate.field).string.min_len = 1];
+  string target_node_id = 3 [(buf.validate.field).string.min_len = 1];
   string routing_description = 4 [(buf.validate.field).string.min_len = 1];
   ContextPolicy context_policy = 5 [(buf.validate.field).enum = {defined_only: true not_in: 0}];
   string announcement = 6;
@@ -218,9 +233,13 @@ message DtmfInputRuntime {
   optional string end_key = 2 [(buf.validate.field).string.pattern = "^[0-9#*]$"];
 }
 
-message AgentInstructions {
+message PromptInstructions {
   string system_prompt = 1 [(buf.validate.field).string.min_len = 1];
   repeated string guardrails = 2;
+}
+
+message InlinePromptInstructions {
+  string system_prompt = 1 [(buf.validate.field).string.min_len = 1];
 }
 
 enum OrchestrationMode {
@@ -233,13 +252,15 @@ message NodeToolMetadata {
   string tool_id = 1 [(buf.validate.field).string.min_len = 1];
   string kind = 2 [
     (buf.validate.field).string.in = "mcp",
-    (buf.validate.field).string.in = "api"
+    (buf.validate.field).string.in = "api",
+    (buf.validate.field).string.in = "a2a"
   ];
   string name = 3 [(buf.validate.field).string.min_len = 1];
   string description = 4;
   oneof metadata {
     McpToolMetadata mcp = 5;
     ApiToolMetadata api = 6;
+    A2aToolMetadata a2a = 7;
   }
 }
 
@@ -265,30 +286,39 @@ message ApiToolMetadata {
   string response_schema_json = 4;
 }
 
+message A2aToolMetadata {
+  string agent_card_url = 1 [(buf.validate.field).string.min_len = 1];
+}
+
 // Short-lived execution credentials for API tools, scoped to the bootstrap lease.
 message ApiToolRuntime {
   string tool_id = 1 [(buf.validate.field).string.min_len = 1];
   map<string, string> headers = 2;
 }
 
-message AgentGlobalActions {
-  TransferToHumanAction transfer_to_human = 1;
-  EndCallAction end_call = 2;
+message A2aToolRuntime {
+  string tool_id = 1 [(buf.validate.field).string.min_len = 1];
+  map<string, string> headers = 2;
+  uint32 timeout_ms = 3 [(buf.validate.field).uint32 = {gte: 1000 lte: 600000}];
 }
 
-message TransferToHumanAction {
-  bool enabled = 1;
-  // Empty when disabled. SIP destination for the warm transfer.
-  string sip_call_to = 2;
-  string hold_phrase = 3;
-  int32 ringing_timeout_ms = 4;
+message BuiltInTool {
+  oneof config {
+    option (buf.validate.oneof).required = true;
+    EndCallTool end_call = 1;
+    TransferToHumanTool transfer_to_human = 2;
+  }
 }
 
-message EndCallAction {
-  bool enabled = 1;
-  string closing_phrase = 2;
-  // Ask once before hanging up instead of ending immediately.
-  bool confirm = 3;
+message EndCallTool {
+  optional string closing_phrase = 1;
+  bool confirm = 2;
+}
+
+message TransferToHumanTool {
+  string sip_call_to = 1 [(buf.validate.field).string.min_len = 1];
+  optional string hold_phrase = 2;
+  uint32 ringing_timeout_ms = 3 [(buf.validate.field).uint32 = {gte: 5000 lte: 600000}];
 }
 
 message McpServerRuntime {
