@@ -1,6 +1,6 @@
 {
   "name": "@overthinker1127/port-contracts",
-  "version": "4.0.0",
+  "version": "4.0.1",
   "description": "Shared protobuf contracts for port services.",
   "private": false,
   "license": "UNLICENSED",
@@ -24,6 +24,13 @@
       "default": "./dist/gen/ts/*.js"
     },
     "./package.json": "./package.json"
+  },
+  "typesVersions": {
+    "*": {
+      "gen/ts/*": [
+        "dist/gen/ts/*"
+      ]
+    }
   },
   "dependencies": {
     "@bufbuild/protobuf": "^2.12.1",
