@@ -89,6 +89,47 @@ func TestPublishedBootstrapRequestValidation(t *testing.T) {
 	}
 }
 
+func TestSipCallerPhoneNumberValidation(t *testing.T) {
+	for _, tt := range []struct {
+		name  string
+		phone *string
+		valid bool
+	}{
+		{name: "absent", valid: true},
+		{name: "present", phone: proto.String("+821012345678"), valid: true},
+		{name: "anonymous", phone: proto.String("anonymous"), valid: true},
+		{name: "present empty", phone: proto.String(""), valid: false},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			request := validSipPublishedRequest()
+			request.GetAdmission().GetSip().PhoneNumber = tt.phone
+			err := Validate(request)
+			if tt.valid && err != nil {
+				t.Fatalf("Validate() error = %v, want nil", err)
+			}
+			if !tt.valid && err == nil {
+				t.Fatal("Validate() = nil, want rejection")
+			}
+		})
+	}
+}
+
+func validSipPublishedRequest() *apiv1.BootstrapPublishedRequest {
+	request := validPublishedRequest()
+	request.Admission = &apiv1.BootstrapRequest{
+		Admission: &apiv1.BootstrapRequest_Sip{Sip: &apiv1.SipBootstrapContext{
+			JobId:                 "job-1",
+			DispatchId:            "dispatch-1",
+			RoomName:              "room-1",
+			ParticipantIdentity:   "participant-1",
+			TrunkId:               "trunk-1",
+			TrunkPhoneNumber:      "+821012300000",
+			CallIdFull:            "call-1",
+		}},
+	}
+	return request
+}
+
 func TestPublishedDirectTextResponseValidation(t *testing.T) {
 	valid := validDirectTextResponse()
 	if err := Validate(valid); err != nil {
@@ -206,6 +247,7 @@ func TestPublishedOrchestrationValidation(t *testing.T) {
 func TestPublishedBootstrapWireRoundTrip(t *testing.T) {
 	for _, source := range []proto.Message{
 		validPublishedRequest(),
+		validSipPublishedRequest(),
 		validDirectTextResponse(),
 		validDirectVoiceResponse(),
 		validSupervisorTextResponse(),

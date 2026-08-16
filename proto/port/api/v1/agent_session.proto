@@ -28,6 +28,7 @@ message SipBootstrapContext {
   string trunk_id = 5 [(buf.validate.field).string.min_len = 1];
   string trunk_phone_number = 6 [(buf.validate.field).string.min_len = 1];
   string call_id_full = 7 [(buf.validate.field).string.min_len = 1];
+  optional string phone_number = 8 [(buf.validate.field).string.min_len = 1];
 }
 
 // published_id is the only execution identity accepted by a runtime session.

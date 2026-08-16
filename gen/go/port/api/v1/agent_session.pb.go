@@ -373,6 +373,7 @@ type SipBootstrapContext struct {
 	TrunkId             string                 `protobuf:"bytes,5,opt,name=trunk_id,json=trunkId,proto3" json:"trunk_id,omitempty"`
 	TrunkPhoneNumber    string                 `protobuf:"bytes,6,opt,name=trunk_phone_number,json=trunkPhoneNumber,proto3" json:"trunk_phone_number,omitempty"`
 	CallIdFull          string                 `protobuf:"bytes,7,opt,name=call_id_full,json=callIdFull,proto3" json:"call_id_full,omitempty"`
+	PhoneNumber         *string                `protobuf:"bytes,8,opt,name=phone_number,json=phoneNumber,proto3,oneof" json:"phone_number,omitempty"`
 	unknownFields       protoimpl.UnknownFields
 	sizeCache           protoimpl.SizeCache
 }
@@ -452,6 +453,13 @@ func (x *SipBootstrapContext) GetTrunkPhoneNumber() string {
 func (x *SipBootstrapContext) GetCallIdFull() string {
 	if x != nil {
 		return x.CallIdFull
+	}
+	return ""
+}
+
+func (x *SipBootstrapContext) GetPhoneNumber() string {
+	if x != nil && x.PhoneNumber != nil {
+		return *x.PhoneNumber
 	}
 	return ""
 }
@@ -2648,7 +2656,7 @@ const file_port_api_v1_agent_session_proto_rawDesc = "" +
 	"\x10BootstrapRequest\x12.\n" +
 	"\rwebrtc_ticket\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01H\x00R\fwebrtcTicket\x124\n" +
 	"\x03sip\x18\x02 \x01(\v2 .port.api.v1.SipBootstrapContextH\x00R\x03sipB\x12\n" +
-	"\tadmission\x12\x05\xbaH\x02\b\x01\"\xc7\x02\n" +
+	"\tadmission\x12\x05\xbaH\x02\b\x01\"\x89\x03\n" +
 	"\x13SipBootstrapContext\x12\x1e\n" +
 	"\x06job_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x05jobId\x12(\n" +
 	"\vdispatch_id\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\n" +
@@ -2658,7 +2666,9 @@ const file_port_api_v1_agent_session_proto_rawDesc = "" +
 	"\btrunk_id\x18\x05 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\atrunkId\x125\n" +
 	"\x12trunk_phone_number\x18\x06 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x10trunkPhoneNumber\x12)\n" +
 	"\fcall_id_full\x18\a \x01(\tB\a\xbaH\x04r\x02\x10\x01R\n" +
-	"callIdFull\"\xcb\x02\n" +
+	"callIdFull\x12/\n" +
+	"\fphone_number\x18\b \x01(\tB\a\xbaH\x04r\x02\x10\x01H\x00R\vphoneNumber\x88\x01\x01B\x0f\n" +
+	"\r_phone_number\"\xcb\x02\n" +
 	"\x19BootstrapPublishedRequest\x12C\n" +
 	"\tadmission\x18\x01 \x01(\v2\x1d.port.api.v1.BootstrapRequestB\x06\xbaH\x03\xc8\x01\x01R\tadmission\x123\n" +
 	"\x0fconversation_id\x18\x02 \x01(\tB\n" +
@@ -3035,6 +3045,7 @@ func file_port_api_v1_agent_session_proto_init() {
 		(*BootstrapRequest_WebrtcTicket)(nil),
 		(*BootstrapRequest_Sip)(nil),
 	}
+	file_port_api_v1_agent_session_proto_msgTypes[1].OneofWrappers = []any{}
 	file_port_api_v1_agent_session_proto_msgTypes[3].OneofWrappers = []any{
 		(*BootstrapPublishedResponse_PromptAgent)(nil),
 		(*BootstrapPublishedResponse_Orchestration)(nil),

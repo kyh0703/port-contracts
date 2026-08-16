@@ -73,7 +73,7 @@ class BootstrapRequest(_message.Message):
     def __init__(self, webrtc_ticket: _Optional[str] = ..., sip: _Optional[_Union[SipBootstrapContext, _Mapping]] = ...) -> None: ...
 
 class SipBootstrapContext(_message.Message):
-    __slots__ = ("job_id", "dispatch_id", "room_name", "participant_identity", "trunk_id", "trunk_phone_number", "call_id_full")
+    __slots__ = ("job_id", "dispatch_id", "room_name", "participant_identity", "trunk_id", "trunk_phone_number", "call_id_full", "phone_number")
     JOB_ID_FIELD_NUMBER: _ClassVar[int]
     DISPATCH_ID_FIELD_NUMBER: _ClassVar[int]
     ROOM_NAME_FIELD_NUMBER: _ClassVar[int]
@@ -81,6 +81,7 @@ class SipBootstrapContext(_message.Message):
     TRUNK_ID_FIELD_NUMBER: _ClassVar[int]
     TRUNK_PHONE_NUMBER_FIELD_NUMBER: _ClassVar[int]
     CALL_ID_FULL_FIELD_NUMBER: _ClassVar[int]
+    PHONE_NUMBER_FIELD_NUMBER: _ClassVar[int]
     job_id: str
     dispatch_id: str
     room_name: str
@@ -88,7 +89,8 @@ class SipBootstrapContext(_message.Message):
     trunk_id: str
     trunk_phone_number: str
     call_id_full: str
-    def __init__(self, job_id: _Optional[str] = ..., dispatch_id: _Optional[str] = ..., room_name: _Optional[str] = ..., participant_identity: _Optional[str] = ..., trunk_id: _Optional[str] = ..., trunk_phone_number: _Optional[str] = ..., call_id_full: _Optional[str] = ...) -> None: ...
+    phone_number: str
+    def __init__(self, job_id: _Optional[str] = ..., dispatch_id: _Optional[str] = ..., room_name: _Optional[str] = ..., participant_identity: _Optional[str] = ..., trunk_id: _Optional[str] = ..., trunk_phone_number: _Optional[str] = ..., call_id_full: _Optional[str] = ..., phone_number: _Optional[str] = ...) -> None: ...
 
 class BootstrapPublishedRequest(_message.Message):
     __slots__ = ("admission", "conversation_id", "session_id", "published_id", "contract_revision")

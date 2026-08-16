@@ -260,6 +260,7 @@ export interface SipBootstrapContext {
   trunkId: string;
   trunkPhoneNumber: string;
   callIdFull: string;
+  phoneNumber?: string | undefined;
 }
 
 /** published_id is the only execution identity accepted by a runtime session. */
@@ -584,6 +585,7 @@ function createBaseSipBootstrapContext(): SipBootstrapContext {
     trunkId: "",
     trunkPhoneNumber: "",
     callIdFull: "",
+    phoneNumber: undefined,
   };
 }
 
@@ -609,6 +611,9 @@ export const SipBootstrapContext: MessageFns<SipBootstrapContext> = {
     }
     if (message.callIdFull !== "") {
       writer.uint32(58).string(message.callIdFull);
+    }
+    if (message.phoneNumber !== undefined) {
+      writer.uint32(66).string(message.phoneNumber);
     }
     return writer;
   },
@@ -676,6 +681,14 @@ export const SipBootstrapContext: MessageFns<SipBootstrapContext> = {
           message.callIdFull = reader.string();
           continue;
         }
+        case 8: {
+          if (tag !== 66) {
+            break;
+          }
+
+          message.phoneNumber = reader.string();
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -722,6 +735,11 @@ export const SipBootstrapContext: MessageFns<SipBootstrapContext> = {
         : isSet(object.call_id_full)
         ? globalThis.String(object.call_id_full)
         : "",
+      phoneNumber: isSet(object.phoneNumber)
+        ? globalThis.String(object.phoneNumber)
+        : isSet(object.phone_number)
+        ? globalThis.String(object.phone_number)
+        : undefined,
     };
   },
 
@@ -748,6 +766,9 @@ export const SipBootstrapContext: MessageFns<SipBootstrapContext> = {
     if (message.callIdFull !== "") {
       obj.callIdFull = message.callIdFull;
     }
+    if (message.phoneNumber !== undefined) {
+      obj.phoneNumber = message.phoneNumber;
+    }
     return obj;
   },
 
@@ -763,6 +784,7 @@ export const SipBootstrapContext: MessageFns<SipBootstrapContext> = {
     message.trunkId = object.trunkId ?? "";
     message.trunkPhoneNumber = object.trunkPhoneNumber ?? "";
     message.callIdFull = object.callIdFull ?? "";
+    message.phoneNumber = object.phoneNumber ?? undefined;
     return message;
   },
 };

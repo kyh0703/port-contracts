@@ -9,13 +9,13 @@ function read(relativePath) {
   return readFileSync(path.join(root, relativePath), "utf8");
 }
 
-test("npm release metadata is pinned to 4.0.1", () => {
+test("npm release metadata is pinned to 4.1.0", () => {
   const packageJson = JSON.parse(read("package.json"));
   const packageLock = JSON.parse(read("package-lock.json"));
 
-  assert.equal(packageJson.version, "4.0.1");
-  assert.equal(packageLock.version, "4.0.1");
-  assert.equal(packageLock.packages[""].version, "4.0.1");
+  assert.equal(packageJson.version, "4.1.0");
+  assert.equal(packageLock.version, "4.1.0");
+  assert.equal(packageLock.packages[""].version, "4.1.0");
 });
 
 test("legacy Node module resolution maps generated TypeScript subpaths", () => {

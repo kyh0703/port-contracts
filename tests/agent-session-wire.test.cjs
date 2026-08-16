@@ -11,6 +11,32 @@ const {
   ContextPolicy,
 } = contracts;
 
+test("SIP caller phone number is optional and round-trips without changing the revision", () => {
+  for (const phoneNumber of [undefined, "+821012345678", "anonymous"]) {
+    const request = BootstrapPublishedRequest.create({
+      admission: {
+        sip: {
+          jobId: "job-1",
+          dispatchId: "dispatch-1",
+          roomName: "room-1",
+          participantIdentity: "participant-1",
+          trunkId: "trunk-1",
+          trunkPhoneNumber: "+821012300000",
+          callIdFull: "call-1",
+          phoneNumber,
+        },
+      },
+      conversationId: "conversation-1",
+      sessionId: "session-1",
+      publishedId: "publication-1",
+      contractRevision: "execution-publication-2026-08-14-r1",
+    });
+    const decoded = BootstrapPublishedRequest.decode(BootstrapPublishedRequest.encode(request).finish());
+    assert.deepEqual(decoded, request);
+    assert.equal(decoded.admission.sip.phoneNumber, phoneNumber);
+  }
+});
+
 test("call runtime filler settings are optional and preserve the configured phrase", () => {
   const disabled = CallRuntimeSnapshot.create({});
   const disabledDecoded = CallRuntimeSnapshot.decode(CallRuntimeSnapshot.encode(disabled).finish());
