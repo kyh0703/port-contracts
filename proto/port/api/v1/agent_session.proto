@@ -109,8 +109,8 @@ message PublishedPromptAgentRuntime {
   repeated BuiltInTool built_in_tools = 12;
 }
 
-// Inline orchestration nodes intentionally do not expose greeting, knowledge,
-// or guardrails fields. Those capabilities belong only to Prompt Agents.
+// Inline orchestration nodes intentionally do not expose greeting or guardrails
+// fields. Knowledge retrieval is available through the additive fields below.
 message PublishedInlinePromptRuntime {
   string node_id = 1 [(buf.validate.field).string.min_len = 1];
   LlmRuntime llm_worker = 2 [(buf.validate.field).required = true];
@@ -121,6 +121,8 @@ message PublishedInlinePromptRuntime {
   repeated ApiToolRuntime api_tool_runtimes = 7;
   repeated A2aToolRuntime a2a_tool_runtimes = 8;
   repeated BuiltInTool built_in_tools = 9;
+  string knowledge_revision_id = 10;
+  string knowledge_retrieval_capability = 11;
 }
 
 message PublishedSupervisorSnapshot {

@@ -310,8 +310,8 @@ export interface PublishedPromptAgentRuntime {
 }
 
 /**
- * Inline orchestration nodes intentionally do not expose greeting, knowledge,
- * or guardrails fields. Those capabilities belong only to Prompt Agents.
+ * Inline orchestration nodes intentionally do not expose greeting or guardrails
+ * fields. Knowledge retrieval is available through the additive fields below.
  */
 export interface PublishedInlinePromptRuntime {
   nodeId: string;
@@ -323,6 +323,8 @@ export interface PublishedInlinePromptRuntime {
   apiToolRuntimes: ApiToolRuntime[];
   a2aToolRuntimes: A2aToolRuntime[];
   builtInTools: BuiltInTool[];
+  knowledgeRevisionId: string;
+  knowledgeRetrievalCapability: string;
 }
 
 export interface PublishedSupervisorSnapshot {
@@ -1626,6 +1628,8 @@ function createBasePublishedInlinePromptRuntime(): PublishedInlinePromptRuntime 
     apiToolRuntimes: [],
     a2aToolRuntimes: [],
     builtInTools: [],
+    knowledgeRevisionId: "",
+    knowledgeRetrievalCapability: "",
   };
 }
 
@@ -1657,6 +1661,12 @@ export const PublishedInlinePromptRuntime: MessageFns<PublishedInlinePromptRunti
     }
     for (const v of message.builtInTools) {
       BuiltInTool.encode(v!, writer.uint32(74).fork()).join();
+    }
+    if (message.knowledgeRevisionId !== "") {
+      writer.uint32(82).string(message.knowledgeRevisionId);
+    }
+    if (message.knowledgeRetrievalCapability !== "") {
+      writer.uint32(90).string(message.knowledgeRetrievalCapability);
     }
     return writer;
   },
@@ -1740,6 +1750,22 @@ export const PublishedInlinePromptRuntime: MessageFns<PublishedInlinePromptRunti
           message.builtInTools.push(BuiltInTool.decode(reader, reader.uint32()));
           continue;
         }
+        case 10: {
+          if (tag !== 82) {
+            break;
+          }
+
+          message.knowledgeRevisionId = reader.string();
+          continue;
+        }
+        case 11: {
+          if (tag !== 90) {
+            break;
+          }
+
+          message.knowledgeRetrievalCapability = reader.string();
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -1788,6 +1814,16 @@ export const PublishedInlinePromptRuntime: MessageFns<PublishedInlinePromptRunti
         : globalThis.Array.isArray(object?.built_in_tools)
         ? object.built_in_tools.map((e: any) => BuiltInTool.fromJSON(e))
         : [],
+      knowledgeRevisionId: isSet(object.knowledgeRevisionId)
+        ? globalThis.String(object.knowledgeRevisionId)
+        : isSet(object.knowledge_revision_id)
+        ? globalThis.String(object.knowledge_revision_id)
+        : "",
+      knowledgeRetrievalCapability: isSet(object.knowledgeRetrievalCapability)
+        ? globalThis.String(object.knowledgeRetrievalCapability)
+        : isSet(object.knowledge_retrieval_capability)
+        ? globalThis.String(object.knowledge_retrieval_capability)
+        : "",
     };
   },
 
@@ -1820,6 +1856,12 @@ export const PublishedInlinePromptRuntime: MessageFns<PublishedInlinePromptRunti
     if (message.builtInTools?.length) {
       obj.builtInTools = message.builtInTools.map((e) => BuiltInTool.toJSON(e));
     }
+    if (message.knowledgeRevisionId !== "") {
+      obj.knowledgeRevisionId = message.knowledgeRevisionId;
+    }
+    if (message.knowledgeRetrievalCapability !== "") {
+      obj.knowledgeRetrievalCapability = message.knowledgeRetrievalCapability;
+    }
     return obj;
   },
 
@@ -1841,6 +1883,8 @@ export const PublishedInlinePromptRuntime: MessageFns<PublishedInlinePromptRunti
     message.apiToolRuntimes = object.apiToolRuntimes?.map((e) => ApiToolRuntime.fromPartial(e)) || [];
     message.a2aToolRuntimes = object.a2aToolRuntimes?.map((e) => A2aToolRuntime.fromPartial(e)) || [];
     message.builtInTools = object.builtInTools?.map((e) => BuiltInTool.fromPartial(e)) || [];
+    message.knowledgeRevisionId = object.knowledgeRevisionId ?? "";
+    message.knowledgeRetrievalCapability = object.knowledgeRetrievalCapability ?? "";
     return message;
   },
 };

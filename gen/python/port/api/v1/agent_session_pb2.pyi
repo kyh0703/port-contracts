@@ -173,7 +173,7 @@ class PublishedPromptAgentRuntime(_message.Message):
     def __init__(self, prompt_agent_published_id: _Optional[str] = ..., llm_worker: _Optional[_Union[_voice_runtime_pb2.LlmRuntime, _Mapping]] = ..., instructions: _Optional[_Union[PromptInstructions, _Mapping]] = ..., context_policy: _Optional[_Union[ContextPolicy, str]] = ..., tools: _Optional[_Iterable[_Union[NodeToolMetadata, _Mapping]]] = ..., mcp_servers: _Optional[_Iterable[_Union[McpServerRuntime, _Mapping]]] = ..., greeting: _Optional[str] = ..., knowledge_revision_id: _Optional[str] = ..., api_tool_runtimes: _Optional[_Iterable[_Union[ApiToolRuntime, _Mapping]]] = ..., knowledge_retrieval_capability: _Optional[str] = ..., a2a_tool_runtimes: _Optional[_Iterable[_Union[A2aToolRuntime, _Mapping]]] = ..., built_in_tools: _Optional[_Iterable[_Union[BuiltInTool, _Mapping]]] = ...) -> None: ...
 
 class PublishedInlinePromptRuntime(_message.Message):
-    __slots__ = ("node_id", "llm_worker", "instructions", "context_policy", "tools", "mcp_servers", "api_tool_runtimes", "a2a_tool_runtimes", "built_in_tools")
+    __slots__ = ("node_id", "llm_worker", "instructions", "context_policy", "tools", "mcp_servers", "api_tool_runtimes", "a2a_tool_runtimes", "built_in_tools", "knowledge_revision_id", "knowledge_retrieval_capability")
     NODE_ID_FIELD_NUMBER: _ClassVar[int]
     LLM_WORKER_FIELD_NUMBER: _ClassVar[int]
     INSTRUCTIONS_FIELD_NUMBER: _ClassVar[int]
@@ -183,6 +183,8 @@ class PublishedInlinePromptRuntime(_message.Message):
     API_TOOL_RUNTIMES_FIELD_NUMBER: _ClassVar[int]
     A2A_TOOL_RUNTIMES_FIELD_NUMBER: _ClassVar[int]
     BUILT_IN_TOOLS_FIELD_NUMBER: _ClassVar[int]
+    KNOWLEDGE_REVISION_ID_FIELD_NUMBER: _ClassVar[int]
+    KNOWLEDGE_RETRIEVAL_CAPABILITY_FIELD_NUMBER: _ClassVar[int]
     node_id: str
     llm_worker: _voice_runtime_pb2.LlmRuntime
     instructions: InlinePromptInstructions
@@ -192,7 +194,9 @@ class PublishedInlinePromptRuntime(_message.Message):
     api_tool_runtimes: _containers.RepeatedCompositeFieldContainer[ApiToolRuntime]
     a2a_tool_runtimes: _containers.RepeatedCompositeFieldContainer[A2aToolRuntime]
     built_in_tools: _containers.RepeatedCompositeFieldContainer[BuiltInTool]
-    def __init__(self, node_id: _Optional[str] = ..., llm_worker: _Optional[_Union[_voice_runtime_pb2.LlmRuntime, _Mapping]] = ..., instructions: _Optional[_Union[InlinePromptInstructions, _Mapping]] = ..., context_policy: _Optional[_Union[ContextPolicy, str]] = ..., tools: _Optional[_Iterable[_Union[NodeToolMetadata, _Mapping]]] = ..., mcp_servers: _Optional[_Iterable[_Union[McpServerRuntime, _Mapping]]] = ..., api_tool_runtimes: _Optional[_Iterable[_Union[ApiToolRuntime, _Mapping]]] = ..., a2a_tool_runtimes: _Optional[_Iterable[_Union[A2aToolRuntime, _Mapping]]] = ..., built_in_tools: _Optional[_Iterable[_Union[BuiltInTool, _Mapping]]] = ...) -> None: ...
+    knowledge_revision_id: str
+    knowledge_retrieval_capability: str
+    def __init__(self, node_id: _Optional[str] = ..., llm_worker: _Optional[_Union[_voice_runtime_pb2.LlmRuntime, _Mapping]] = ..., instructions: _Optional[_Union[InlinePromptInstructions, _Mapping]] = ..., context_policy: _Optional[_Union[ContextPolicy, str]] = ..., tools: _Optional[_Iterable[_Union[NodeToolMetadata, _Mapping]]] = ..., mcp_servers: _Optional[_Iterable[_Union[McpServerRuntime, _Mapping]]] = ..., api_tool_runtimes: _Optional[_Iterable[_Union[ApiToolRuntime, _Mapping]]] = ..., a2a_tool_runtimes: _Optional[_Iterable[_Union[A2aToolRuntime, _Mapping]]] = ..., built_in_tools: _Optional[_Iterable[_Union[BuiltInTool, _Mapping]]] = ..., knowledge_revision_id: _Optional[str] = ..., knowledge_retrieval_capability: _Optional[str] = ...) -> None: ...
 
 class PublishedSupervisorSnapshot(_message.Message):
     __slots__ = ("supervisor_node_id", "specialists")

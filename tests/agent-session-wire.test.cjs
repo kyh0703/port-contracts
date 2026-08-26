@@ -148,15 +148,61 @@ test("published orchestration topology references only inline node IDs", () => {
   );
   assert.equal(decoded.orchestration.nodeRuntimes[0].greeting, undefined);
   assert.equal(decoded.orchestration.nodeRuntimes[0].guardrails, undefined);
-  assert.equal(decoded.orchestration.nodeRuntimes[0].knowledgeRevisionId, undefined);
+  assert.equal(decoded.orchestration.nodeRuntimes[0].knowledgeRevisionId, "");
+  assert.equal(decoded.orchestration.nodeRuntimes[0].knowledgeRetrievalCapability, "");
 });
 
-function inlineRuntime(nodeId, systemPrompt) {
+test("inline runtimes round-trip Knowledge fields and default them for legacy payloads", () => {
+  const response = BootstrapPublishedResponse.create({
+    contractRevision: "execution-publication-2026-08-14-r1",
+    conversationId: "conversation-3",
+    sessionId: "session-3",
+    publishedId: "orchestration-publication-2",
+    orchestration: {
+      mode: OrchestrationMode.ORCHESTRATION_MODE_HANDOFF,
+      nodeRuntimes: [
+        inlineRuntime("node-1", "Start.", "knowledge-revision-1", "signed-capability"),
+        inlineRuntime("node-2", "Finish."),
+      ],
+      handoff: {
+        entryNodeId: "node-1",
+        maxHandoffDepth: 2,
+        routes: [{
+          transitionId: "route-1",
+          sourceNodeId: "node-1",
+          targetNodeId: "node-2",
+          routingDescription: "Escalate",
+          contextPolicy: ContextPolicy.CONTEXT_POLICY_CONVERSATION,
+        }],
+      },
+    },
+    textRuntime: {
+      transport: "text_stream",
+      roomName: "room-3",
+      participantIdentity: "participant-3",
+      idleTimeoutSeconds: 300,
+      maxSessionDurationSeconds: 3600,
+    },
+  });
+
+  const decoded = BootstrapPublishedResponse.decode(
+    BootstrapPublishedResponse.encode(response).finish(),
+  );
+  assert.deepEqual(decoded, response);
+  assert.equal(decoded.orchestration.nodeRuntimes[0].knowledgeRevisionId, "knowledge-revision-1");
+  assert.equal(decoded.orchestration.nodeRuntimes[0].knowledgeRetrievalCapability, "signed-capability");
+  assert.equal(decoded.orchestration.nodeRuntimes[1].knowledgeRevisionId, "");
+  assert.equal(decoded.orchestration.nodeRuntimes[1].knowledgeRetrievalCapability, "");
+});
+
+function inlineRuntime(nodeId, systemPrompt, knowledgeRevisionId, knowledgeRetrievalCapability) {
   return {
     nodeId,
     llmWorker: { apiKey: `key-${nodeId}`, model: "model-1" },
     instructions: { systemPrompt },
     contextPolicy: ContextPolicy.CONTEXT_POLICY_CONVERSATION,
     builtInTools: [{ endCall: { closingPhrase: "Goodbye.", confirm: true } }],
+    knowledgeRevisionId,
+    knowledgeRetrievalCapability,
   };
 }
