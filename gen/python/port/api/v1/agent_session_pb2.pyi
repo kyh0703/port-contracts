@@ -9,6 +9,19 @@ from typing import ClassVar as _ClassVar, Optional as _Optional, Union as _Union
 
 DESCRIPTOR: _descriptor.FileDescriptor
 
+class HandoffContextMode(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
+    __slots__ = ()
+    HANDOFF_CONTEXT_MODE_UNSPECIFIED: _ClassVar[HandoffContextMode]
+    HANDOFF_CONTEXT_MODE_NONE: _ClassVar[HandoffContextMode]
+    HANDOFF_CONTEXT_MODE_RECENT: _ClassVar[HandoffContextMode]
+
+class HandoffParameterType(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
+    __slots__ = ()
+    HANDOFF_PARAMETER_TYPE_UNSPECIFIED: _ClassVar[HandoffParameterType]
+    HANDOFF_PARAMETER_TYPE_STRING: _ClassVar[HandoffParameterType]
+    HANDOFF_PARAMETER_TYPE_NUMBER: _ClassVar[HandoffParameterType]
+    HANDOFF_PARAMETER_TYPE_BOOLEAN: _ClassVar[HandoffParameterType]
+
 class CallTransportSource(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     __slots__ = ()
     CALL_TRANSPORT_SOURCE_UNSPECIFIED: _ClassVar[CallTransportSource]
@@ -43,6 +56,13 @@ class ContextPolicy(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     CONTEXT_POLICY_UNSPECIFIED: _ClassVar[ContextPolicy]
     CONTEXT_POLICY_NONE: _ClassVar[ContextPolicy]
     CONTEXT_POLICY_CONVERSATION: _ClassVar[ContextPolicy]
+HANDOFF_CONTEXT_MODE_UNSPECIFIED: HandoffContextMode
+HANDOFF_CONTEXT_MODE_NONE: HandoffContextMode
+HANDOFF_CONTEXT_MODE_RECENT: HandoffContextMode
+HANDOFF_PARAMETER_TYPE_UNSPECIFIED: HandoffParameterType
+HANDOFF_PARAMETER_TYPE_STRING: HandoffParameterType
+HANDOFF_PARAMETER_TYPE_NUMBER: HandoffParameterType
+HANDOFF_PARAMETER_TYPE_BOOLEAN: HandoffParameterType
 CALL_TRANSPORT_SOURCE_UNSPECIFIED: CallTransportSource
 CALL_TRANSPORT_SOURCE_WEBRTC: CallTransportSource
 CALL_TRANSPORT_SOURCE_SIP: CallTransportSource
@@ -229,20 +249,44 @@ class PublishedHandoffSnapshot(_message.Message):
     def __init__(self, entry_node_id: _Optional[str] = ..., max_handoff_depth: _Optional[int] = ..., routes: _Optional[_Iterable[_Union[PublishedHandoffRoute, _Mapping]]] = ...) -> None: ...
 
 class PublishedHandoffRoute(_message.Message):
-    __slots__ = ("transition_id", "source_node_id", "target_node_id", "routing_description", "context_policy", "announcement")
+    __slots__ = ("transition_id", "source_node_id", "target_node_id", "routing_description", "context_policy", "announcement", "request_start", "context_mode", "parameters")
     TRANSITION_ID_FIELD_NUMBER: _ClassVar[int]
     SOURCE_NODE_ID_FIELD_NUMBER: _ClassVar[int]
     TARGET_NODE_ID_FIELD_NUMBER: _ClassVar[int]
     ROUTING_DESCRIPTION_FIELD_NUMBER: _ClassVar[int]
     CONTEXT_POLICY_FIELD_NUMBER: _ClassVar[int]
     ANNOUNCEMENT_FIELD_NUMBER: _ClassVar[int]
+    REQUEST_START_FIELD_NUMBER: _ClassVar[int]
+    CONTEXT_MODE_FIELD_NUMBER: _ClassVar[int]
+    PARAMETERS_FIELD_NUMBER: _ClassVar[int]
     transition_id: str
     source_node_id: str
     target_node_id: str
     routing_description: str
     context_policy: ContextPolicy
     announcement: str
-    def __init__(self, transition_id: _Optional[str] = ..., source_node_id: _Optional[str] = ..., target_node_id: _Optional[str] = ..., routing_description: _Optional[str] = ..., context_policy: _Optional[_Union[ContextPolicy, str]] = ..., announcement: _Optional[str] = ...) -> None: ...
+    request_start: str
+    context_mode: HandoffContextMode
+    parameters: _containers.RepeatedCompositeFieldContainer[HandoffParameter]
+    def __init__(self, transition_id: _Optional[str] = ..., source_node_id: _Optional[str] = ..., target_node_id: _Optional[str] = ..., routing_description: _Optional[str] = ..., context_policy: _Optional[_Union[ContextPolicy, str]] = ..., announcement: _Optional[str] = ..., request_start: _Optional[str] = ..., context_mode: _Optional[_Union[HandoffContextMode, str]] = ..., parameters: _Optional[_Iterable[_Union[HandoffParameter, _Mapping]]] = ...) -> None: ...
+
+class HandoffParameter(_message.Message):
+    __slots__ = ("name", "type", "description", "required", "string_enum", "number_enum", "boolean_enum")
+    NAME_FIELD_NUMBER: _ClassVar[int]
+    TYPE_FIELD_NUMBER: _ClassVar[int]
+    DESCRIPTION_FIELD_NUMBER: _ClassVar[int]
+    REQUIRED_FIELD_NUMBER: _ClassVar[int]
+    STRING_ENUM_FIELD_NUMBER: _ClassVar[int]
+    NUMBER_ENUM_FIELD_NUMBER: _ClassVar[int]
+    BOOLEAN_ENUM_FIELD_NUMBER: _ClassVar[int]
+    name: str
+    type: HandoffParameterType
+    description: str
+    required: bool
+    string_enum: _containers.RepeatedScalarFieldContainer[str]
+    number_enum: _containers.RepeatedScalarFieldContainer[float]
+    boolean_enum: _containers.RepeatedScalarFieldContainer[bool]
+    def __init__(self, name: _Optional[str] = ..., type: _Optional[_Union[HandoffParameterType, str]] = ..., description: _Optional[str] = ..., required: _Optional[bool] = ..., string_enum: _Optional[_Iterable[str]] = ..., number_enum: _Optional[_Iterable[float]] = ..., boolean_enum: _Optional[_Iterable[bool]] = ...) -> None: ...
 
 class TextRuntimeSnapshot(_message.Message):
     __slots__ = ("transport", "room_name", "participant_identity", "idle_timeout_seconds", "max_session_duration_seconds")

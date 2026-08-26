@@ -39,7 +39,7 @@ message BootstrapPublishedRequest {
   string published_id = 4 [(buf.validate.field).required = true, (buf.validate.field).string.min_len = 1];
   string contract_revision = 5 [
     (buf.validate.field).required = true,
-    (buf.validate.field).string.const = "execution-publication-2026-08-14-r1"
+    (buf.validate.field).string.const = "execution-publication-2026-08-26-r1"
   ];
 }
 
@@ -55,7 +55,7 @@ message BootstrapPublishedResponse {
 
   string contract_revision = 1 [
     (buf.validate.field).required = true,
-    (buf.validate.field).string.const = "execution-publication-2026-08-14-r1"
+    (buf.validate.field).string.const = "execution-publication-2026-08-26-r1"
   ];
   string conversation_id = 2 [(buf.validate.field).required = true, (buf.validate.field).string.min_len = 1];
   string session_id = 3 [(buf.validate.field).required = true, (buf.validate.field).string.min_len = 1];
@@ -150,6 +150,32 @@ message PublishedHandoffRoute {
   string routing_description = 4 [(buf.validate.field).string.min_len = 1];
   ContextPolicy context_policy = 5 [(buf.validate.field).enum = {defined_only: true not_in: 0}];
   string announcement = 6;
+  string request_start = 7;
+  HandoffContextMode context_mode = 8 [(buf.validate.field).enum = {defined_only: true not_in: 0}];
+  repeated HandoffParameter parameters = 9;
+}
+
+enum HandoffContextMode {
+  HANDOFF_CONTEXT_MODE_UNSPECIFIED = 0;
+  HANDOFF_CONTEXT_MODE_NONE = 1;
+  HANDOFF_CONTEXT_MODE_RECENT = 2;
+}
+
+enum HandoffParameterType {
+  HANDOFF_PARAMETER_TYPE_UNSPECIFIED = 0;
+  HANDOFF_PARAMETER_TYPE_STRING = 1;
+  HANDOFF_PARAMETER_TYPE_NUMBER = 2;
+  HANDOFF_PARAMETER_TYPE_BOOLEAN = 3;
+}
+
+message HandoffParameter {
+  string name = 1 [(buf.validate.field).string.min_len = 1];
+  HandoffParameterType type = 2 [(buf.validate.field).enum = {defined_only: true not_in: 0}];
+  string description = 3;
+  bool required = 4;
+  repeated string string_enum = 5;
+  repeated double number_enum = 6;
+  repeated bool boolean_enum = 7;
 }
 
 message TextRuntimeSnapshot {

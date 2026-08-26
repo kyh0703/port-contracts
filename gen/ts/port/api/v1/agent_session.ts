@@ -22,6 +22,90 @@ import { LlmRuntime, SttRuntime, TtsRuntime } from "./voice_runtime";
 
 export const protobufPackage = "port.api.v1";
 
+export enum HandoffContextMode {
+  HANDOFF_CONTEXT_MODE_UNSPECIFIED = 0,
+  HANDOFF_CONTEXT_MODE_NONE = 1,
+  HANDOFF_CONTEXT_MODE_RECENT = 2,
+  UNRECOGNIZED = -1,
+}
+
+export function handoffContextModeFromJSON(object: any): HandoffContextMode {
+  switch (object) {
+    case 0:
+    case "HANDOFF_CONTEXT_MODE_UNSPECIFIED":
+      return HandoffContextMode.HANDOFF_CONTEXT_MODE_UNSPECIFIED;
+    case 1:
+    case "HANDOFF_CONTEXT_MODE_NONE":
+      return HandoffContextMode.HANDOFF_CONTEXT_MODE_NONE;
+    case 2:
+    case "HANDOFF_CONTEXT_MODE_RECENT":
+      return HandoffContextMode.HANDOFF_CONTEXT_MODE_RECENT;
+    case -1:
+    case "UNRECOGNIZED":
+    default:
+      return HandoffContextMode.UNRECOGNIZED;
+  }
+}
+
+export function handoffContextModeToJSON(object: HandoffContextMode): string {
+  switch (object) {
+    case HandoffContextMode.HANDOFF_CONTEXT_MODE_UNSPECIFIED:
+      return "HANDOFF_CONTEXT_MODE_UNSPECIFIED";
+    case HandoffContextMode.HANDOFF_CONTEXT_MODE_NONE:
+      return "HANDOFF_CONTEXT_MODE_NONE";
+    case HandoffContextMode.HANDOFF_CONTEXT_MODE_RECENT:
+      return "HANDOFF_CONTEXT_MODE_RECENT";
+    case HandoffContextMode.UNRECOGNIZED:
+    default:
+      return "UNRECOGNIZED";
+  }
+}
+
+export enum HandoffParameterType {
+  HANDOFF_PARAMETER_TYPE_UNSPECIFIED = 0,
+  HANDOFF_PARAMETER_TYPE_STRING = 1,
+  HANDOFF_PARAMETER_TYPE_NUMBER = 2,
+  HANDOFF_PARAMETER_TYPE_BOOLEAN = 3,
+  UNRECOGNIZED = -1,
+}
+
+export function handoffParameterTypeFromJSON(object: any): HandoffParameterType {
+  switch (object) {
+    case 0:
+    case "HANDOFF_PARAMETER_TYPE_UNSPECIFIED":
+      return HandoffParameterType.HANDOFF_PARAMETER_TYPE_UNSPECIFIED;
+    case 1:
+    case "HANDOFF_PARAMETER_TYPE_STRING":
+      return HandoffParameterType.HANDOFF_PARAMETER_TYPE_STRING;
+    case 2:
+    case "HANDOFF_PARAMETER_TYPE_NUMBER":
+      return HandoffParameterType.HANDOFF_PARAMETER_TYPE_NUMBER;
+    case 3:
+    case "HANDOFF_PARAMETER_TYPE_BOOLEAN":
+      return HandoffParameterType.HANDOFF_PARAMETER_TYPE_BOOLEAN;
+    case -1:
+    case "UNRECOGNIZED":
+    default:
+      return HandoffParameterType.UNRECOGNIZED;
+  }
+}
+
+export function handoffParameterTypeToJSON(object: HandoffParameterType): string {
+  switch (object) {
+    case HandoffParameterType.HANDOFF_PARAMETER_TYPE_UNSPECIFIED:
+      return "HANDOFF_PARAMETER_TYPE_UNSPECIFIED";
+    case HandoffParameterType.HANDOFF_PARAMETER_TYPE_STRING:
+      return "HANDOFF_PARAMETER_TYPE_STRING";
+    case HandoffParameterType.HANDOFF_PARAMETER_TYPE_NUMBER:
+      return "HANDOFF_PARAMETER_TYPE_NUMBER";
+    case HandoffParameterType.HANDOFF_PARAMETER_TYPE_BOOLEAN:
+      return "HANDOFF_PARAMETER_TYPE_BOOLEAN";
+    case HandoffParameterType.UNRECOGNIZED:
+    default:
+      return "UNRECOGNIZED";
+  }
+}
+
 export enum CallTransportSource {
   CALL_TRANSPORT_SOURCE_UNSPECIFIED = 0,
   CALL_TRANSPORT_SOURCE_WEBRTC = 1,
@@ -352,6 +436,19 @@ export interface PublishedHandoffRoute {
   routingDescription: string;
   contextPolicy: ContextPolicy;
   announcement: string;
+  requestStart: string;
+  contextMode: HandoffContextMode;
+  parameters: HandoffParameter[];
+}
+
+export interface HandoffParameter {
+  name: string;
+  type: HandoffParameterType;
+  description: string;
+  required: boolean;
+  stringEnum: string[];
+  numberEnum: number[];
+  booleanEnum: boolean[];
 }
 
 export interface TextRuntimeSnapshot {
@@ -2205,6 +2302,9 @@ function createBasePublishedHandoffRoute(): PublishedHandoffRoute {
     routingDescription: "",
     contextPolicy: 0,
     announcement: "",
+    requestStart: "",
+    contextMode: 0,
+    parameters: [],
   };
 }
 
@@ -2227,6 +2327,15 @@ export const PublishedHandoffRoute: MessageFns<PublishedHandoffRoute> = {
     }
     if (message.announcement !== "") {
       writer.uint32(50).string(message.announcement);
+    }
+    if (message.requestStart !== "") {
+      writer.uint32(58).string(message.requestStart);
+    }
+    if (message.contextMode !== 0) {
+      writer.uint32(64).int32(message.contextMode);
+    }
+    for (const v of message.parameters) {
+      HandoffParameter.encode(v!, writer.uint32(74).fork()).join();
     }
     return writer;
   },
@@ -2286,6 +2395,30 @@ export const PublishedHandoffRoute: MessageFns<PublishedHandoffRoute> = {
           message.announcement = reader.string();
           continue;
         }
+        case 7: {
+          if (tag !== 58) {
+            break;
+          }
+
+          message.requestStart = reader.string();
+          continue;
+        }
+        case 8: {
+          if (tag !== 64) {
+            break;
+          }
+
+          message.contextMode = reader.int32() as any;
+          continue;
+        }
+        case 9: {
+          if (tag !== 74) {
+            break;
+          }
+
+          message.parameters.push(HandoffParameter.decode(reader, reader.uint32()));
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -2323,6 +2456,19 @@ export const PublishedHandoffRoute: MessageFns<PublishedHandoffRoute> = {
         ? contextPolicyFromJSON(object.context_policy)
         : 0,
       announcement: isSet(object.announcement) ? globalThis.String(object.announcement) : "",
+      requestStart: isSet(object.requestStart)
+        ? globalThis.String(object.requestStart)
+        : isSet(object.request_start)
+        ? globalThis.String(object.request_start)
+        : "",
+      contextMode: isSet(object.contextMode)
+        ? handoffContextModeFromJSON(object.contextMode)
+        : isSet(object.context_mode)
+        ? handoffContextModeFromJSON(object.context_mode)
+        : 0,
+      parameters: globalThis.Array.isArray(object?.parameters)
+        ? object.parameters.map((e: any) => HandoffParameter.fromJSON(e))
+        : [],
     };
   },
 
@@ -2346,6 +2492,15 @@ export const PublishedHandoffRoute: MessageFns<PublishedHandoffRoute> = {
     if (message.announcement !== "") {
       obj.announcement = message.announcement;
     }
+    if (message.requestStart !== "") {
+      obj.requestStart = message.requestStart;
+    }
+    if (message.contextMode !== 0) {
+      obj.contextMode = handoffContextModeToJSON(message.contextMode);
+    }
+    if (message.parameters?.length) {
+      obj.parameters = message.parameters.map((e) => HandoffParameter.toJSON(e));
+    }
     return obj;
   },
 
@@ -2360,6 +2515,201 @@ export const PublishedHandoffRoute: MessageFns<PublishedHandoffRoute> = {
     message.routingDescription = object.routingDescription ?? "";
     message.contextPolicy = object.contextPolicy ?? 0;
     message.announcement = object.announcement ?? "";
+    message.requestStart = object.requestStart ?? "";
+    message.contextMode = object.contextMode ?? 0;
+    message.parameters = object.parameters?.map((e) => HandoffParameter.fromPartial(e)) || [];
+    return message;
+  },
+};
+
+function createBaseHandoffParameter(): HandoffParameter {
+  return { name: "", type: 0, description: "", required: false, stringEnum: [], numberEnum: [], booleanEnum: [] };
+}
+
+export const HandoffParameter: MessageFns<HandoffParameter> = {
+  encode(message: HandoffParameter, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.name !== "") {
+      writer.uint32(10).string(message.name);
+    }
+    if (message.type !== 0) {
+      writer.uint32(16).int32(message.type);
+    }
+    if (message.description !== "") {
+      writer.uint32(26).string(message.description);
+    }
+    if (message.required !== false) {
+      writer.uint32(32).bool(message.required);
+    }
+    for (const v of message.stringEnum) {
+      writer.uint32(42).string(v!);
+    }
+    writer.uint32(50).fork();
+    for (const v of message.numberEnum) {
+      writer.double(v);
+    }
+    writer.join();
+    writer.uint32(58).fork();
+    for (const v of message.booleanEnum) {
+      writer.bool(v);
+    }
+    writer.join();
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): HandoffParameter {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseHandoffParameter();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.name = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 16) {
+            break;
+          }
+
+          message.type = reader.int32() as any;
+          continue;
+        }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.description = reader.string();
+          continue;
+        }
+        case 4: {
+          if (tag !== 32) {
+            break;
+          }
+
+          message.required = reader.bool();
+          continue;
+        }
+        case 5: {
+          if (tag !== 42) {
+            break;
+          }
+
+          message.stringEnum.push(reader.string());
+          continue;
+        }
+        case 6: {
+          if (tag === 49) {
+            message.numberEnum.push(reader.double());
+
+            continue;
+          }
+
+          if (tag === 50) {
+            const end2 = reader.uint32() + reader.pos;
+            while (reader.pos < end2) {
+              message.numberEnum.push(reader.double());
+            }
+
+            continue;
+          }
+
+          break;
+        }
+        case 7: {
+          if (tag === 56) {
+            message.booleanEnum.push(reader.bool());
+
+            continue;
+          }
+
+          if (tag === 58) {
+            const end2 = reader.uint32() + reader.pos;
+            while (reader.pos < end2) {
+              message.booleanEnum.push(reader.bool());
+            }
+
+            continue;
+          }
+
+          break;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): HandoffParameter {
+    return {
+      name: isSet(object.name) ? globalThis.String(object.name) : "",
+      type: isSet(object.type) ? handoffParameterTypeFromJSON(object.type) : 0,
+      description: isSet(object.description) ? globalThis.String(object.description) : "",
+      required: isSet(object.required) ? globalThis.Boolean(object.required) : false,
+      stringEnum: globalThis.Array.isArray(object?.stringEnum)
+        ? object.stringEnum.map((e: any) => globalThis.String(e))
+        : globalThis.Array.isArray(object?.string_enum)
+        ? object.string_enum.map((e: any) => globalThis.String(e))
+        : [],
+      numberEnum: globalThis.Array.isArray(object?.numberEnum)
+        ? object.numberEnum.map((e: any) => globalThis.Number(e))
+        : globalThis.Array.isArray(object?.number_enum)
+        ? object.number_enum.map((e: any) => globalThis.Number(e))
+        : [],
+      booleanEnum: globalThis.Array.isArray(object?.booleanEnum)
+        ? object.booleanEnum.map((e: any) => globalThis.Boolean(e))
+        : globalThis.Array.isArray(object?.boolean_enum)
+        ? object.boolean_enum.map((e: any) => globalThis.Boolean(e))
+        : [],
+    };
+  },
+
+  toJSON(message: HandoffParameter): unknown {
+    const obj: any = {};
+    if (message.name !== "") {
+      obj.name = message.name;
+    }
+    if (message.type !== 0) {
+      obj.type = handoffParameterTypeToJSON(message.type);
+    }
+    if (message.description !== "") {
+      obj.description = message.description;
+    }
+    if (message.required !== false) {
+      obj.required = message.required;
+    }
+    if (message.stringEnum?.length) {
+      obj.stringEnum = message.stringEnum;
+    }
+    if (message.numberEnum?.length) {
+      obj.numberEnum = message.numberEnum;
+    }
+    if (message.booleanEnum?.length) {
+      obj.booleanEnum = message.booleanEnum;
+    }
+    return obj;
+  },
+
+  create(base?: DeepPartial<HandoffParameter>): HandoffParameter {
+    return HandoffParameter.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<HandoffParameter>): HandoffParameter {
+    const message = createBaseHandoffParameter();
+    message.name = object.name ?? "";
+    message.type = object.type ?? 0;
+    message.description = object.description ?? "";
+    message.required = object.required ?? false;
+    message.stringEnum = object.stringEnum?.map((e) => e) || [];
+    message.numberEnum = object.numberEnum?.map((e) => e) || [];
+    message.booleanEnum = object.booleanEnum?.map((e) => e) || [];
     return message;
   },
 };
