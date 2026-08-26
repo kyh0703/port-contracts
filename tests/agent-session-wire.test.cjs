@@ -128,7 +128,7 @@ test("published orchestration topology references only inline node IDs", () => {
           sourceNodeId: "node-1",
           targetNodeId: "node-2",
           routingDescription: "Escalate",
-          contextPolicy: ContextPolicy.CONTEXT_POLICY_CONVERSATION,
+          contextPolicy: ContextPolicy.CONTEXT_POLICY_RECENT,
         }],
       },
     },
@@ -175,7 +175,7 @@ test("inline runtimes round-trip Knowledge fields and default them for legacy pa
           sourceNodeId: "node-1",
           targetNodeId: "node-2",
           routingDescription: "Escalate",
-          contextPolicy: ContextPolicy.CONTEXT_POLICY_CONVERSATION,
+          contextPolicy: ContextPolicy.CONTEXT_POLICY_NONE,
         }],
       },
     },
@@ -260,6 +260,19 @@ test("handoff routes round-trip typed parameters, recent context, and request-st
   assert.deepEqual(route.parameters[0].stringEnum, ["duplicate", "wrong-item"]);
   assert.deepEqual(route.parameters[1].numberEnum, [10.5, 20]);
   assert.deepEqual(route.parameters[2].booleanEnum, [true, false]);
+});
+
+test("field-6 bytes decode into requestStart", () => {
+  const route = contracts.PublishedHandoffRoute.decode(Uint8Array.from([
+    0x0a, 0x07, 0x72, 0x6f, 0x75, 0x74, 0x65, 0x2d, 0x31,
+    0x12, 0x05, 0x73, 0x72, 0x63, 0x2d, 0x31,
+    0x1a, 0x05, 0x64, 0x73, 0x74, 0x2d, 0x31,
+    0x22, 0x08, 0x45, 0x73, 0x63, 0x61, 0x6c, 0x61, 0x74, 0x65,
+    0x28, 0x03,
+    0x32, 0x10, 0x54, 0x72, 0x61, 0x6e, 0x73, 0x66, 0x65, 0x72, 0x20, 0x73, 0x74, 0x61, 0x72, 0x74, 0x65, 0x64,
+  ]));
+
+  assert.equal(route.requestStart, "Transfer started");
 });
 
 function inlineRuntime(nodeId, systemPrompt, knowledgeRevisionId, knowledgeRetrievalCapability) {

@@ -243,6 +243,14 @@ func TestPublishedOrchestrationValidation(t *testing.T) {
 		t.Fatal("Validate(zero handoff depth) = nil")
 	}
 
+	t.Run("handoff rejects conversation context policy", func(t *testing.T) {
+		handoff := validHandoffTextResponse()
+		handoff.GetOrchestration().GetHandoff().Routes[0].ContextPolicy = apiv1.ContextPolicy_CONTEXT_POLICY_CONVERSATION
+		if err := Validate(handoff); err == nil {
+			t.Fatal("Validate(handoff conversation context policy) = nil")
+		}
+	})
+
 	t.Run("duplicate handoff parameter names", func(t *testing.T) {
 		handoff := validHandoffTextResponse()
 		handoff.GetOrchestration().GetHandoff().Routes[0].Parameters = []*apiv1.HandoffParameter{
@@ -263,6 +271,14 @@ func TestPublishedOrchestrationValidation(t *testing.T) {
 		}}
 		if err := Validate(handoff); err == nil {
 			t.Fatal("Validate(handoff parameter enum type mismatch) = nil")
+		}
+	})
+
+	t.Run("supervisor rejects recent context policy", func(t *testing.T) {
+		supervisor := validSupervisorTextResponse()
+		supervisor.GetOrchestration().GetSupervisor().Specialists[0].ContextPolicy = apiv1.ContextPolicy_CONTEXT_POLICY_RECENT
+		if err := Validate(supervisor); err == nil {
+			t.Fatal("Validate(supervisor recent context policy) = nil")
 		}
 	})
 }
