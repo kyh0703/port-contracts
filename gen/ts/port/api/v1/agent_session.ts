@@ -402,8 +402,10 @@ export interface PublishedHandoffRoute {
   targetNodeId: string;
   routingDescription: string;
   contextPolicy: ContextPolicy;
-  requestStart: string;
+  /** @deprecated */
+  announcement: string;
   parameters: HandoffParameter[];
+  requestStart: string;
 }
 
 export interface HandoffParameter {
@@ -2266,8 +2268,9 @@ function createBasePublishedHandoffRoute(): PublishedHandoffRoute {
     targetNodeId: "",
     routingDescription: "",
     contextPolicy: 0,
-    requestStart: "",
+    announcement: "",
     parameters: [],
+    requestStart: "",
   };
 }
 
@@ -2288,11 +2291,14 @@ export const PublishedHandoffRoute: MessageFns<PublishedHandoffRoute> = {
     if (message.contextPolicy !== 0) {
       writer.uint32(40).int32(message.contextPolicy);
     }
-    if (message.requestStart !== "") {
-      writer.uint32(50).string(message.requestStart);
+    if (message.announcement !== "") {
+      writer.uint32(50).string(message.announcement);
     }
     for (const v of message.parameters) {
       HandoffParameter.encode(v!, writer.uint32(58).fork()).join();
+    }
+    if (message.requestStart !== "") {
+      writer.uint32(66).string(message.requestStart);
     }
     return writer;
   },
@@ -2349,7 +2355,7 @@ export const PublishedHandoffRoute: MessageFns<PublishedHandoffRoute> = {
             break;
           }
 
-          message.requestStart = reader.string();
+          message.announcement = reader.string();
           continue;
         }
         case 7: {
@@ -2358,6 +2364,14 @@ export const PublishedHandoffRoute: MessageFns<PublishedHandoffRoute> = {
           }
 
           message.parameters.push(HandoffParameter.decode(reader, reader.uint32()));
+          continue;
+        }
+        case 8: {
+          if (tag !== 66) {
+            break;
+          }
+
+          message.requestStart = reader.string();
           continue;
         }
       }
@@ -2396,14 +2410,15 @@ export const PublishedHandoffRoute: MessageFns<PublishedHandoffRoute> = {
         : isSet(object.context_policy)
         ? contextPolicyFromJSON(object.context_policy)
         : 0,
+      announcement: isSet(object.announcement) ? globalThis.String(object.announcement) : "",
+      parameters: globalThis.Array.isArray(object?.parameters)
+        ? object.parameters.map((e: any) => HandoffParameter.fromJSON(e))
+        : [],
       requestStart: isSet(object.requestStart)
         ? globalThis.String(object.requestStart)
         : isSet(object.request_start)
         ? globalThis.String(object.request_start)
         : "",
-      parameters: globalThis.Array.isArray(object?.parameters)
-        ? object.parameters.map((e: any) => HandoffParameter.fromJSON(e))
-        : [],
     };
   },
 
@@ -2424,11 +2439,14 @@ export const PublishedHandoffRoute: MessageFns<PublishedHandoffRoute> = {
     if (message.contextPolicy !== 0) {
       obj.contextPolicy = contextPolicyToJSON(message.contextPolicy);
     }
-    if (message.requestStart !== "") {
-      obj.requestStart = message.requestStart;
+    if (message.announcement !== "") {
+      obj.announcement = message.announcement;
     }
     if (message.parameters?.length) {
       obj.parameters = message.parameters.map((e) => HandoffParameter.toJSON(e));
+    }
+    if (message.requestStart !== "") {
+      obj.requestStart = message.requestStart;
     }
     return obj;
   },
@@ -2443,8 +2461,9 @@ export const PublishedHandoffRoute: MessageFns<PublishedHandoffRoute> = {
     message.targetNodeId = object.targetNodeId ?? "";
     message.routingDescription = object.routingDescription ?? "";
     message.contextPolicy = object.contextPolicy ?? 0;
-    message.requestStart = object.requestStart ?? "";
+    message.announcement = object.announcement ?? "";
     message.parameters = object.parameters?.map((e) => HandoffParameter.fromPartial(e)) || [];
+    message.requestStart = object.requestStart ?? "";
     return message;
   },
 };

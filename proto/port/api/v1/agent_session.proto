@@ -160,14 +160,20 @@ message PublishedHandoffRoute {
     message: "handoff parameter names must be unique"
     expression: "this.parameters.map(parameter, parameter.name).unique()"
   };
+  option (buf.validate.message).cel = {
+    id: "published_handoff_route.start_message_source"
+    message: "handoff route may use either announcement or request_start, but not both"
+    expression: "this.announcement == '' || this.request_start == ''"
+  };
 
   string transition_id = 1 [(buf.validate.field).string.min_len = 1];
   string source_node_id = 2 [(buf.validate.field).string.min_len = 1];
   string target_node_id = 3 [(buf.validate.field).string.min_len = 1];
   string routing_description = 4 [(buf.validate.field).string.min_len = 1];
   ContextPolicy context_policy = 5 [(buf.validate.field).enum = {defined_only: true not_in: 0}];
-  string request_start = 6;
+  string announcement = 6 [deprecated = true];
   repeated HandoffParameter parameters = 7;
+  string request_start = 8;
 }
 
 enum HandoffParameterType {

@@ -256,13 +256,13 @@ test("handoff routes round-trip typed parameters, recent context, and request-st
   const route = decoded.orchestration.handoff.routes[0];
   assert.equal(route.contextPolicy, ContextPolicy.CONTEXT_POLICY_RECENT);
   assert.equal(route.requestStart, "I will transfer you to refunds.");
-  assert.equal(route.announcement, undefined);
+  assert.equal(route.announcement, "");
   assert.deepEqual(route.parameters[0].stringEnum, ["duplicate", "wrong-item"]);
   assert.deepEqual(route.parameters[1].numberEnum, [10.5, 20]);
   assert.deepEqual(route.parameters[2].booleanEnum, [true, false]);
 });
 
-test("field-6 bytes decode into requestStart", () => {
+test("field-6 bytes decode into announcement", () => {
   const route = contracts.PublishedHandoffRoute.decode(Uint8Array.from([
     0x0a, 0x07, 0x72, 0x6f, 0x75, 0x74, 0x65, 0x2d, 0x31,
     0x12, 0x05, 0x73, 0x72, 0x63, 0x2d, 0x31,
@@ -272,7 +272,8 @@ test("field-6 bytes decode into requestStart", () => {
     0x32, 0x10, 0x54, 0x72, 0x61, 0x6e, 0x73, 0x66, 0x65, 0x72, 0x20, 0x73, 0x74, 0x61, 0x72, 0x74, 0x65, 0x64,
   ]));
 
-  assert.equal(route.requestStart, "Transfer started");
+  assert.equal(route.announcement, "Transfer started");
+  assert.equal(route.requestStart, "");
 });
 
 function inlineRuntime(nodeId, systemPrompt, knowledgeRevisionId, knowledgeRetrievalCapability) {

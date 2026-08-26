@@ -76,13 +76,14 @@ test("publication revision is the Prompt Agent inline orchestration cutover", ()
   ]);
 });
 
-test("handoff route wire shape keeps context_policy and field-6 request_start only", () => {
+test("handoff route wire shape keeps compatibility field-6 announcement and canonical field-8 request_start", () => {
   const agentSession = read("proto/port/api/v1/agent_session.proto");
   const routeBody = agentSession.match(/message PublishedHandoffRoute \{([\s\S]*?)\n\}/)?.[1];
   assert.ok(routeBody, "PublishedHandoffRoute message is missing");
   assert.match(routeBody, /ContextPolicy context_policy = 5/);
-  assert.match(routeBody, /string request_start = 6/);
+  assert.match(routeBody, /string announcement = 6 \[deprecated = true\]/);
   assert.match(routeBody, /repeated HandoffParameter parameters = 7/);
-  assert.doesNotMatch(routeBody, /\bannouncement\b|\bcontext_mode\b|HandoffContextMode/);
+  assert.match(routeBody, /string request_start = 8/);
+  assert.doesNotMatch(routeBody, /\bcontext_mode\b|HandoffContextMode/);
   assert.match(agentSession, /CONTEXT_POLICY_RECENT = 3;/);
 });

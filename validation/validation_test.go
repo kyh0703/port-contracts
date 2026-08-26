@@ -274,6 +274,14 @@ func TestPublishedOrchestrationValidation(t *testing.T) {
 		}
 	})
 
+	t.Run("handoff rejects both announcement and request start", func(t *testing.T) {
+		handoff := validHandoffTextResponse()
+		handoff.GetOrchestration().GetHandoff().Routes[0].Announcement = "Legacy announcement."
+		if err := Validate(handoff); err == nil {
+			t.Fatal("Validate(handoff legacy and canonical start message) = nil")
+		}
+	})
+
 	t.Run("supervisor rejects recent context policy", func(t *testing.T) {
 		supervisor := validSupervisorTextResponse()
 		supervisor.GetOrchestration().GetSupervisor().Specialists[0].ContextPolicy = apiv1.ContextPolicy_CONTEXT_POLICY_RECENT
