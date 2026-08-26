@@ -22,45 +22,6 @@ import { LlmRuntime, SttRuntime, TtsRuntime } from "./voice_runtime";
 
 export const protobufPackage = "port.api.v1";
 
-export enum HandoffContextMode {
-  HANDOFF_CONTEXT_MODE_UNSPECIFIED = 0,
-  HANDOFF_CONTEXT_MODE_NONE = 1,
-  HANDOFF_CONTEXT_MODE_RECENT = 2,
-  UNRECOGNIZED = -1,
-}
-
-export function handoffContextModeFromJSON(object: any): HandoffContextMode {
-  switch (object) {
-    case 0:
-    case "HANDOFF_CONTEXT_MODE_UNSPECIFIED":
-      return HandoffContextMode.HANDOFF_CONTEXT_MODE_UNSPECIFIED;
-    case 1:
-    case "HANDOFF_CONTEXT_MODE_NONE":
-      return HandoffContextMode.HANDOFF_CONTEXT_MODE_NONE;
-    case 2:
-    case "HANDOFF_CONTEXT_MODE_RECENT":
-      return HandoffContextMode.HANDOFF_CONTEXT_MODE_RECENT;
-    case -1:
-    case "UNRECOGNIZED":
-    default:
-      return HandoffContextMode.UNRECOGNIZED;
-  }
-}
-
-export function handoffContextModeToJSON(object: HandoffContextMode): string {
-  switch (object) {
-    case HandoffContextMode.HANDOFF_CONTEXT_MODE_UNSPECIFIED:
-      return "HANDOFF_CONTEXT_MODE_UNSPECIFIED";
-    case HandoffContextMode.HANDOFF_CONTEXT_MODE_NONE:
-      return "HANDOFF_CONTEXT_MODE_NONE";
-    case HandoffContextMode.HANDOFF_CONTEXT_MODE_RECENT:
-      return "HANDOFF_CONTEXT_MODE_RECENT";
-    case HandoffContextMode.UNRECOGNIZED:
-    default:
-      return "UNRECOGNIZED";
-  }
-}
-
 export enum HandoffParameterType {
   HANDOFF_PARAMETER_TYPE_UNSPECIFIED = 0,
   HANDOFF_PARAMETER_TYPE_STRING = 1,
@@ -296,6 +257,7 @@ export enum ContextPolicy {
   CONTEXT_POLICY_UNSPECIFIED = 0,
   CONTEXT_POLICY_NONE = 1,
   CONTEXT_POLICY_CONVERSATION = 2,
+  CONTEXT_POLICY_RECENT = 3,
   UNRECOGNIZED = -1,
 }
 
@@ -310,6 +272,9 @@ export function contextPolicyFromJSON(object: any): ContextPolicy {
     case 2:
     case "CONTEXT_POLICY_CONVERSATION":
       return ContextPolicy.CONTEXT_POLICY_CONVERSATION;
+    case 3:
+    case "CONTEXT_POLICY_RECENT":
+      return ContextPolicy.CONTEXT_POLICY_RECENT;
     case -1:
     case "UNRECOGNIZED":
     default:
@@ -325,6 +290,8 @@ export function contextPolicyToJSON(object: ContextPolicy): string {
       return "CONTEXT_POLICY_NONE";
     case ContextPolicy.CONTEXT_POLICY_CONVERSATION:
       return "CONTEXT_POLICY_CONVERSATION";
+    case ContextPolicy.CONTEXT_POLICY_RECENT:
+      return "CONTEXT_POLICY_RECENT";
     case ContextPolicy.UNRECOGNIZED:
     default:
       return "UNRECOGNIZED";
@@ -435,9 +402,7 @@ export interface PublishedHandoffRoute {
   targetNodeId: string;
   routingDescription: string;
   contextPolicy: ContextPolicy;
-  announcement: string;
   requestStart: string;
-  contextMode: HandoffContextMode;
   parameters: HandoffParameter[];
 }
 
@@ -2301,9 +2266,7 @@ function createBasePublishedHandoffRoute(): PublishedHandoffRoute {
     targetNodeId: "",
     routingDescription: "",
     contextPolicy: 0,
-    announcement: "",
     requestStart: "",
-    contextMode: 0,
     parameters: [],
   };
 }
@@ -2325,17 +2288,11 @@ export const PublishedHandoffRoute: MessageFns<PublishedHandoffRoute> = {
     if (message.contextPolicy !== 0) {
       writer.uint32(40).int32(message.contextPolicy);
     }
-    if (message.announcement !== "") {
-      writer.uint32(50).string(message.announcement);
-    }
     if (message.requestStart !== "") {
-      writer.uint32(58).string(message.requestStart);
-    }
-    if (message.contextMode !== 0) {
-      writer.uint32(64).int32(message.contextMode);
+      writer.uint32(50).string(message.requestStart);
     }
     for (const v of message.parameters) {
-      HandoffParameter.encode(v!, writer.uint32(74).fork()).join();
+      HandoffParameter.encode(v!, writer.uint32(58).fork()).join();
     }
     return writer;
   },
@@ -2392,27 +2349,11 @@ export const PublishedHandoffRoute: MessageFns<PublishedHandoffRoute> = {
             break;
           }
 
-          message.announcement = reader.string();
+          message.requestStart = reader.string();
           continue;
         }
         case 7: {
           if (tag !== 58) {
-            break;
-          }
-
-          message.requestStart = reader.string();
-          continue;
-        }
-        case 8: {
-          if (tag !== 64) {
-            break;
-          }
-
-          message.contextMode = reader.int32() as any;
-          continue;
-        }
-        case 9: {
-          if (tag !== 74) {
             break;
           }
 
@@ -2455,17 +2396,11 @@ export const PublishedHandoffRoute: MessageFns<PublishedHandoffRoute> = {
         : isSet(object.context_policy)
         ? contextPolicyFromJSON(object.context_policy)
         : 0,
-      announcement: isSet(object.announcement) ? globalThis.String(object.announcement) : "",
       requestStart: isSet(object.requestStart)
         ? globalThis.String(object.requestStart)
         : isSet(object.request_start)
         ? globalThis.String(object.request_start)
         : "",
-      contextMode: isSet(object.contextMode)
-        ? handoffContextModeFromJSON(object.contextMode)
-        : isSet(object.context_mode)
-        ? handoffContextModeFromJSON(object.context_mode)
-        : 0,
       parameters: globalThis.Array.isArray(object?.parameters)
         ? object.parameters.map((e: any) => HandoffParameter.fromJSON(e))
         : [],
@@ -2489,14 +2424,8 @@ export const PublishedHandoffRoute: MessageFns<PublishedHandoffRoute> = {
     if (message.contextPolicy !== 0) {
       obj.contextPolicy = contextPolicyToJSON(message.contextPolicy);
     }
-    if (message.announcement !== "") {
-      obj.announcement = message.announcement;
-    }
     if (message.requestStart !== "") {
       obj.requestStart = message.requestStart;
-    }
-    if (message.contextMode !== 0) {
-      obj.contextMode = handoffContextModeToJSON(message.contextMode);
     }
     if (message.parameters?.length) {
       obj.parameters = message.parameters.map((e) => HandoffParameter.toJSON(e));
@@ -2514,9 +2443,7 @@ export const PublishedHandoffRoute: MessageFns<PublishedHandoffRoute> = {
     message.targetNodeId = object.targetNodeId ?? "";
     message.routingDescription = object.routingDescription ?? "";
     message.contextPolicy = object.contextPolicy ?? 0;
-    message.announcement = object.announcement ?? "";
     message.requestStart = object.requestStart ?? "";
-    message.contextMode = object.contextMode ?? 0;
     message.parameters = object.parameters?.map((e) => HandoffParameter.fromPartial(e)) || [];
     return message;
   },
@@ -2543,16 +2470,12 @@ export const HandoffParameter: MessageFns<HandoffParameter> = {
     for (const v of message.stringEnum) {
       writer.uint32(42).string(v!);
     }
-    writer.uint32(50).fork();
     for (const v of message.numberEnum) {
-      writer.double(v);
+      writer.uint32(49).double(v!);
     }
-    writer.join();
-    writer.uint32(58).fork();
     for (const v of message.booleanEnum) {
-      writer.bool(v);
+      writer.uint32(56).bool(v!);
     }
-    writer.join();
     return writer;
   },
 

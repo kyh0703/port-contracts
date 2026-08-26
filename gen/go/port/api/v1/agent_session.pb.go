@@ -22,55 +22,6 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-type HandoffContextMode int32
-
-const (
-	HandoffContextMode_HANDOFF_CONTEXT_MODE_UNSPECIFIED HandoffContextMode = 0
-	HandoffContextMode_HANDOFF_CONTEXT_MODE_NONE        HandoffContextMode = 1
-	HandoffContextMode_HANDOFF_CONTEXT_MODE_RECENT      HandoffContextMode = 2
-)
-
-// Enum value maps for HandoffContextMode.
-var (
-	HandoffContextMode_name = map[int32]string{
-		0: "HANDOFF_CONTEXT_MODE_UNSPECIFIED",
-		1: "HANDOFF_CONTEXT_MODE_NONE",
-		2: "HANDOFF_CONTEXT_MODE_RECENT",
-	}
-	HandoffContextMode_value = map[string]int32{
-		"HANDOFF_CONTEXT_MODE_UNSPECIFIED": 0,
-		"HANDOFF_CONTEXT_MODE_NONE":        1,
-		"HANDOFF_CONTEXT_MODE_RECENT":      2,
-	}
-)
-
-func (x HandoffContextMode) Enum() *HandoffContextMode {
-	p := new(HandoffContextMode)
-	*p = x
-	return p
-}
-
-func (x HandoffContextMode) String() string {
-	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
-}
-
-func (HandoffContextMode) Descriptor() protoreflect.EnumDescriptor {
-	return file_port_api_v1_agent_session_proto_enumTypes[0].Descriptor()
-}
-
-func (HandoffContextMode) Type() protoreflect.EnumType {
-	return &file_port_api_v1_agent_session_proto_enumTypes[0]
-}
-
-func (x HandoffContextMode) Number() protoreflect.EnumNumber {
-	return protoreflect.EnumNumber(x)
-}
-
-// Deprecated: Use HandoffContextMode.Descriptor instead.
-func (HandoffContextMode) EnumDescriptor() ([]byte, []int) {
-	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{0}
-}
-
 type HandoffParameterType int32
 
 const (
@@ -107,11 +58,11 @@ func (x HandoffParameterType) String() string {
 }
 
 func (HandoffParameterType) Descriptor() protoreflect.EnumDescriptor {
-	return file_port_api_v1_agent_session_proto_enumTypes[1].Descriptor()
+	return file_port_api_v1_agent_session_proto_enumTypes[0].Descriptor()
 }
 
 func (HandoffParameterType) Type() protoreflect.EnumType {
-	return &file_port_api_v1_agent_session_proto_enumTypes[1]
+	return &file_port_api_v1_agent_session_proto_enumTypes[0]
 }
 
 func (x HandoffParameterType) Number() protoreflect.EnumNumber {
@@ -120,7 +71,7 @@ func (x HandoffParameterType) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use HandoffParameterType.Descriptor instead.
 func (HandoffParameterType) EnumDescriptor() ([]byte, []int) {
-	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{1}
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{0}
 }
 
 type CallTransportSource int32
@@ -159,11 +110,11 @@ func (x CallTransportSource) String() string {
 }
 
 func (CallTransportSource) Descriptor() protoreflect.EnumDescriptor {
-	return file_port_api_v1_agent_session_proto_enumTypes[2].Descriptor()
+	return file_port_api_v1_agent_session_proto_enumTypes[1].Descriptor()
 }
 
 func (CallTransportSource) Type() protoreflect.EnumType {
-	return &file_port_api_v1_agent_session_proto_enumTypes[2]
+	return &file_port_api_v1_agent_session_proto_enumTypes[1]
 }
 
 func (x CallTransportSource) Number() protoreflect.EnumNumber {
@@ -172,7 +123,7 @@ func (x CallTransportSource) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use CallTransportSource.Descriptor instead.
 func (CallTransportSource) EnumDescriptor() ([]byte, []int) {
-	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{2}
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{1}
 }
 
 type NoiseCancellationMode int32
@@ -211,11 +162,11 @@ func (x NoiseCancellationMode) String() string {
 }
 
 func (NoiseCancellationMode) Descriptor() protoreflect.EnumDescriptor {
-	return file_port_api_v1_agent_session_proto_enumTypes[3].Descriptor()
+	return file_port_api_v1_agent_session_proto_enumTypes[2].Descriptor()
 }
 
 func (NoiseCancellationMode) Type() protoreflect.EnumType {
-	return &file_port_api_v1_agent_session_proto_enumTypes[3]
+	return &file_port_api_v1_agent_session_proto_enumTypes[2]
 }
 
 func (x NoiseCancellationMode) Number() protoreflect.EnumNumber {
@@ -224,7 +175,7 @@ func (x NoiseCancellationMode) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use NoiseCancellationMode.Descriptor instead.
 func (NoiseCancellationMode) EnumDescriptor() ([]byte, []int) {
-	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{3}
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{2}
 }
 
 type BackgroundAudioPreset int32
@@ -269,11 +220,11 @@ func (x BackgroundAudioPreset) String() string {
 }
 
 func (BackgroundAudioPreset) Descriptor() protoreflect.EnumDescriptor {
-	return file_port_api_v1_agent_session_proto_enumTypes[4].Descriptor()
+	return file_port_api_v1_agent_session_proto_enumTypes[3].Descriptor()
 }
 
 func (BackgroundAudioPreset) Type() protoreflect.EnumType {
-	return &file_port_api_v1_agent_session_proto_enumTypes[4]
+	return &file_port_api_v1_agent_session_proto_enumTypes[3]
 }
 
 func (x BackgroundAudioPreset) Number() protoreflect.EnumNumber {
@@ -282,7 +233,7 @@ func (x BackgroundAudioPreset) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use BackgroundAudioPreset.Descriptor instead.
 func (BackgroundAudioPreset) EnumDescriptor() ([]byte, []int) {
-	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{4}
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{3}
 }
 
 type OrchestrationMode int32
@@ -318,11 +269,11 @@ func (x OrchestrationMode) String() string {
 }
 
 func (OrchestrationMode) Descriptor() protoreflect.EnumDescriptor {
-	return file_port_api_v1_agent_session_proto_enumTypes[5].Descriptor()
+	return file_port_api_v1_agent_session_proto_enumTypes[4].Descriptor()
 }
 
 func (OrchestrationMode) Type() protoreflect.EnumType {
-	return &file_port_api_v1_agent_session_proto_enumTypes[5]
+	return &file_port_api_v1_agent_session_proto_enumTypes[4]
 }
 
 func (x OrchestrationMode) Number() protoreflect.EnumNumber {
@@ -331,7 +282,7 @@ func (x OrchestrationMode) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use OrchestrationMode.Descriptor instead.
 func (OrchestrationMode) EnumDescriptor() ([]byte, []int) {
-	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{5}
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{4}
 }
 
 type ContextPolicy int32
@@ -340,6 +291,7 @@ const (
 	ContextPolicy_CONTEXT_POLICY_UNSPECIFIED  ContextPolicy = 0
 	ContextPolicy_CONTEXT_POLICY_NONE         ContextPolicy = 1
 	ContextPolicy_CONTEXT_POLICY_CONVERSATION ContextPolicy = 2
+	ContextPolicy_CONTEXT_POLICY_RECENT       ContextPolicy = 3
 )
 
 // Enum value maps for ContextPolicy.
@@ -348,11 +300,13 @@ var (
 		0: "CONTEXT_POLICY_UNSPECIFIED",
 		1: "CONTEXT_POLICY_NONE",
 		2: "CONTEXT_POLICY_CONVERSATION",
+		3: "CONTEXT_POLICY_RECENT",
 	}
 	ContextPolicy_value = map[string]int32{
 		"CONTEXT_POLICY_UNSPECIFIED":  0,
 		"CONTEXT_POLICY_NONE":         1,
 		"CONTEXT_POLICY_CONVERSATION": 2,
+		"CONTEXT_POLICY_RECENT":       3,
 	}
 )
 
@@ -367,11 +321,11 @@ func (x ContextPolicy) String() string {
 }
 
 func (ContextPolicy) Descriptor() protoreflect.EnumDescriptor {
-	return file_port_api_v1_agent_session_proto_enumTypes[6].Descriptor()
+	return file_port_api_v1_agent_session_proto_enumTypes[5].Descriptor()
 }
 
 func (ContextPolicy) Type() protoreflect.EnumType {
-	return &file_port_api_v1_agent_session_proto_enumTypes[6]
+	return &file_port_api_v1_agent_session_proto_enumTypes[5]
 }
 
 func (x ContextPolicy) Number() protoreflect.EnumNumber {
@@ -380,7 +334,7 @@ func (x ContextPolicy) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use ContextPolicy.Descriptor instead.
 func (ContextPolicy) EnumDescriptor() ([]byte, []int) {
-	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{6}
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{5}
 }
 
 type BootstrapRequest struct {
@@ -1359,10 +1313,8 @@ type PublishedHandoffRoute struct {
 	TargetNodeId       string                 `protobuf:"bytes,3,opt,name=target_node_id,json=targetNodeId,proto3" json:"target_node_id,omitempty"`
 	RoutingDescription string                 `protobuf:"bytes,4,opt,name=routing_description,json=routingDescription,proto3" json:"routing_description,omitempty"`
 	ContextPolicy      ContextPolicy          `protobuf:"varint,5,opt,name=context_policy,json=contextPolicy,proto3,enum=port.api.v1.ContextPolicy" json:"context_policy,omitempty"`
-	Announcement       string                 `protobuf:"bytes,6,opt,name=announcement,proto3" json:"announcement,omitempty"`
-	RequestStart       string                 `protobuf:"bytes,7,opt,name=request_start,json=requestStart,proto3" json:"request_start,omitempty"`
-	ContextMode        HandoffContextMode     `protobuf:"varint,8,opt,name=context_mode,json=contextMode,proto3,enum=port.api.v1.HandoffContextMode" json:"context_mode,omitempty"`
-	Parameters         []*HandoffParameter    `protobuf:"bytes,9,rep,name=parameters,proto3" json:"parameters,omitempty"`
+	RequestStart       string                 `protobuf:"bytes,6,opt,name=request_start,json=requestStart,proto3" json:"request_start,omitempty"`
+	Parameters         []*HandoffParameter    `protobuf:"bytes,7,rep,name=parameters,proto3" json:"parameters,omitempty"`
 	unknownFields      protoimpl.UnknownFields
 	sizeCache          protoimpl.SizeCache
 }
@@ -1432,25 +1384,11 @@ func (x *PublishedHandoffRoute) GetContextPolicy() ContextPolicy {
 	return ContextPolicy_CONTEXT_POLICY_UNSPECIFIED
 }
 
-func (x *PublishedHandoffRoute) GetAnnouncement() string {
-	if x != nil {
-		return x.Announcement
-	}
-	return ""
-}
-
 func (x *PublishedHandoffRoute) GetRequestStart() string {
 	if x != nil {
 		return x.RequestStart
 	}
 	return ""
-}
-
-func (x *PublishedHandoffRoute) GetContextMode() HandoffContextMode {
-	if x != nil {
-		return x.ContextMode
-	}
-	return HandoffContextMode_HANDOFF_CONTEXT_MODE_UNSPECIFIED
 }
 
 func (x *PublishedHandoffRoute) GetParameters() []*HandoffParameter {
@@ -2993,32 +2931,31 @@ const file_port_api_v1_agent_session_proto_rawDesc = "" +
 	"\x18PublishedHandoffSnapshot\x12+\n" +
 	"\rentry_node_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\ventryNodeId\x123\n" +
 	"\x11max_handoff_depth\x18\x02 \x01(\rB\a\xbaH\x04*\x02 \x00R\x0fmaxHandoffDepth\x12D\n" +
-	"\x06routes\x18\x03 \x03(\v2\".port.api.v1.PublishedHandoffRouteB\b\xbaH\x05\x92\x01\x02\b\x01R\x06routes\"\x84\x04\n" +
+	"\x06routes\x18\x03 \x03(\v2\".port.api.v1.PublishedHandoffRouteB\b\xbaH\x05\x92\x01\x02\b\x01R\x06routes\"\xab\x04\n" +
 	"\x15PublishedHandoffRoute\x12,\n" +
 	"\rtransition_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\ftransitionId\x12-\n" +
 	"\x0esource_node_id\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\fsourceNodeId\x12-\n" +
 	"\x0etarget_node_id\x18\x03 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\ftargetNodeId\x128\n" +
 	"\x13routing_description\x18\x04 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x12routingDescription\x12M\n" +
 	"\x0econtext_policy\x18\x05 \x01(\x0e2\x1a.port.api.v1.ContextPolicyB\n" +
-	"\xbaH\a\x82\x01\x04\x10\x01 \x00R\rcontextPolicy\x12\"\n" +
-	"\fannouncement\x18\x06 \x01(\tR\fannouncement\x12#\n" +
-	"\rrequest_start\x18\a \x01(\tR\frequestStart\x12N\n" +
-	"\fcontext_mode\x18\b \x01(\x0e2\x1f.port.api.v1.HandoffContextModeB\n" +
-	"\xbaH\a\x82\x01\x04\x10\x01 \x00R\vcontextMode\x12=\n" +
+	"\xbaH\a\x82\x01\x04\x10\x01 \x00R\rcontextPolicy\x12#\n" +
+	"\rrequest_start\x18\x06 \x01(\tR\frequestStart\x12=\n" +
 	"\n" +
-	"parameters\x18\t \x03(\v2\x1d.port.api.v1.HandoffParameterR\n" +
-	"parameters\"\x95\x02\n" +
+	"parameters\x18\a \x03(\v2\x1d.port.api.v1.HandoffParameterR\n" +
+	"parameters:\x98\x01\xbaH\x94\x01\x1a\x91\x01\n" +
+	".published_handoff_route.parameter_names_unique\x12&handoff parameter names must be unique\x1a7this.parameters.map(parameter, parameter.name).unique()\"\x94\x05\n" +
 	"\x10HandoffParameter\x12\x1b\n" +
 	"\x04name\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x04name\x12A\n" +
 	"\x04type\x18\x02 \x01(\x0e2!.port.api.v1.HandoffParameterTypeB\n" +
 	"\xbaH\a\x82\x01\x04\x10\x01 \x00R\x04type\x12 \n" +
 	"\vdescription\x18\x03 \x01(\tR\vdescription\x12\x1a\n" +
-	"\brequired\x18\x04 \x01(\bR\brequired\x12\x1f\n" +
-	"\vstring_enum\x18\x05 \x03(\tR\n" +
-	"stringEnum\x12\x1f\n" +
-	"\vnumber_enum\x18\x06 \x03(\x01R\n" +
-	"numberEnum\x12!\n" +
-	"\fboolean_enum\x18\a \x03(\bR\vbooleanEnum\"\xae\x02\n" +
+	"\brequired\x18\x04 \x01(\bR\brequired\x12/\n" +
+	"\vstring_enum\x18\x05 \x03(\tB\x0e\xbaH\v\x92\x01\b\x18\x01\"\x04r\x02\x10\x01R\n" +
+	"stringEnum\x12)\n" +
+	"\vnumber_enum\x18\x06 \x03(\x01B\b\xbaH\x05\x92\x01\x02\x18\x01R\n" +
+	"numberEnum\x12+\n" +
+	"\fboolean_enum\x18\a \x03(\bB\b\xbaH\x05\x92\x01\x02\x18\x01R\vbooleanEnum:\xd8\x02\xbaH\xd4\x02\x1a\xd1\x02\n" +
+	"#handoff_parameter.enum_matches_type\x123only the enum values matching type may be populated\x1a\xf4\x01(this.type == 1 && size(this.number_enum) == 0 && size(this.boolean_enum) == 0) || (this.type == 2 && size(this.string_enum) == 0 && size(this.boolean_enum) == 0) || (this.type == 3 && size(this.string_enum) == 0 && size(this.number_enum) == 0)\"\xae\x02\n" +
 	"\x13TextRuntimeSnapshot\x120\n" +
 	"\ttransport\x18\x01 \x01(\tB\x12\xbaH\x0fr\r\n" +
 	"\vtext_streamR\ttransport\x12$\n" +
@@ -3138,11 +3075,7 @@ const file_port_api_v1_agent_session_proto_rawDesc = "" +
 	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"?\n" +
 	"\x19ConversationFillerRuntime\x12\"\n" +
 	"\x06phrase\x18\x01 \x01(\tB\n" +
-	"\xbaH\ar\x05\x10\x01\x18\xc8\x01R\x06phrase*z\n" +
-	"\x12HandoffContextMode\x12$\n" +
-	" HANDOFF_CONTEXT_MODE_UNSPECIFIED\x10\x00\x12\x1d\n" +
-	"\x19HANDOFF_CONTEXT_MODE_NONE\x10\x01\x12\x1f\n" +
-	"\x1bHANDOFF_CONTEXT_MODE_RECENT\x10\x02*\xa8\x01\n" +
+	"\xbaH\ar\x05\x10\x01\x18\xc8\x01R\x06phrase*\xa8\x01\n" +
 	"\x14HandoffParameterType\x12&\n" +
 	"\"HANDOFF_PARAMETER_TYPE_UNSPECIFIED\x10\x00\x12!\n" +
 	"\x1dHANDOFF_PARAMETER_TYPE_STRING\x10\x01\x12!\n" +
@@ -3168,11 +3101,12 @@ const file_port_api_v1_agent_session_proto_rawDesc = "" +
 	"\x11OrchestrationMode\x12\"\n" +
 	"\x1eORCHESTRATION_MODE_UNSPECIFIED\x10\x00\x12!\n" +
 	"\x1dORCHESTRATION_MODE_SUPERVISOR\x10\x01\x12\x1e\n" +
-	"\x1aORCHESTRATION_MODE_HANDOFF\x10\x02*i\n" +
+	"\x1aORCHESTRATION_MODE_HANDOFF\x10\x02*\x84\x01\n" +
 	"\rContextPolicy\x12\x1e\n" +
 	"\x1aCONTEXT_POLICY_UNSPECIFIED\x10\x00\x12\x17\n" +
 	"\x13CONTEXT_POLICY_NONE\x10\x01\x12\x1f\n" +
-	"\x1bCONTEXT_POLICY_CONVERSATION\x10\x022\x80\x01\n" +
+	"\x1bCONTEXT_POLICY_CONVERSATION\x10\x02\x12\x19\n" +
+	"\x15CONTEXT_POLICY_RECENT\x10\x032\x80\x01\n" +
 	"\x17ExecutionSessionService\x12e\n" +
 	"\x12BootstrapPublished\x12&.port.api.v1.BootstrapPublishedRequest\x1a'.port.api.v1.BootstrapPublishedResponseB?Z=github.com/kyh0703/port-contracts/v4/gen/go/port/api/v1;apiv1b\x06proto3"
 
@@ -3188,119 +3122,117 @@ func file_port_api_v1_agent_session_proto_rawDescGZIP() []byte {
 	return file_port_api_v1_agent_session_proto_rawDescData
 }
 
-var file_port_api_v1_agent_session_proto_enumTypes = make([]protoimpl.EnumInfo, 7)
+var file_port_api_v1_agent_session_proto_enumTypes = make([]protoimpl.EnumInfo, 6)
 var file_port_api_v1_agent_session_proto_msgTypes = make([]protoimpl.MessageInfo, 37)
 var file_port_api_v1_agent_session_proto_goTypes = []any{
-	(HandoffContextMode)(0),                 // 0: port.api.v1.HandoffContextMode
-	(HandoffParameterType)(0),               // 1: port.api.v1.HandoffParameterType
-	(CallTransportSource)(0),                // 2: port.api.v1.CallTransportSource
-	(NoiseCancellationMode)(0),              // 3: port.api.v1.NoiseCancellationMode
-	(BackgroundAudioPreset)(0),              // 4: port.api.v1.BackgroundAudioPreset
-	(OrchestrationMode)(0),                  // 5: port.api.v1.OrchestrationMode
-	(ContextPolicy)(0),                      // 6: port.api.v1.ContextPolicy
-	(*BootstrapRequest)(nil),                // 7: port.api.v1.BootstrapRequest
-	(*SipBootstrapContext)(nil),             // 8: port.api.v1.SipBootstrapContext
-	(*BootstrapPublishedRequest)(nil),       // 9: port.api.v1.BootstrapPublishedRequest
-	(*BootstrapPublishedResponse)(nil),      // 10: port.api.v1.BootstrapPublishedResponse
-	(*PublishedPromptAgentExecution)(nil),   // 11: port.api.v1.PublishedPromptAgentExecution
-	(*PublishedOrchestrationExecution)(nil), // 12: port.api.v1.PublishedOrchestrationExecution
-	(*PublishedPromptAgentRuntime)(nil),     // 13: port.api.v1.PublishedPromptAgentRuntime
-	(*PublishedInlinePromptRuntime)(nil),    // 14: port.api.v1.PublishedInlinePromptRuntime
-	(*PublishedSupervisorSnapshot)(nil),     // 15: port.api.v1.PublishedSupervisorSnapshot
-	(*PublishedSupervisorSpecialist)(nil),   // 16: port.api.v1.PublishedSupervisorSpecialist
-	(*PublishedHandoffSnapshot)(nil),        // 17: port.api.v1.PublishedHandoffSnapshot
-	(*PublishedHandoffRoute)(nil),           // 18: port.api.v1.PublishedHandoffRoute
-	(*HandoffParameter)(nil),                // 19: port.api.v1.HandoffParameter
-	(*TextRuntimeSnapshot)(nil),             // 20: port.api.v1.TextRuntimeSnapshot
-	(*CallRuntimeSnapshot)(nil),             // 21: port.api.v1.CallRuntimeSnapshot
-	(*TransportRuntime)(nil),                // 22: port.api.v1.TransportRuntime
-	(*VadRuntime)(nil),                      // 23: port.api.v1.VadRuntime
-	(*SpeechPolicyRuntime)(nil),             // 24: port.api.v1.SpeechPolicyRuntime
-	(*CallLimitsRuntime)(nil),               // 25: port.api.v1.CallLimitsRuntime
-	(*BackgroundAudioRuntime)(nil),          // 26: port.api.v1.BackgroundAudioRuntime
-	(*DtmfInputRuntime)(nil),                // 27: port.api.v1.DtmfInputRuntime
-	(*PromptInstructions)(nil),              // 28: port.api.v1.PromptInstructions
-	(*InlinePromptInstructions)(nil),        // 29: port.api.v1.InlinePromptInstructions
-	(*NodeToolMetadata)(nil),                // 30: port.api.v1.NodeToolMetadata
-	(*McpToolMetadata)(nil),                 // 31: port.api.v1.McpToolMetadata
-	(*ApiToolMetadata)(nil),                 // 32: port.api.v1.ApiToolMetadata
-	(*A2AToolMetadata)(nil),                 // 33: port.api.v1.A2aToolMetadata
-	(*ApiToolRuntime)(nil),                  // 34: port.api.v1.ApiToolRuntime
-	(*A2AToolRuntime)(nil),                  // 35: port.api.v1.A2aToolRuntime
-	(*BuiltInTool)(nil),                     // 36: port.api.v1.BuiltInTool
-	(*EndCallTool)(nil),                     // 37: port.api.v1.EndCallTool
-	(*TransferToHumanTool)(nil),             // 38: port.api.v1.TransferToHumanTool
-	(*McpServerRuntime)(nil),                // 39: port.api.v1.McpServerRuntime
-	(*ConversationFillerRuntime)(nil),       // 40: port.api.v1.ConversationFillerRuntime
-	nil,                                     // 41: port.api.v1.ApiToolRuntime.HeadersEntry
-	nil,                                     // 42: port.api.v1.A2aToolRuntime.HeadersEntry
-	nil,                                     // 43: port.api.v1.McpServerRuntime.HeadersEntry
-	(*LlmRuntime)(nil),                      // 44: port.api.v1.LlmRuntime
-	(*SttRuntime)(nil),                      // 45: port.api.v1.SttRuntime
-	(*TtsRuntime)(nil),                      // 46: port.api.v1.TtsRuntime
+	(HandoffParameterType)(0),               // 0: port.api.v1.HandoffParameterType
+	(CallTransportSource)(0),                // 1: port.api.v1.CallTransportSource
+	(NoiseCancellationMode)(0),              // 2: port.api.v1.NoiseCancellationMode
+	(BackgroundAudioPreset)(0),              // 3: port.api.v1.BackgroundAudioPreset
+	(OrchestrationMode)(0),                  // 4: port.api.v1.OrchestrationMode
+	(ContextPolicy)(0),                      // 5: port.api.v1.ContextPolicy
+	(*BootstrapRequest)(nil),                // 6: port.api.v1.BootstrapRequest
+	(*SipBootstrapContext)(nil),             // 7: port.api.v1.SipBootstrapContext
+	(*BootstrapPublishedRequest)(nil),       // 8: port.api.v1.BootstrapPublishedRequest
+	(*BootstrapPublishedResponse)(nil),      // 9: port.api.v1.BootstrapPublishedResponse
+	(*PublishedPromptAgentExecution)(nil),   // 10: port.api.v1.PublishedPromptAgentExecution
+	(*PublishedOrchestrationExecution)(nil), // 11: port.api.v1.PublishedOrchestrationExecution
+	(*PublishedPromptAgentRuntime)(nil),     // 12: port.api.v1.PublishedPromptAgentRuntime
+	(*PublishedInlinePromptRuntime)(nil),    // 13: port.api.v1.PublishedInlinePromptRuntime
+	(*PublishedSupervisorSnapshot)(nil),     // 14: port.api.v1.PublishedSupervisorSnapshot
+	(*PublishedSupervisorSpecialist)(nil),   // 15: port.api.v1.PublishedSupervisorSpecialist
+	(*PublishedHandoffSnapshot)(nil),        // 16: port.api.v1.PublishedHandoffSnapshot
+	(*PublishedHandoffRoute)(nil),           // 17: port.api.v1.PublishedHandoffRoute
+	(*HandoffParameter)(nil),                // 18: port.api.v1.HandoffParameter
+	(*TextRuntimeSnapshot)(nil),             // 19: port.api.v1.TextRuntimeSnapshot
+	(*CallRuntimeSnapshot)(nil),             // 20: port.api.v1.CallRuntimeSnapshot
+	(*TransportRuntime)(nil),                // 21: port.api.v1.TransportRuntime
+	(*VadRuntime)(nil),                      // 22: port.api.v1.VadRuntime
+	(*SpeechPolicyRuntime)(nil),             // 23: port.api.v1.SpeechPolicyRuntime
+	(*CallLimitsRuntime)(nil),               // 24: port.api.v1.CallLimitsRuntime
+	(*BackgroundAudioRuntime)(nil),          // 25: port.api.v1.BackgroundAudioRuntime
+	(*DtmfInputRuntime)(nil),                // 26: port.api.v1.DtmfInputRuntime
+	(*PromptInstructions)(nil),              // 27: port.api.v1.PromptInstructions
+	(*InlinePromptInstructions)(nil),        // 28: port.api.v1.InlinePromptInstructions
+	(*NodeToolMetadata)(nil),                // 29: port.api.v1.NodeToolMetadata
+	(*McpToolMetadata)(nil),                 // 30: port.api.v1.McpToolMetadata
+	(*ApiToolMetadata)(nil),                 // 31: port.api.v1.ApiToolMetadata
+	(*A2AToolMetadata)(nil),                 // 32: port.api.v1.A2aToolMetadata
+	(*ApiToolRuntime)(nil),                  // 33: port.api.v1.ApiToolRuntime
+	(*A2AToolRuntime)(nil),                  // 34: port.api.v1.A2aToolRuntime
+	(*BuiltInTool)(nil),                     // 35: port.api.v1.BuiltInTool
+	(*EndCallTool)(nil),                     // 36: port.api.v1.EndCallTool
+	(*TransferToHumanTool)(nil),             // 37: port.api.v1.TransferToHumanTool
+	(*McpServerRuntime)(nil),                // 38: port.api.v1.McpServerRuntime
+	(*ConversationFillerRuntime)(nil),       // 39: port.api.v1.ConversationFillerRuntime
+	nil,                                     // 40: port.api.v1.ApiToolRuntime.HeadersEntry
+	nil,                                     // 41: port.api.v1.A2aToolRuntime.HeadersEntry
+	nil,                                     // 42: port.api.v1.McpServerRuntime.HeadersEntry
+	(*LlmRuntime)(nil),                      // 43: port.api.v1.LlmRuntime
+	(*SttRuntime)(nil),                      // 44: port.api.v1.SttRuntime
+	(*TtsRuntime)(nil),                      // 45: port.api.v1.TtsRuntime
 }
 var file_port_api_v1_agent_session_proto_depIdxs = []int32{
-	8,  // 0: port.api.v1.BootstrapRequest.sip:type_name -> port.api.v1.SipBootstrapContext
-	7,  // 1: port.api.v1.BootstrapPublishedRequest.admission:type_name -> port.api.v1.BootstrapRequest
-	11, // 2: port.api.v1.BootstrapPublishedResponse.prompt_agent:type_name -> port.api.v1.PublishedPromptAgentExecution
-	12, // 3: port.api.v1.BootstrapPublishedResponse.orchestration:type_name -> port.api.v1.PublishedOrchestrationExecution
-	21, // 4: port.api.v1.BootstrapPublishedResponse.voice_runtime:type_name -> port.api.v1.CallRuntimeSnapshot
-	20, // 5: port.api.v1.BootstrapPublishedResponse.text_runtime:type_name -> port.api.v1.TextRuntimeSnapshot
-	13, // 6: port.api.v1.PublishedPromptAgentExecution.runtime:type_name -> port.api.v1.PublishedPromptAgentRuntime
-	5,  // 7: port.api.v1.PublishedOrchestrationExecution.mode:type_name -> port.api.v1.OrchestrationMode
-	14, // 8: port.api.v1.PublishedOrchestrationExecution.node_runtimes:type_name -> port.api.v1.PublishedInlinePromptRuntime
-	15, // 9: port.api.v1.PublishedOrchestrationExecution.supervisor:type_name -> port.api.v1.PublishedSupervisorSnapshot
-	17, // 10: port.api.v1.PublishedOrchestrationExecution.handoff:type_name -> port.api.v1.PublishedHandoffSnapshot
-	44, // 11: port.api.v1.PublishedPromptAgentRuntime.llm_worker:type_name -> port.api.v1.LlmRuntime
-	28, // 12: port.api.v1.PublishedPromptAgentRuntime.instructions:type_name -> port.api.v1.PromptInstructions
-	6,  // 13: port.api.v1.PublishedPromptAgentRuntime.context_policy:type_name -> port.api.v1.ContextPolicy
-	30, // 14: port.api.v1.PublishedPromptAgentRuntime.tools:type_name -> port.api.v1.NodeToolMetadata
-	39, // 15: port.api.v1.PublishedPromptAgentRuntime.mcp_servers:type_name -> port.api.v1.McpServerRuntime
-	34, // 16: port.api.v1.PublishedPromptAgentRuntime.api_tool_runtimes:type_name -> port.api.v1.ApiToolRuntime
-	35, // 17: port.api.v1.PublishedPromptAgentRuntime.a2a_tool_runtimes:type_name -> port.api.v1.A2aToolRuntime
-	36, // 18: port.api.v1.PublishedPromptAgentRuntime.built_in_tools:type_name -> port.api.v1.BuiltInTool
-	44, // 19: port.api.v1.PublishedInlinePromptRuntime.llm_worker:type_name -> port.api.v1.LlmRuntime
-	29, // 20: port.api.v1.PublishedInlinePromptRuntime.instructions:type_name -> port.api.v1.InlinePromptInstructions
-	6,  // 21: port.api.v1.PublishedInlinePromptRuntime.context_policy:type_name -> port.api.v1.ContextPolicy
-	30, // 22: port.api.v1.PublishedInlinePromptRuntime.tools:type_name -> port.api.v1.NodeToolMetadata
-	39, // 23: port.api.v1.PublishedInlinePromptRuntime.mcp_servers:type_name -> port.api.v1.McpServerRuntime
-	34, // 24: port.api.v1.PublishedInlinePromptRuntime.api_tool_runtimes:type_name -> port.api.v1.ApiToolRuntime
-	35, // 25: port.api.v1.PublishedInlinePromptRuntime.a2a_tool_runtimes:type_name -> port.api.v1.A2aToolRuntime
-	36, // 26: port.api.v1.PublishedInlinePromptRuntime.built_in_tools:type_name -> port.api.v1.BuiltInTool
-	16, // 27: port.api.v1.PublishedSupervisorSnapshot.specialists:type_name -> port.api.v1.PublishedSupervisorSpecialist
-	6,  // 28: port.api.v1.PublishedSupervisorSpecialist.context_policy:type_name -> port.api.v1.ContextPolicy
-	18, // 29: port.api.v1.PublishedHandoffSnapshot.routes:type_name -> port.api.v1.PublishedHandoffRoute
-	6,  // 30: port.api.v1.PublishedHandoffRoute.context_policy:type_name -> port.api.v1.ContextPolicy
-	0,  // 31: port.api.v1.PublishedHandoffRoute.context_mode:type_name -> port.api.v1.HandoffContextMode
-	19, // 32: port.api.v1.PublishedHandoffRoute.parameters:type_name -> port.api.v1.HandoffParameter
-	1,  // 33: port.api.v1.HandoffParameter.type:type_name -> port.api.v1.HandoffParameterType
-	45, // 34: port.api.v1.CallRuntimeSnapshot.stt:type_name -> port.api.v1.SttRuntime
-	46, // 35: port.api.v1.CallRuntimeSnapshot.tts:type_name -> port.api.v1.TtsRuntime
-	26, // 36: port.api.v1.CallRuntimeSnapshot.background_audio:type_name -> port.api.v1.BackgroundAudioRuntime
-	27, // 37: port.api.v1.CallRuntimeSnapshot.dtmf:type_name -> port.api.v1.DtmfInputRuntime
-	22, // 38: port.api.v1.CallRuntimeSnapshot.transport:type_name -> port.api.v1.TransportRuntime
-	23, // 39: port.api.v1.CallRuntimeSnapshot.vad:type_name -> port.api.v1.VadRuntime
-	24, // 40: port.api.v1.CallRuntimeSnapshot.speech_policy:type_name -> port.api.v1.SpeechPolicyRuntime
-	25, // 41: port.api.v1.CallRuntimeSnapshot.limits:type_name -> port.api.v1.CallLimitsRuntime
-	40, // 42: port.api.v1.CallRuntimeSnapshot.conversation_filler:type_name -> port.api.v1.ConversationFillerRuntime
-	2,  // 43: port.api.v1.TransportRuntime.source:type_name -> port.api.v1.CallTransportSource
-	3,  // 44: port.api.v1.VadRuntime.noise_cancellation:type_name -> port.api.v1.NoiseCancellationMode
-	4,  // 45: port.api.v1.BackgroundAudioRuntime.preset:type_name -> port.api.v1.BackgroundAudioPreset
-	31, // 46: port.api.v1.NodeToolMetadata.mcp:type_name -> port.api.v1.McpToolMetadata
-	32, // 47: port.api.v1.NodeToolMetadata.api:type_name -> port.api.v1.ApiToolMetadata
-	33, // 48: port.api.v1.NodeToolMetadata.a2a:type_name -> port.api.v1.A2aToolMetadata
-	41, // 49: port.api.v1.ApiToolRuntime.headers:type_name -> port.api.v1.ApiToolRuntime.HeadersEntry
-	42, // 50: port.api.v1.A2aToolRuntime.headers:type_name -> port.api.v1.A2aToolRuntime.HeadersEntry
-	37, // 51: port.api.v1.BuiltInTool.end_call:type_name -> port.api.v1.EndCallTool
-	38, // 52: port.api.v1.BuiltInTool.transfer_to_human:type_name -> port.api.v1.TransferToHumanTool
-	43, // 53: port.api.v1.McpServerRuntime.headers:type_name -> port.api.v1.McpServerRuntime.HeadersEntry
-	9,  // 54: port.api.v1.ExecutionSessionService.BootstrapPublished:input_type -> port.api.v1.BootstrapPublishedRequest
-	10, // 55: port.api.v1.ExecutionSessionService.BootstrapPublished:output_type -> port.api.v1.BootstrapPublishedResponse
-	55, // [55:56] is the sub-list for method output_type
-	54, // [54:55] is the sub-list for method input_type
-	54, // [54:54] is the sub-list for extension type_name
-	54, // [54:54] is the sub-list for extension extendee
-	0,  // [0:54] is the sub-list for field type_name
+	7,  // 0: port.api.v1.BootstrapRequest.sip:type_name -> port.api.v1.SipBootstrapContext
+	6,  // 1: port.api.v1.BootstrapPublishedRequest.admission:type_name -> port.api.v1.BootstrapRequest
+	10, // 2: port.api.v1.BootstrapPublishedResponse.prompt_agent:type_name -> port.api.v1.PublishedPromptAgentExecution
+	11, // 3: port.api.v1.BootstrapPublishedResponse.orchestration:type_name -> port.api.v1.PublishedOrchestrationExecution
+	20, // 4: port.api.v1.BootstrapPublishedResponse.voice_runtime:type_name -> port.api.v1.CallRuntimeSnapshot
+	19, // 5: port.api.v1.BootstrapPublishedResponse.text_runtime:type_name -> port.api.v1.TextRuntimeSnapshot
+	12, // 6: port.api.v1.PublishedPromptAgentExecution.runtime:type_name -> port.api.v1.PublishedPromptAgentRuntime
+	4,  // 7: port.api.v1.PublishedOrchestrationExecution.mode:type_name -> port.api.v1.OrchestrationMode
+	13, // 8: port.api.v1.PublishedOrchestrationExecution.node_runtimes:type_name -> port.api.v1.PublishedInlinePromptRuntime
+	14, // 9: port.api.v1.PublishedOrchestrationExecution.supervisor:type_name -> port.api.v1.PublishedSupervisorSnapshot
+	16, // 10: port.api.v1.PublishedOrchestrationExecution.handoff:type_name -> port.api.v1.PublishedHandoffSnapshot
+	43, // 11: port.api.v1.PublishedPromptAgentRuntime.llm_worker:type_name -> port.api.v1.LlmRuntime
+	27, // 12: port.api.v1.PublishedPromptAgentRuntime.instructions:type_name -> port.api.v1.PromptInstructions
+	5,  // 13: port.api.v1.PublishedPromptAgentRuntime.context_policy:type_name -> port.api.v1.ContextPolicy
+	29, // 14: port.api.v1.PublishedPromptAgentRuntime.tools:type_name -> port.api.v1.NodeToolMetadata
+	38, // 15: port.api.v1.PublishedPromptAgentRuntime.mcp_servers:type_name -> port.api.v1.McpServerRuntime
+	33, // 16: port.api.v1.PublishedPromptAgentRuntime.api_tool_runtimes:type_name -> port.api.v1.ApiToolRuntime
+	34, // 17: port.api.v1.PublishedPromptAgentRuntime.a2a_tool_runtimes:type_name -> port.api.v1.A2aToolRuntime
+	35, // 18: port.api.v1.PublishedPromptAgentRuntime.built_in_tools:type_name -> port.api.v1.BuiltInTool
+	43, // 19: port.api.v1.PublishedInlinePromptRuntime.llm_worker:type_name -> port.api.v1.LlmRuntime
+	28, // 20: port.api.v1.PublishedInlinePromptRuntime.instructions:type_name -> port.api.v1.InlinePromptInstructions
+	5,  // 21: port.api.v1.PublishedInlinePromptRuntime.context_policy:type_name -> port.api.v1.ContextPolicy
+	29, // 22: port.api.v1.PublishedInlinePromptRuntime.tools:type_name -> port.api.v1.NodeToolMetadata
+	38, // 23: port.api.v1.PublishedInlinePromptRuntime.mcp_servers:type_name -> port.api.v1.McpServerRuntime
+	33, // 24: port.api.v1.PublishedInlinePromptRuntime.api_tool_runtimes:type_name -> port.api.v1.ApiToolRuntime
+	34, // 25: port.api.v1.PublishedInlinePromptRuntime.a2a_tool_runtimes:type_name -> port.api.v1.A2aToolRuntime
+	35, // 26: port.api.v1.PublishedInlinePromptRuntime.built_in_tools:type_name -> port.api.v1.BuiltInTool
+	15, // 27: port.api.v1.PublishedSupervisorSnapshot.specialists:type_name -> port.api.v1.PublishedSupervisorSpecialist
+	5,  // 28: port.api.v1.PublishedSupervisorSpecialist.context_policy:type_name -> port.api.v1.ContextPolicy
+	17, // 29: port.api.v1.PublishedHandoffSnapshot.routes:type_name -> port.api.v1.PublishedHandoffRoute
+	5,  // 30: port.api.v1.PublishedHandoffRoute.context_policy:type_name -> port.api.v1.ContextPolicy
+	18, // 31: port.api.v1.PublishedHandoffRoute.parameters:type_name -> port.api.v1.HandoffParameter
+	0,  // 32: port.api.v1.HandoffParameter.type:type_name -> port.api.v1.HandoffParameterType
+	44, // 33: port.api.v1.CallRuntimeSnapshot.stt:type_name -> port.api.v1.SttRuntime
+	45, // 34: port.api.v1.CallRuntimeSnapshot.tts:type_name -> port.api.v1.TtsRuntime
+	25, // 35: port.api.v1.CallRuntimeSnapshot.background_audio:type_name -> port.api.v1.BackgroundAudioRuntime
+	26, // 36: port.api.v1.CallRuntimeSnapshot.dtmf:type_name -> port.api.v1.DtmfInputRuntime
+	21, // 37: port.api.v1.CallRuntimeSnapshot.transport:type_name -> port.api.v1.TransportRuntime
+	22, // 38: port.api.v1.CallRuntimeSnapshot.vad:type_name -> port.api.v1.VadRuntime
+	23, // 39: port.api.v1.CallRuntimeSnapshot.speech_policy:type_name -> port.api.v1.SpeechPolicyRuntime
+	24, // 40: port.api.v1.CallRuntimeSnapshot.limits:type_name -> port.api.v1.CallLimitsRuntime
+	39, // 41: port.api.v1.CallRuntimeSnapshot.conversation_filler:type_name -> port.api.v1.ConversationFillerRuntime
+	1,  // 42: port.api.v1.TransportRuntime.source:type_name -> port.api.v1.CallTransportSource
+	2,  // 43: port.api.v1.VadRuntime.noise_cancellation:type_name -> port.api.v1.NoiseCancellationMode
+	3,  // 44: port.api.v1.BackgroundAudioRuntime.preset:type_name -> port.api.v1.BackgroundAudioPreset
+	30, // 45: port.api.v1.NodeToolMetadata.mcp:type_name -> port.api.v1.McpToolMetadata
+	31, // 46: port.api.v1.NodeToolMetadata.api:type_name -> port.api.v1.ApiToolMetadata
+	32, // 47: port.api.v1.NodeToolMetadata.a2a:type_name -> port.api.v1.A2aToolMetadata
+	40, // 48: port.api.v1.ApiToolRuntime.headers:type_name -> port.api.v1.ApiToolRuntime.HeadersEntry
+	41, // 49: port.api.v1.A2aToolRuntime.headers:type_name -> port.api.v1.A2aToolRuntime.HeadersEntry
+	36, // 50: port.api.v1.BuiltInTool.end_call:type_name -> port.api.v1.EndCallTool
+	37, // 51: port.api.v1.BuiltInTool.transfer_to_human:type_name -> port.api.v1.TransferToHumanTool
+	42, // 52: port.api.v1.McpServerRuntime.headers:type_name -> port.api.v1.McpServerRuntime.HeadersEntry
+	8,  // 53: port.api.v1.ExecutionSessionService.BootstrapPublished:input_type -> port.api.v1.BootstrapPublishedRequest
+	9,  // 54: port.api.v1.ExecutionSessionService.BootstrapPublished:output_type -> port.api.v1.BootstrapPublishedResponse
+	54, // [54:55] is the sub-list for method output_type
+	53, // [53:54] is the sub-list for method input_type
+	53, // [53:53] is the sub-list for extension type_name
+	53, // [53:53] is the sub-list for extension extendee
+	0,  // [0:53] is the sub-list for field type_name
 }
 
 func init() { file_port_api_v1_agent_session_proto_init() }
@@ -3340,7 +3272,7 @@ func file_port_api_v1_agent_session_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_port_api_v1_agent_session_proto_rawDesc), len(file_port_api_v1_agent_session_proto_rawDesc)),
-			NumEnums:      7,
+			NumEnums:      6,
 			NumMessages:   37,
 			NumExtensions: 0,
 			NumServices:   1,

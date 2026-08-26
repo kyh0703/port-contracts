@@ -11,7 +11,7 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-const publicationContractRevision = "execution-publication-2026-08-14-r1"
+const publicationContractRevision = "execution-publication-2026-08-26-r1"
 
 func TestValidateRejectsMissingRequiredFields(t *testing.T) {
 	if err := Validate(&apiv1.RecordGatewayEventRequest{}); err == nil {
@@ -242,6 +242,29 @@ func TestPublishedOrchestrationValidation(t *testing.T) {
 	if err := Validate(handoff); err == nil {
 		t.Fatal("Validate(zero handoff depth) = nil")
 	}
+
+	t.Run("duplicate handoff parameter names", func(t *testing.T) {
+		handoff := validHandoffTextResponse()
+		handoff.GetOrchestration().GetHandoff().Routes[0].Parameters = []*apiv1.HandoffParameter{
+			{Name: "reason", Type: apiv1.HandoffParameterType_HANDOFF_PARAMETER_TYPE_STRING},
+			{Name: "reason", Type: apiv1.HandoffParameterType_HANDOFF_PARAMETER_TYPE_STRING},
+		}
+		if err := Validate(handoff); err == nil {
+			t.Fatal("Validate(duplicate handoff parameter names) = nil")
+		}
+	})
+
+	t.Run("handoff parameter enum values must match type", func(t *testing.T) {
+		handoff := validHandoffTextResponse()
+		handoff.GetOrchestration().GetHandoff().Routes[0].Parameters = []*apiv1.HandoffParameter{{
+			Name:       "reason",
+			Type:       apiv1.HandoffParameterType_HANDOFF_PARAMETER_TYPE_STRING,
+			NumberEnum: []float64{10.5},
+		}}
+		if err := Validate(handoff); err == nil {
+			t.Fatal("Validate(handoff parameter enum type mismatch) = nil")
+		}
+	})
 }
 
 func TestPublishedBootstrapWireRoundTrip(t *testing.T) {
@@ -382,7 +405,8 @@ func validHandoffTextResponse() *apiv1.BootstrapPublishedResponse {
 					SourceNodeId:       "entry-node",
 					TargetNodeId:       "target-node",
 					RoutingDescription: "Handle billing",
-					ContextPolicy:      apiv1.ContextPolicy_CONTEXT_POLICY_CONVERSATION,
+					ContextPolicy:      apiv1.ContextPolicy_CONTEXT_POLICY_RECENT,
+					RequestStart:       "Connecting you to billing.",
 				}},
 			},
 		},

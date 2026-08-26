@@ -144,21 +144,19 @@ message PublishedHandoffSnapshot {
 }
 
 message PublishedHandoffRoute {
+  option (buf.validate.message).cel = {
+    id: "published_handoff_route.parameter_names_unique"
+    message: "handoff parameter names must be unique"
+    expression: "this.parameters.map(parameter, parameter.name).unique()"
+  };
+
   string transition_id = 1 [(buf.validate.field).string.min_len = 1];
   string source_node_id = 2 [(buf.validate.field).string.min_len = 1];
   string target_node_id = 3 [(buf.validate.field).string.min_len = 1];
   string routing_description = 4 [(buf.validate.field).string.min_len = 1];
   ContextPolicy context_policy = 5 [(buf.validate.field).enum = {defined_only: true not_in: 0}];
-  string announcement = 6;
-  string request_start = 7;
-  HandoffContextMode context_mode = 8 [(buf.validate.field).enum = {defined_only: true not_in: 0}];
-  repeated HandoffParameter parameters = 9;
-}
-
-enum HandoffContextMode {
-  HANDOFF_CONTEXT_MODE_UNSPECIFIED = 0;
-  HANDOFF_CONTEXT_MODE_NONE = 1;
-  HANDOFF_CONTEXT_MODE_RECENT = 2;
+  string request_start = 6;
+  repeated HandoffParameter parameters = 7;
 }
 
 enum HandoffParameterType {
@@ -169,13 +167,22 @@ enum HandoffParameterType {
 }
 
 message HandoffParameter {
+  option (buf.validate.message).cel = {
+    id: "handoff_parameter.enum_matches_type"
+    message: "only the enum values matching type may be populated"
+    expression: "(this.type == 1 && size(this.number_enum) == 0 && size(this.boolean_enum) == 0) || (this.type == 2 && size(this.string_enum) == 0 && size(this.boolean_enum) == 0) || (this.type == 3 && size(this.string_enum) == 0 && size(this.number_enum) == 0)"
+  };
+
   string name = 1 [(buf.validate.field).string.min_len = 1];
   HandoffParameterType type = 2 [(buf.validate.field).enum = {defined_only: true not_in: 0}];
   string description = 3;
   bool required = 4;
-  repeated string string_enum = 5;
-  repeated double number_enum = 6;
-  repeated bool boolean_enum = 7;
+  repeated string string_enum = 5 [
+    (buf.validate.field).repeated.unique = true,
+    (buf.validate.field).repeated.items.string.min_len = 1
+  ];
+  repeated double number_enum = 6 [(buf.validate.field).repeated.unique = true];
+  repeated bool boolean_enum = 7 [(buf.validate.field).repeated.unique = true];
 }
 
 message TextRuntimeSnapshot {
@@ -297,6 +304,7 @@ enum ContextPolicy {
   CONTEXT_POLICY_UNSPECIFIED = 0;
   CONTEXT_POLICY_NONE = 1;
   CONTEXT_POLICY_CONVERSATION = 2;
+  CONTEXT_POLICY_RECENT = 3;
 }
 
 message McpToolMetadata {

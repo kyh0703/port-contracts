@@ -9,7 +9,6 @@ const {
   CallRuntimeSnapshot,
   OrchestrationMode,
   ContextPolicy,
-  HandoffContextMode,
   HandoffParameterType,
 } = contracts;
 
@@ -200,6 +199,7 @@ test("inline runtimes round-trip Knowledge fields and default them for legacy pa
 });
 
 test("handoff routes round-trip typed parameters, recent context, and request-start", () => {
+  assert.equal(contracts.HandoffContextMode, undefined);
   const response = BootstrapPublishedResponse.create({
     contractRevision: publicationRevision,
     conversationId: "conversation-handoff",
@@ -216,7 +216,7 @@ test("handoff routes round-trip typed parameters, recent context, and request-st
           sourceNodeId: "intake",
           targetNodeId: "refund",
           routingDescription: "Refund request",
-          contextMode: HandoffContextMode.HANDOFF_CONTEXT_MODE_RECENT,
+          contextPolicy: ContextPolicy.CONTEXT_POLICY_RECENT,
           requestStart: "I will transfer you to refunds.",
           parameters: [
             {
@@ -254,8 +254,9 @@ test("handoff routes round-trip typed parameters, recent context, and request-st
   );
   assert.deepEqual(decoded, response);
   const route = decoded.orchestration.handoff.routes[0];
-  assert.equal(route.contextMode, HandoffContextMode.HANDOFF_CONTEXT_MODE_RECENT);
+  assert.equal(route.contextPolicy, ContextPolicy.CONTEXT_POLICY_RECENT);
   assert.equal(route.requestStart, "I will transfer you to refunds.");
+  assert.equal(route.announcement, undefined);
   assert.deepEqual(route.parameters[0].stringEnum, ["duplicate", "wrong-item"]);
   assert.deepEqual(route.parameters[1].numberEnum, [10.5, 20]);
   assert.deepEqual(route.parameters[2].booleanEnum, [true, false]);

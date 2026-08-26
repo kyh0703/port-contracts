@@ -9,12 +9,6 @@ from typing import ClassVar as _ClassVar, Optional as _Optional, Union as _Union
 
 DESCRIPTOR: _descriptor.FileDescriptor
 
-class HandoffContextMode(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
-    __slots__ = ()
-    HANDOFF_CONTEXT_MODE_UNSPECIFIED: _ClassVar[HandoffContextMode]
-    HANDOFF_CONTEXT_MODE_NONE: _ClassVar[HandoffContextMode]
-    HANDOFF_CONTEXT_MODE_RECENT: _ClassVar[HandoffContextMode]
-
 class HandoffParameterType(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     __slots__ = ()
     HANDOFF_PARAMETER_TYPE_UNSPECIFIED: _ClassVar[HandoffParameterType]
@@ -56,9 +50,7 @@ class ContextPolicy(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     CONTEXT_POLICY_UNSPECIFIED: _ClassVar[ContextPolicy]
     CONTEXT_POLICY_NONE: _ClassVar[ContextPolicy]
     CONTEXT_POLICY_CONVERSATION: _ClassVar[ContextPolicy]
-HANDOFF_CONTEXT_MODE_UNSPECIFIED: HandoffContextMode
-HANDOFF_CONTEXT_MODE_NONE: HandoffContextMode
-HANDOFF_CONTEXT_MODE_RECENT: HandoffContextMode
+    CONTEXT_POLICY_RECENT: _ClassVar[ContextPolicy]
 HANDOFF_PARAMETER_TYPE_UNSPECIFIED: HandoffParameterType
 HANDOFF_PARAMETER_TYPE_STRING: HandoffParameterType
 HANDOFF_PARAMETER_TYPE_NUMBER: HandoffParameterType
@@ -83,6 +75,7 @@ ORCHESTRATION_MODE_HANDOFF: OrchestrationMode
 CONTEXT_POLICY_UNSPECIFIED: ContextPolicy
 CONTEXT_POLICY_NONE: ContextPolicy
 CONTEXT_POLICY_CONVERSATION: ContextPolicy
+CONTEXT_POLICY_RECENT: ContextPolicy
 
 class BootstrapRequest(_message.Message):
     __slots__ = ("webrtc_ticket", "sip")
@@ -249,26 +242,22 @@ class PublishedHandoffSnapshot(_message.Message):
     def __init__(self, entry_node_id: _Optional[str] = ..., max_handoff_depth: _Optional[int] = ..., routes: _Optional[_Iterable[_Union[PublishedHandoffRoute, _Mapping]]] = ...) -> None: ...
 
 class PublishedHandoffRoute(_message.Message):
-    __slots__ = ("transition_id", "source_node_id", "target_node_id", "routing_description", "context_policy", "announcement", "request_start", "context_mode", "parameters")
+    __slots__ = ("transition_id", "source_node_id", "target_node_id", "routing_description", "context_policy", "request_start", "parameters")
     TRANSITION_ID_FIELD_NUMBER: _ClassVar[int]
     SOURCE_NODE_ID_FIELD_NUMBER: _ClassVar[int]
     TARGET_NODE_ID_FIELD_NUMBER: _ClassVar[int]
     ROUTING_DESCRIPTION_FIELD_NUMBER: _ClassVar[int]
     CONTEXT_POLICY_FIELD_NUMBER: _ClassVar[int]
-    ANNOUNCEMENT_FIELD_NUMBER: _ClassVar[int]
     REQUEST_START_FIELD_NUMBER: _ClassVar[int]
-    CONTEXT_MODE_FIELD_NUMBER: _ClassVar[int]
     PARAMETERS_FIELD_NUMBER: _ClassVar[int]
     transition_id: str
     source_node_id: str
     target_node_id: str
     routing_description: str
     context_policy: ContextPolicy
-    announcement: str
     request_start: str
-    context_mode: HandoffContextMode
     parameters: _containers.RepeatedCompositeFieldContainer[HandoffParameter]
-    def __init__(self, transition_id: _Optional[str] = ..., source_node_id: _Optional[str] = ..., target_node_id: _Optional[str] = ..., routing_description: _Optional[str] = ..., context_policy: _Optional[_Union[ContextPolicy, str]] = ..., announcement: _Optional[str] = ..., request_start: _Optional[str] = ..., context_mode: _Optional[_Union[HandoffContextMode, str]] = ..., parameters: _Optional[_Iterable[_Union[HandoffParameter, _Mapping]]] = ...) -> None: ...
+    def __init__(self, transition_id: _Optional[str] = ..., source_node_id: _Optional[str] = ..., target_node_id: _Optional[str] = ..., routing_description: _Optional[str] = ..., context_policy: _Optional[_Union[ContextPolicy, str]] = ..., request_start: _Optional[str] = ..., parameters: _Optional[_Iterable[_Union[HandoffParameter, _Mapping]]] = ...) -> None: ...
 
 class HandoffParameter(_message.Message):
     __slots__ = ("name", "type", "description", "required", "string_enum", "number_enum", "boolean_enum")
