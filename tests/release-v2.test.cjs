@@ -9,13 +9,13 @@ function read(relativePath) {
   return readFileSync(path.join(root, relativePath), "utf8");
 }
 
-test("npm release metadata is pinned to 4.2.0", () => {
+test("npm release metadata is pinned to 5.0.0", () => {
   const packageJson = JSON.parse(read("package.json"));
   const packageLock = JSON.parse(read("package-lock.json"));
 
-  assert.equal(packageJson.version, "4.2.0");
-  assert.equal(packageLock.version, "4.2.0");
-  assert.equal(packageLock.packages[""].version, "4.2.0");
+  assert.equal(packageJson.version, "5.0.0");
+  assert.equal(packageLock.version, "5.0.0");
+  assert.equal(packageLock.packages[""].version, "5.0.0");
 });
 
 test("legacy Node module resolution maps generated TypeScript subpaths", () => {
@@ -50,7 +50,7 @@ test("protobuf Go packages use the v4 module path", () => {
 test("publication revision is the Prompt Agent inline orchestration cutover", () => {
   const agentSession = read("proto/port/api/v1/agent_session.proto");
   const publicationRevisionMatches = agentSession.match(
-    /\(buf\.validate\.field\)\.string\.const = "execution-publication-2026-08-14-r1"/g,
+    /\(buf\.validate\.field\)\.string\.const = "execution-publication-2026-08-26-r1"/g,
   );
   assert.equal(publicationRevisionMatches?.length, 2);
   assert.doesNotMatch(agentSession, /orchestration-2026-08-07-r4|agent_version_id|orchestration_version_id/);
@@ -74,4 +74,16 @@ test("publication revision is the Prompt Agent inline orchestration cutover", ()
     { type: "CallLimitsRuntime", name: "limits", number: 8 },
     { type: "ConversationFillerRuntime", name: "conversation_filler", number: 9 },
   ]);
+});
+
+test("handoff route wire shape keeps compatibility field-6 announcement and canonical field-8 request_start", () => {
+  const agentSession = read("proto/port/api/v1/agent_session.proto");
+  const routeBody = agentSession.match(/message PublishedHandoffRoute \{([\s\S]*?)\n\}/)?.[1];
+  assert.ok(routeBody, "PublishedHandoffRoute message is missing");
+  assert.match(routeBody, /ContextPolicy context_policy = 5/);
+  assert.match(routeBody, /string announcement = 6 \[deprecated = true\]/);
+  assert.match(routeBody, /repeated HandoffParameter parameters = 7/);
+  assert.match(routeBody, /string request_start = 8/);
+  assert.doesNotMatch(routeBody, /\bcontext_mode\b|HandoffContextMode/);
+  assert.match(agentSession, /CONTEXT_POLICY_RECENT = 3;/);
 });

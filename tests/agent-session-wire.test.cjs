@@ -9,7 +9,10 @@ const {
   CallRuntimeSnapshot,
   OrchestrationMode,
   ContextPolicy,
+  HandoffParameterType,
 } = contracts;
+
+const publicationRevision = "execution-publication-2026-08-26-r1";
 
 test("SIP caller phone number is optional and round-trips without changing the revision", () => {
   for (const phoneNumber of [undefined, "+821012345678", "anonymous"]) {
@@ -29,7 +32,7 @@ test("SIP caller phone number is optional and round-trips without changing the r
       conversationId: "conversation-1",
       sessionId: "session-1",
       publishedId: "publication-1",
-      contractRevision: "execution-publication-2026-08-14-r1",
+      contractRevision: "execution-publication-2026-08-26-r1",
     });
     const decoded = BootstrapPublishedRequest.decode(BootstrapPublishedRequest.encode(request).finish());
     assert.deepEqual(decoded, request);
@@ -65,7 +68,7 @@ test("published bootstrap preserves the publication-only direct text branch", ()
     conversationId: "conversation-1",
     sessionId: "session-1",
     publishedId: "publication-1",
-    contractRevision: "execution-publication-2026-08-14-r1",
+    contractRevision: "execution-publication-2026-08-26-r1",
   });
   assert.deepEqual(
     BootstrapPublishedRequest.decode(BootstrapPublishedRequest.encode(request).finish()),
@@ -73,7 +76,7 @@ test("published bootstrap preserves the publication-only direct text branch", ()
   );
 
   const response = BootstrapPublishedResponse.create({
-    contractRevision: "execution-publication-2026-08-14-r1",
+    contractRevision: "execution-publication-2026-08-26-r1",
     conversationId: request.conversationId,
     sessionId: request.sessionId,
     publishedId: request.publishedId,
@@ -107,7 +110,7 @@ test("published bootstrap preserves the publication-only direct text branch", ()
 
 test("published orchestration topology references only inline node IDs", () => {
   const response = BootstrapPublishedResponse.create({
-    contractRevision: "execution-publication-2026-08-14-r1",
+    contractRevision: "execution-publication-2026-08-26-r1",
     conversationId: "conversation-2",
     sessionId: "session-2",
     publishedId: "orchestration-publication-1",
@@ -125,7 +128,7 @@ test("published orchestration topology references only inline node IDs", () => {
           sourceNodeId: "node-1",
           targetNodeId: "node-2",
           routingDescription: "Escalate",
-          contextPolicy: ContextPolicy.CONTEXT_POLICY_CONVERSATION,
+          contextPolicy: ContextPolicy.CONTEXT_POLICY_RECENT,
         }],
       },
     },
@@ -154,7 +157,7 @@ test("published orchestration topology references only inline node IDs", () => {
 
 test("inline runtimes round-trip Knowledge fields and default them for legacy payloads", () => {
   const response = BootstrapPublishedResponse.create({
-    contractRevision: "execution-publication-2026-08-14-r1",
+    contractRevision: "execution-publication-2026-08-26-r1",
     conversationId: "conversation-3",
     sessionId: "session-3",
     publishedId: "orchestration-publication-2",
@@ -172,7 +175,7 @@ test("inline runtimes round-trip Knowledge fields and default them for legacy pa
           sourceNodeId: "node-1",
           targetNodeId: "node-2",
           routingDescription: "Escalate",
-          contextPolicy: ContextPolicy.CONTEXT_POLICY_CONVERSATION,
+          contextPolicy: ContextPolicy.CONTEXT_POLICY_NONE,
         }],
       },
     },
@@ -193,6 +196,84 @@ test("inline runtimes round-trip Knowledge fields and default them for legacy pa
   assert.equal(decoded.orchestration.nodeRuntimes[0].knowledgeRetrievalCapability, "signed-capability");
   assert.equal(decoded.orchestration.nodeRuntimes[1].knowledgeRevisionId, "");
   assert.equal(decoded.orchestration.nodeRuntimes[1].knowledgeRetrievalCapability, "");
+});
+
+test("handoff routes round-trip typed parameters, recent context, and request-start", () => {
+  assert.equal(contracts.HandoffContextMode, undefined);
+  const response = BootstrapPublishedResponse.create({
+    contractRevision: publicationRevision,
+    conversationId: "conversation-handoff",
+    sessionId: "session-handoff",
+    publishedId: "orchestration-handoff",
+    orchestration: {
+      mode: OrchestrationMode.ORCHESTRATION_MODE_HANDOFF,
+      nodeRuntimes: [inlineRuntime("intake", "Intake."), inlineRuntime("refund", "Refund.")],
+      handoff: {
+        entryNodeId: "intake",
+        maxHandoffDepth: 2,
+        routes: [{
+          transitionId: "route-refund",
+          sourceNodeId: "intake",
+          targetNodeId: "refund",
+          routingDescription: "Refund request",
+          contextPolicy: ContextPolicy.CONTEXT_POLICY_RECENT,
+          requestStart: "I will transfer you to refunds.",
+          parameters: [
+            {
+              name: "reason",
+              type: HandoffParameterType.HANDOFF_PARAMETER_TYPE_STRING,
+              description: "Refund reason",
+              required: true,
+              stringEnum: ["duplicate", "wrong-item"],
+            },
+            {
+              name: "amount",
+              type: HandoffParameterType.HANDOFF_PARAMETER_TYPE_NUMBER,
+              numberEnum: [10.5, 20],
+            },
+            {
+              name: "urgent",
+              type: HandoffParameterType.HANDOFF_PARAMETER_TYPE_BOOLEAN,
+              booleanEnum: [true, false],
+            },
+          ],
+        }],
+      },
+    },
+    textRuntime: {
+      transport: "text_stream",
+      roomName: "room-handoff",
+      participantIdentity: "participant-handoff",
+      idleTimeoutSeconds: 300,
+      maxSessionDurationSeconds: 3600,
+    },
+  });
+
+  const decoded = BootstrapPublishedResponse.decode(
+    BootstrapPublishedResponse.encode(response).finish(),
+  );
+  assert.deepEqual(decoded, response);
+  const route = decoded.orchestration.handoff.routes[0];
+  assert.equal(route.contextPolicy, ContextPolicy.CONTEXT_POLICY_RECENT);
+  assert.equal(route.requestStart, "I will transfer you to refunds.");
+  assert.equal(route.announcement, "");
+  assert.deepEqual(route.parameters[0].stringEnum, ["duplicate", "wrong-item"]);
+  assert.deepEqual(route.parameters[1].numberEnum, [10.5, 20]);
+  assert.deepEqual(route.parameters[2].booleanEnum, [true, false]);
+});
+
+test("field-6 bytes decode into announcement", () => {
+  const route = contracts.PublishedHandoffRoute.decode(Uint8Array.from([
+    0x0a, 0x07, 0x72, 0x6f, 0x75, 0x74, 0x65, 0x2d, 0x31,
+    0x12, 0x05, 0x73, 0x72, 0x63, 0x2d, 0x31,
+    0x1a, 0x05, 0x64, 0x73, 0x74, 0x2d, 0x31,
+    0x22, 0x08, 0x45, 0x73, 0x63, 0x61, 0x6c, 0x61, 0x74, 0x65,
+    0x28, 0x03,
+    0x32, 0x10, 0x54, 0x72, 0x61, 0x6e, 0x73, 0x66, 0x65, 0x72, 0x20, 0x73, 0x74, 0x61, 0x72, 0x74, 0x65, 0x64,
+  ]));
+
+  assert.equal(route.announcement, "Transfer started");
+  assert.equal(route.requestStart, "");
 });
 
 function inlineRuntime(nodeId, systemPrompt, knowledgeRevisionId, knowledgeRetrievalCapability) {

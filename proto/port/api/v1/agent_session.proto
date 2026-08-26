@@ -39,7 +39,7 @@ message BootstrapPublishedRequest {
   string published_id = 4 [(buf.validate.field).required = true, (buf.validate.field).string.min_len = 1];
   string contract_revision = 5 [
     (buf.validate.field).required = true,
-    (buf.validate.field).string.const = "execution-publication-2026-08-14-r1"
+    (buf.validate.field).string.const = "execution-publication-2026-08-26-r1"
   ];
 }
 
@@ -55,7 +55,7 @@ message BootstrapPublishedResponse {
 
   string contract_revision = 1 [
     (buf.validate.field).required = true,
-    (buf.validate.field).string.const = "execution-publication-2026-08-14-r1"
+    (buf.validate.field).string.const = "execution-publication-2026-08-26-r1"
   ];
   string conversation_id = 2 [(buf.validate.field).required = true, (buf.validate.field).string.min_len = 1];
   string session_id = 3 [(buf.validate.field).required = true, (buf.validate.field).string.min_len = 1];
@@ -131,6 +131,12 @@ message PublishedSupervisorSnapshot {
 }
 
 message PublishedSupervisorSpecialist {
+  option (buf.validate.message).cel = {
+    id: "published_supervisor_specialist.context_policy_allowed"
+    message: "supervisor context policy must be none or conversation"
+    expression: "this.context_policy == 1 || this.context_policy == 2"
+  };
+
   string relation_id = 1 [(buf.validate.field).string.min_len = 1];
   string target_node_id = 2 [(buf.validate.field).string.min_len = 1];
   string route_description = 3 [(buf.validate.field).string.min_len = 1];
@@ -144,12 +150,56 @@ message PublishedHandoffSnapshot {
 }
 
 message PublishedHandoffRoute {
+  option (buf.validate.message).cel = {
+    id: "published_handoff_route.context_policy_allowed"
+    message: "handoff context policy must be none or recent"
+    expression: "this.context_policy == 1 || this.context_policy == 3"
+  };
+  option (buf.validate.message).cel = {
+    id: "published_handoff_route.parameter_names_unique"
+    message: "handoff parameter names must be unique"
+    expression: "this.parameters.map(parameter, parameter.name).unique()"
+  };
+  option (buf.validate.message).cel = {
+    id: "published_handoff_route.start_message_source"
+    message: "handoff route may use either announcement or request_start, but not both"
+    expression: "this.announcement == '' || this.request_start == ''"
+  };
+
   string transition_id = 1 [(buf.validate.field).string.min_len = 1];
   string source_node_id = 2 [(buf.validate.field).string.min_len = 1];
   string target_node_id = 3 [(buf.validate.field).string.min_len = 1];
   string routing_description = 4 [(buf.validate.field).string.min_len = 1];
   ContextPolicy context_policy = 5 [(buf.validate.field).enum = {defined_only: true not_in: 0}];
-  string announcement = 6;
+  string announcement = 6 [deprecated = true];
+  repeated HandoffParameter parameters = 7;
+  string request_start = 8;
+}
+
+enum HandoffParameterType {
+  HANDOFF_PARAMETER_TYPE_UNSPECIFIED = 0;
+  HANDOFF_PARAMETER_TYPE_STRING = 1;
+  HANDOFF_PARAMETER_TYPE_NUMBER = 2;
+  HANDOFF_PARAMETER_TYPE_BOOLEAN = 3;
+}
+
+message HandoffParameter {
+  option (buf.validate.message).cel = {
+    id: "handoff_parameter.enum_matches_type"
+    message: "only the enum values matching type may be populated"
+    expression: "(this.type == 1 && size(this.number_enum) == 0 && size(this.boolean_enum) == 0) || (this.type == 2 && size(this.string_enum) == 0 && size(this.boolean_enum) == 0) || (this.type == 3 && size(this.string_enum) == 0 && size(this.number_enum) == 0)"
+  };
+
+  string name = 1 [(buf.validate.field).string.min_len = 1];
+  HandoffParameterType type = 2 [(buf.validate.field).enum = {defined_only: true not_in: 0}];
+  string description = 3;
+  bool required = 4;
+  repeated string string_enum = 5 [
+    (buf.validate.field).repeated.unique = true,
+    (buf.validate.field).repeated.items.string.min_len = 1
+  ];
+  repeated double number_enum = 6 [(buf.validate.field).repeated.unique = true];
+  repeated bool boolean_enum = 7 [(buf.validate.field).repeated.unique = true];
 }
 
 message TextRuntimeSnapshot {
@@ -271,6 +321,7 @@ enum ContextPolicy {
   CONTEXT_POLICY_UNSPECIFIED = 0;
   CONTEXT_POLICY_NONE = 1;
   CONTEXT_POLICY_CONVERSATION = 2;
+  CONTEXT_POLICY_RECENT = 3;
 }
 
 message McpToolMetadata {
