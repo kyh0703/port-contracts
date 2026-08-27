@@ -49,6 +49,9 @@ test("protobuf Go packages use the v4 module path", () => {
 
 test("publication revision is the Prompt Agent inline orchestration cutover", () => {
   const agentSession = read("proto/port/api/v1/agent_session.proto");
+  const readme = read("README.md");
+  assert.match(readme, /execution-publication-2026-08-27-r1/);
+  assert.doesNotMatch(readme, /execution-publication-2026-08-26-r1/);
   const publicationRevisionMatches = agentSession.match(
     /\(buf\.validate\.field\)\.string\.const = "execution-publication-2026-08-27-r1"/g,
   );
