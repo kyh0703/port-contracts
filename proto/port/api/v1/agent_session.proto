@@ -174,7 +174,7 @@ message PublishedHandoffRoute {
   string announcement = 6 [deprecated = true];
   repeated HandoffParameter parameters = 7;
   string request_start = 8;
-  optional string system_prompt = 9 [(buf.validate.field).string.min_len = 1];
+  optional string system_prompt = 9 [(buf.validate.field).string = {min_len: 1 pattern: "\\S"}];
 }
 
 enum HandoffParameterType {
