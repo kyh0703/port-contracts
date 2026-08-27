@@ -9,13 +9,13 @@ function read(relativePath) {
   return readFileSync(path.join(root, relativePath), "utf8");
 }
 
-test("npm release metadata is pinned to 5.0.0", () => {
+test("npm release metadata is pinned to 5.1.0", () => {
   const packageJson = JSON.parse(read("package.json"));
   const packageLock = JSON.parse(read("package-lock.json"));
 
-  assert.equal(packageJson.version, "5.0.0");
-  assert.equal(packageLock.version, "5.0.0");
-  assert.equal(packageLock.packages[""].version, "5.0.0");
+  assert.equal(packageJson.version, "5.1.0");
+  assert.equal(packageLock.version, "5.1.0");
+  assert.equal(packageLock.packages[""].version, "5.1.0");
 });
 
 test("legacy Node module resolution maps generated TypeScript subpaths", () => {
@@ -84,6 +84,7 @@ test("handoff route wire shape keeps compatibility field-6 announcement and cano
   assert.match(routeBody, /string announcement = 6 \[deprecated = true\]/);
   assert.match(routeBody, /repeated HandoffParameter parameters = 7/);
   assert.match(routeBody, /string request_start = 8/);
+  assert.match(routeBody, /optional string system_prompt = 9/);
   assert.doesNotMatch(routeBody, /\bcontext_mode\b|HandoffContextMode/);
   assert.match(agentSession, /CONTEXT_POLICY_RECENT = 3;/);
 });

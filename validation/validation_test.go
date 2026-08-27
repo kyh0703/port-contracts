@@ -282,6 +282,14 @@ func TestPublishedOrchestrationValidation(t *testing.T) {
 		}
 	})
 
+	t.Run("handoff accepts optional system prompt", func(t *testing.T) {
+		handoff := validHandoffTextResponse()
+		handoff.GetOrchestration().GetHandoff().Routes[0].SystemPrompt = proto.String("Continue without greeting the caller.")
+		if err := Validate(handoff); err != nil {
+			t.Fatalf("Validate(handoff system prompt) = %v", err)
+		}
+	})
+
 	t.Run("supervisor rejects recent context policy", func(t *testing.T) {
 		supervisor := validSupervisorTextResponse()
 		supervisor.GetOrchestration().GetSupervisor().Specialists[0].ContextPolicy = apiv1.ContextPolicy_CONTEXT_POLICY_RECENT

@@ -242,7 +242,7 @@ class PublishedHandoffSnapshot(_message.Message):
     def __init__(self, entry_node_id: _Optional[str] = ..., max_handoff_depth: _Optional[int] = ..., routes: _Optional[_Iterable[_Union[PublishedHandoffRoute, _Mapping]]] = ...) -> None: ...
 
 class PublishedHandoffRoute(_message.Message):
-    __slots__ = ("transition_id", "source_node_id", "target_node_id", "routing_description", "context_policy", "announcement", "parameters", "request_start")
+    __slots__ = ("transition_id", "source_node_id", "target_node_id", "routing_description", "context_policy", "announcement", "parameters", "request_start", "system_prompt")
     TRANSITION_ID_FIELD_NUMBER: _ClassVar[int]
     SOURCE_NODE_ID_FIELD_NUMBER: _ClassVar[int]
     TARGET_NODE_ID_FIELD_NUMBER: _ClassVar[int]
@@ -251,6 +251,7 @@ class PublishedHandoffRoute(_message.Message):
     ANNOUNCEMENT_FIELD_NUMBER: _ClassVar[int]
     PARAMETERS_FIELD_NUMBER: _ClassVar[int]
     REQUEST_START_FIELD_NUMBER: _ClassVar[int]
+    SYSTEM_PROMPT_FIELD_NUMBER: _ClassVar[int]
     transition_id: str
     source_node_id: str
     target_node_id: str
@@ -259,7 +260,8 @@ class PublishedHandoffRoute(_message.Message):
     announcement: str
     parameters: _containers.RepeatedCompositeFieldContainer[HandoffParameter]
     request_start: str
-    def __init__(self, transition_id: _Optional[str] = ..., source_node_id: _Optional[str] = ..., target_node_id: _Optional[str] = ..., routing_description: _Optional[str] = ..., context_policy: _Optional[_Union[ContextPolicy, str]] = ..., announcement: _Optional[str] = ..., parameters: _Optional[_Iterable[_Union[HandoffParameter, _Mapping]]] = ..., request_start: _Optional[str] = ...) -> None: ...
+    system_prompt: str
+    def __init__(self, transition_id: _Optional[str] = ..., source_node_id: _Optional[str] = ..., target_node_id: _Optional[str] = ..., routing_description: _Optional[str] = ..., context_policy: _Optional[_Union[ContextPolicy, str]] = ..., announcement: _Optional[str] = ..., parameters: _Optional[_Iterable[_Union[HandoffParameter, _Mapping]]] = ..., request_start: _Optional[str] = ..., system_prompt: _Optional[str] = ...) -> None: ...
 
 class HandoffParameter(_message.Message):
     __slots__ = ("name", "type", "description", "required", "string_enum", "number_enum", "boolean_enum")

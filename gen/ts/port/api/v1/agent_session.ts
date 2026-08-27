@@ -406,6 +406,7 @@ export interface PublishedHandoffRoute {
   announcement: string;
   parameters: HandoffParameter[];
   requestStart: string;
+  systemPrompt?: string | undefined;
 }
 
 export interface HandoffParameter {
@@ -2271,6 +2272,7 @@ function createBasePublishedHandoffRoute(): PublishedHandoffRoute {
     announcement: "",
     parameters: [],
     requestStart: "",
+    systemPrompt: undefined,
   };
 }
 
@@ -2299,6 +2301,9 @@ export const PublishedHandoffRoute: MessageFns<PublishedHandoffRoute> = {
     }
     if (message.requestStart !== "") {
       writer.uint32(66).string(message.requestStart);
+    }
+    if (message.systemPrompt !== undefined) {
+      writer.uint32(74).string(message.systemPrompt);
     }
     return writer;
   },
@@ -2374,6 +2379,14 @@ export const PublishedHandoffRoute: MessageFns<PublishedHandoffRoute> = {
           message.requestStart = reader.string();
           continue;
         }
+        case 9: {
+          if (tag !== 74) {
+            break;
+          }
+
+          message.systemPrompt = reader.string();
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -2419,6 +2432,11 @@ export const PublishedHandoffRoute: MessageFns<PublishedHandoffRoute> = {
         : isSet(object.request_start)
         ? globalThis.String(object.request_start)
         : "",
+      systemPrompt: isSet(object.systemPrompt)
+        ? globalThis.String(object.systemPrompt)
+        : isSet(object.system_prompt)
+        ? globalThis.String(object.system_prompt)
+        : undefined,
     };
   },
 
@@ -2448,6 +2466,9 @@ export const PublishedHandoffRoute: MessageFns<PublishedHandoffRoute> = {
     if (message.requestStart !== "") {
       obj.requestStart = message.requestStart;
     }
+    if (message.systemPrompt !== undefined) {
+      obj.systemPrompt = message.systemPrompt;
+    }
     return obj;
   },
 
@@ -2464,6 +2485,7 @@ export const PublishedHandoffRoute: MessageFns<PublishedHandoffRoute> = {
     message.announcement = object.announcement ?? "";
     message.parameters = object.parameters?.map((e) => HandoffParameter.fromPartial(e)) || [];
     message.requestStart = object.requestStart ?? "";
+    message.systemPrompt = object.systemPrompt ?? undefined;
     return message;
   },
 };

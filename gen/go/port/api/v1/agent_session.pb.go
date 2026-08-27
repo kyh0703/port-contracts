@@ -1317,6 +1317,7 @@ type PublishedHandoffRoute struct {
 	Announcement  string              `protobuf:"bytes,6,opt,name=announcement,proto3" json:"announcement,omitempty"`
 	Parameters    []*HandoffParameter `protobuf:"bytes,7,rep,name=parameters,proto3" json:"parameters,omitempty"`
 	RequestStart  string              `protobuf:"bytes,8,opt,name=request_start,json=requestStart,proto3" json:"request_start,omitempty"`
+	SystemPrompt  *string             `protobuf:"bytes,9,opt,name=system_prompt,json=systemPrompt,proto3,oneof" json:"system_prompt,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1404,6 +1405,13 @@ func (x *PublishedHandoffRoute) GetParameters() []*HandoffParameter {
 func (x *PublishedHandoffRoute) GetRequestStart() string {
 	if x != nil {
 		return x.RequestStart
+	}
+	return ""
+}
+
+func (x *PublishedHandoffRoute) GetSystemPrompt() string {
+	if x != nil && x.SystemPrompt != nil {
+		return *x.SystemPrompt
 	}
 	return ""
 }
@@ -2942,7 +2950,7 @@ const file_port_api_v1_agent_session_proto_rawDesc = "" +
 	"\x18PublishedHandoffSnapshot\x12+\n" +
 	"\rentry_node_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\ventryNodeId\x123\n" +
 	"\x11max_handoff_depth\x18\x02 \x01(\rB\a\xbaH\x04*\x02 \x00R\x0fmaxHandoffDepth\x12D\n" +
-	"\x06routes\x18\x03 \x03(\v2\".port.api.v1.PublishedHandoffRouteB\b\xbaH\x05\x92\x01\x02\b\x01R\x06routes\"\x9b\a\n" +
+	"\x06routes\x18\x03 \x03(\v2\".port.api.v1.PublishedHandoffRouteB\b\xbaH\x05\x92\x01\x02\b\x01R\x06routes\"\xe0\a\n" +
 	"\x15PublishedHandoffRoute\x12,\n" +
 	"\rtransition_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\ftransitionId\x12-\n" +
 	"\x0esource_node_id\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\fsourceNodeId\x12-\n" +
@@ -2954,10 +2962,12 @@ const file_port_api_v1_agent_session_proto_rawDesc = "" +
 	"\n" +
 	"parameters\x18\a \x03(\v2\x1d.port.api.v1.HandoffParameterR\n" +
 	"parameters\x12#\n" +
-	"\rrequest_start\x18\b \x01(\tR\frequestStart:\xe0\x03\xbaH\xdc\x03\x1a\x95\x01\n" +
+	"\rrequest_start\x18\b \x01(\tR\frequestStart\x121\n" +
+	"\rsystem_prompt\x18\t \x01(\tB\a\xbaH\x04r\x02\x10\x01H\x00R\fsystemPrompt\x88\x01\x01:\xe0\x03\xbaH\xdc\x03\x1a\x95\x01\n" +
 	".published_handoff_route.context_policy_allowed\x12-handoff context policy must be none or recent\x1a4this.context_policy == 1 || this.context_policy == 3\x1a\x91\x01\n" +
 	".published_handoff_route.parameter_names_unique\x12&handoff parameter names must be unique\x1a7this.parameters.map(parameter, parameter.name).unique()\x1a\xad\x01\n" +
-	",published_handoff_route.start_message_source\x12Hhandoff route may use either announcement or request_start, but not both\x1a3this.announcement == '' || this.request_start == ''\"\x94\x05\n" +
+	",published_handoff_route.start_message_source\x12Hhandoff route may use either announcement or request_start, but not both\x1a3this.announcement == '' || this.request_start == ''B\x10\n" +
+	"\x0e_system_prompt\"\x94\x05\n" +
 	"\x10HandoffParameter\x12\x1b\n" +
 	"\x04name\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x04name\x12A\n" +
 	"\x04type\x18\x02 \x01(\x0e2!.port.api.v1.HandoffParameterTypeB\n" +
@@ -3266,6 +3276,7 @@ func file_port_api_v1_agent_session_proto_init() {
 		(*BootstrapPublishedResponse_VoiceRuntime)(nil),
 		(*BootstrapPublishedResponse_TextRuntime)(nil),
 	}
+	file_port_api_v1_agent_session_proto_msgTypes[11].OneofWrappers = []any{}
 	file_port_api_v1_agent_session_proto_msgTypes[16].OneofWrappers = []any{}
 	file_port_api_v1_agent_session_proto_msgTypes[17].OneofWrappers = []any{}
 	file_port_api_v1_agent_session_proto_msgTypes[19].OneofWrappers = []any{}

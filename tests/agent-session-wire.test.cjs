@@ -276,6 +276,19 @@ test("field-6 bytes decode into announcement", () => {
   assert.equal(route.requestStart, "");
 });
 
+test("handoff route system prompt is optional and round-trips on field 9", () => {
+  const withoutPrompt = contracts.PublishedHandoffRoute.create({});
+  assert.equal(withoutPrompt.systemPrompt, undefined);
+
+  const route = contracts.PublishedHandoffRoute.create({
+    systemPrompt: "Continue without greeting the caller.",
+  });
+  const decoded = contracts.PublishedHandoffRoute.decode(
+    contracts.PublishedHandoffRoute.encode(route).finish(),
+  );
+  assert.equal(decoded.systemPrompt, route.systemPrompt);
+});
+
 function inlineRuntime(nodeId, systemPrompt, knowledgeRevisionId, knowledgeRetrievalCapability) {
   return {
     nodeId,
