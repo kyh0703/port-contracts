@@ -2868,10 +2868,10 @@ const file_port_api_v1_agent_session_proto_rawDesc = "" +
 	"\fpublished_id\x18\x04 \x01(\tB\n" +
 	"\xbaH\a\xc8\x01\x01r\x02\x10\x01R\vpublishedId\x12Z\n" +
 	"\x11contract_revision\x18\x05 \x01(\tB-\xbaH*\xc8\x01\x01r%\n" +
-	"#execution-publication-2026-08-26-r1R\x10contractRevision\"\xab\x05\n" +
+	"#execution-publication-2026-08-27-r1R\x10contractRevision\"\xab\x05\n" +
 	"\x1aBootstrapPublishedResponse\x12Z\n" +
 	"\x11contract_revision\x18\x01 \x01(\tB-\xbaH*\xc8\x01\x01r%\n" +
-	"#execution-publication-2026-08-26-r1R\x10contractRevision\x123\n" +
+	"#execution-publication-2026-08-27-r1R\x10contractRevision\x123\n" +
 	"\x0fconversation_id\x18\x02 \x01(\tB\n" +
 	"\xbaH\a\xc8\x01\x01r\x02\x10\x01R\x0econversationId\x12)\n" +
 	"\n" +

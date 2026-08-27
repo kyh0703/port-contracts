@@ -12,7 +12,7 @@ const {
   HandoffParameterType,
 } = contracts;
 
-const publicationRevision = "execution-publication-2026-08-26-r1";
+const publicationRevision = "execution-publication-2026-08-27-r1";
 
 test("SIP caller phone number is optional and round-trips without changing the revision", () => {
   for (const phoneNumber of [undefined, "+821012345678", "anonymous"]) {
@@ -32,7 +32,7 @@ test("SIP caller phone number is optional and round-trips without changing the r
       conversationId: "conversation-1",
       sessionId: "session-1",
       publishedId: "publication-1",
-      contractRevision: "execution-publication-2026-08-26-r1",
+      contractRevision: "execution-publication-2026-08-27-r1",
     });
     const decoded = BootstrapPublishedRequest.decode(BootstrapPublishedRequest.encode(request).finish());
     assert.deepEqual(decoded, request);
@@ -68,7 +68,7 @@ test("published bootstrap preserves the publication-only direct text branch", ()
     conversationId: "conversation-1",
     sessionId: "session-1",
     publishedId: "publication-1",
-    contractRevision: "execution-publication-2026-08-26-r1",
+    contractRevision: "execution-publication-2026-08-27-r1",
   });
   assert.deepEqual(
     BootstrapPublishedRequest.decode(BootstrapPublishedRequest.encode(request).finish()),
@@ -76,7 +76,7 @@ test("published bootstrap preserves the publication-only direct text branch", ()
   );
 
   const response = BootstrapPublishedResponse.create({
-    contractRevision: "execution-publication-2026-08-26-r1",
+    contractRevision: "execution-publication-2026-08-27-r1",
     conversationId: request.conversationId,
     sessionId: request.sessionId,
     publishedId: request.publishedId,
@@ -110,7 +110,7 @@ test("published bootstrap preserves the publication-only direct text branch", ()
 
 test("published orchestration topology references only inline node IDs", () => {
   const response = BootstrapPublishedResponse.create({
-    contractRevision: "execution-publication-2026-08-26-r1",
+    contractRevision: "execution-publication-2026-08-27-r1",
     conversationId: "conversation-2",
     sessionId: "session-2",
     publishedId: "orchestration-publication-1",
@@ -157,7 +157,7 @@ test("published orchestration topology references only inline node IDs", () => {
 
 test("inline runtimes round-trip Knowledge fields and default them for legacy payloads", () => {
   const response = BootstrapPublishedResponse.create({
-    contractRevision: "execution-publication-2026-08-26-r1",
+    contractRevision: "execution-publication-2026-08-27-r1",
     conversationId: "conversation-3",
     sessionId: "session-3",
     publishedId: "orchestration-publication-2",

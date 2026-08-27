@@ -39,7 +39,7 @@ message BootstrapPublishedRequest {
   string published_id = 4 [(buf.validate.field).required = true, (buf.validate.field).string.min_len = 1];
   string contract_revision = 5 [
     (buf.validate.field).required = true,
-    (buf.validate.field).string.const = "execution-publication-2026-08-26-r1"
+    (buf.validate.field).string.const = "execution-publication-2026-08-27-r1"
   ];
 }
 
@@ -55,7 +55,7 @@ message BootstrapPublishedResponse {
 
   string contract_revision = 1 [
     (buf.validate.field).required = true,
-    (buf.validate.field).string.const = "execution-publication-2026-08-26-r1"
+    (buf.validate.field).string.const = "execution-publication-2026-08-27-r1"
   ];
   string conversation_id = 2 [(buf.validate.field).required = true, (buf.validate.field).string.min_len = 1];
   string session_id = 3 [(buf.validate.field).required = true, (buf.validate.field).string.min_len = 1];

@@ -11,7 +11,7 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-const publicationContractRevision = "execution-publication-2026-08-26-r1"
+const publicationContractRevision = "execution-publication-2026-08-27-r1"
 
 func TestValidateRejectsMissingRequiredFields(t *testing.T) {
 	if err := Validate(&apiv1.RecordGatewayEventRequest{}); err == nil {
