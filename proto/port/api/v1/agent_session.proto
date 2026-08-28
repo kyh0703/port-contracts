@@ -109,6 +109,7 @@ message PublishedPromptAgentRuntime {
   repeated BuiltInTool built_in_tools = 12;
   string knowledge_function_name = 13;
   string knowledge_description = 14;
+  repeated KnowledgeToolRuntime knowledge_tool_runtimes = 15;
 }
 
 // Inline orchestration nodes intentionally do not expose greeting or guardrails
@@ -127,6 +128,7 @@ message PublishedInlinePromptRuntime {
   string knowledge_retrieval_capability = 11;
   string knowledge_function_name = 12;
   string knowledge_description = 13;
+  repeated KnowledgeToolRuntime knowledge_tool_runtimes = 14;
 }
 
 message PublishedSupervisorSnapshot {
@@ -307,11 +309,18 @@ enum OrchestrationMode {
 }
 
 message NodeToolMetadata {
+  option (buf.validate.message).cel = {
+    id: "node_tool_metadata.knowledge_kind_matches_metadata"
+    message: "knowledge tool kind must match knowledge metadata"
+    expression: "(this.kind == 'knowledge') == has(this.knowledge)"
+  };
+
   string tool_id = 1 [(buf.validate.field).string.min_len = 1];
   string kind = 2 [
     (buf.validate.field).string.in = "mcp",
     (buf.validate.field).string.in = "api",
-    (buf.validate.field).string.in = "a2a"
+    (buf.validate.field).string.in = "a2a",
+    (buf.validate.field).string.in = "knowledge"
   ];
   string name = 3 [(buf.validate.field).string.min_len = 1];
   string description = 4;
@@ -319,6 +328,7 @@ message NodeToolMetadata {
     McpToolMetadata mcp = 5;
     ApiToolMetadata api = 6;
     A2aToolMetadata a2a = 7;
+    KnowledgeToolMetadata knowledge = 8;
   }
 }
 
@@ -349,6 +359,10 @@ message A2aToolMetadata {
   string agent_card_url = 1 [(buf.validate.field).string.min_len = 1];
 }
 
+message KnowledgeToolMetadata {
+  string knowledge_revision_id = 1 [(buf.validate.field).string = {min_len: 1 pattern: "\\S"}];
+}
+
 // Short-lived execution credentials for API tools, scoped to the bootstrap lease.
 message ApiToolRuntime {
   string tool_id = 1 [(buf.validate.field).string.min_len = 1];
@@ -359,6 +373,11 @@ message A2aToolRuntime {
   string tool_id = 1 [(buf.validate.field).string.min_len = 1];
   map<string, string> headers = 2;
   uint32 timeout_ms = 3 [(buf.validate.field).uint32 = {gte: 1000 lte: 600000}];
+}
+
+message KnowledgeToolRuntime {
+  string tool_id = 1 [(buf.validate.field).string = {min_len: 1 pattern: "\\S"}];
+  string retrieval_capability = 2 [(buf.validate.field).string = {min_len: 1 pattern: "\\S"}];
 }
 
 message BuiltInTool {

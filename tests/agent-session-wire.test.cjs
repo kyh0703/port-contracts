@@ -12,6 +12,7 @@ const {
   HandoffParameterType,
   PublishedPromptAgentRuntime,
   PublishedInlinePromptRuntime,
+  KnowledgeToolRuntime,
 } = contracts;
 
 const publicationRevision = "execution-publication-2026-08-27-r1";
@@ -351,6 +352,77 @@ test("handoff route system prompt is optional and round-trips on field 9", () =>
     contracts.PublishedHandoffRoute.encode(route).finish(),
   );
   assert.equal(decoded.systemPrompt, route.systemPrompt);
+});
+
+test("knowledge tools support multiple metadata entries and runtime correlation IDs", () => {
+  const promptRuntime = PublishedPromptAgentRuntime.create({
+    tools: [
+      { toolId: "knowledge-search", kind: "knowledge", name: "Search", knowledge: { knowledgeRevisionId: "rev-1" } },
+      { toolId: "knowledge-faq", kind: "knowledge", name: "FAQ", knowledge: { knowledgeRevisionId: "rev-2" } },
+    ],
+    knowledgeToolRuntimes: [
+      { toolId: "knowledge-search", retrievalCapability: "cap-search" },
+      { toolId: "knowledge-faq", retrievalCapability: "cap-faq" },
+    ],
+  });
+  const decoded = PublishedPromptAgentRuntime.decode(PublishedPromptAgentRuntime.encode(promptRuntime).finish());
+  const encoded = [...PublishedPromptAgentRuntime.encode(promptRuntime).finish()];
+  assert.deepEqual(encoded.slice(-58), [
+    0x7a, 0x1e, 0x0a, 0x10, ...Buffer.from("knowledge-search"),
+    0x12, 0x0a, ...Buffer.from("cap-search"),
+    0x7a, 0x18, 0x0a, 0x0d, ...Buffer.from("knowledge-faq"),
+    0x12, 0x07, ...Buffer.from("cap-faq"),
+  ]);
+  assert.deepEqual(decoded.tools.map((tool) => [tool.toolId, tool.kind, tool.knowledge.knowledgeRevisionId]), [
+    ["knowledge-search", "knowledge", "rev-1"],
+    ["knowledge-faq", "knowledge", "rev-2"],
+  ]);
+  assert.deepEqual(decoded.knowledgeToolRuntimes, [
+    KnowledgeToolRuntime.create({ toolId: "knowledge-search", retrievalCapability: "cap-search" }),
+    KnowledgeToolRuntime.create({ toolId: "knowledge-faq", retrievalCapability: "cap-faq" }),
+  ]);
+
+  const inlineRuntimeValue = PublishedInlinePromptRuntime.create({
+    knowledgeToolRuntimes: [
+      { toolId: "knowledge-search", retrievalCapability: "cap-search" },
+      { toolId: "knowledge-faq", retrievalCapability: "cap-faq" },
+    ],
+  });
+  const inlineEncoded = [...PublishedInlinePromptRuntime.encode(inlineRuntimeValue).finish()];
+  assert.deepEqual(inlineEncoded, [
+    0x72, 0x1e, 0x0a, 0x10, ...Buffer.from("knowledge-search"),
+    0x12, 0x0a, ...Buffer.from("cap-search"),
+    0x72, 0x18, 0x0a, 0x0d, ...Buffer.from("knowledge-faq"),
+    0x12, 0x07, ...Buffer.from("cap-faq"),
+  ]);
+  assert.deepEqual(PublishedInlinePromptRuntime.decode(Uint8Array.from(inlineEncoded)), inlineRuntimeValue);
+});
+
+test("legacy singular knowledge fields retain their field numbers and decode unchanged", () => {
+  const directBytes = Uint8Array.from([
+    0x42, 0x0a, 0x6c, 0x65, 0x67, 0x61, 0x63, 0x79, 0x2d, 0x72, 0x65, 0x76,
+    0x52, 0x0a, 0x6c, 0x65, 0x67, 0x61, 0x63, 0x79, 0x2d, 0x63, 0x61, 0x70,
+    0x6a, 0x09, 0x6c, 0x65, 0x67, 0x61, 0x63, 0x79, 0x2d, 0x66, 0x6e,
+    0x72, 0x09, 0x6c, 0x65, 0x67, 0x61, 0x63, 0x79, 0x2d, 0x64, 0x65,
+  ]);
+  const inlineBytes = Uint8Array.from([
+    0x52, 0x0a, 0x6c, 0x65, 0x67, 0x61, 0x63, 0x79, 0x2d, 0x72, 0x65, 0x76,
+    0x5a, 0x0a, 0x6c, 0x65, 0x67, 0x61, 0x63, 0x79, 0x2d, 0x63, 0x61, 0x70,
+    0x62, 0x09, 0x6c, 0x65, 0x67, 0x61, 0x63, 0x79, 0x2d, 0x66, 0x6e,
+    0x6a, 0x09, 0x6c, 0x65, 0x67, 0x61, 0x63, 0x79, 0x2d, 0x64, 0x65,
+  ]);
+  const direct = PublishedPromptAgentRuntime.decode(directBytes);
+  const inline = PublishedInlinePromptRuntime.decode(inlineBytes);
+  assert.equal(direct.knowledgeRevisionId, "legacy-rev");
+  assert.equal(direct.knowledgeRetrievalCapability, "legacy-cap");
+  assert.equal(direct.knowledgeFunctionName, "legacy-fn");
+  assert.equal(direct.knowledgeDescription, "legacy-de");
+  assert.equal(inline.knowledgeRevisionId, "legacy-rev");
+  assert.equal(inline.knowledgeRetrievalCapability, "legacy-cap");
+  assert.equal(inline.knowledgeFunctionName, "legacy-fn");
+  assert.equal(inline.knowledgeDescription, "legacy-de");
+  assert.deepEqual([...PublishedPromptAgentRuntime.encode(direct).finish()], [...directBytes]);
+  assert.deepEqual([...PublishedInlinePromptRuntime.encode(inline).finish()], [...inlineBytes]);
 });
 
 function inlineRuntime(

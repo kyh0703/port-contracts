@@ -360,6 +360,7 @@ export interface PublishedPromptAgentRuntime {
   builtInTools: BuiltInTool[];
   knowledgeFunctionName: string;
   knowledgeDescription: string;
+  knowledgeToolRuntimes: KnowledgeToolRuntime[];
 }
 
 /**
@@ -380,6 +381,7 @@ export interface PublishedInlinePromptRuntime {
   knowledgeRetrievalCapability: string;
   knowledgeFunctionName: string;
   knowledgeDescription: string;
+  knowledgeToolRuntimes: KnowledgeToolRuntime[];
 }
 
 export interface PublishedSupervisorSnapshot {
@@ -492,6 +494,7 @@ export interface NodeToolMetadata {
   mcp?: McpToolMetadata | undefined;
   api?: ApiToolMetadata | undefined;
   a2a?: A2aToolMetadata | undefined;
+  knowledge?: KnowledgeToolMetadata | undefined;
 }
 
 export interface McpToolMetadata {
@@ -509,6 +512,10 @@ export interface ApiToolMetadata {
 
 export interface A2aToolMetadata {
   agentCardUrl: string;
+}
+
+export interface KnowledgeToolMetadata {
+  knowledgeRevisionId: string;
 }
 
 /** Short-lived execution credentials for API tools, scoped to the bootstrap lease. */
@@ -531,6 +538,11 @@ export interface A2aToolRuntime {
 export interface A2aToolRuntime_HeadersEntry {
   key: string;
   value: string;
+}
+
+export interface KnowledgeToolRuntime {
+  toolId: string;
+  retrievalCapability: string;
 }
 
 export interface BuiltInTool {
@@ -1413,6 +1425,7 @@ function createBasePublishedPromptAgentRuntime(): PublishedPromptAgentRuntime {
     builtInTools: [],
     knowledgeFunctionName: "",
     knowledgeDescription: "",
+    knowledgeToolRuntimes: [],
   };
 }
 
@@ -1459,6 +1472,9 @@ export const PublishedPromptAgentRuntime: MessageFns<PublishedPromptAgentRuntime
     }
     if (message.knowledgeDescription !== "") {
       writer.uint32(114).string(message.knowledgeDescription);
+    }
+    for (const v of message.knowledgeToolRuntimes) {
+      KnowledgeToolRuntime.encode(v!, writer.uint32(122).fork()).join();
     }
     return writer;
   },
@@ -1582,6 +1598,14 @@ export const PublishedPromptAgentRuntime: MessageFns<PublishedPromptAgentRuntime
           message.knowledgeDescription = reader.string();
           continue;
         }
+        case 15: {
+          if (tag !== 122) {
+            break;
+          }
+
+          message.knowledgeToolRuntimes.push(KnowledgeToolRuntime.decode(reader, reader.uint32()));
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -1651,6 +1675,11 @@ export const PublishedPromptAgentRuntime: MessageFns<PublishedPromptAgentRuntime
         : isSet(object.knowledge_description)
         ? globalThis.String(object.knowledge_description)
         : "",
+      knowledgeToolRuntimes: globalThis.Array.isArray(object?.knowledgeToolRuntimes)
+        ? object.knowledgeToolRuntimes.map((e: any) => KnowledgeToolRuntime.fromJSON(e))
+        : globalThis.Array.isArray(object?.knowledge_tool_runtimes)
+        ? object.knowledge_tool_runtimes.map((e: any) => KnowledgeToolRuntime.fromJSON(e))
+        : [],
     };
   },
 
@@ -1698,6 +1727,9 @@ export const PublishedPromptAgentRuntime: MessageFns<PublishedPromptAgentRuntime
     if (message.knowledgeDescription !== "") {
       obj.knowledgeDescription = message.knowledgeDescription;
     }
+    if (message.knowledgeToolRuntimes?.length) {
+      obj.knowledgeToolRuntimes = message.knowledgeToolRuntimes.map((e) => KnowledgeToolRuntime.toJSON(e));
+    }
     return obj;
   },
 
@@ -1724,6 +1756,7 @@ export const PublishedPromptAgentRuntime: MessageFns<PublishedPromptAgentRuntime
     message.builtInTools = object.builtInTools?.map((e) => BuiltInTool.fromPartial(e)) || [];
     message.knowledgeFunctionName = object.knowledgeFunctionName ?? "";
     message.knowledgeDescription = object.knowledgeDescription ?? "";
+    message.knowledgeToolRuntimes = object.knowledgeToolRuntimes?.map((e) => KnowledgeToolRuntime.fromPartial(e)) || [];
     return message;
   },
 };
@@ -1743,6 +1776,7 @@ function createBasePublishedInlinePromptRuntime(): PublishedInlinePromptRuntime 
     knowledgeRetrievalCapability: "",
     knowledgeFunctionName: "",
     knowledgeDescription: "",
+    knowledgeToolRuntimes: [],
   };
 }
 
@@ -1786,6 +1820,9 @@ export const PublishedInlinePromptRuntime: MessageFns<PublishedInlinePromptRunti
     }
     if (message.knowledgeDescription !== "") {
       writer.uint32(106).string(message.knowledgeDescription);
+    }
+    for (const v of message.knowledgeToolRuntimes) {
+      KnowledgeToolRuntime.encode(v!, writer.uint32(114).fork()).join();
     }
     return writer;
   },
@@ -1901,6 +1938,14 @@ export const PublishedInlinePromptRuntime: MessageFns<PublishedInlinePromptRunti
           message.knowledgeDescription = reader.string();
           continue;
         }
+        case 14: {
+          if (tag !== 114) {
+            break;
+          }
+
+          message.knowledgeToolRuntimes.push(KnowledgeToolRuntime.decode(reader, reader.uint32()));
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -1969,6 +2014,11 @@ export const PublishedInlinePromptRuntime: MessageFns<PublishedInlinePromptRunti
         : isSet(object.knowledge_description)
         ? globalThis.String(object.knowledge_description)
         : "",
+      knowledgeToolRuntimes: globalThis.Array.isArray(object?.knowledgeToolRuntimes)
+        ? object.knowledgeToolRuntimes.map((e: any) => KnowledgeToolRuntime.fromJSON(e))
+        : globalThis.Array.isArray(object?.knowledge_tool_runtimes)
+        ? object.knowledge_tool_runtimes.map((e: any) => KnowledgeToolRuntime.fromJSON(e))
+        : [],
     };
   },
 
@@ -2013,6 +2063,9 @@ export const PublishedInlinePromptRuntime: MessageFns<PublishedInlinePromptRunti
     if (message.knowledgeDescription !== "") {
       obj.knowledgeDescription = message.knowledgeDescription;
     }
+    if (message.knowledgeToolRuntimes?.length) {
+      obj.knowledgeToolRuntimes = message.knowledgeToolRuntimes.map((e) => KnowledgeToolRuntime.toJSON(e));
+    }
     return obj;
   },
 
@@ -2038,6 +2091,7 @@ export const PublishedInlinePromptRuntime: MessageFns<PublishedInlinePromptRunti
     message.knowledgeRetrievalCapability = object.knowledgeRetrievalCapability ?? "";
     message.knowledgeFunctionName = object.knowledgeFunctionName ?? "";
     message.knowledgeDescription = object.knowledgeDescription ?? "";
+    message.knowledgeToolRuntimes = object.knowledgeToolRuntimes?.map((e) => KnowledgeToolRuntime.fromPartial(e)) || [];
     return message;
   },
 };
@@ -3807,7 +3861,16 @@ export const InlinePromptInstructions: MessageFns<InlinePromptInstructions> = {
 };
 
 function createBaseNodeToolMetadata(): NodeToolMetadata {
-  return { toolId: "", kind: "", name: "", description: "", mcp: undefined, api: undefined, a2a: undefined };
+  return {
+    toolId: "",
+    kind: "",
+    name: "",
+    description: "",
+    mcp: undefined,
+    api: undefined,
+    a2a: undefined,
+    knowledge: undefined,
+  };
 }
 
 export const NodeToolMetadata: MessageFns<NodeToolMetadata> = {
@@ -3832,6 +3895,9 @@ export const NodeToolMetadata: MessageFns<NodeToolMetadata> = {
     }
     if (message.a2a !== undefined) {
       A2aToolMetadata.encode(message.a2a, writer.uint32(58).fork()).join();
+    }
+    if (message.knowledge !== undefined) {
+      KnowledgeToolMetadata.encode(message.knowledge, writer.uint32(66).fork()).join();
     }
     return writer;
   },
@@ -3899,6 +3965,14 @@ export const NodeToolMetadata: MessageFns<NodeToolMetadata> = {
           message.a2a = A2aToolMetadata.decode(reader, reader.uint32());
           continue;
         }
+        case 8: {
+          if (tag !== 66) {
+            break;
+          }
+
+          message.knowledge = KnowledgeToolMetadata.decode(reader, reader.uint32());
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -3921,6 +3995,7 @@ export const NodeToolMetadata: MessageFns<NodeToolMetadata> = {
       mcp: isSet(object.mcp) ? McpToolMetadata.fromJSON(object.mcp) : undefined,
       api: isSet(object.api) ? ApiToolMetadata.fromJSON(object.api) : undefined,
       a2a: isSet(object.a2a) ? A2aToolMetadata.fromJSON(object.a2a) : undefined,
+      knowledge: isSet(object.knowledge) ? KnowledgeToolMetadata.fromJSON(object.knowledge) : undefined,
     };
   },
 
@@ -3947,6 +4022,9 @@ export const NodeToolMetadata: MessageFns<NodeToolMetadata> = {
     if (message.a2a !== undefined) {
       obj.a2a = A2aToolMetadata.toJSON(message.a2a);
     }
+    if (message.knowledge !== undefined) {
+      obj.knowledge = KnowledgeToolMetadata.toJSON(message.knowledge);
+    }
     return obj;
   },
 
@@ -3967,6 +4045,9 @@ export const NodeToolMetadata: MessageFns<NodeToolMetadata> = {
       : undefined;
     message.a2a = (object.a2a !== undefined && object.a2a !== null)
       ? A2aToolMetadata.fromPartial(object.a2a)
+      : undefined;
+    message.knowledge = (object.knowledge !== undefined && object.knowledge !== null)
+      ? KnowledgeToolMetadata.fromPartial(object.knowledge)
       : undefined;
     return message;
   },
@@ -4244,6 +4325,70 @@ export const A2aToolMetadata: MessageFns<A2aToolMetadata> = {
   fromPartial(object: DeepPartial<A2aToolMetadata>): A2aToolMetadata {
     const message = createBaseA2aToolMetadata();
     message.agentCardUrl = object.agentCardUrl ?? "";
+    return message;
+  },
+};
+
+function createBaseKnowledgeToolMetadata(): KnowledgeToolMetadata {
+  return { knowledgeRevisionId: "" };
+}
+
+export const KnowledgeToolMetadata: MessageFns<KnowledgeToolMetadata> = {
+  encode(message: KnowledgeToolMetadata, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.knowledgeRevisionId !== "") {
+      writer.uint32(10).string(message.knowledgeRevisionId);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): KnowledgeToolMetadata {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseKnowledgeToolMetadata();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.knowledgeRevisionId = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): KnowledgeToolMetadata {
+    return {
+      knowledgeRevisionId: isSet(object.knowledgeRevisionId)
+        ? globalThis.String(object.knowledgeRevisionId)
+        : isSet(object.knowledge_revision_id)
+        ? globalThis.String(object.knowledge_revision_id)
+        : "",
+    };
+  },
+
+  toJSON(message: KnowledgeToolMetadata): unknown {
+    const obj: any = {};
+    if (message.knowledgeRevisionId !== "") {
+      obj.knowledgeRevisionId = message.knowledgeRevisionId;
+    }
+    return obj;
+  },
+
+  create(base?: DeepPartial<KnowledgeToolMetadata>): KnowledgeToolMetadata {
+    return KnowledgeToolMetadata.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<KnowledgeToolMetadata>): KnowledgeToolMetadata {
+    const message = createBaseKnowledgeToolMetadata();
+    message.knowledgeRevisionId = object.knowledgeRevisionId ?? "";
     return message;
   },
 };
@@ -4626,6 +4771,90 @@ export const A2aToolRuntime_HeadersEntry: MessageFns<A2aToolRuntime_HeadersEntry
     const message = createBaseA2aToolRuntime_HeadersEntry();
     message.key = object.key ?? "";
     message.value = object.value ?? "";
+    return message;
+  },
+};
+
+function createBaseKnowledgeToolRuntime(): KnowledgeToolRuntime {
+  return { toolId: "", retrievalCapability: "" };
+}
+
+export const KnowledgeToolRuntime: MessageFns<KnowledgeToolRuntime> = {
+  encode(message: KnowledgeToolRuntime, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.toolId !== "") {
+      writer.uint32(10).string(message.toolId);
+    }
+    if (message.retrievalCapability !== "") {
+      writer.uint32(18).string(message.retrievalCapability);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): KnowledgeToolRuntime {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseKnowledgeToolRuntime();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.toolId = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.retrievalCapability = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): KnowledgeToolRuntime {
+    return {
+      toolId: isSet(object.toolId)
+        ? globalThis.String(object.toolId)
+        : isSet(object.tool_id)
+        ? globalThis.String(object.tool_id)
+        : "",
+      retrievalCapability: isSet(object.retrievalCapability)
+        ? globalThis.String(object.retrievalCapability)
+        : isSet(object.retrieval_capability)
+        ? globalThis.String(object.retrieval_capability)
+        : "",
+    };
+  },
+
+  toJSON(message: KnowledgeToolRuntime): unknown {
+    const obj: any = {};
+    if (message.toolId !== "") {
+      obj.toolId = message.toolId;
+    }
+    if (message.retrievalCapability !== "") {
+      obj.retrievalCapability = message.retrievalCapability;
+    }
+    return obj;
+  },
+
+  create(base?: DeepPartial<KnowledgeToolRuntime>): KnowledgeToolRuntime {
+    return KnowledgeToolRuntime.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<KnowledgeToolRuntime>): KnowledgeToolRuntime {
+    const message = createBaseKnowledgeToolRuntime();
+    message.toolId = object.toolId ?? "";
+    message.retrievalCapability = object.retrievalCapability ?? "";
     return message;
   },
 };

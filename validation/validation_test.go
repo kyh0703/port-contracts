@@ -30,6 +30,37 @@ func TestValidateAcceptsValidGatewayEvent(t *testing.T) {
 	}
 }
 
+func TestKnowledgeToolMetadataValidation(t *testing.T) {
+	valid := &apiv1.NodeToolMetadata{
+		ToolId: "knowledge-search",
+		Kind:   "knowledge",
+		Name:   "Search",
+		Metadata: &apiv1.NodeToolMetadata_Knowledge{Knowledge: &apiv1.KnowledgeToolMetadata{
+			KnowledgeRevisionId: "revision-1",
+		}},
+	}
+	if err := Validate(valid); err != nil {
+		t.Fatalf("Validate(valid knowledge metadata) = %v, want nil", err)
+	}
+
+	for _, tt := range []struct {
+		name string
+		msg  *apiv1.NodeToolMetadata
+	}{
+		{name: "knowledge kind missing metadata", msg: &apiv1.NodeToolMetadata{ToolId: "knowledge-search", Kind: "knowledge", Name: "Search"}},
+		{name: "non-knowledge kind with knowledge metadata", msg: &apiv1.NodeToolMetadata{
+			ToolId: "api-search", Kind: "api", Name: "Search",
+			Metadata: &apiv1.NodeToolMetadata_Knowledge{Knowledge: &apiv1.KnowledgeToolMetadata{KnowledgeRevisionId: "revision-1"}},
+		}},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			if err := Validate(tt.msg); err == nil {
+				t.Fatal("Validate() = nil, want rejection")
+			}
+		})
+	}
+}
+
 func TestExecutionSessionServiceExposesOnlyPublishedBootstrap(t *testing.T) {
 	descriptor, err := protoregistry.GlobalFiles.FindDescriptorByName("port.api.v1.ExecutionSessionService")
 	if err != nil {
