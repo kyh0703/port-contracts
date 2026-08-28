@@ -358,6 +358,8 @@ export interface PublishedPromptAgentRuntime {
   knowledgeRetrievalCapability: string;
   a2aToolRuntimes: A2aToolRuntime[];
   builtInTools: BuiltInTool[];
+  knowledgeFunctionName: string;
+  knowledgeDescription: string;
 }
 
 /**
@@ -376,6 +378,8 @@ export interface PublishedInlinePromptRuntime {
   builtInTools: BuiltInTool[];
   knowledgeRevisionId: string;
   knowledgeRetrievalCapability: string;
+  knowledgeFunctionName: string;
+  knowledgeDescription: string;
 }
 
 export interface PublishedSupervisorSnapshot {
@@ -1407,6 +1411,8 @@ function createBasePublishedPromptAgentRuntime(): PublishedPromptAgentRuntime {
     knowledgeRetrievalCapability: "",
     a2aToolRuntimes: [],
     builtInTools: [],
+    knowledgeFunctionName: "",
+    knowledgeDescription: "",
   };
 }
 
@@ -1447,6 +1453,12 @@ export const PublishedPromptAgentRuntime: MessageFns<PublishedPromptAgentRuntime
     }
     for (const v of message.builtInTools) {
       BuiltInTool.encode(v!, writer.uint32(98).fork()).join();
+    }
+    if (message.knowledgeFunctionName !== "") {
+      writer.uint32(106).string(message.knowledgeFunctionName);
+    }
+    if (message.knowledgeDescription !== "") {
+      writer.uint32(114).string(message.knowledgeDescription);
     }
     return writer;
   },
@@ -1554,6 +1566,22 @@ export const PublishedPromptAgentRuntime: MessageFns<PublishedPromptAgentRuntime
           message.builtInTools.push(BuiltInTool.decode(reader, reader.uint32()));
           continue;
         }
+        case 13: {
+          if (tag !== 106) {
+            break;
+          }
+
+          message.knowledgeFunctionName = reader.string();
+          continue;
+        }
+        case 14: {
+          if (tag !== 114) {
+            break;
+          }
+
+          message.knowledgeDescription = reader.string();
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -1613,6 +1641,16 @@ export const PublishedPromptAgentRuntime: MessageFns<PublishedPromptAgentRuntime
         : globalThis.Array.isArray(object?.built_in_tools)
         ? object.built_in_tools.map((e: any) => BuiltInTool.fromJSON(e))
         : [],
+      knowledgeFunctionName: isSet(object.knowledgeFunctionName)
+        ? globalThis.String(object.knowledgeFunctionName)
+        : isSet(object.knowledge_function_name)
+        ? globalThis.String(object.knowledge_function_name)
+        : "",
+      knowledgeDescription: isSet(object.knowledgeDescription)
+        ? globalThis.String(object.knowledgeDescription)
+        : isSet(object.knowledge_description)
+        ? globalThis.String(object.knowledge_description)
+        : "",
     };
   },
 
@@ -1654,6 +1692,12 @@ export const PublishedPromptAgentRuntime: MessageFns<PublishedPromptAgentRuntime
     if (message.builtInTools?.length) {
       obj.builtInTools = message.builtInTools.map((e) => BuiltInTool.toJSON(e));
     }
+    if (message.knowledgeFunctionName !== "") {
+      obj.knowledgeFunctionName = message.knowledgeFunctionName;
+    }
+    if (message.knowledgeDescription !== "") {
+      obj.knowledgeDescription = message.knowledgeDescription;
+    }
     return obj;
   },
 
@@ -1678,6 +1722,8 @@ export const PublishedPromptAgentRuntime: MessageFns<PublishedPromptAgentRuntime
     message.knowledgeRetrievalCapability = object.knowledgeRetrievalCapability ?? "";
     message.a2aToolRuntimes = object.a2aToolRuntimes?.map((e) => A2aToolRuntime.fromPartial(e)) || [];
     message.builtInTools = object.builtInTools?.map((e) => BuiltInTool.fromPartial(e)) || [];
+    message.knowledgeFunctionName = object.knowledgeFunctionName ?? "";
+    message.knowledgeDescription = object.knowledgeDescription ?? "";
     return message;
   },
 };
@@ -1695,6 +1741,8 @@ function createBasePublishedInlinePromptRuntime(): PublishedInlinePromptRuntime 
     builtInTools: [],
     knowledgeRevisionId: "",
     knowledgeRetrievalCapability: "",
+    knowledgeFunctionName: "",
+    knowledgeDescription: "",
   };
 }
 
@@ -1732,6 +1780,12 @@ export const PublishedInlinePromptRuntime: MessageFns<PublishedInlinePromptRunti
     }
     if (message.knowledgeRetrievalCapability !== "") {
       writer.uint32(90).string(message.knowledgeRetrievalCapability);
+    }
+    if (message.knowledgeFunctionName !== "") {
+      writer.uint32(98).string(message.knowledgeFunctionName);
+    }
+    if (message.knowledgeDescription !== "") {
+      writer.uint32(106).string(message.knowledgeDescription);
     }
     return writer;
   },
@@ -1831,6 +1885,22 @@ export const PublishedInlinePromptRuntime: MessageFns<PublishedInlinePromptRunti
           message.knowledgeRetrievalCapability = reader.string();
           continue;
         }
+        case 12: {
+          if (tag !== 98) {
+            break;
+          }
+
+          message.knowledgeFunctionName = reader.string();
+          continue;
+        }
+        case 13: {
+          if (tag !== 106) {
+            break;
+          }
+
+          message.knowledgeDescription = reader.string();
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -1889,6 +1959,16 @@ export const PublishedInlinePromptRuntime: MessageFns<PublishedInlinePromptRunti
         : isSet(object.knowledge_retrieval_capability)
         ? globalThis.String(object.knowledge_retrieval_capability)
         : "",
+      knowledgeFunctionName: isSet(object.knowledgeFunctionName)
+        ? globalThis.String(object.knowledgeFunctionName)
+        : isSet(object.knowledge_function_name)
+        ? globalThis.String(object.knowledge_function_name)
+        : "",
+      knowledgeDescription: isSet(object.knowledgeDescription)
+        ? globalThis.String(object.knowledgeDescription)
+        : isSet(object.knowledge_description)
+        ? globalThis.String(object.knowledge_description)
+        : "",
     };
   },
 
@@ -1927,6 +2007,12 @@ export const PublishedInlinePromptRuntime: MessageFns<PublishedInlinePromptRunti
     if (message.knowledgeRetrievalCapability !== "") {
       obj.knowledgeRetrievalCapability = message.knowledgeRetrievalCapability;
     }
+    if (message.knowledgeFunctionName !== "") {
+      obj.knowledgeFunctionName = message.knowledgeFunctionName;
+    }
+    if (message.knowledgeDescription !== "") {
+      obj.knowledgeDescription = message.knowledgeDescription;
+    }
     return obj;
   },
 
@@ -1950,6 +2036,8 @@ export const PublishedInlinePromptRuntime: MessageFns<PublishedInlinePromptRunti
     message.builtInTools = object.builtInTools?.map((e) => BuiltInTool.fromPartial(e)) || [];
     message.knowledgeRevisionId = object.knowledgeRevisionId ?? "";
     message.knowledgeRetrievalCapability = object.knowledgeRetrievalCapability ?? "";
+    message.knowledgeFunctionName = object.knowledgeFunctionName ?? "";
+    message.knowledgeDescription = object.knowledgeDescription ?? "";
     return message;
   },
 };

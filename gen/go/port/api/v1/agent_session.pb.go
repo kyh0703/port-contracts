@@ -882,6 +882,8 @@ type PublishedPromptAgentRuntime struct {
 	KnowledgeRetrievalCapability string                 `protobuf:"bytes,10,opt,name=knowledge_retrieval_capability,json=knowledgeRetrievalCapability,proto3" json:"knowledge_retrieval_capability,omitempty"`
 	A2AToolRuntimes              []*A2AToolRuntime      `protobuf:"bytes,11,rep,name=a2a_tool_runtimes,json=a2aToolRuntimes,proto3" json:"a2a_tool_runtimes,omitempty"`
 	BuiltInTools                 []*BuiltInTool         `protobuf:"bytes,12,rep,name=built_in_tools,json=builtInTools,proto3" json:"built_in_tools,omitempty"`
+	KnowledgeFunctionName        string                 `protobuf:"bytes,13,opt,name=knowledge_function_name,json=knowledgeFunctionName,proto3" json:"knowledge_function_name,omitempty"`
+	KnowledgeDescription         string                 `protobuf:"bytes,14,opt,name=knowledge_description,json=knowledgeDescription,proto3" json:"knowledge_description,omitempty"`
 	unknownFields                protoimpl.UnknownFields
 	sizeCache                    protoimpl.SizeCache
 }
@@ -1000,6 +1002,20 @@ func (x *PublishedPromptAgentRuntime) GetBuiltInTools() []*BuiltInTool {
 	return nil
 }
 
+func (x *PublishedPromptAgentRuntime) GetKnowledgeFunctionName() string {
+	if x != nil {
+		return x.KnowledgeFunctionName
+	}
+	return ""
+}
+
+func (x *PublishedPromptAgentRuntime) GetKnowledgeDescription() string {
+	if x != nil {
+		return x.KnowledgeDescription
+	}
+	return ""
+}
+
 // Inline orchestration nodes intentionally do not expose greeting or guardrails
 // fields. Knowledge retrieval is available through the additive fields below.
 type PublishedInlinePromptRuntime struct {
@@ -1015,6 +1031,8 @@ type PublishedInlinePromptRuntime struct {
 	BuiltInTools                 []*BuiltInTool            `protobuf:"bytes,9,rep,name=built_in_tools,json=builtInTools,proto3" json:"built_in_tools,omitempty"`
 	KnowledgeRevisionId          string                    `protobuf:"bytes,10,opt,name=knowledge_revision_id,json=knowledgeRevisionId,proto3" json:"knowledge_revision_id,omitempty"`
 	KnowledgeRetrievalCapability string                    `protobuf:"bytes,11,opt,name=knowledge_retrieval_capability,json=knowledgeRetrievalCapability,proto3" json:"knowledge_retrieval_capability,omitempty"`
+	KnowledgeFunctionName        string                    `protobuf:"bytes,12,opt,name=knowledge_function_name,json=knowledgeFunctionName,proto3" json:"knowledge_function_name,omitempty"`
+	KnowledgeDescription         string                    `protobuf:"bytes,13,opt,name=knowledge_description,json=knowledgeDescription,proto3" json:"knowledge_description,omitempty"`
 	unknownFields                protoimpl.UnknownFields
 	sizeCache                    protoimpl.SizeCache
 }
@@ -1122,6 +1140,20 @@ func (x *PublishedInlinePromptRuntime) GetKnowledgeRevisionId() string {
 func (x *PublishedInlinePromptRuntime) GetKnowledgeRetrievalCapability() string {
 	if x != nil {
 		return x.KnowledgeRetrievalCapability
+	}
+	return ""
+}
+
+func (x *PublishedInlinePromptRuntime) GetKnowledgeFunctionName() string {
+	if x != nil {
+		return x.KnowledgeFunctionName
+	}
+	return ""
+}
+
+func (x *PublishedInlinePromptRuntime) GetKnowledgeDescription() string {
+	if x != nil {
+		return x.KnowledgeDescription
 	}
 	return ""
 }
@@ -2902,7 +2934,7 @@ const file_port_api_v1_agent_session_proto_rawDesc = "" +
 	"/published_orchestration_execution.mode_snapshot\x121mode must match the selected publication topology\x1aQ(this.mode == 1 && has(this.supervisor)) || (this.mode == 2 && has(this.handoff))\"\x17\n" +
 	"\n" +
 	"supervisor\n" +
-	"\ahandoff\x10\x01\"\x9a\x06\n" +
+	"\ahandoff\x10\x01\"\x87\a\n" +
 	"\x1bPublishedPromptAgentRuntime\x12B\n" +
 	"\x19prompt_agent_published_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x16promptAgentPublishedId\x12>\n" +
 	"\n" +
@@ -2919,7 +2951,9 @@ const file_port_api_v1_agent_session_proto_rawDesc = "" +
 	"\x1eknowledge_retrieval_capability\x18\n" +
 	" \x01(\tR\x1cknowledgeRetrievalCapability\x12G\n" +
 	"\x11a2a_tool_runtimes\x18\v \x03(\v2\x1b.port.api.v1.A2aToolRuntimeR\x0fa2aToolRuntimes\x12>\n" +
-	"\x0ebuilt_in_tools\x18\f \x03(\v2\x18.port.api.v1.BuiltInToolR\fbuiltInTools\"\xe3\x05\n" +
+	"\x0ebuilt_in_tools\x18\f \x03(\v2\x18.port.api.v1.BuiltInToolR\fbuiltInTools\x126\n" +
+	"\x17knowledge_function_name\x18\r \x01(\tR\x15knowledgeFunctionName\x123\n" +
+	"\x15knowledge_description\x18\x0e \x01(\tR\x14knowledgeDescription\"\xd0\x06\n" +
 	"\x1cPublishedInlinePromptRuntime\x12 \n" +
 	"\anode_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x06nodeId\x12>\n" +
 	"\n" +
@@ -2935,7 +2969,9 @@ const file_port_api_v1_agent_session_proto_rawDesc = "" +
 	"\x0ebuilt_in_tools\x18\t \x03(\v2\x18.port.api.v1.BuiltInToolR\fbuiltInTools\x122\n" +
 	"\x15knowledge_revision_id\x18\n" +
 	" \x01(\tR\x13knowledgeRevisionId\x12D\n" +
-	"\x1eknowledge_retrieval_capability\x18\v \x01(\tR\x1cknowledgeRetrievalCapability\"\xac\x01\n" +
+	"\x1eknowledge_retrieval_capability\x18\v \x01(\tR\x1cknowledgeRetrievalCapability\x126\n" +
+	"\x17knowledge_function_name\x18\f \x01(\tR\x15knowledgeFunctionName\x123\n" +
+	"\x15knowledge_description\x18\r \x01(\tR\x14knowledgeDescription\"\xac\x01\n" +
 	"\x1bPublishedSupervisorSnapshot\x125\n" +
 	"\x12supervisor_node_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x10supervisorNodeId\x12V\n" +
 	"\vspecialists\x18\x02 \x03(\v2*.port.api.v1.PublishedSupervisorSpecialistB\b\xbaH\x05\x92\x01\x02\b\x01R\vspecialists\"\xad\x03\n" +

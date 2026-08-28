@@ -10,6 +10,8 @@ const {
   OrchestrationMode,
   ContextPolicy,
   HandoffParameterType,
+  PublishedPromptAgentRuntime,
+  PublishedInlinePromptRuntime,
 } = contracts;
 
 const publicationRevision = "execution-publication-2026-08-27-r1";
@@ -106,6 +108,68 @@ test("published bootstrap preserves the publication-only direct text branch", ()
   assert.equal(decoded.voiceRuntime, undefined);
   assert.equal(decoded.promptAgent.runtime.agentVersionId, undefined);
   assert.equal(decoded.promptAgent.runtime.knowledgeRetrievalCapability, "signed-capability");
+});
+
+test("published runtimes round-trip configurable knowledge function metadata", () => {
+  const promptRuntime = PublishedPromptAgentRuntime.create({
+    knowledgeFunctionName: "search_catalog",
+    knowledgeDescription: "Search the product catalog.",
+  });
+  assert.deepEqual(
+    [...PublishedPromptAgentRuntime.encode(promptRuntime).finish()],
+    [0x6a, 0x0e, ...Buffer.from("search_catalog"), 0x72, 0x1b, ...Buffer.from("Search the product catalog.")],
+  );
+
+  const inlineRuntimeMetadata = PublishedInlinePromptRuntime.create({
+    knowledgeFunctionName: "search_orders",
+    knowledgeDescription: "Search order history.",
+  });
+  assert.deepEqual(
+    [...PublishedInlinePromptRuntime.encode(inlineRuntimeMetadata).finish()],
+    [0x62, 0x0d, ...Buffer.from("search_orders"), 0x6a, 0x15, ...Buffer.from("Search order history.")],
+  );
+
+  const response = BootstrapPublishedResponse.create({
+    contractRevision: publicationRevision,
+    conversationId: "conversation-knowledge-function",
+    sessionId: "session-knowledge-function",
+    publishedId: "publication-knowledge-function",
+    promptAgent: {
+      runtime: {
+        promptAgentPublishedId: "publication-knowledge-function",
+        llmWorker: { apiKey: "runtime-key", model: "model-1" },
+        instructions: { systemPrompt: "Help." },
+        knowledgeFunctionName: "search_catalog",
+        knowledgeDescription: "Search the product catalog.",
+      },
+    },
+    orchestration: {
+      mode: OrchestrationMode.ORCHESTRATION_MODE_HANDOFF,
+      nodeRuntimes: [
+        inlineRuntime("node-1", "Start.", undefined, undefined, "search_orders", "Search order history."),
+        inlineRuntime("node-2", "Finish."),
+      ],
+      handoff: {
+        entryNodeId: "node-1",
+        maxHandoffDepth: 2,
+        routes: [{
+          transitionId: "route-1",
+          sourceNodeId: "node-1",
+          targetNodeId: "node-2",
+          routingDescription: "Finish",
+          contextPolicy: ContextPolicy.CONTEXT_POLICY_NONE,
+        }],
+      },
+    },
+  });
+
+  const decoded = BootstrapPublishedResponse.decode(
+    BootstrapPublishedResponse.encode(response).finish(),
+  );
+  assert.equal(decoded.promptAgent.runtime.knowledgeFunctionName, "search_catalog");
+  assert.equal(decoded.promptAgent.runtime.knowledgeDescription, "Search the product catalog.");
+  assert.equal(decoded.orchestration.nodeRuntimes[0].knowledgeFunctionName, "search_orders");
+  assert.equal(decoded.orchestration.nodeRuntimes[0].knowledgeDescription, "Search order history.");
 });
 
 test("published orchestration topology references only inline node IDs", () => {
@@ -289,7 +353,14 @@ test("handoff route system prompt is optional and round-trips on field 9", () =>
   assert.equal(decoded.systemPrompt, route.systemPrompt);
 });
 
-function inlineRuntime(nodeId, systemPrompt, knowledgeRevisionId, knowledgeRetrievalCapability) {
+function inlineRuntime(
+  nodeId,
+  systemPrompt,
+  knowledgeRevisionId,
+  knowledgeRetrievalCapability,
+  knowledgeFunctionName,
+  knowledgeDescription,
+) {
   return {
     nodeId,
     llmWorker: { apiKey: `key-${nodeId}`, model: "model-1" },
@@ -298,5 +369,7 @@ function inlineRuntime(nodeId, systemPrompt, knowledgeRevisionId, knowledgeRetri
     builtInTools: [{ endCall: { closingPhrase: "Goodbye.", confirm: true } }],
     knowledgeRevisionId,
     knowledgeRetrievalCapability,
+    knowledgeFunctionName,
+    knowledgeDescription,
   };
 }

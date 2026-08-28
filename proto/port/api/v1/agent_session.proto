@@ -107,6 +107,8 @@ message PublishedPromptAgentRuntime {
   string knowledge_retrieval_capability = 10;
   repeated A2aToolRuntime a2a_tool_runtimes = 11;
   repeated BuiltInTool built_in_tools = 12;
+  string knowledge_function_name = 13;
+  string knowledge_description = 14;
 }
 
 // Inline orchestration nodes intentionally do not expose greeting or guardrails
@@ -123,6 +125,8 @@ message PublishedInlinePromptRuntime {
   repeated BuiltInTool built_in_tools = 9;
   string knowledge_revision_id = 10;
   string knowledge_retrieval_capability = 11;
+  string knowledge_function_name = 12;
+  string knowledge_description = 13;
 }
 
 message PublishedSupervisorSnapshot {
