@@ -498,22 +498,26 @@ class BuiltInTool(_message.Message):
     def __init__(self, end_call: _Optional[_Union[EndCallTool, _Mapping]] = ..., transfer_to_human: _Optional[_Union[TransferToHumanTool, _Mapping]] = ...) -> None: ...
 
 class EndCallTool(_message.Message):
-    __slots__ = ("closing_phrase", "confirm")
+    __slots__ = ("closing_phrase", "confirm", "condition")
     CLOSING_PHRASE_FIELD_NUMBER: _ClassVar[int]
     CONFIRM_FIELD_NUMBER: _ClassVar[int]
+    CONDITION_FIELD_NUMBER: _ClassVar[int]
     closing_phrase: str
     confirm: bool
-    def __init__(self, closing_phrase: _Optional[str] = ..., confirm: _Optional[bool] = ...) -> None: ...
+    condition: str
+    def __init__(self, closing_phrase: _Optional[str] = ..., confirm: _Optional[bool] = ..., condition: _Optional[str] = ...) -> None: ...
 
 class TransferToHumanTool(_message.Message):
-    __slots__ = ("sip_call_to", "hold_phrase", "ringing_timeout_ms")
+    __slots__ = ("sip_call_to", "hold_phrase", "ringing_timeout_ms", "condition")
     SIP_CALL_TO_FIELD_NUMBER: _ClassVar[int]
     HOLD_PHRASE_FIELD_NUMBER: _ClassVar[int]
     RINGING_TIMEOUT_MS_FIELD_NUMBER: _ClassVar[int]
+    CONDITION_FIELD_NUMBER: _ClassVar[int]
     sip_call_to: str
     hold_phrase: str
     ringing_timeout_ms: int
-    def __init__(self, sip_call_to: _Optional[str] = ..., hold_phrase: _Optional[str] = ..., ringing_timeout_ms: _Optional[int] = ...) -> None: ...
+    condition: str
+    def __init__(self, sip_call_to: _Optional[str] = ..., hold_phrase: _Optional[str] = ..., ringing_timeout_ms: _Optional[int] = ..., condition: _Optional[str] = ...) -> None: ...
 
 class McpServerRuntime(_message.Message):
     __slots__ = ("name", "transport", "url", "headers")

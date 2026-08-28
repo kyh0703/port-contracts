@@ -13,9 +13,36 @@ const {
   PublishedPromptAgentRuntime,
   PublishedInlinePromptRuntime,
   KnowledgeToolRuntime,
+  EndCallTool,
+  TransferToHumanTool,
 } = contracts;
 
 const publicationRevision = "execution-publication-2026-08-27-r1";
+
+test("built-in tool conditions round-trip while legacy payloads default to empty", () => {
+  const legacyEndCall = EndCallTool.create({});
+  const legacyTransfer = TransferToHumanTool.create({
+    sipCallTo: "+821012345678",
+    ringingTimeoutMs: 30000,
+  });
+  assert.equal(EndCallTool.decode(EndCallTool.encode(legacyEndCall).finish()).condition, "");
+  assert.equal(
+    TransferToHumanTool.decode(TransferToHumanTool.encode(legacyTransfer).finish()).condition,
+    "",
+  );
+
+  const endCall = EndCallTool.create({ condition: "사용자가 상담을 종료해 달라고 요청한 경우", confirm: true });
+  const transfer = TransferToHumanTool.create({
+    sipCallTo: "+821012345678",
+    ringingTimeoutMs: 30000,
+    condition: "사용자가 상담원 연결을 요청한 경우",
+  });
+  assert.equal(EndCallTool.decode(EndCallTool.encode(endCall).finish()).condition, endCall.condition);
+  assert.equal(
+    TransferToHumanTool.decode(TransferToHumanTool.encode(transfer).finish()).condition,
+    transfer.condition,
+  );
+});
 
 test("SIP caller phone number is optional and round-trips without changing the revision", () => {
   for (const phoneNumber of [undefined, "+821012345678", "anonymous"]) {

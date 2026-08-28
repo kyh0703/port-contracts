@@ -553,12 +553,16 @@ export interface BuiltInTool {
 export interface EndCallTool {
   closingPhrase?: string | undefined;
   confirm: boolean;
+  /** User-authored invocation condition. Runtime appends locked operational wording. */
+  condition: string;
 }
 
 export interface TransferToHumanTool {
   sipCallTo: string;
   holdPhrase?: string | undefined;
   ringingTimeoutMs: number;
+  /** User-authored invocation condition. Runtime appends locked operational wording. */
+  condition: string;
 }
 
 export interface McpServerRuntime {
@@ -4948,7 +4952,7 @@ export const BuiltInTool: MessageFns<BuiltInTool> = {
 };
 
 function createBaseEndCallTool(): EndCallTool {
-  return { closingPhrase: undefined, confirm: false };
+  return { closingPhrase: undefined, confirm: false, condition: "" };
 }
 
 export const EndCallTool: MessageFns<EndCallTool> = {
@@ -4958,6 +4962,9 @@ export const EndCallTool: MessageFns<EndCallTool> = {
     }
     if (message.confirm !== false) {
       writer.uint32(16).bool(message.confirm);
+    }
+    if (message.condition !== "") {
+      writer.uint32(26).string(message.condition);
     }
     return writer;
   },
@@ -4985,6 +4992,14 @@ export const EndCallTool: MessageFns<EndCallTool> = {
           message.confirm = reader.bool();
           continue;
         }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.condition = reader.string();
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -5002,6 +5017,7 @@ export const EndCallTool: MessageFns<EndCallTool> = {
         ? globalThis.String(object.closing_phrase)
         : undefined,
       confirm: isSet(object.confirm) ? globalThis.Boolean(object.confirm) : false,
+      condition: isSet(object.condition) ? globalThis.String(object.condition) : "",
     };
   },
 
@@ -5013,6 +5029,9 @@ export const EndCallTool: MessageFns<EndCallTool> = {
     if (message.confirm !== false) {
       obj.confirm = message.confirm;
     }
+    if (message.condition !== "") {
+      obj.condition = message.condition;
+    }
     return obj;
   },
 
@@ -5023,12 +5042,13 @@ export const EndCallTool: MessageFns<EndCallTool> = {
     const message = createBaseEndCallTool();
     message.closingPhrase = object.closingPhrase ?? undefined;
     message.confirm = object.confirm ?? false;
+    message.condition = object.condition ?? "";
     return message;
   },
 };
 
 function createBaseTransferToHumanTool(): TransferToHumanTool {
-  return { sipCallTo: "", holdPhrase: undefined, ringingTimeoutMs: 0 };
+  return { sipCallTo: "", holdPhrase: undefined, ringingTimeoutMs: 0, condition: "" };
 }
 
 export const TransferToHumanTool: MessageFns<TransferToHumanTool> = {
@@ -5041,6 +5061,9 @@ export const TransferToHumanTool: MessageFns<TransferToHumanTool> = {
     }
     if (message.ringingTimeoutMs !== 0) {
       writer.uint32(24).uint32(message.ringingTimeoutMs);
+    }
+    if (message.condition !== "") {
+      writer.uint32(34).string(message.condition);
     }
     return writer;
   },
@@ -5076,6 +5099,14 @@ export const TransferToHumanTool: MessageFns<TransferToHumanTool> = {
           message.ringingTimeoutMs = reader.uint32();
           continue;
         }
+        case 4: {
+          if (tag !== 34) {
+            break;
+          }
+
+          message.condition = reader.string();
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -5102,6 +5133,7 @@ export const TransferToHumanTool: MessageFns<TransferToHumanTool> = {
         : isSet(object.ringing_timeout_ms)
         ? globalThis.Number(object.ringing_timeout_ms)
         : 0,
+      condition: isSet(object.condition) ? globalThis.String(object.condition) : "",
     };
   },
 
@@ -5116,6 +5148,9 @@ export const TransferToHumanTool: MessageFns<TransferToHumanTool> = {
     if (message.ringingTimeoutMs !== 0) {
       obj.ringingTimeoutMs = Math.round(message.ringingTimeoutMs);
     }
+    if (message.condition !== "") {
+      obj.condition = message.condition;
+    }
     return obj;
   },
 
@@ -5127,6 +5162,7 @@ export const TransferToHumanTool: MessageFns<TransferToHumanTool> = {
     message.sipCallTo = object.sipCallTo ?? "";
     message.holdPhrase = object.holdPhrase ?? undefined;
     message.ringingTimeoutMs = object.ringingTimeoutMs ?? 0;
+    message.condition = object.condition ?? "";
     return message;
   },
 };

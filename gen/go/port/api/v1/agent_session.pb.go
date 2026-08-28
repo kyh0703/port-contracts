@@ -2777,6 +2777,8 @@ type EndCallTool struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	ClosingPhrase *string                `protobuf:"bytes,1,opt,name=closing_phrase,json=closingPhrase,proto3,oneof" json:"closing_phrase,omitempty"`
 	Confirm       bool                   `protobuf:"varint,2,opt,name=confirm,proto3" json:"confirm,omitempty"`
+	// User-authored invocation condition. Runtime appends locked operational wording.
+	Condition     string `protobuf:"bytes,3,opt,name=condition,proto3" json:"condition,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -2825,13 +2827,22 @@ func (x *EndCallTool) GetConfirm() bool {
 	return false
 }
 
+func (x *EndCallTool) GetCondition() string {
+	if x != nil {
+		return x.Condition
+	}
+	return ""
+}
+
 type TransferToHumanTool struct {
 	state            protoimpl.MessageState `protogen:"open.v1"`
 	SipCallTo        string                 `protobuf:"bytes,1,opt,name=sip_call_to,json=sipCallTo,proto3" json:"sip_call_to,omitempty"`
 	HoldPhrase       *string                `protobuf:"bytes,2,opt,name=hold_phrase,json=holdPhrase,proto3,oneof" json:"hold_phrase,omitempty"`
 	RingingTimeoutMs uint32                 `protobuf:"varint,3,opt,name=ringing_timeout_ms,json=ringingTimeoutMs,proto3" json:"ringing_timeout_ms,omitempty"`
-	unknownFields    protoimpl.UnknownFields
-	sizeCache        protoimpl.SizeCache
+	// User-authored invocation condition. Runtime appends locked operational wording.
+	Condition     string `protobuf:"bytes,4,opt,name=condition,proto3" json:"condition,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
 }
 
 func (x *TransferToHumanTool) Reset() {
@@ -2883,6 +2894,13 @@ func (x *TransferToHumanTool) GetRingingTimeoutMs() uint32 {
 		return x.RingingTimeoutMs
 	}
 	return 0
+}
+
+func (x *TransferToHumanTool) GetCondition() string {
+	if x != nil {
+		return x.Condition
+	}
+	return ""
 }
 
 type McpServerRuntime struct {
@@ -3251,16 +3269,18 @@ const file_port_api_v1_agent_session_proto_rawDesc = "" +
 	"\vBuiltInTool\x125\n" +
 	"\bend_call\x18\x01 \x01(\v2\x18.port.api.v1.EndCallToolH\x00R\aendCall\x12N\n" +
 	"\x11transfer_to_human\x18\x02 \x01(\v2 .port.api.v1.TransferToHumanToolH\x00R\x0ftransferToHumanB\x0f\n" +
-	"\x06config\x12\x05\xbaH\x02\b\x01\"f\n" +
+	"\x06config\x12\x05\xbaH\x02\b\x01\"\x84\x01\n" +
 	"\vEndCallTool\x12*\n" +
 	"\x0eclosing_phrase\x18\x01 \x01(\tH\x00R\rclosingPhrase\x88\x01\x01\x12\x18\n" +
-	"\aconfirm\x18\x02 \x01(\bR\aconfirmB\x11\n" +
-	"\x0f_closing_phrase\"\xb0\x01\n" +
+	"\aconfirm\x18\x02 \x01(\bR\aconfirm\x12\x1c\n" +
+	"\tcondition\x18\x03 \x01(\tR\tconditionB\x11\n" +
+	"\x0f_closing_phrase\"\xce\x01\n" +
 	"\x13TransferToHumanTool\x12'\n" +
 	"\vsip_call_to\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\tsipCallTo\x12$\n" +
 	"\vhold_phrase\x18\x02 \x01(\tH\x00R\n" +
 	"holdPhrase\x88\x01\x01\x12:\n" +
-	"\x12ringing_timeout_ms\x18\x03 \x01(\rB\f\xbaH\t*\a\x18\xc0\xcf$(\x88'R\x10ringingTimeoutMsB\x0e\n" +
+	"\x12ringing_timeout_ms\x18\x03 \x01(\rB\f\xbaH\t*\a\x18\xc0\xcf$(\x88'R\x10ringingTimeoutMs\x12\x1c\n" +
+	"\tcondition\x18\x04 \x01(\tR\tconditionB\x0e\n" +
 	"\f_hold_phrase\"\x87\x02\n" +
 	"\x10McpServerRuntime\x12\x1b\n" +
 	"\x04name\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x04name\x129\n" +

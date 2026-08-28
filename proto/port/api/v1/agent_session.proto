@@ -391,12 +391,16 @@ message BuiltInTool {
 message EndCallTool {
   optional string closing_phrase = 1;
   bool confirm = 2;
+  // User-authored invocation condition. Runtime appends locked operational wording.
+  string condition = 3;
 }
 
 message TransferToHumanTool {
   string sip_call_to = 1 [(buf.validate.field).string.min_len = 1];
   optional string hold_phrase = 2;
   uint32 ringing_timeout_ms = 3 [(buf.validate.field).uint32 = {gte: 5000 lte: 600000}];
+  // User-authored invocation condition. Runtime appends locked operational wording.
+  string condition = 4;
 }
 
 message McpServerRuntime {
