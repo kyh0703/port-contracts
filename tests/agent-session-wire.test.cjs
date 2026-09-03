@@ -7,17 +7,19 @@ const {
   BootstrapPublishedRequest,
   BootstrapPublishedResponse,
   CallRuntimeSnapshot,
-  OrchestrationMode,
+  ConversationControlRuntime,
+  TimeElapsedActionRuntime,
+  EndCallActionRuntime,
+  AgentMode,
   ContextPolicy,
   HandoffParameterType,
-  PublishedPromptAgentRuntime,
-  PublishedInlinePromptRuntime,
+  PublishedAgentNodeRuntime,
   KnowledgeToolRuntime,
   EndCallTool,
   TransferToHumanTool,
 } = contracts;
 
-const publicationRevision = "execution-publication-2026-08-27-r1";
+const publicationRevision = "execution-publication-2026-09-03-r1";
 
 test("built-in tool conditions round-trip while legacy payloads default to empty", () => {
   const legacyEndCall = EndCallTool.create({});
@@ -62,7 +64,7 @@ test("SIP caller phone number is optional and round-trips without changing the r
       conversationId: "conversation-1",
       sessionId: "session-1",
       publishedId: "publication-1",
-      contractRevision: "execution-publication-2026-08-27-r1",
+      contractRevision: "execution-publication-2026-09-03-r1",
     });
     const decoded = BootstrapPublishedRequest.decode(BootstrapPublishedRequest.encode(request).finish());
     assert.deepEqual(decoded, request);
@@ -84,76 +86,46 @@ test("call runtime filler settings are optional and preserve the configured phra
   assert.equal(enabledDecoded.conversationFiller.phrase, "One moment while I look that up.");
 });
 
+test("conversation controls round-trip end-call policies and elapsed actions", () => {
+  const controls = ConversationControlRuntime.create({
+    endCallMessage: "상담을 종료하겠습니다.",
+    endCallPhrases: ["감사합니다", "통화 종료"],
+    timeElapsedActions: [
+      { atSeconds: 300, say: "곧 상담을 마무리하겠습니다." },
+      { atSeconds: 360, endCall: EndCallActionRuntime.create({}) },
+    ],
+  });
+  const runtime = CallRuntimeSnapshot.create({ conversationControl: controls });
+  const decoded = CallRuntimeSnapshot.decode(CallRuntimeSnapshot.encode(runtime).finish());
+  assert.deepEqual(decoded, runtime);
+  assert.equal(decoded.conversationControl.endCallMessage, "상담을 종료하겠습니다.");
+  assert.equal(decoded.conversationControl.timeElapsedActions[0].say, "곧 상담을 마무리하겠습니다.");
+  assert.ok(decoded.conversationControl.timeElapsedActions[1].endCall);
+});
+
 test("the worker contract exposes only canonical publication bootstrap", () => {
   assert.deepEqual(Object.keys(ExecutionSessionServiceService), ["bootstrapPublished"]);
   assert.equal(contracts.AgentSessionServiceService, undefined);
   assert.equal(contracts.BootstrapAgentRequest, undefined);
-  assert.equal(contracts.BootstrapOrchestrationRequest, undefined);
   assert.equal(contracts.BootstrapSipRequest, undefined);
 });
 
-test("published bootstrap preserves the publication-only direct text branch", () => {
-  const request = BootstrapPublishedRequest.create({
-    admission: { webrtcTicket: "ticket-1" },
-    conversationId: "conversation-1",
-    sessionId: "session-1",
-    publishedId: "publication-1",
-    contractRevision: "execution-publication-2026-08-27-r1",
-  });
-  assert.deepEqual(
-    BootstrapPublishedRequest.decode(BootstrapPublishedRequest.encode(request).finish()),
-    request,
-  );
-
-  const response = BootstrapPublishedResponse.create({
-    contractRevision: "execution-publication-2026-08-27-r1",
-    conversationId: request.conversationId,
-    sessionId: request.sessionId,
-    publishedId: request.publishedId,
-    promptAgent: {
-      runtime: {
-        promptAgentPublishedId: request.publishedId,
-        llmWorker: { apiKey: "runtime-key", model: "model-1" },
-        instructions: { systemPrompt: "Help." },
-        contextPolicy: ContextPolicy.CONTEXT_POLICY_CONVERSATION,
-        knowledgeRevisionId: "knowledge-revision-1",
-        knowledgeRetrievalCapability: "signed-capability",
-      },
-    },
-    textRuntime: {
-      transport: "text_stream",
-      roomName: "room-1",
-      participantIdentity: "participant-1",
-      idleTimeoutSeconds: 300,
-      maxSessionDurationSeconds: 3600,
-    },
-  });
-  const decoded = BootstrapPublishedResponse.decode(
-    BootstrapPublishedResponse.encode(response).finish(),
-  );
-  assert.deepEqual(decoded, response);
-  assert.equal(decoded.orchestration, undefined);
-  assert.equal(decoded.voiceRuntime, undefined);
-  assert.equal(decoded.promptAgent.runtime.agentVersionId, undefined);
-  assert.equal(decoded.promptAgent.runtime.knowledgeRetrievalCapability, "signed-capability");
-});
-
 test("published runtimes round-trip configurable knowledge function metadata", () => {
-  const promptRuntime = PublishedPromptAgentRuntime.create({
+  const promptRuntime = PublishedAgentNodeRuntime.create({
     knowledgeFunctionName: "search_catalog",
     knowledgeDescription: "Search the product catalog.",
   });
   assert.deepEqual(
-    [...PublishedPromptAgentRuntime.encode(promptRuntime).finish()],
-    [0x6a, 0x0e, ...Buffer.from("search_catalog"), 0x72, 0x1b, ...Buffer.from("Search the product catalog.")],
+    [...PublishedAgentNodeRuntime.encode(promptRuntime).finish()],
+    [0x62, 0x0e, ...Buffer.from("search_catalog"), 0x6a, 0x1b, ...Buffer.from("Search the product catalog.")],
   );
 
-  const inlineRuntimeMetadata = PublishedInlinePromptRuntime.create({
+  const inlineRuntimeMetadata = PublishedAgentNodeRuntime.create({
     knowledgeFunctionName: "search_orders",
     knowledgeDescription: "Search order history.",
   });
   assert.deepEqual(
-    [...PublishedInlinePromptRuntime.encode(inlineRuntimeMetadata).finish()],
+    [...PublishedAgentNodeRuntime.encode(inlineRuntimeMetadata).finish()],
     [0x62, 0x0d, ...Buffer.from("search_orders"), 0x6a, 0x15, ...Buffer.from("Search order history.")],
   );
 
@@ -162,19 +134,10 @@ test("published runtimes round-trip configurable knowledge function metadata", (
     conversationId: "conversation-knowledge-function",
     sessionId: "session-knowledge-function",
     publishedId: "publication-knowledge-function",
-    promptAgent: {
-      runtime: {
-        promptAgentPublishedId: "publication-knowledge-function",
-        llmWorker: { apiKey: "runtime-key", model: "model-1" },
-        instructions: { systemPrompt: "Help." },
-        knowledgeFunctionName: "search_catalog",
-        knowledgeDescription: "Search the product catalog.",
-      },
-    },
-    orchestration: {
-      mode: OrchestrationMode.ORCHESTRATION_MODE_HANDOFF,
+    agent: {
+      mode: AgentMode.AGENT_MODE_HANDOFF,
       nodeRuntimes: [
-        inlineRuntime("node-1", "Start.", undefined, undefined, "search_orders", "Search order history."),
+        inlineRuntime("node-1", "Start.", undefined, undefined, "search_catalog", "Search the product catalog."),
         inlineRuntime("node-2", "Finish."),
       ],
       handoff: {
@@ -194,20 +157,20 @@ test("published runtimes round-trip configurable knowledge function metadata", (
   const decoded = BootstrapPublishedResponse.decode(
     BootstrapPublishedResponse.encode(response).finish(),
   );
-  assert.equal(decoded.promptAgent.runtime.knowledgeFunctionName, "search_catalog");
-  assert.equal(decoded.promptAgent.runtime.knowledgeDescription, "Search the product catalog.");
-  assert.equal(decoded.orchestration.nodeRuntimes[0].knowledgeFunctionName, "search_orders");
-  assert.equal(decoded.orchestration.nodeRuntimes[0].knowledgeDescription, "Search order history.");
+  assert.equal(decoded.agent.nodeRuntimes[0].knowledgeFunctionName, "search_catalog");
+  assert.equal(decoded.agent.nodeRuntimes[0].knowledgeDescription, "Search the product catalog.");
+  assert.equal(decoded.agent.nodeRuntimes[0].knowledgeFunctionName, "search_catalog");
+  assert.equal(decoded.agent.nodeRuntimes[0].knowledgeDescription, "Search the product catalog.");
 });
 
-test("published orchestration topology references only inline node IDs", () => {
+test("published agent topology references only inline node IDs", () => {
   const response = BootstrapPublishedResponse.create({
-    contractRevision: "execution-publication-2026-08-27-r1",
+    contractRevision: "execution-publication-2026-09-03-r1",
     conversationId: "conversation-2",
     sessionId: "session-2",
-    publishedId: "orchestration-publication-1",
-    orchestration: {
-      mode: OrchestrationMode.ORCHESTRATION_MODE_HANDOFF,
+    publishedId: "agent-publication-1",
+    agent: {
+      mode: AgentMode.AGENT_MODE_HANDOFF,
       nodeRuntimes: [
         inlineRuntime("node-1", "Start."),
         inlineRuntime("node-2", "Finish."),
@@ -238,23 +201,23 @@ test("published orchestration topology references only inline node IDs", () => {
   );
   assert.deepEqual(decoded, response);
   assert.deepEqual(
-    decoded.orchestration.nodeRuntimes.map((entry) => entry.nodeId),
+    decoded.agent.nodeRuntimes.map((entry) => entry.nodeId),
     ["node-1", "node-2"],
   );
-  assert.equal(decoded.orchestration.nodeRuntimes[0].greeting, undefined);
-  assert.equal(decoded.orchestration.nodeRuntimes[0].guardrails, undefined);
-  assert.equal(decoded.orchestration.nodeRuntimes[0].knowledgeRevisionId, "");
-  assert.equal(decoded.orchestration.nodeRuntimes[0].knowledgeRetrievalCapability, "");
+  assert.equal(decoded.agent.nodeRuntimes[0].greeting, undefined);
+  assert.equal(decoded.agent.nodeRuntimes[0].guardrails, undefined);
+  assert.equal(decoded.agent.nodeRuntimes[0].knowledgeRevisionId, "");
+  assert.equal(decoded.agent.nodeRuntimes[0].knowledgeRetrievalCapability, "");
 });
 
 test("inline runtimes round-trip Knowledge fields and default them for legacy payloads", () => {
   const response = BootstrapPublishedResponse.create({
-    contractRevision: "execution-publication-2026-08-27-r1",
+    contractRevision: "execution-publication-2026-09-03-r1",
     conversationId: "conversation-3",
     sessionId: "session-3",
-    publishedId: "orchestration-publication-2",
-    orchestration: {
-      mode: OrchestrationMode.ORCHESTRATION_MODE_HANDOFF,
+    publishedId: "agent-publication-2",
+    agent: {
+      mode: AgentMode.AGENT_MODE_HANDOFF,
       nodeRuntimes: [
         inlineRuntime("node-1", "Start.", "knowledge-revision-1", "signed-capability"),
         inlineRuntime("node-2", "Finish."),
@@ -284,10 +247,10 @@ test("inline runtimes round-trip Knowledge fields and default them for legacy pa
     BootstrapPublishedResponse.encode(response).finish(),
   );
   assert.deepEqual(decoded, response);
-  assert.equal(decoded.orchestration.nodeRuntimes[0].knowledgeRevisionId, "knowledge-revision-1");
-  assert.equal(decoded.orchestration.nodeRuntimes[0].knowledgeRetrievalCapability, "signed-capability");
-  assert.equal(decoded.orchestration.nodeRuntimes[1].knowledgeRevisionId, "");
-  assert.equal(decoded.orchestration.nodeRuntimes[1].knowledgeRetrievalCapability, "");
+  assert.equal(decoded.agent.nodeRuntimes[0].knowledgeRevisionId, "knowledge-revision-1");
+  assert.equal(decoded.agent.nodeRuntimes[0].knowledgeRetrievalCapability, "signed-capability");
+  assert.equal(decoded.agent.nodeRuntimes[1].knowledgeRevisionId, "");
+  assert.equal(decoded.agent.nodeRuntimes[1].knowledgeRetrievalCapability, "");
 });
 
 test("handoff routes round-trip typed parameters, recent context, and request-start", () => {
@@ -296,9 +259,9 @@ test("handoff routes round-trip typed parameters, recent context, and request-st
     contractRevision: publicationRevision,
     conversationId: "conversation-handoff",
     sessionId: "session-handoff",
-    publishedId: "orchestration-handoff",
-    orchestration: {
-      mode: OrchestrationMode.ORCHESTRATION_MODE_HANDOFF,
+    publishedId: "agent-handoff",
+    agent: {
+      mode: AgentMode.AGENT_MODE_HANDOFF,
       nodeRuntimes: [inlineRuntime("intake", "Intake."), inlineRuntime("refund", "Refund.")],
       handoff: {
         entryNodeId: "intake",
@@ -345,7 +308,7 @@ test("handoff routes round-trip typed parameters, recent context, and request-st
     BootstrapPublishedResponse.encode(response).finish(),
   );
   assert.deepEqual(decoded, response);
-  const route = decoded.orchestration.handoff.routes[0];
+  const route = decoded.agent.handoff.routes[0];
   assert.equal(route.contextPolicy, ContextPolicy.CONTEXT_POLICY_RECENT);
   assert.equal(route.requestStart, "I will transfer you to refunds.");
   assert.equal(route.announcement, "");
@@ -382,7 +345,7 @@ test("handoff route system prompt is optional and round-trips on field 9", () =>
 });
 
 test("knowledge tools support multiple metadata entries and runtime correlation IDs", () => {
-  const promptRuntime = PublishedPromptAgentRuntime.create({
+  const promptRuntime = PublishedAgentNodeRuntime.create({
     tools: [
       { toolId: "knowledge-search", kind: "knowledge", name: "Search", knowledge: { knowledgeRevisionId: "rev-1" } },
       { toolId: "knowledge-faq", kind: "knowledge", name: "FAQ", knowledge: { knowledgeRevisionId: "rev-2" } },
@@ -392,12 +355,12 @@ test("knowledge tools support multiple metadata entries and runtime correlation 
       { toolId: "knowledge-faq", retrievalCapability: "cap-faq" },
     ],
   });
-  const decoded = PublishedPromptAgentRuntime.decode(PublishedPromptAgentRuntime.encode(promptRuntime).finish());
-  const encoded = [...PublishedPromptAgentRuntime.encode(promptRuntime).finish()];
+  const decoded = PublishedAgentNodeRuntime.decode(PublishedAgentNodeRuntime.encode(promptRuntime).finish());
+  const encoded = [...PublishedAgentNodeRuntime.encode(promptRuntime).finish()];
   assert.deepEqual(encoded.slice(-58), [
-    0x7a, 0x1e, 0x0a, 0x10, ...Buffer.from("knowledge-search"),
+    0x72, 0x1e, 0x0a, 0x10, ...Buffer.from("knowledge-search"),
     0x12, 0x0a, ...Buffer.from("cap-search"),
-    0x7a, 0x18, 0x0a, 0x0d, ...Buffer.from("knowledge-faq"),
+    0x72, 0x18, 0x0a, 0x0d, ...Buffer.from("knowledge-faq"),
     0x12, 0x07, ...Buffer.from("cap-faq"),
   ]);
   assert.deepEqual(decoded.tools.map((tool) => [tool.toolId, tool.kind, tool.knowledge.knowledgeRevisionId]), [
@@ -409,47 +372,35 @@ test("knowledge tools support multiple metadata entries and runtime correlation 
     KnowledgeToolRuntime.create({ toolId: "knowledge-faq", retrievalCapability: "cap-faq" }),
   ]);
 
-  const inlineRuntimeValue = PublishedInlinePromptRuntime.create({
+  const inlineRuntimeValue = PublishedAgentNodeRuntime.create({
     knowledgeToolRuntimes: [
       { toolId: "knowledge-search", retrievalCapability: "cap-search" },
       { toolId: "knowledge-faq", retrievalCapability: "cap-faq" },
     ],
   });
-  const inlineEncoded = [...PublishedInlinePromptRuntime.encode(inlineRuntimeValue).finish()];
+  const inlineEncoded = [...PublishedAgentNodeRuntime.encode(inlineRuntimeValue).finish()];
   assert.deepEqual(inlineEncoded, [
     0x72, 0x1e, 0x0a, 0x10, ...Buffer.from("knowledge-search"),
     0x12, 0x0a, ...Buffer.from("cap-search"),
     0x72, 0x18, 0x0a, 0x0d, ...Buffer.from("knowledge-faq"),
     0x12, 0x07, ...Buffer.from("cap-faq"),
   ]);
-  assert.deepEqual(PublishedInlinePromptRuntime.decode(Uint8Array.from(inlineEncoded)), inlineRuntimeValue);
+  assert.deepEqual(PublishedAgentNodeRuntime.decode(Uint8Array.from(inlineEncoded)), inlineRuntimeValue);
 });
 
 test("legacy singular knowledge fields retain their field numbers and decode unchanged", () => {
-  const directBytes = Uint8Array.from([
-    0x42, 0x0a, 0x6c, 0x65, 0x67, 0x61, 0x63, 0x79, 0x2d, 0x72, 0x65, 0x76,
-    0x52, 0x0a, 0x6c, 0x65, 0x67, 0x61, 0x63, 0x79, 0x2d, 0x63, 0x61, 0x70,
-    0x6a, 0x09, 0x6c, 0x65, 0x67, 0x61, 0x63, 0x79, 0x2d, 0x66, 0x6e,
-    0x72, 0x09, 0x6c, 0x65, 0x67, 0x61, 0x63, 0x79, 0x2d, 0x64, 0x65,
-  ]);
   const inlineBytes = Uint8Array.from([
     0x52, 0x0a, 0x6c, 0x65, 0x67, 0x61, 0x63, 0x79, 0x2d, 0x72, 0x65, 0x76,
     0x5a, 0x0a, 0x6c, 0x65, 0x67, 0x61, 0x63, 0x79, 0x2d, 0x63, 0x61, 0x70,
     0x62, 0x09, 0x6c, 0x65, 0x67, 0x61, 0x63, 0x79, 0x2d, 0x66, 0x6e,
     0x6a, 0x09, 0x6c, 0x65, 0x67, 0x61, 0x63, 0x79, 0x2d, 0x64, 0x65,
   ]);
-  const direct = PublishedPromptAgentRuntime.decode(directBytes);
-  const inline = PublishedInlinePromptRuntime.decode(inlineBytes);
-  assert.equal(direct.knowledgeRevisionId, "legacy-rev");
-  assert.equal(direct.knowledgeRetrievalCapability, "legacy-cap");
-  assert.equal(direct.knowledgeFunctionName, "legacy-fn");
-  assert.equal(direct.knowledgeDescription, "legacy-de");
+  const inline = PublishedAgentNodeRuntime.decode(inlineBytes);
   assert.equal(inline.knowledgeRevisionId, "legacy-rev");
   assert.equal(inline.knowledgeRetrievalCapability, "legacy-cap");
   assert.equal(inline.knowledgeFunctionName, "legacy-fn");
   assert.equal(inline.knowledgeDescription, "legacy-de");
-  assert.deepEqual([...PublishedPromptAgentRuntime.encode(direct).finish()], [...directBytes]);
-  assert.deepEqual([...PublishedInlinePromptRuntime.encode(inline).finish()], [...inlineBytes]);
+  assert.deepEqual([...PublishedAgentNodeRuntime.encode(inline).finish()], [...inlineBytes]);
 });
 
 function inlineRuntime(

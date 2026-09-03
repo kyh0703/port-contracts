@@ -9,13 +9,13 @@ function read(relativePath) {
   return readFileSync(path.join(root, relativePath), "utf8");
 }
 
-test("npm release metadata is pinned to 5.4.0", () => {
+test("npm release metadata is pinned to 6.0.0", () => {
   const packageJson = JSON.parse(read("package.json"));
   const packageLock = JSON.parse(read("package-lock.json"));
 
-  assert.equal(packageJson.version, "5.4.0");
-  assert.equal(packageLock.version, "5.4.0");
-  assert.equal(packageLock.packages[""].version, "5.4.0");
+  assert.equal(packageJson.version, "6.0.0");
+  assert.equal(packageLock.version, "6.0.0");
+  assert.equal(packageLock.packages[""].version, "6.0.0");
 });
 
 test("legacy Node module resolution maps generated TypeScript subpaths", () => {
@@ -47,16 +47,16 @@ test("protobuf Go packages use the v4 module path", () => {
   }
 });
 
-test("publication revision is the Prompt Agent inline orchestration cutover", () => {
+test("publication revision is the Agent supervisor/handoff cutover", () => {
   const agentSession = read("proto/port/api/v1/agent_session.proto");
   const readme = read("README.md");
-  assert.match(readme, /execution-publication-2026-08-27-r1/);
+  assert.match(readme, /execution-publication-2026-09-03-r1/);
   assert.doesNotMatch(readme, /execution-publication-2026-08-26-r1/);
   const publicationRevisionMatches = agentSession.match(
-    /\(buf\.validate\.field\)\.string\.const = "execution-publication-2026-08-27-r1"/g,
+    /\(buf\.validate\.field\)\.string\.const = "execution-publication-2026-09-03-r1"/g,
   );
   assert.equal(publicationRevisionMatches?.length, 2);
-  assert.doesNotMatch(agentSession, /orchestration-2026-08-07-r4|agent_version_id|orchestration_version_id/);
+  assert.doesNotMatch(agentSession, /execution-publication-2026-08-27-r1|agent_version_id/);
 
   const snapshotBody = agentSession.match(/message CallRuntimeSnapshot \{([\s\S]*?)\n\}/)?.[1];
   assert.ok(snapshotBody, "CallRuntimeSnapshot message is missing");
@@ -76,6 +76,7 @@ test("publication revision is the Prompt Agent inline orchestration cutover", ()
     { type: "SpeechPolicyRuntime", name: "speech_policy", number: 7 },
     { type: "CallLimitsRuntime", name: "limits", number: 8 },
     { type: "ConversationFillerRuntime", name: "conversation_filler", number: 9 },
+    { type: "ConversationControlRuntime", name: "conversation_control", number: 10 },
   ]);
 });
 

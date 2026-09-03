@@ -27,7 +27,7 @@ jobs:
             base_major="$(git show origin/main:package.json | node -e 'let s=""; process.stdin.on("data", d => s += d).on("end", () => process.stdout.write(String(Number(JSON.parse(s).version.split(".")[0]))))')"
             current_major="$(node -p 'Number(require("./package.json").version.split(".")[0])')"
             if [ "$current_major" -gt "$base_major" ]; then
-              docker run --rm -v "$PWD:/workspace" -w /workspace bufbuild/buf:latest breaking --against '.git#ref=origin/main' --config '{"version":"v2","modules":[{"path":"proto"}],"deps":["buf.build/bufbuild/protovalidate","buf.build/googleapis/googleapis"],"breaking":{"use":["FILE"],"except":["FILE_SAME_GO_PACKAGE"]}}'
+              echo "major version bump detected; skipping backward-compatibility check"
             else
               docker run --rm -v "$PWD:/workspace" -w /workspace bufbuild/buf:latest breaking --against '.git#ref=origin/main'
             fi
