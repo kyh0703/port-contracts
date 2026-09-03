@@ -266,7 +266,7 @@ class TextRuntimeSnapshot(_message.Message):
     def __init__(self, transport: _Optional[str] = ..., room_name: _Optional[str] = ..., participant_identity: _Optional[str] = ..., idle_timeout_seconds: _Optional[int] = ..., max_session_duration_seconds: _Optional[int] = ...) -> None: ...
 
 class CallRuntimeSnapshot(_message.Message):
-    __slots__ = ("stt", "tts", "background_audio", "dtmf", "transport", "vad", "speech_policy", "limits", "conversation_filler")
+    __slots__ = ("stt", "tts", "background_audio", "dtmf", "transport", "vad", "speech_policy", "limits", "conversation_filler", "conversation_control")
     STT_FIELD_NUMBER: _ClassVar[int]
     TTS_FIELD_NUMBER: _ClassVar[int]
     BACKGROUND_AUDIO_FIELD_NUMBER: _ClassVar[int]
@@ -276,6 +276,7 @@ class CallRuntimeSnapshot(_message.Message):
     SPEECH_POLICY_FIELD_NUMBER: _ClassVar[int]
     LIMITS_FIELD_NUMBER: _ClassVar[int]
     CONVERSATION_FILLER_FIELD_NUMBER: _ClassVar[int]
+    CONVERSATION_CONTROL_FIELD_NUMBER: _ClassVar[int]
     stt: _voice_runtime_pb2.SttRuntime
     tts: _voice_runtime_pb2.TtsRuntime
     background_audio: BackgroundAudioRuntime
@@ -285,7 +286,32 @@ class CallRuntimeSnapshot(_message.Message):
     speech_policy: SpeechPolicyRuntime
     limits: CallLimitsRuntime
     conversation_filler: ConversationFillerRuntime
-    def __init__(self, stt: _Optional[_Union[_voice_runtime_pb2.SttRuntime, _Mapping]] = ..., tts: _Optional[_Union[_voice_runtime_pb2.TtsRuntime, _Mapping]] = ..., background_audio: _Optional[_Union[BackgroundAudioRuntime, _Mapping]] = ..., dtmf: _Optional[_Union[DtmfInputRuntime, _Mapping]] = ..., transport: _Optional[_Union[TransportRuntime, _Mapping]] = ..., vad: _Optional[_Union[VadRuntime, _Mapping]] = ..., speech_policy: _Optional[_Union[SpeechPolicyRuntime, _Mapping]] = ..., limits: _Optional[_Union[CallLimitsRuntime, _Mapping]] = ..., conversation_filler: _Optional[_Union[ConversationFillerRuntime, _Mapping]] = ...) -> None: ...
+    conversation_control: ConversationControlRuntime
+    def __init__(self, stt: _Optional[_Union[_voice_runtime_pb2.SttRuntime, _Mapping]] = ..., tts: _Optional[_Union[_voice_runtime_pb2.TtsRuntime, _Mapping]] = ..., background_audio: _Optional[_Union[BackgroundAudioRuntime, _Mapping]] = ..., dtmf: _Optional[_Union[DtmfInputRuntime, _Mapping]] = ..., transport: _Optional[_Union[TransportRuntime, _Mapping]] = ..., vad: _Optional[_Union[VadRuntime, _Mapping]] = ..., speech_policy: _Optional[_Union[SpeechPolicyRuntime, _Mapping]] = ..., limits: _Optional[_Union[CallLimitsRuntime, _Mapping]] = ..., conversation_filler: _Optional[_Union[ConversationFillerRuntime, _Mapping]] = ..., conversation_control: _Optional[_Union[ConversationControlRuntime, _Mapping]] = ...) -> None: ...
+
+class ConversationControlRuntime(_message.Message):
+    __slots__ = ("end_call_message", "end_call_phrases", "time_elapsed_actions")
+    END_CALL_MESSAGE_FIELD_NUMBER: _ClassVar[int]
+    END_CALL_PHRASES_FIELD_NUMBER: _ClassVar[int]
+    TIME_ELAPSED_ACTIONS_FIELD_NUMBER: _ClassVar[int]
+    end_call_message: str
+    end_call_phrases: _containers.RepeatedScalarFieldContainer[str]
+    time_elapsed_actions: _containers.RepeatedCompositeFieldContainer[TimeElapsedActionRuntime]
+    def __init__(self, end_call_message: _Optional[str] = ..., end_call_phrases: _Optional[_Iterable[str]] = ..., time_elapsed_actions: _Optional[_Iterable[_Union[TimeElapsedActionRuntime, _Mapping]]] = ...) -> None: ...
+
+class TimeElapsedActionRuntime(_message.Message):
+    __slots__ = ("at_seconds", "say", "end_call")
+    AT_SECONDS_FIELD_NUMBER: _ClassVar[int]
+    SAY_FIELD_NUMBER: _ClassVar[int]
+    END_CALL_FIELD_NUMBER: _ClassVar[int]
+    at_seconds: int
+    say: str
+    end_call: EndCallActionRuntime
+    def __init__(self, at_seconds: _Optional[int] = ..., say: _Optional[str] = ..., end_call: _Optional[_Union[EndCallActionRuntime, _Mapping]] = ...) -> None: ...
+
+class EndCallActionRuntime(_message.Message):
+    __slots__ = ()
+    def __init__(self) -> None: ...
 
 class TransportRuntime(_message.Message):
     __slots__ = ("source", "room_name", "caller_participant_identity")

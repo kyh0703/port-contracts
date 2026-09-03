@@ -252,6 +252,36 @@ func TestConversationFillerRuntimeValidation(t *testing.T) {
 	}
 }
 
+func TestConversationControlRuntimeValidation(t *testing.T) {
+	valid := validCallRuntime()
+	if err := Validate(valid); err != nil {
+		t.Fatalf("Validate(valid conversation control) = %v, want nil", err)
+	}
+
+	tests := []struct {
+		name   string
+		mutate func(*apiv1.CallRuntimeSnapshot)
+	}{
+		{"missing control", func(runtime *apiv1.CallRuntimeSnapshot) { runtime.ConversationControl = nil }},
+		{"empty end call message", func(runtime *apiv1.CallRuntimeSnapshot) { runtime.GetConversationControl().EndCallMessage = proto.String("") }},
+		{"short end call phrase", func(runtime *apiv1.CallRuntimeSnapshot) { runtime.GetConversationControl().EndCallPhrases = []string{"a"} }},
+		{"long elapsed say", func(runtime *apiv1.CallRuntimeSnapshot) { runtime.GetConversationControl().TimeElapsedActions[0].Action = &apiv1.TimeElapsedActionRuntime_Say{Say: strings.Repeat("a", 1001)} }},
+		{"missing elapsed action", func(runtime *apiv1.CallRuntimeSnapshot) { runtime.GetConversationControl().TimeElapsedActions[0].Action = nil }},
+		{"elapsed time out of range", func(runtime *apiv1.CallRuntimeSnapshot) { runtime.GetConversationControl().TimeElapsedActions[0].AtSeconds = 3601 }},
+		{"max duration below new minimum", func(runtime *apiv1.CallRuntimeSnapshot) { runtime.GetLimits().MaxCallDurationSeconds = 9 }},
+		{"silence timeout below new minimum", func(runtime *apiv1.CallRuntimeSnapshot) { runtime.GetLimits().NoAnswerTimeoutSeconds = 4 }},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			runtime := proto.Clone(valid).(*apiv1.CallRuntimeSnapshot)
+			tt.mutate(runtime)
+			if err := Validate(runtime); err == nil {
+				t.Fatal("Validate() = nil, want rejection")
+			}
+		})
+	}
+}
+
 func TestPublishedAgentValidation(t *testing.T) {
 	for _, valid := range []*apiv1.BootstrapPublishedResponse{
 		validSupervisorTextResponse(),
@@ -407,6 +437,14 @@ func validCallRuntime() *apiv1.CallRuntimeSnapshot {
 		Vad:          &apiv1.VadRuntime{NoiseCancellation: apiv1.NoiseCancellationMode_NOISE_CANCELLATION_MODE_STANDARD, RecognitionSensitivity: proto.Float64(0.5)},
 		SpeechPolicy: &apiv1.SpeechPolicyRuntime{ResponseSpeed: proto.Float64(0.5), AllowInterruptions: proto.Bool(true)},
 		Limits:       &apiv1.CallLimitsRuntime{DialWaitTimeSeconds: 30, MaxCallDurationSeconds: 600, NoAnswerTimeoutSeconds: 30},
+		ConversationControl: &apiv1.ConversationControlRuntime{
+			EndCallMessage: proto.String("상담을 종료하겠습니다."),
+			EndCallPhrases: []string{"감사합니다"},
+			TimeElapsedActions: []*apiv1.TimeElapsedActionRuntime{{
+				AtSeconds: 300,
+				Action: &apiv1.TimeElapsedActionRuntime_Say{Say: "곧 상담을 마무리하겠습니다."},
+			}},
+		},
 	}
 }
 

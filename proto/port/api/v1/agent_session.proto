@@ -197,7 +197,25 @@ message CallRuntimeSnapshot {
   SpeechPolicyRuntime speech_policy = 7 [(buf.validate.field).required = true];
   CallLimitsRuntime limits = 8 [(buf.validate.field).required = true];
   ConversationFillerRuntime conversation_filler = 9;
+  ConversationControlRuntime conversation_control = 10 [(buf.validate.field).required = true];
 }
+
+message ConversationControlRuntime {
+  optional string end_call_message = 1 [(buf.validate.field).string = {min_len: 1 max_len: 1000}];
+  repeated string end_call_phrases = 2 [(buf.validate.field).repeated.items.string = {min_len: 2 max_len: 140}];
+  repeated TimeElapsedActionRuntime time_elapsed_actions = 3;
+}
+
+message TimeElapsedActionRuntime {
+  uint32 at_seconds = 1 [(buf.validate.field).uint32 = {gte: 1 lte: 3600}];
+  oneof action {
+    option (buf.validate.oneof).required = true;
+    string say = 2 [(buf.validate.field).string = {min_len: 1 max_len: 1000}];
+    EndCallActionRuntime end_call = 3;
+  }
+}
+
+message EndCallActionRuntime {}
 
 enum CallTransportSource {
   CALL_TRANSPORT_SOURCE_UNSPECIFIED = 0;
@@ -237,8 +255,8 @@ message SpeechPolicyRuntime {
 
 message CallLimitsRuntime {
   uint32 dial_wait_time_seconds = 1 [(buf.validate.field).uint32 = {gte: 10 lte: 90}];
-  uint32 max_call_duration_seconds = 2 [(buf.validate.field).uint32 = {gte: 60 lte: 900}];
-  uint32 no_answer_timeout_seconds = 3 [(buf.validate.field).uint32 = {gte: 10 lte: 300}];
+  uint32 max_call_duration_seconds = 2 [(buf.validate.field).uint32 = {gte: 10 lte: 43200}];
+  uint32 no_answer_timeout_seconds = 3 [(buf.validate.field).uint32 = {gte: 5 lte: 3600}];
 }
 
 enum BackgroundAudioPreset {

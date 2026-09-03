@@ -420,6 +420,22 @@ export interface CallRuntimeSnapshot {
   speechPolicy?: SpeechPolicyRuntime | undefined;
   limits?: CallLimitsRuntime | undefined;
   conversationFiller?: ConversationFillerRuntime | undefined;
+  conversationControl?: ConversationControlRuntime | undefined;
+}
+
+export interface ConversationControlRuntime {
+  endCallMessage?: string | undefined;
+  endCallPhrases: string[];
+  timeElapsedActions: TimeElapsedActionRuntime[];
+}
+
+export interface TimeElapsedActionRuntime {
+  atSeconds: number;
+  say?: string | undefined;
+  endCall?: EndCallActionRuntime | undefined;
+}
+
+export interface EndCallActionRuntime {
 }
 
 export interface TransportRuntime {
@@ -2510,6 +2526,7 @@ function createBaseCallRuntimeSnapshot(): CallRuntimeSnapshot {
     speechPolicy: undefined,
     limits: undefined,
     conversationFiller: undefined,
+    conversationControl: undefined,
   };
 }
 
@@ -2541,6 +2558,9 @@ export const CallRuntimeSnapshot: MessageFns<CallRuntimeSnapshot> = {
     }
     if (message.conversationFiller !== undefined) {
       ConversationFillerRuntime.encode(message.conversationFiller, writer.uint32(74).fork()).join();
+    }
+    if (message.conversationControl !== undefined) {
+      ConversationControlRuntime.encode(message.conversationControl, writer.uint32(82).fork()).join();
     }
     return writer;
   },
@@ -2624,6 +2644,14 @@ export const CallRuntimeSnapshot: MessageFns<CallRuntimeSnapshot> = {
           message.conversationFiller = ConversationFillerRuntime.decode(reader, reader.uint32());
           continue;
         }
+        case 10: {
+          if (tag !== 82) {
+            break;
+          }
+
+          message.conversationControl = ConversationControlRuntime.decode(reader, reader.uint32());
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -2655,6 +2683,11 @@ export const CallRuntimeSnapshot: MessageFns<CallRuntimeSnapshot> = {
         ? ConversationFillerRuntime.fromJSON(object.conversationFiller)
         : isSet(object.conversation_filler)
         ? ConversationFillerRuntime.fromJSON(object.conversation_filler)
+        : undefined,
+      conversationControl: isSet(object.conversationControl)
+        ? ConversationControlRuntime.fromJSON(object.conversationControl)
+        : isSet(object.conversation_control)
+        ? ConversationControlRuntime.fromJSON(object.conversation_control)
         : undefined,
     };
   },
@@ -2688,6 +2721,9 @@ export const CallRuntimeSnapshot: MessageFns<CallRuntimeSnapshot> = {
     if (message.conversationFiller !== undefined) {
       obj.conversationFiller = ConversationFillerRuntime.toJSON(message.conversationFiller);
     }
+    if (message.conversationControl !== undefined) {
+      obj.conversationControl = ConversationControlRuntime.toJSON(message.conversationControl);
+    }
     return obj;
   },
 
@@ -2717,6 +2753,258 @@ export const CallRuntimeSnapshot: MessageFns<CallRuntimeSnapshot> = {
     message.conversationFiller = (object.conversationFiller !== undefined && object.conversationFiller !== null)
       ? ConversationFillerRuntime.fromPartial(object.conversationFiller)
       : undefined;
+    message.conversationControl = (object.conversationControl !== undefined && object.conversationControl !== null)
+      ? ConversationControlRuntime.fromPartial(object.conversationControl)
+      : undefined;
+    return message;
+  },
+};
+
+function createBaseConversationControlRuntime(): ConversationControlRuntime {
+  return { endCallMessage: undefined, endCallPhrases: [], timeElapsedActions: [] };
+}
+
+export const ConversationControlRuntime: MessageFns<ConversationControlRuntime> = {
+  encode(message: ConversationControlRuntime, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.endCallMessage !== undefined) {
+      writer.uint32(10).string(message.endCallMessage);
+    }
+    for (const v of message.endCallPhrases) {
+      writer.uint32(18).string(v!);
+    }
+    for (const v of message.timeElapsedActions) {
+      TimeElapsedActionRuntime.encode(v!, writer.uint32(26).fork()).join();
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): ConversationControlRuntime {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseConversationControlRuntime();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.endCallMessage = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.endCallPhrases.push(reader.string());
+          continue;
+        }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.timeElapsedActions.push(TimeElapsedActionRuntime.decode(reader, reader.uint32()));
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): ConversationControlRuntime {
+    return {
+      endCallMessage: isSet(object.endCallMessage)
+        ? globalThis.String(object.endCallMessage)
+        : isSet(object.end_call_message)
+        ? globalThis.String(object.end_call_message)
+        : undefined,
+      endCallPhrases: globalThis.Array.isArray(object?.endCallPhrases)
+        ? object.endCallPhrases.map((e: any) => globalThis.String(e))
+        : globalThis.Array.isArray(object?.end_call_phrases)
+        ? object.end_call_phrases.map((e: any) => globalThis.String(e))
+        : [],
+      timeElapsedActions: globalThis.Array.isArray(object?.timeElapsedActions)
+        ? object.timeElapsedActions.map((e: any) => TimeElapsedActionRuntime.fromJSON(e))
+        : globalThis.Array.isArray(object?.time_elapsed_actions)
+        ? object.time_elapsed_actions.map((e: any) => TimeElapsedActionRuntime.fromJSON(e))
+        : [],
+    };
+  },
+
+  toJSON(message: ConversationControlRuntime): unknown {
+    const obj: any = {};
+    if (message.endCallMessage !== undefined) {
+      obj.endCallMessage = message.endCallMessage;
+    }
+    if (message.endCallPhrases?.length) {
+      obj.endCallPhrases = message.endCallPhrases;
+    }
+    if (message.timeElapsedActions?.length) {
+      obj.timeElapsedActions = message.timeElapsedActions.map((e) => TimeElapsedActionRuntime.toJSON(e));
+    }
+    return obj;
+  },
+
+  create(base?: DeepPartial<ConversationControlRuntime>): ConversationControlRuntime {
+    return ConversationControlRuntime.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<ConversationControlRuntime>): ConversationControlRuntime {
+    const message = createBaseConversationControlRuntime();
+    message.endCallMessage = object.endCallMessage ?? undefined;
+    message.endCallPhrases = object.endCallPhrases?.map((e) => e) || [];
+    message.timeElapsedActions = object.timeElapsedActions?.map((e) => TimeElapsedActionRuntime.fromPartial(e)) || [];
+    return message;
+  },
+};
+
+function createBaseTimeElapsedActionRuntime(): TimeElapsedActionRuntime {
+  return { atSeconds: 0, say: undefined, endCall: undefined };
+}
+
+export const TimeElapsedActionRuntime: MessageFns<TimeElapsedActionRuntime> = {
+  encode(message: TimeElapsedActionRuntime, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.atSeconds !== 0) {
+      writer.uint32(8).uint32(message.atSeconds);
+    }
+    if (message.say !== undefined) {
+      writer.uint32(18).string(message.say);
+    }
+    if (message.endCall !== undefined) {
+      EndCallActionRuntime.encode(message.endCall, writer.uint32(26).fork()).join();
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): TimeElapsedActionRuntime {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseTimeElapsedActionRuntime();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 8) {
+            break;
+          }
+
+          message.atSeconds = reader.uint32();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.say = reader.string();
+          continue;
+        }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.endCall = EndCallActionRuntime.decode(reader, reader.uint32());
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): TimeElapsedActionRuntime {
+    return {
+      atSeconds: isSet(object.atSeconds)
+        ? globalThis.Number(object.atSeconds)
+        : isSet(object.at_seconds)
+        ? globalThis.Number(object.at_seconds)
+        : 0,
+      say: isSet(object.say) ? globalThis.String(object.say) : undefined,
+      endCall: isSet(object.endCall)
+        ? EndCallActionRuntime.fromJSON(object.endCall)
+        : isSet(object.end_call)
+        ? EndCallActionRuntime.fromJSON(object.end_call)
+        : undefined,
+    };
+  },
+
+  toJSON(message: TimeElapsedActionRuntime): unknown {
+    const obj: any = {};
+    if (message.atSeconds !== 0) {
+      obj.atSeconds = Math.round(message.atSeconds);
+    }
+    if (message.say !== undefined) {
+      obj.say = message.say;
+    }
+    if (message.endCall !== undefined) {
+      obj.endCall = EndCallActionRuntime.toJSON(message.endCall);
+    }
+    return obj;
+  },
+
+  create(base?: DeepPartial<TimeElapsedActionRuntime>): TimeElapsedActionRuntime {
+    return TimeElapsedActionRuntime.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<TimeElapsedActionRuntime>): TimeElapsedActionRuntime {
+    const message = createBaseTimeElapsedActionRuntime();
+    message.atSeconds = object.atSeconds ?? 0;
+    message.say = object.say ?? undefined;
+    message.endCall = (object.endCall !== undefined && object.endCall !== null)
+      ? EndCallActionRuntime.fromPartial(object.endCall)
+      : undefined;
+    return message;
+  },
+};
+
+function createBaseEndCallActionRuntime(): EndCallActionRuntime {
+  return {};
+}
+
+export const EndCallActionRuntime: MessageFns<EndCallActionRuntime> = {
+  encode(_: EndCallActionRuntime, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): EndCallActionRuntime {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseEndCallActionRuntime();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(_: any): EndCallActionRuntime {
+    return {};
+  },
+
+  toJSON(_: EndCallActionRuntime): unknown {
+    const obj: any = {};
+    return obj;
+  },
+
+  create(base?: DeepPartial<EndCallActionRuntime>): EndCallActionRuntime {
+    return EndCallActionRuntime.fromPartial(base ?? {});
+  },
+  fromPartial(_: DeepPartial<EndCallActionRuntime>): EndCallActionRuntime {
+    const message = createBaseEndCallActionRuntime();
     return message;
   },
 };

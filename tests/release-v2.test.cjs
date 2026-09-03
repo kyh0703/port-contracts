@@ -76,6 +76,7 @@ test("publication revision is the Agent supervisor/handoff cutover", () => {
     { type: "SpeechPolicyRuntime", name: "speech_policy", number: 7 },
     { type: "CallLimitsRuntime", name: "limits", number: 8 },
     { type: "ConversationFillerRuntime", name: "conversation_filler", number: 9 },
+    { type: "ConversationControlRuntime", name: "conversation_control", number: 10 },
   ]);
 });
 

@@ -7,6 +7,9 @@ const {
   BootstrapPublishedRequest,
   BootstrapPublishedResponse,
   CallRuntimeSnapshot,
+  ConversationControlRuntime,
+  TimeElapsedActionRuntime,
+  EndCallActionRuntime,
   AgentMode,
   ContextPolicy,
   HandoffParameterType,
@@ -81,6 +84,23 @@ test("call runtime filler settings are optional and preserve the configured phra
   const enabledDecoded = CallRuntimeSnapshot.decode(CallRuntimeSnapshot.encode(enabled).finish());
   assert.deepEqual(enabledDecoded, enabled);
   assert.equal(enabledDecoded.conversationFiller.phrase, "One moment while I look that up.");
+});
+
+test("conversation controls round-trip end-call policies and elapsed actions", () => {
+  const controls = ConversationControlRuntime.create({
+    endCallMessage: "상담을 종료하겠습니다.",
+    endCallPhrases: ["감사합니다", "통화 종료"],
+    timeElapsedActions: [
+      { atSeconds: 300, say: "곧 상담을 마무리하겠습니다." },
+      { atSeconds: 360, endCall: EndCallActionRuntime.create({}) },
+    ],
+  });
+  const runtime = CallRuntimeSnapshot.create({ conversationControl: controls });
+  const decoded = CallRuntimeSnapshot.decode(CallRuntimeSnapshot.encode(runtime).finish());
+  assert.deepEqual(decoded, runtime);
+  assert.equal(decoded.conversationControl.endCallMessage, "상담을 종료하겠습니다.");
+  assert.equal(decoded.conversationControl.timeElapsedActions[0].say, "곧 상담을 마무리하겠습니다.");
+  assert.ok(decoded.conversationControl.timeElapsedActions[1].endCall);
 });
 
 test("the worker contract exposes only canonical publication bootstrap", () => {
