@@ -39,11 +39,11 @@ class BackgroundAudioPreset(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     BACKGROUND_AUDIO_PRESET_CONTACT_CENTER: _ClassVar[BackgroundAudioPreset]
     BACKGROUND_AUDIO_PRESET_LIBRARY: _ClassVar[BackgroundAudioPreset]
 
-class OrchestrationMode(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
+class AgentMode(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     __slots__ = ()
-    ORCHESTRATION_MODE_UNSPECIFIED: _ClassVar[OrchestrationMode]
-    ORCHESTRATION_MODE_SUPERVISOR: _ClassVar[OrchestrationMode]
-    ORCHESTRATION_MODE_HANDOFF: _ClassVar[OrchestrationMode]
+    AGENT_MODE_UNSPECIFIED: _ClassVar[AgentMode]
+    AGENT_MODE_SUPERVISOR: _ClassVar[AgentMode]
+    AGENT_MODE_HANDOFF: _ClassVar[AgentMode]
 
 class ContextPolicy(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     __slots__ = ()
@@ -69,9 +69,9 @@ BACKGROUND_AUDIO_PRESET_CAFE: BackgroundAudioPreset
 BACKGROUND_AUDIO_PRESET_OFFICE: BackgroundAudioPreset
 BACKGROUND_AUDIO_PRESET_CONTACT_CENTER: BackgroundAudioPreset
 BACKGROUND_AUDIO_PRESET_LIBRARY: BackgroundAudioPreset
-ORCHESTRATION_MODE_UNSPECIFIED: OrchestrationMode
-ORCHESTRATION_MODE_SUPERVISOR: OrchestrationMode
-ORCHESTRATION_MODE_HANDOFF: OrchestrationMode
+AGENT_MODE_UNSPECIFIED: AgentMode
+AGENT_MODE_SUPERVISOR: AgentMode
+AGENT_MODE_HANDOFF: AgentMode
 CONTEXT_POLICY_UNSPECIFIED: ContextPolicy
 CONTEXT_POLICY_NONE: ContextPolicy
 CONTEXT_POLICY_CONVERSATION: ContextPolicy
@@ -120,78 +120,36 @@ class BootstrapPublishedRequest(_message.Message):
     def __init__(self, admission: _Optional[_Union[BootstrapRequest, _Mapping]] = ..., conversation_id: _Optional[str] = ..., session_id: _Optional[str] = ..., published_id: _Optional[str] = ..., contract_revision: _Optional[str] = ...) -> None: ...
 
 class BootstrapPublishedResponse(_message.Message):
-    __slots__ = ("contract_revision", "conversation_id", "session_id", "published_id", "prompt_agent", "orchestration", "voice_runtime", "text_runtime")
+    __slots__ = ("contract_revision", "conversation_id", "session_id", "published_id", "agent", "voice_runtime", "text_runtime")
     CONTRACT_REVISION_FIELD_NUMBER: _ClassVar[int]
     CONVERSATION_ID_FIELD_NUMBER: _ClassVar[int]
     SESSION_ID_FIELD_NUMBER: _ClassVar[int]
     PUBLISHED_ID_FIELD_NUMBER: _ClassVar[int]
-    PROMPT_AGENT_FIELD_NUMBER: _ClassVar[int]
-    ORCHESTRATION_FIELD_NUMBER: _ClassVar[int]
+    AGENT_FIELD_NUMBER: _ClassVar[int]
     VOICE_RUNTIME_FIELD_NUMBER: _ClassVar[int]
     TEXT_RUNTIME_FIELD_NUMBER: _ClassVar[int]
     contract_revision: str
     conversation_id: str
     session_id: str
     published_id: str
-    prompt_agent: PublishedPromptAgentExecution
-    orchestration: PublishedOrchestrationExecution
+    agent: PublishedAgentExecution
     voice_runtime: CallRuntimeSnapshot
     text_runtime: TextRuntimeSnapshot
-    def __init__(self, contract_revision: _Optional[str] = ..., conversation_id: _Optional[str] = ..., session_id: _Optional[str] = ..., published_id: _Optional[str] = ..., prompt_agent: _Optional[_Union[PublishedPromptAgentExecution, _Mapping]] = ..., orchestration: _Optional[_Union[PublishedOrchestrationExecution, _Mapping]] = ..., voice_runtime: _Optional[_Union[CallRuntimeSnapshot, _Mapping]] = ..., text_runtime: _Optional[_Union[TextRuntimeSnapshot, _Mapping]] = ...) -> None: ...
+    def __init__(self, contract_revision: _Optional[str] = ..., conversation_id: _Optional[str] = ..., session_id: _Optional[str] = ..., published_id: _Optional[str] = ..., agent: _Optional[_Union[PublishedAgentExecution, _Mapping]] = ..., voice_runtime: _Optional[_Union[CallRuntimeSnapshot, _Mapping]] = ..., text_runtime: _Optional[_Union[TextRuntimeSnapshot, _Mapping]] = ...) -> None: ...
 
-class PublishedPromptAgentExecution(_message.Message):
-    __slots__ = ("runtime",)
-    RUNTIME_FIELD_NUMBER: _ClassVar[int]
-    runtime: PublishedPromptAgentRuntime
-    def __init__(self, runtime: _Optional[_Union[PublishedPromptAgentRuntime, _Mapping]] = ...) -> None: ...
-
-class PublishedOrchestrationExecution(_message.Message):
+class PublishedAgentExecution(_message.Message):
     __slots__ = ("mode", "node_runtimes", "supervisor", "handoff")
     MODE_FIELD_NUMBER: _ClassVar[int]
     NODE_RUNTIMES_FIELD_NUMBER: _ClassVar[int]
     SUPERVISOR_FIELD_NUMBER: _ClassVar[int]
     HANDOFF_FIELD_NUMBER: _ClassVar[int]
-    mode: OrchestrationMode
-    node_runtimes: _containers.RepeatedCompositeFieldContainer[PublishedInlinePromptRuntime]
+    mode: AgentMode
+    node_runtimes: _containers.RepeatedCompositeFieldContainer[PublishedAgentNodeRuntime]
     supervisor: PublishedSupervisorSnapshot
     handoff: PublishedHandoffSnapshot
-    def __init__(self, mode: _Optional[_Union[OrchestrationMode, str]] = ..., node_runtimes: _Optional[_Iterable[_Union[PublishedInlinePromptRuntime, _Mapping]]] = ..., supervisor: _Optional[_Union[PublishedSupervisorSnapshot, _Mapping]] = ..., handoff: _Optional[_Union[PublishedHandoffSnapshot, _Mapping]] = ...) -> None: ...
+    def __init__(self, mode: _Optional[_Union[AgentMode, str]] = ..., node_runtimes: _Optional[_Iterable[_Union[PublishedAgentNodeRuntime, _Mapping]]] = ..., supervisor: _Optional[_Union[PublishedSupervisorSnapshot, _Mapping]] = ..., handoff: _Optional[_Union[PublishedHandoffSnapshot, _Mapping]] = ...) -> None: ...
 
-class PublishedPromptAgentRuntime(_message.Message):
-    __slots__ = ("prompt_agent_published_id", "llm_worker", "instructions", "context_policy", "tools", "mcp_servers", "greeting", "knowledge_revision_id", "api_tool_runtimes", "knowledge_retrieval_capability", "a2a_tool_runtimes", "built_in_tools", "knowledge_function_name", "knowledge_description", "knowledge_tool_runtimes")
-    PROMPT_AGENT_PUBLISHED_ID_FIELD_NUMBER: _ClassVar[int]
-    LLM_WORKER_FIELD_NUMBER: _ClassVar[int]
-    INSTRUCTIONS_FIELD_NUMBER: _ClassVar[int]
-    CONTEXT_POLICY_FIELD_NUMBER: _ClassVar[int]
-    TOOLS_FIELD_NUMBER: _ClassVar[int]
-    MCP_SERVERS_FIELD_NUMBER: _ClassVar[int]
-    GREETING_FIELD_NUMBER: _ClassVar[int]
-    KNOWLEDGE_REVISION_ID_FIELD_NUMBER: _ClassVar[int]
-    API_TOOL_RUNTIMES_FIELD_NUMBER: _ClassVar[int]
-    KNOWLEDGE_RETRIEVAL_CAPABILITY_FIELD_NUMBER: _ClassVar[int]
-    A2A_TOOL_RUNTIMES_FIELD_NUMBER: _ClassVar[int]
-    BUILT_IN_TOOLS_FIELD_NUMBER: _ClassVar[int]
-    KNOWLEDGE_FUNCTION_NAME_FIELD_NUMBER: _ClassVar[int]
-    KNOWLEDGE_DESCRIPTION_FIELD_NUMBER: _ClassVar[int]
-    KNOWLEDGE_TOOL_RUNTIMES_FIELD_NUMBER: _ClassVar[int]
-    prompt_agent_published_id: str
-    llm_worker: _voice_runtime_pb2.LlmRuntime
-    instructions: PromptInstructions
-    context_policy: ContextPolicy
-    tools: _containers.RepeatedCompositeFieldContainer[NodeToolMetadata]
-    mcp_servers: _containers.RepeatedCompositeFieldContainer[McpServerRuntime]
-    greeting: str
-    knowledge_revision_id: str
-    api_tool_runtimes: _containers.RepeatedCompositeFieldContainer[ApiToolRuntime]
-    knowledge_retrieval_capability: str
-    a2a_tool_runtimes: _containers.RepeatedCompositeFieldContainer[A2aToolRuntime]
-    built_in_tools: _containers.RepeatedCompositeFieldContainer[BuiltInTool]
-    knowledge_function_name: str
-    knowledge_description: str
-    knowledge_tool_runtimes: _containers.RepeatedCompositeFieldContainer[KnowledgeToolRuntime]
-    def __init__(self, prompt_agent_published_id: _Optional[str] = ..., llm_worker: _Optional[_Union[_voice_runtime_pb2.LlmRuntime, _Mapping]] = ..., instructions: _Optional[_Union[PromptInstructions, _Mapping]] = ..., context_policy: _Optional[_Union[ContextPolicy, str]] = ..., tools: _Optional[_Iterable[_Union[NodeToolMetadata, _Mapping]]] = ..., mcp_servers: _Optional[_Iterable[_Union[McpServerRuntime, _Mapping]]] = ..., greeting: _Optional[str] = ..., knowledge_revision_id: _Optional[str] = ..., api_tool_runtimes: _Optional[_Iterable[_Union[ApiToolRuntime, _Mapping]]] = ..., knowledge_retrieval_capability: _Optional[str] = ..., a2a_tool_runtimes: _Optional[_Iterable[_Union[A2aToolRuntime, _Mapping]]] = ..., built_in_tools: _Optional[_Iterable[_Union[BuiltInTool, _Mapping]]] = ..., knowledge_function_name: _Optional[str] = ..., knowledge_description: _Optional[str] = ..., knowledge_tool_runtimes: _Optional[_Iterable[_Union[KnowledgeToolRuntime, _Mapping]]] = ...) -> None: ...
-
-class PublishedInlinePromptRuntime(_message.Message):
+class PublishedAgentNodeRuntime(_message.Message):
     __slots__ = ("node_id", "llm_worker", "instructions", "context_policy", "tools", "mcp_servers", "api_tool_runtimes", "a2a_tool_runtimes", "built_in_tools", "knowledge_revision_id", "knowledge_retrieval_capability", "knowledge_function_name", "knowledge_description", "knowledge_tool_runtimes")
     NODE_ID_FIELD_NUMBER: _ClassVar[int]
     LLM_WORKER_FIELD_NUMBER: _ClassVar[int]
@@ -209,7 +167,7 @@ class PublishedInlinePromptRuntime(_message.Message):
     KNOWLEDGE_TOOL_RUNTIMES_FIELD_NUMBER: _ClassVar[int]
     node_id: str
     llm_worker: _voice_runtime_pb2.LlmRuntime
-    instructions: InlinePromptInstructions
+    instructions: AgentInstructions
     context_policy: ContextPolicy
     tools: _containers.RepeatedCompositeFieldContainer[NodeToolMetadata]
     mcp_servers: _containers.RepeatedCompositeFieldContainer[McpServerRuntime]
@@ -221,7 +179,7 @@ class PublishedInlinePromptRuntime(_message.Message):
     knowledge_function_name: str
     knowledge_description: str
     knowledge_tool_runtimes: _containers.RepeatedCompositeFieldContainer[KnowledgeToolRuntime]
-    def __init__(self, node_id: _Optional[str] = ..., llm_worker: _Optional[_Union[_voice_runtime_pb2.LlmRuntime, _Mapping]] = ..., instructions: _Optional[_Union[InlinePromptInstructions, _Mapping]] = ..., context_policy: _Optional[_Union[ContextPolicy, str]] = ..., tools: _Optional[_Iterable[_Union[NodeToolMetadata, _Mapping]]] = ..., mcp_servers: _Optional[_Iterable[_Union[McpServerRuntime, _Mapping]]] = ..., api_tool_runtimes: _Optional[_Iterable[_Union[ApiToolRuntime, _Mapping]]] = ..., a2a_tool_runtimes: _Optional[_Iterable[_Union[A2aToolRuntime, _Mapping]]] = ..., built_in_tools: _Optional[_Iterable[_Union[BuiltInTool, _Mapping]]] = ..., knowledge_revision_id: _Optional[str] = ..., knowledge_retrieval_capability: _Optional[str] = ..., knowledge_function_name: _Optional[str] = ..., knowledge_description: _Optional[str] = ..., knowledge_tool_runtimes: _Optional[_Iterable[_Union[KnowledgeToolRuntime, _Mapping]]] = ...) -> None: ...
+    def __init__(self, node_id: _Optional[str] = ..., llm_worker: _Optional[_Union[_voice_runtime_pb2.LlmRuntime, _Mapping]] = ..., instructions: _Optional[_Union[AgentInstructions, _Mapping]] = ..., context_policy: _Optional[_Union[ContextPolicy, str]] = ..., tools: _Optional[_Iterable[_Union[NodeToolMetadata, _Mapping]]] = ..., mcp_servers: _Optional[_Iterable[_Union[McpServerRuntime, _Mapping]]] = ..., api_tool_runtimes: _Optional[_Iterable[_Union[ApiToolRuntime, _Mapping]]] = ..., a2a_tool_runtimes: _Optional[_Iterable[_Union[A2aToolRuntime, _Mapping]]] = ..., built_in_tools: _Optional[_Iterable[_Union[BuiltInTool, _Mapping]]] = ..., knowledge_revision_id: _Optional[str] = ..., knowledge_retrieval_capability: _Optional[str] = ..., knowledge_function_name: _Optional[str] = ..., knowledge_description: _Optional[str] = ..., knowledge_tool_runtimes: _Optional[_Iterable[_Union[KnowledgeToolRuntime, _Mapping]]] = ...) -> None: ...
 
 class PublishedSupervisorSnapshot(_message.Message):
     __slots__ = ("supervisor_node_id", "specialists")
@@ -381,15 +339,7 @@ class DtmfInputRuntime(_message.Message):
     end_key: str
     def __init__(self, timeout_seconds: _Optional[int] = ..., end_key: _Optional[str] = ...) -> None: ...
 
-class PromptInstructions(_message.Message):
-    __slots__ = ("system_prompt", "guardrails")
-    SYSTEM_PROMPT_FIELD_NUMBER: _ClassVar[int]
-    GUARDRAILS_FIELD_NUMBER: _ClassVar[int]
-    system_prompt: str
-    guardrails: _containers.RepeatedScalarFieldContainer[str]
-    def __init__(self, system_prompt: _Optional[str] = ..., guardrails: _Optional[_Iterable[str]] = ...) -> None: ...
-
-class InlinePromptInstructions(_message.Message):
+class AgentInstructions(_message.Message):
     __slots__ = ("system_prompt",)
     SYSTEM_PROMPT_FIELD_NUMBER: _ClassVar[int]
     system_prompt: str

@@ -39,15 +39,11 @@ message BootstrapPublishedRequest {
   string published_id = 4 [(buf.validate.field).required = true, (buf.validate.field).string.min_len = 1];
   string contract_revision = 5 [
     (buf.validate.field).required = true,
-    (buf.validate.field).string.const = "execution-publication-2026-08-27-r1"
+    (buf.validate.field).string.const = "execution-publication-2026-09-03-r1"
   ];
 }
 
 message BootstrapPublishedResponse {
-  option (buf.validate.message).oneof = {
-    fields: ["prompt_agent", "orchestration"]
-    required: true
-  };
   option (buf.validate.message).oneof = {
     fields: ["voice_runtime", "text_runtime"]
     required: true
@@ -55,17 +51,13 @@ message BootstrapPublishedResponse {
 
   string contract_revision = 1 [
     (buf.validate.field).required = true,
-    (buf.validate.field).string.const = "execution-publication-2026-08-27-r1"
+    (buf.validate.field).string.const = "execution-publication-2026-09-03-r1"
   ];
   string conversation_id = 2 [(buf.validate.field).required = true, (buf.validate.field).string.min_len = 1];
   string session_id = 3 [(buf.validate.field).required = true, (buf.validate.field).string.min_len = 1];
   string published_id = 4 [(buf.validate.field).required = true, (buf.validate.field).string.min_len = 1];
 
-  oneof execution {
-    option (buf.validate.oneof).required = true;
-    PublishedPromptAgentExecution prompt_agent = 5;
-    PublishedOrchestrationExecution orchestration = 6;
-  }
+  PublishedAgentExecution agent = 5 [(buf.validate.field).required = true];
   oneof runtime {
     option (buf.validate.oneof).required = true;
     CallRuntimeSnapshot voice_runtime = 7;
@@ -73,51 +65,29 @@ message BootstrapPublishedResponse {
   }
 }
 
-message PublishedPromptAgentExecution {
-  PublishedPromptAgentRuntime runtime = 1 [(buf.validate.field).required = true];
-}
-
-message PublishedOrchestrationExecution {
+message PublishedAgentExecution {
   option (buf.validate.message).oneof = {
     fields: ["supervisor", "handoff"]
     required: true
   };
   option (buf.validate.message).cel = {
-    id: "published_orchestration_execution.mode_snapshot"
+    id: "published_agent_execution.mode_snapshot"
     message: "mode must match the selected publication topology"
     expression: "(this.mode == 1 && has(this.supervisor)) || (this.mode == 2 && has(this.handoff))"
   };
 
-  OrchestrationMode mode = 1 [(buf.validate.field).required = true, (buf.validate.field).enum = {defined_only: true not_in: 0}];
-  repeated PublishedInlinePromptRuntime node_runtimes = 2 [(buf.validate.field).repeated.min_items = 2];
+  AgentMode mode = 1 [(buf.validate.field).required = true, (buf.validate.field).enum = {defined_only: true not_in: 0}];
+  repeated PublishedAgentNodeRuntime node_runtimes = 2 [(buf.validate.field).repeated.min_items = 2];
   PublishedSupervisorSnapshot supervisor = 3;
   PublishedHandoffSnapshot handoff = 4;
 }
 
-message PublishedPromptAgentRuntime {
-  string prompt_agent_published_id = 1 [(buf.validate.field).string.min_len = 1];
-  LlmRuntime llm_worker = 2 [(buf.validate.field).required = true];
-  PromptInstructions instructions = 3 [(buf.validate.field).required = true];
-  ContextPolicy context_policy = 4 [(buf.validate.field).enum = {defined_only: true not_in: 0}];
-  repeated NodeToolMetadata tools = 5;
-  repeated McpServerRuntime mcp_servers = 6;
-  string greeting = 7;
-  string knowledge_revision_id = 8;
-  repeated ApiToolRuntime api_tool_runtimes = 9;
-  string knowledge_retrieval_capability = 10;
-  repeated A2aToolRuntime a2a_tool_runtimes = 11;
-  repeated BuiltInTool built_in_tools = 12;
-  string knowledge_function_name = 13;
-  string knowledge_description = 14;
-  repeated KnowledgeToolRuntime knowledge_tool_runtimes = 15;
-}
-
-// Inline orchestration nodes intentionally do not expose greeting or guardrails
+// Agent nodes intentionally do not expose greeting or guardrails
 // fields. Knowledge retrieval is available through the additive fields below.
-message PublishedInlinePromptRuntime {
+message PublishedAgentNodeRuntime {
   string node_id = 1 [(buf.validate.field).string.min_len = 1];
   LlmRuntime llm_worker = 2 [(buf.validate.field).required = true];
-  InlinePromptInstructions instructions = 3 [(buf.validate.field).required = true];
+  AgentInstructions instructions = 3 [(buf.validate.field).required = true];
   ContextPolicy context_policy = 4 [(buf.validate.field).enum = {defined_only: true not_in: 0}];
   repeated NodeToolMetadata tools = 5;
   repeated McpServerRuntime mcp_servers = 6;
@@ -293,19 +263,14 @@ message DtmfInputRuntime {
   optional string end_key = 2 [(buf.validate.field).string.pattern = "^[0-9#*]$"];
 }
 
-message PromptInstructions {
-  string system_prompt = 1 [(buf.validate.field).string.min_len = 1];
-  repeated string guardrails = 2;
-}
-
-message InlinePromptInstructions {
+message AgentInstructions {
   string system_prompt = 1 [(buf.validate.field).string.min_len = 1];
 }
 
-enum OrchestrationMode {
-  ORCHESTRATION_MODE_UNSPECIFIED = 0;
-  ORCHESTRATION_MODE_SUPERVISOR = 1;
-  ORCHESTRATION_MODE_HANDOFF = 2;
+enum AgentMode {
+  AGENT_MODE_UNSPECIFIED = 0;
+  AGENT_MODE_SUPERVISOR = 1;
+  AGENT_MODE_HANDOFF = 2;
 }
 
 message NodeToolMetadata {
