@@ -17,9 +17,27 @@ const {
   KnowledgeToolRuntime,
   EndCallTool,
   TransferToHumanTool,
+  BuiltInTool,
+  DtmfTool,
+  SendSmsTool,
 } = contracts;
 
 const publicationRevision = "execution-publication-2026-09-03-r1";
+
+test("DTMF and SMS built-in tools round-trip their additive runtime payloads", () => {
+  const dtmf = BuiltInTool.create({ dtmf: DtmfTool.create({}) });
+  const sms = BuiltInTool.create({
+    sendSms: SendSmsTool.create({
+      recipient: "{{caller_number}}",
+      template: "안녕하세요 {{name}}님",
+      maxSends: 3,
+      condition: "사용자가 안내 문자를 요청한 경우",
+    }),
+  });
+
+  assert.deepEqual(BuiltInTool.decode(BuiltInTool.encode(dtmf).finish()), dtmf);
+  assert.deepEqual(BuiltInTool.decode(BuiltInTool.encode(sms).finish()), sms);
+});
 
 test("built-in tool conditions round-trip while legacy payloads default to empty", () => {
   const legacyEndCall = EndCallTool.create({});

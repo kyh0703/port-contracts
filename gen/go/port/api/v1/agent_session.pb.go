@@ -2601,6 +2601,8 @@ type BuiltInTool struct {
 	//
 	//	*BuiltInTool_EndCall
 	//	*BuiltInTool_TransferToHuman
+	//	*BuiltInTool_Dtmf
+	//	*BuiltInTool_SendSms
 	Config        isBuiltInTool_Config `protobuf_oneof:"config"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -2661,6 +2663,24 @@ func (x *BuiltInTool) GetTransferToHuman() *TransferToHumanTool {
 	return nil
 }
 
+func (x *BuiltInTool) GetDtmf() *DtmfTool {
+	if x != nil {
+		if x, ok := x.Config.(*BuiltInTool_Dtmf); ok {
+			return x.Dtmf
+		}
+	}
+	return nil
+}
+
+func (x *BuiltInTool) GetSendSms() *SendSmsTool {
+	if x != nil {
+		if x, ok := x.Config.(*BuiltInTool_SendSms); ok {
+			return x.SendSms
+		}
+	}
+	return nil
+}
+
 type isBuiltInTool_Config interface {
 	isBuiltInTool_Config()
 }
@@ -2673,9 +2693,21 @@ type BuiltInTool_TransferToHuman struct {
 	TransferToHuman *TransferToHumanTool `protobuf:"bytes,2,opt,name=transfer_to_human,json=transferToHuman,proto3,oneof"`
 }
 
+type BuiltInTool_Dtmf struct {
+	Dtmf *DtmfTool `protobuf:"bytes,3,opt,name=dtmf,proto3,oneof"`
+}
+
+type BuiltInTool_SendSms struct {
+	SendSms *SendSmsTool `protobuf:"bytes,4,opt,name=send_sms,json=sendSms,proto3,oneof"`
+}
+
 func (*BuiltInTool_EndCall) isBuiltInTool_Config() {}
 
 func (*BuiltInTool_TransferToHuman) isBuiltInTool_Config() {}
+
+func (*BuiltInTool_Dtmf) isBuiltInTool_Config() {}
+
+func (*BuiltInTool_SendSms) isBuiltInTool_Config() {}
 
 type EndCallTool struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
@@ -2807,6 +2839,111 @@ func (x *TransferToHumanTool) GetCondition() string {
 	return ""
 }
 
+type DtmfTool struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DtmfTool) Reset() {
+	*x = DtmfTool{}
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[34]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DtmfTool) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DtmfTool) ProtoMessage() {}
+
+func (x *DtmfTool) ProtoReflect() protoreflect.Message {
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[34]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DtmfTool.ProtoReflect.Descriptor instead.
+func (*DtmfTool) Descriptor() ([]byte, []int) {
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{34}
+}
+
+type SendSmsTool struct {
+	state     protoimpl.MessageState `protogen:"open.v1"`
+	Recipient string                 `protobuf:"bytes,1,opt,name=recipient,proto3" json:"recipient,omitempty"`
+	Template  string                 `protobuf:"bytes,2,opt,name=template,proto3" json:"template,omitempty"`
+	MaxSends  uint32                 `protobuf:"varint,3,opt,name=max_sends,json=maxSends,proto3" json:"max_sends,omitempty"`
+	// User-authored invocation condition. Runtime appends locked operational wording.
+	Condition     string `protobuf:"bytes,4,opt,name=condition,proto3" json:"condition,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SendSmsTool) Reset() {
+	*x = SendSmsTool{}
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[35]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SendSmsTool) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SendSmsTool) ProtoMessage() {}
+
+func (x *SendSmsTool) ProtoReflect() protoreflect.Message {
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[35]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SendSmsTool.ProtoReflect.Descriptor instead.
+func (*SendSmsTool) Descriptor() ([]byte, []int) {
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{35}
+}
+
+func (x *SendSmsTool) GetRecipient() string {
+	if x != nil {
+		return x.Recipient
+	}
+	return ""
+}
+
+func (x *SendSmsTool) GetTemplate() string {
+	if x != nil {
+		return x.Template
+	}
+	return ""
+}
+
+func (x *SendSmsTool) GetMaxSends() uint32 {
+	if x != nil {
+		return x.MaxSends
+	}
+	return 0
+}
+
+func (x *SendSmsTool) GetCondition() string {
+	if x != nil {
+		return x.Condition
+	}
+	return ""
+}
+
 type McpServerRuntime struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Name          string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
@@ -2819,7 +2956,7 @@ type McpServerRuntime struct {
 
 func (x *McpServerRuntime) Reset() {
 	*x = McpServerRuntime{}
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[34]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[36]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2831,7 +2968,7 @@ func (x *McpServerRuntime) String() string {
 func (*McpServerRuntime) ProtoMessage() {}
 
 func (x *McpServerRuntime) ProtoReflect() protoreflect.Message {
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[34]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[36]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2844,7 +2981,7 @@ func (x *McpServerRuntime) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use McpServerRuntime.ProtoReflect.Descriptor instead.
 func (*McpServerRuntime) Descriptor() ([]byte, []int) {
-	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{34}
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{36}
 }
 
 func (x *McpServerRuntime) GetName() string {
@@ -2884,7 +3021,7 @@ type ConversationFillerRuntime struct {
 
 func (x *ConversationFillerRuntime) Reset() {
 	*x = ConversationFillerRuntime{}
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[35]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[37]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2896,7 +3033,7 @@ func (x *ConversationFillerRuntime) String() string {
 func (*ConversationFillerRuntime) ProtoMessage() {}
 
 func (x *ConversationFillerRuntime) ProtoReflect() protoreflect.Message {
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[35]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[37]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2909,7 +3046,7 @@ func (x *ConversationFillerRuntime) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ConversationFillerRuntime.ProtoReflect.Descriptor instead.
 func (*ConversationFillerRuntime) Descriptor() ([]byte, []int) {
-	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{35}
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{37}
 }
 
 func (x *ConversationFillerRuntime) GetPhrase() string {
@@ -3154,10 +3291,12 @@ const file_port_api_v1_agent_session_proto_rawDesc = "" +
 	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"|\n" +
 	"\x14KnowledgeToolRuntime\x12$\n" +
 	"\atool_id\x18\x01 \x01(\tB\v\xbaH\br\x06\x10\x012\x02\\SR\x06toolId\x12>\n" +
-	"\x14retrieval_capability\x18\x02 \x01(\tB\v\xbaH\br\x06\x10\x012\x02\\SR\x13retrievalCapability\"\xa5\x01\n" +
+	"\x14retrieval_capability\x18\x02 \x01(\tB\v\xbaH\br\x06\x10\x012\x02\\SR\x13retrievalCapability\"\x89\x02\n" +
 	"\vBuiltInTool\x125\n" +
 	"\bend_call\x18\x01 \x01(\v2\x18.port.api.v1.EndCallToolH\x00R\aendCall\x12N\n" +
-	"\x11transfer_to_human\x18\x02 \x01(\v2 .port.api.v1.TransferToHumanToolH\x00R\x0ftransferToHumanB\x0f\n" +
+	"\x11transfer_to_human\x18\x02 \x01(\v2 .port.api.v1.TransferToHumanToolH\x00R\x0ftransferToHuman\x12+\n" +
+	"\x04dtmf\x18\x03 \x01(\v2\x15.port.api.v1.DtmfToolH\x00R\x04dtmf\x125\n" +
+	"\bsend_sms\x18\x04 \x01(\v2\x18.port.api.v1.SendSmsToolH\x00R\asendSmsB\x0f\n" +
 	"\x06config\x12\x05\xbaH\x02\b\x01\"\x84\x01\n" +
 	"\vEndCallTool\x12*\n" +
 	"\x0eclosing_phrase\x18\x01 \x01(\tH\x00R\rclosingPhrase\x88\x01\x01\x12\x18\n" +
@@ -3170,7 +3309,14 @@ const file_port_api_v1_agent_session_proto_rawDesc = "" +
 	"holdPhrase\x88\x01\x01\x12:\n" +
 	"\x12ringing_timeout_ms\x18\x03 \x01(\rB\f\xbaH\t*\a\x18\xc0\xcf$(\x88'R\x10ringingTimeoutMs\x12\x1c\n" +
 	"\tcondition\x18\x04 \x01(\tR\tconditionB\x0e\n" +
-	"\f_hold_phrase\"\x87\x02\n" +
+	"\f_hold_phrase\"\n" +
+	"\n" +
+	"\bDtmfTool\"\x9f\x01\n" +
+	"\vSendSmsTool\x12%\n" +
+	"\trecipient\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\trecipient\x12#\n" +
+	"\btemplate\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\btemplate\x12&\n" +
+	"\tmax_sends\x18\x03 \x01(\rB\t\xbaH\x06*\x04\x18\x05(\x01R\bmaxSends\x12\x1c\n" +
+	"\tcondition\x18\x04 \x01(\tR\tcondition\"\x87\x02\n" +
 	"\x10McpServerRuntime\x12\x1b\n" +
 	"\x04name\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x04name\x129\n" +
 	"\ttransport\x18\x02 \x01(\tB\x1b\xbaH\x18r\x16R\x03sseR\x0fstreamable-httpR\ttransport\x12\x19\n" +
@@ -3229,7 +3375,7 @@ func file_port_api_v1_agent_session_proto_rawDescGZIP() []byte {
 }
 
 var file_port_api_v1_agent_session_proto_enumTypes = make([]protoimpl.EnumInfo, 6)
-var file_port_api_v1_agent_session_proto_msgTypes = make([]protoimpl.MessageInfo, 39)
+var file_port_api_v1_agent_session_proto_msgTypes = make([]protoimpl.MessageInfo, 41)
 var file_port_api_v1_agent_session_proto_goTypes = []any{
 	(HandoffParameterType)(0),             // 0: port.api.v1.HandoffParameterType
 	(CallTransportSource)(0),              // 1: port.api.v1.CallTransportSource
@@ -3271,14 +3417,16 @@ var file_port_api_v1_agent_session_proto_goTypes = []any{
 	(*BuiltInTool)(nil),                   // 37: port.api.v1.BuiltInTool
 	(*EndCallTool)(nil),                   // 38: port.api.v1.EndCallTool
 	(*TransferToHumanTool)(nil),           // 39: port.api.v1.TransferToHumanTool
-	(*McpServerRuntime)(nil),              // 40: port.api.v1.McpServerRuntime
-	(*ConversationFillerRuntime)(nil),     // 41: port.api.v1.ConversationFillerRuntime
-	nil,                                   // 42: port.api.v1.ApiToolRuntime.HeadersEntry
-	nil,                                   // 43: port.api.v1.A2aToolRuntime.HeadersEntry
-	nil,                                   // 44: port.api.v1.McpServerRuntime.HeadersEntry
-	(*LlmRuntime)(nil),                    // 45: port.api.v1.LlmRuntime
-	(*SttRuntime)(nil),                    // 46: port.api.v1.SttRuntime
-	(*TtsRuntime)(nil),                    // 47: port.api.v1.TtsRuntime
+	(*DtmfTool)(nil),                      // 40: port.api.v1.DtmfTool
+	(*SendSmsTool)(nil),                   // 41: port.api.v1.SendSmsTool
+	(*McpServerRuntime)(nil),              // 42: port.api.v1.McpServerRuntime
+	(*ConversationFillerRuntime)(nil),     // 43: port.api.v1.ConversationFillerRuntime
+	nil,                                   // 44: port.api.v1.ApiToolRuntime.HeadersEntry
+	nil,                                   // 45: port.api.v1.A2aToolRuntime.HeadersEntry
+	nil,                                   // 46: port.api.v1.McpServerRuntime.HeadersEntry
+	(*LlmRuntime)(nil),                    // 47: port.api.v1.LlmRuntime
+	(*SttRuntime)(nil),                    // 48: port.api.v1.SttRuntime
+	(*TtsRuntime)(nil),                    // 49: port.api.v1.TtsRuntime
 }
 var file_port_api_v1_agent_session_proto_depIdxs = []int32{
 	7,  // 0: port.api.v1.BootstrapRequest.sip:type_name -> port.api.v1.SipBootstrapContext
@@ -3290,11 +3438,11 @@ var file_port_api_v1_agent_session_proto_depIdxs = []int32{
 	11, // 6: port.api.v1.PublishedAgentExecution.node_runtimes:type_name -> port.api.v1.PublishedAgentNodeRuntime
 	12, // 7: port.api.v1.PublishedAgentExecution.supervisor:type_name -> port.api.v1.PublishedSupervisorSnapshot
 	14, // 8: port.api.v1.PublishedAgentExecution.handoff:type_name -> port.api.v1.PublishedHandoffSnapshot
-	45, // 9: port.api.v1.PublishedAgentNodeRuntime.llm_worker:type_name -> port.api.v1.LlmRuntime
+	47, // 9: port.api.v1.PublishedAgentNodeRuntime.llm_worker:type_name -> port.api.v1.LlmRuntime
 	28, // 10: port.api.v1.PublishedAgentNodeRuntime.instructions:type_name -> port.api.v1.AgentInstructions
 	5,  // 11: port.api.v1.PublishedAgentNodeRuntime.context_policy:type_name -> port.api.v1.ContextPolicy
 	29, // 12: port.api.v1.PublishedAgentNodeRuntime.tools:type_name -> port.api.v1.NodeToolMetadata
-	40, // 13: port.api.v1.PublishedAgentNodeRuntime.mcp_servers:type_name -> port.api.v1.McpServerRuntime
+	42, // 13: port.api.v1.PublishedAgentNodeRuntime.mcp_servers:type_name -> port.api.v1.McpServerRuntime
 	34, // 14: port.api.v1.PublishedAgentNodeRuntime.api_tool_runtimes:type_name -> port.api.v1.ApiToolRuntime
 	35, // 15: port.api.v1.PublishedAgentNodeRuntime.a2a_tool_runtimes:type_name -> port.api.v1.A2aToolRuntime
 	37, // 16: port.api.v1.PublishedAgentNodeRuntime.built_in_tools:type_name -> port.api.v1.BuiltInTool
@@ -3305,15 +3453,15 @@ var file_port_api_v1_agent_session_proto_depIdxs = []int32{
 	5,  // 21: port.api.v1.PublishedHandoffRoute.context_policy:type_name -> port.api.v1.ContextPolicy
 	16, // 22: port.api.v1.PublishedHandoffRoute.parameters:type_name -> port.api.v1.HandoffParameter
 	0,  // 23: port.api.v1.HandoffParameter.type:type_name -> port.api.v1.HandoffParameterType
-	46, // 24: port.api.v1.CallRuntimeSnapshot.stt:type_name -> port.api.v1.SttRuntime
-	47, // 25: port.api.v1.CallRuntimeSnapshot.tts:type_name -> port.api.v1.TtsRuntime
+	48, // 24: port.api.v1.CallRuntimeSnapshot.stt:type_name -> port.api.v1.SttRuntime
+	49, // 25: port.api.v1.CallRuntimeSnapshot.tts:type_name -> port.api.v1.TtsRuntime
 	26, // 26: port.api.v1.CallRuntimeSnapshot.background_audio:type_name -> port.api.v1.BackgroundAudioRuntime
 	27, // 27: port.api.v1.CallRuntimeSnapshot.dtmf:type_name -> port.api.v1.DtmfInputRuntime
 	22, // 28: port.api.v1.CallRuntimeSnapshot.transport:type_name -> port.api.v1.TransportRuntime
 	23, // 29: port.api.v1.CallRuntimeSnapshot.vad:type_name -> port.api.v1.VadRuntime
 	24, // 30: port.api.v1.CallRuntimeSnapshot.speech_policy:type_name -> port.api.v1.SpeechPolicyRuntime
 	25, // 31: port.api.v1.CallRuntimeSnapshot.limits:type_name -> port.api.v1.CallLimitsRuntime
-	41, // 32: port.api.v1.CallRuntimeSnapshot.conversation_filler:type_name -> port.api.v1.ConversationFillerRuntime
+	43, // 32: port.api.v1.CallRuntimeSnapshot.conversation_filler:type_name -> port.api.v1.ConversationFillerRuntime
 	19, // 33: port.api.v1.CallRuntimeSnapshot.conversation_control:type_name -> port.api.v1.ConversationControlRuntime
 	20, // 34: port.api.v1.ConversationControlRuntime.time_elapsed_actions:type_name -> port.api.v1.TimeElapsedActionRuntime
 	21, // 35: port.api.v1.TimeElapsedActionRuntime.end_call:type_name -> port.api.v1.EndCallActionRuntime
@@ -3324,18 +3472,20 @@ var file_port_api_v1_agent_session_proto_depIdxs = []int32{
 	31, // 40: port.api.v1.NodeToolMetadata.api:type_name -> port.api.v1.ApiToolMetadata
 	32, // 41: port.api.v1.NodeToolMetadata.a2a:type_name -> port.api.v1.A2aToolMetadata
 	33, // 42: port.api.v1.NodeToolMetadata.knowledge:type_name -> port.api.v1.KnowledgeToolMetadata
-	42, // 43: port.api.v1.ApiToolRuntime.headers:type_name -> port.api.v1.ApiToolRuntime.HeadersEntry
-	43, // 44: port.api.v1.A2aToolRuntime.headers:type_name -> port.api.v1.A2aToolRuntime.HeadersEntry
+	44, // 43: port.api.v1.ApiToolRuntime.headers:type_name -> port.api.v1.ApiToolRuntime.HeadersEntry
+	45, // 44: port.api.v1.A2aToolRuntime.headers:type_name -> port.api.v1.A2aToolRuntime.HeadersEntry
 	38, // 45: port.api.v1.BuiltInTool.end_call:type_name -> port.api.v1.EndCallTool
 	39, // 46: port.api.v1.BuiltInTool.transfer_to_human:type_name -> port.api.v1.TransferToHumanTool
-	44, // 47: port.api.v1.McpServerRuntime.headers:type_name -> port.api.v1.McpServerRuntime.HeadersEntry
-	8,  // 48: port.api.v1.ExecutionSessionService.BootstrapPublished:input_type -> port.api.v1.BootstrapPublishedRequest
-	9,  // 49: port.api.v1.ExecutionSessionService.BootstrapPublished:output_type -> port.api.v1.BootstrapPublishedResponse
-	49, // [49:50] is the sub-list for method output_type
-	48, // [48:49] is the sub-list for method input_type
-	48, // [48:48] is the sub-list for extension type_name
-	48, // [48:48] is the sub-list for extension extendee
-	0,  // [0:48] is the sub-list for field type_name
+	40, // 47: port.api.v1.BuiltInTool.dtmf:type_name -> port.api.v1.DtmfTool
+	41, // 48: port.api.v1.BuiltInTool.send_sms:type_name -> port.api.v1.SendSmsTool
+	46, // 49: port.api.v1.McpServerRuntime.headers:type_name -> port.api.v1.McpServerRuntime.HeadersEntry
+	8,  // 50: port.api.v1.ExecutionSessionService.BootstrapPublished:input_type -> port.api.v1.BootstrapPublishedRequest
+	9,  // 51: port.api.v1.ExecutionSessionService.BootstrapPublished:output_type -> port.api.v1.BootstrapPublishedResponse
+	51, // [51:52] is the sub-list for method output_type
+	50, // [50:51] is the sub-list for method input_type
+	50, // [50:50] is the sub-list for extension type_name
+	50, // [50:50] is the sub-list for extension extendee
+	0,  // [0:50] is the sub-list for field type_name
 }
 
 func init() { file_port_api_v1_agent_session_proto_init() }
@@ -3372,6 +3522,8 @@ func file_port_api_v1_agent_session_proto_init() {
 	file_port_api_v1_agent_session_proto_msgTypes[31].OneofWrappers = []any{
 		(*BuiltInTool_EndCall)(nil),
 		(*BuiltInTool_TransferToHuman)(nil),
+		(*BuiltInTool_Dtmf)(nil),
+		(*BuiltInTool_SendSms)(nil),
 	}
 	file_port_api_v1_agent_session_proto_msgTypes[32].OneofWrappers = []any{}
 	file_port_api_v1_agent_session_proto_msgTypes[33].OneofWrappers = []any{}
@@ -3381,7 +3533,7 @@ func file_port_api_v1_agent_session_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_port_api_v1_agent_session_proto_rawDesc), len(file_port_api_v1_agent_session_proto_rawDesc)),
 			NumEnums:      6,
-			NumMessages:   39,
+			NumMessages:   41,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

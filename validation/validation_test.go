@@ -61,6 +61,37 @@ func TestKnowledgeToolMetadataValidation(t *testing.T) {
 	}
 }
 
+func TestBuiltInToolValidation(t *testing.T) {
+	valid := []*apiv1.BuiltInTool{
+		{Config: &apiv1.BuiltInTool_Dtmf{Dtmf: &apiv1.DtmfTool{}}},
+		{Config: &apiv1.BuiltInTool_SendSms{SendSms: &apiv1.SendSmsTool{
+			Recipient: "{{caller_number}}",
+			Template:  "안내 메시지",
+			MaxSends:  3,
+		}}},
+	}
+	for _, tool := range valid {
+		if err := Validate(tool); err != nil {
+			t.Fatalf("Validate(valid built-in tool) = %v, want nil", err)
+		}
+	}
+
+	for _, tt := range []struct {
+		name string
+		msg  *apiv1.BuiltInTool
+	}{
+		{name: "missing config", msg: &apiv1.BuiltInTool{}},
+		{name: "sms max sends below minimum", msg: &apiv1.BuiltInTool{Config: &apiv1.BuiltInTool_SendSms{SendSms: &apiv1.SendSmsTool{Recipient: "{{caller_number}}", Template: "안내", MaxSends: 0}}}},
+		{name: "sms max sends above maximum", msg: &apiv1.BuiltInTool{Config: &apiv1.BuiltInTool_SendSms{SendSms: &apiv1.SendSmsTool{Recipient: "{{caller_number}}", Template: "안내", MaxSends: 6}}}},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			if err := Validate(tt.msg); err == nil {
+				t.Fatal("Validate() = nil, want rejection")
+			}
+		})
+	}
+}
+
 func TestExecutionSessionServiceExposesOnlyPublishedBootstrap(t *testing.T) {
 	descriptor, err := protoregistry.GlobalFiles.FindDescriptorByName("port.api.v1.ExecutionSessionService")
 	if err != nil {

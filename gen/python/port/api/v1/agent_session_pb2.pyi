@@ -466,12 +466,16 @@ class KnowledgeToolRuntime(_message.Message):
     def __init__(self, tool_id: _Optional[str] = ..., retrieval_capability: _Optional[str] = ...) -> None: ...
 
 class BuiltInTool(_message.Message):
-    __slots__ = ("end_call", "transfer_to_human")
+    __slots__ = ("end_call", "transfer_to_human", "dtmf", "send_sms")
     END_CALL_FIELD_NUMBER: _ClassVar[int]
     TRANSFER_TO_HUMAN_FIELD_NUMBER: _ClassVar[int]
+    DTMF_FIELD_NUMBER: _ClassVar[int]
+    SEND_SMS_FIELD_NUMBER: _ClassVar[int]
     end_call: EndCallTool
     transfer_to_human: TransferToHumanTool
-    def __init__(self, end_call: _Optional[_Union[EndCallTool, _Mapping]] = ..., transfer_to_human: _Optional[_Union[TransferToHumanTool, _Mapping]] = ...) -> None: ...
+    dtmf: DtmfTool
+    send_sms: SendSmsTool
+    def __init__(self, end_call: _Optional[_Union[EndCallTool, _Mapping]] = ..., transfer_to_human: _Optional[_Union[TransferToHumanTool, _Mapping]] = ..., dtmf: _Optional[_Union[DtmfTool, _Mapping]] = ..., send_sms: _Optional[_Union[SendSmsTool, _Mapping]] = ...) -> None: ...
 
 class EndCallTool(_message.Message):
     __slots__ = ("closing_phrase", "confirm", "condition")
@@ -494,6 +498,22 @@ class TransferToHumanTool(_message.Message):
     ringing_timeout_ms: int
     condition: str
     def __init__(self, sip_call_to: _Optional[str] = ..., hold_phrase: _Optional[str] = ..., ringing_timeout_ms: _Optional[int] = ..., condition: _Optional[str] = ...) -> None: ...
+
+class DtmfTool(_message.Message):
+    __slots__ = ()
+    def __init__(self) -> None: ...
+
+class SendSmsTool(_message.Message):
+    __slots__ = ("recipient", "template", "max_sends", "condition")
+    RECIPIENT_FIELD_NUMBER: _ClassVar[int]
+    TEMPLATE_FIELD_NUMBER: _ClassVar[int]
+    MAX_SENDS_FIELD_NUMBER: _ClassVar[int]
+    CONDITION_FIELD_NUMBER: _ClassVar[int]
+    recipient: str
+    template: str
+    max_sends: int
+    condition: str
+    def __init__(self, recipient: _Optional[str] = ..., template: _Optional[str] = ..., max_sends: _Optional[int] = ..., condition: _Optional[str] = ...) -> None: ...
 
 class McpServerRuntime(_message.Message):
     __slots__ = ("name", "transport", "url", "headers")

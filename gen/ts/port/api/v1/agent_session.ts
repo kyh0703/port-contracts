@@ -536,6 +536,8 @@ export interface KnowledgeToolRuntime {
 export interface BuiltInTool {
   endCall?: EndCallTool | undefined;
   transferToHuman?: TransferToHumanTool | undefined;
+  dtmf?: DtmfTool | undefined;
+  sendSms?: SendSmsTool | undefined;
 }
 
 export interface EndCallTool {
@@ -549,6 +551,17 @@ export interface TransferToHumanTool {
   sipCallTo: string;
   holdPhrase?: string | undefined;
   ringingTimeoutMs: number;
+  /** User-authored invocation condition. Runtime appends locked operational wording. */
+  condition: string;
+}
+
+export interface DtmfTool {
+}
+
+export interface SendSmsTool {
+  recipient: string;
+  template: string;
+  maxSends: number;
   /** User-authored invocation condition. Runtime appends locked operational wording. */
   condition: string;
 }
@@ -4605,7 +4618,7 @@ export const KnowledgeToolRuntime: MessageFns<KnowledgeToolRuntime> = {
 };
 
 function createBaseBuiltInTool(): BuiltInTool {
-  return { endCall: undefined, transferToHuman: undefined };
+  return { endCall: undefined, transferToHuman: undefined, dtmf: undefined, sendSms: undefined };
 }
 
 export const BuiltInTool: MessageFns<BuiltInTool> = {
@@ -4615,6 +4628,12 @@ export const BuiltInTool: MessageFns<BuiltInTool> = {
     }
     if (message.transferToHuman !== undefined) {
       TransferToHumanTool.encode(message.transferToHuman, writer.uint32(18).fork()).join();
+    }
+    if (message.dtmf !== undefined) {
+      DtmfTool.encode(message.dtmf, writer.uint32(26).fork()).join();
+    }
+    if (message.sendSms !== undefined) {
+      SendSmsTool.encode(message.sendSms, writer.uint32(34).fork()).join();
     }
     return writer;
   },
@@ -4642,6 +4661,22 @@ export const BuiltInTool: MessageFns<BuiltInTool> = {
           message.transferToHuman = TransferToHumanTool.decode(reader, reader.uint32());
           continue;
         }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.dtmf = DtmfTool.decode(reader, reader.uint32());
+          continue;
+        }
+        case 4: {
+          if (tag !== 34) {
+            break;
+          }
+
+          message.sendSms = SendSmsTool.decode(reader, reader.uint32());
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -4663,6 +4698,12 @@ export const BuiltInTool: MessageFns<BuiltInTool> = {
         : isSet(object.transfer_to_human)
         ? TransferToHumanTool.fromJSON(object.transfer_to_human)
         : undefined,
+      dtmf: isSet(object.dtmf) ? DtmfTool.fromJSON(object.dtmf) : undefined,
+      sendSms: isSet(object.sendSms)
+        ? SendSmsTool.fromJSON(object.sendSms)
+        : isSet(object.send_sms)
+        ? SendSmsTool.fromJSON(object.send_sms)
+        : undefined,
     };
   },
 
@@ -4673,6 +4714,12 @@ export const BuiltInTool: MessageFns<BuiltInTool> = {
     }
     if (message.transferToHuman !== undefined) {
       obj.transferToHuman = TransferToHumanTool.toJSON(message.transferToHuman);
+    }
+    if (message.dtmf !== undefined) {
+      obj.dtmf = DtmfTool.toJSON(message.dtmf);
+    }
+    if (message.sendSms !== undefined) {
+      obj.sendSms = SendSmsTool.toJSON(message.sendSms);
     }
     return obj;
   },
@@ -4687,6 +4734,10 @@ export const BuiltInTool: MessageFns<BuiltInTool> = {
       : undefined;
     message.transferToHuman = (object.transferToHuman !== undefined && object.transferToHuman !== null)
       ? TransferToHumanTool.fromPartial(object.transferToHuman)
+      : undefined;
+    message.dtmf = (object.dtmf !== undefined && object.dtmf !== null) ? DtmfTool.fromPartial(object.dtmf) : undefined;
+    message.sendSms = (object.sendSms !== undefined && object.sendSms !== null)
+      ? SendSmsTool.fromPartial(object.sendSms)
       : undefined;
     return message;
   },
@@ -4903,6 +4954,161 @@ export const TransferToHumanTool: MessageFns<TransferToHumanTool> = {
     message.sipCallTo = object.sipCallTo ?? "";
     message.holdPhrase = object.holdPhrase ?? undefined;
     message.ringingTimeoutMs = object.ringingTimeoutMs ?? 0;
+    message.condition = object.condition ?? "";
+    return message;
+  },
+};
+
+function createBaseDtmfTool(): DtmfTool {
+  return {};
+}
+
+export const DtmfTool: MessageFns<DtmfTool> = {
+  encode(_: DtmfTool, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): DtmfTool {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseDtmfTool();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(_: any): DtmfTool {
+    return {};
+  },
+
+  toJSON(_: DtmfTool): unknown {
+    const obj: any = {};
+    return obj;
+  },
+
+  create(base?: DeepPartial<DtmfTool>): DtmfTool {
+    return DtmfTool.fromPartial(base ?? {});
+  },
+  fromPartial(_: DeepPartial<DtmfTool>): DtmfTool {
+    const message = createBaseDtmfTool();
+    return message;
+  },
+};
+
+function createBaseSendSmsTool(): SendSmsTool {
+  return { recipient: "", template: "", maxSends: 0, condition: "" };
+}
+
+export const SendSmsTool: MessageFns<SendSmsTool> = {
+  encode(message: SendSmsTool, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.recipient !== "") {
+      writer.uint32(10).string(message.recipient);
+    }
+    if (message.template !== "") {
+      writer.uint32(18).string(message.template);
+    }
+    if (message.maxSends !== 0) {
+      writer.uint32(24).uint32(message.maxSends);
+    }
+    if (message.condition !== "") {
+      writer.uint32(34).string(message.condition);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): SendSmsTool {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseSendSmsTool();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.recipient = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.template = reader.string();
+          continue;
+        }
+        case 3: {
+          if (tag !== 24) {
+            break;
+          }
+
+          message.maxSends = reader.uint32();
+          continue;
+        }
+        case 4: {
+          if (tag !== 34) {
+            break;
+          }
+
+          message.condition = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): SendSmsTool {
+    return {
+      recipient: isSet(object.recipient) ? globalThis.String(object.recipient) : "",
+      template: isSet(object.template) ? globalThis.String(object.template) : "",
+      maxSends: isSet(object.maxSends)
+        ? globalThis.Number(object.maxSends)
+        : isSet(object.max_sends)
+        ? globalThis.Number(object.max_sends)
+        : 0,
+      condition: isSet(object.condition) ? globalThis.String(object.condition) : "",
+    };
+  },
+
+  toJSON(message: SendSmsTool): unknown {
+    const obj: any = {};
+    if (message.recipient !== "") {
+      obj.recipient = message.recipient;
+    }
+    if (message.template !== "") {
+      obj.template = message.template;
+    }
+    if (message.maxSends !== 0) {
+      obj.maxSends = Math.round(message.maxSends);
+    }
+    if (message.condition !== "") {
+      obj.condition = message.condition;
+    }
+    return obj;
+  },
+
+  create(base?: DeepPartial<SendSmsTool>): SendSmsTool {
+    return SendSmsTool.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<SendSmsTool>): SendSmsTool {
+    const message = createBaseSendSmsTool();
+    message.recipient = object.recipient ?? "";
+    message.template = object.template ?? "";
+    message.maxSends = object.maxSends ?? 0;
     message.condition = object.condition ?? "";
     return message;
   },
