@@ -11,7 +11,7 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-const publicationContractRevision = "execution-publication-2026-09-03-r1"
+const publicationContractRevision = "execution-publication-2026-09-04-r1"
 
 func TestValidateRejectsMissingRequiredFields(t *testing.T) {
 	if err := Validate(&apiv1.RecordGatewayEventRequest{}); err == nil {
@@ -401,6 +401,51 @@ func TestPublishedAgentValidation(t *testing.T) {
 	})
 }
 
+func TestSessionPromptVariableBagValidation(t *testing.T) {
+	valid := &apiv1.SessionPromptVariableBag{
+		System: []*apiv1.SessionPromptVariable{
+			{Name: "customer.number", Value: &apiv1.SessionPromptVariable_StringValue{StringValue: "+821012345678"}},
+			{Name: "agent.number", Value: &apiv1.SessionPromptVariable_StringValue{StringValue: "+82212345678"}},
+			{Name: "agent.id", Value: &apiv1.SessionPromptVariable_StringValue{StringValue: "agent-1"}},
+			{Name: "conversation.id", Value: &apiv1.SessionPromptVariable_StringValue{StringValue: "conversation-1"}},
+			{Name: "conversation.channel", Value: &apiv1.SessionPromptVariable_StringValue{StringValue: "phone"}},
+			{Name: "date_iso", Value: &apiv1.SessionPromptVariable_StringValue{StringValue: "2026-09-04"}},
+			{Name: "retry_count", Value: &apiv1.SessionPromptVariable_NumberValue{NumberValue: 2}},
+			{Name: "is_returning", Value: &apiv1.SessionPromptVariable_BooleanValue{BooleanValue: true}},
+		},
+		User: []*apiv1.SessionPromptVariable{{Name: "order.id", Value: &apiv1.SessionPromptVariable_StringValue{StringValue: "order-1"}}},
+	}
+	if err := Validate(valid); err != nil {
+		t.Fatalf("Validate(valid variable bag) = %v", err)
+	}
+
+	tests := []struct {
+		name   string
+		mutate func(*apiv1.SessionPromptVariableBag)
+	}{
+		{"duplicate system names", func(bag *apiv1.SessionPromptVariableBag) { bag.System = append(bag.System, bag.System[0]) }},
+		{"duplicate user names", func(bag *apiv1.SessionPromptVariableBag) { bag.User = append(bag.User, bag.User[0]) }},
+		{"malformed key", func(bag *apiv1.SessionPromptVariableBag) { bag.User[0].Name = "Order ID" }},
+		{"reserved namespace", func(bag *apiv1.SessionPromptVariableBag) { bag.User[0].Name = "customer.name" }},
+		{"reserved customer root", func(bag *apiv1.SessionPromptVariableBag) { bag.User[0].Name = "customer" }},
+		{"reserved agent root", func(bag *apiv1.SessionPromptVariableBag) { bag.User[0].Name = "agent" }},
+		{"reserved conversation root", func(bag *apiv1.SessionPromptVariableBag) { bag.User[0].Name = "conversation" }},
+		{"reserved date key", func(bag *apiv1.SessionPromptVariableBag) { bag.User[0].Name = "datetime_iso" }},
+		{"missing value", func(bag *apiv1.SessionPromptVariableBag) { bag.User[0].Value = nil }},
+		{"oversized string", func(bag *apiv1.SessionPromptVariableBag) { bag.User[0].Value = &apiv1.SessionPromptVariable_StringValue{StringValue: strings.Repeat("x", 1001)} }},
+		{"too many system entries", func(bag *apiv1.SessionPromptVariableBag) { bag.System = make([]*apiv1.SessionPromptVariable, 51); for i := range bag.System { bag.System[i] = &apiv1.SessionPromptVariable{Name: "key." + string(rune('a'+i/26)) + string(rune('a'+i%26)), Value: &apiv1.SessionPromptVariable_StringValue{StringValue: "v"}} } }},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			bag := proto.Clone(valid).(*apiv1.SessionPromptVariableBag)
+			tt.mutate(bag)
+			if err := Validate(bag); err == nil {
+				t.Fatal("Validate() = nil, want rejection")
+			}
+		})
+	}
+}
+
 func TestPublishedBootstrapWireRoundTrip(t *testing.T) {
 	for _, source := range []proto.Message{
 		validPublishedRequest(),
@@ -485,6 +530,7 @@ func basePublishedResponse() *apiv1.BootstrapPublishedResponse {
 		ConversationId:   "conversation-1",
 		SessionId:        "session-1",
 		PublishedId:      "publication-1",
+		PromptVariables: &apiv1.SessionPromptVariableBag{},
 	}
 }
 

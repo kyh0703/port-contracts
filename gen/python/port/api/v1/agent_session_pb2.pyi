@@ -120,11 +120,12 @@ class BootstrapPublishedRequest(_message.Message):
     def __init__(self, admission: _Optional[_Union[BootstrapRequest, _Mapping]] = ..., conversation_id: _Optional[str] = ..., session_id: _Optional[str] = ..., published_id: _Optional[str] = ..., contract_revision: _Optional[str] = ...) -> None: ...
 
 class BootstrapPublishedResponse(_message.Message):
-    __slots__ = ("contract_revision", "conversation_id", "session_id", "published_id", "agent", "voice_runtime", "text_runtime")
+    __slots__ = ("contract_revision", "conversation_id", "session_id", "published_id", "prompt_variables", "agent", "voice_runtime", "text_runtime")
     CONTRACT_REVISION_FIELD_NUMBER: _ClassVar[int]
     CONVERSATION_ID_FIELD_NUMBER: _ClassVar[int]
     SESSION_ID_FIELD_NUMBER: _ClassVar[int]
     PUBLISHED_ID_FIELD_NUMBER: _ClassVar[int]
+    PROMPT_VARIABLES_FIELD_NUMBER: _ClassVar[int]
     AGENT_FIELD_NUMBER: _ClassVar[int]
     VOICE_RUNTIME_FIELD_NUMBER: _ClassVar[int]
     TEXT_RUNTIME_FIELD_NUMBER: _ClassVar[int]
@@ -132,10 +133,31 @@ class BootstrapPublishedResponse(_message.Message):
     conversation_id: str
     session_id: str
     published_id: str
+    prompt_variables: SessionPromptVariableBag
     agent: PublishedAgentExecution
     voice_runtime: CallRuntimeSnapshot
     text_runtime: TextRuntimeSnapshot
-    def __init__(self, contract_revision: _Optional[str] = ..., conversation_id: _Optional[str] = ..., session_id: _Optional[str] = ..., published_id: _Optional[str] = ..., agent: _Optional[_Union[PublishedAgentExecution, _Mapping]] = ..., voice_runtime: _Optional[_Union[CallRuntimeSnapshot, _Mapping]] = ..., text_runtime: _Optional[_Union[TextRuntimeSnapshot, _Mapping]] = ...) -> None: ...
+    def __init__(self, contract_revision: _Optional[str] = ..., conversation_id: _Optional[str] = ..., session_id: _Optional[str] = ..., published_id: _Optional[str] = ..., prompt_variables: _Optional[_Union[SessionPromptVariableBag, _Mapping]] = ..., agent: _Optional[_Union[PublishedAgentExecution, _Mapping]] = ..., voice_runtime: _Optional[_Union[CallRuntimeSnapshot, _Mapping]] = ..., text_runtime: _Optional[_Union[TextRuntimeSnapshot, _Mapping]] = ...) -> None: ...
+
+class SessionPromptVariableBag(_message.Message):
+    __slots__ = ("system", "user")
+    SYSTEM_FIELD_NUMBER: _ClassVar[int]
+    USER_FIELD_NUMBER: _ClassVar[int]
+    system: _containers.RepeatedCompositeFieldContainer[SessionPromptVariable]
+    user: _containers.RepeatedCompositeFieldContainer[SessionPromptVariable]
+    def __init__(self, system: _Optional[_Iterable[_Union[SessionPromptVariable, _Mapping]]] = ..., user: _Optional[_Iterable[_Union[SessionPromptVariable, _Mapping]]] = ...) -> None: ...
+
+class SessionPromptVariable(_message.Message):
+    __slots__ = ("name", "string_value", "number_value", "boolean_value")
+    NAME_FIELD_NUMBER: _ClassVar[int]
+    STRING_VALUE_FIELD_NUMBER: _ClassVar[int]
+    NUMBER_VALUE_FIELD_NUMBER: _ClassVar[int]
+    BOOLEAN_VALUE_FIELD_NUMBER: _ClassVar[int]
+    name: str
+    string_value: str
+    number_value: float
+    boolean_value: bool
+    def __init__(self, name: _Optional[str] = ..., string_value: _Optional[str] = ..., number_value: _Optional[float] = ..., boolean_value: _Optional[bool] = ...) -> None: ...
 
 class PublishedAgentExecution(_message.Message):
     __slots__ = ("mode", "node_runtimes", "supervisor", "handoff")

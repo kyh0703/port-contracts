@@ -328,9 +328,23 @@ export interface BootstrapPublishedResponse {
   conversationId: string;
   sessionId: string;
   publishedId: string;
+  promptVariables?: SessionPromptVariableBag | undefined;
   agent?: PublishedAgentExecution | undefined;
   voiceRuntime?: CallRuntimeSnapshot | undefined;
   textRuntime?: TextRuntimeSnapshot | undefined;
+}
+
+/** Prompt variables shared by every Agent node for the lifetime of one call. */
+export interface SessionPromptVariableBag {
+  system: SessionPromptVariable[];
+  user: SessionPromptVariable[];
+}
+
+export interface SessionPromptVariable {
+  name: string;
+  stringValue?: string | undefined;
+  numberValue?: number | undefined;
+  booleanValue?: boolean | undefined;
 }
 
 export interface PublishedAgentExecution {
@@ -1025,6 +1039,7 @@ function createBaseBootstrapPublishedResponse(): BootstrapPublishedResponse {
     conversationId: "",
     sessionId: "",
     publishedId: "",
+    promptVariables: undefined,
     agent: undefined,
     voiceRuntime: undefined,
     textRuntime: undefined,
@@ -1044,6 +1059,9 @@ export const BootstrapPublishedResponse: MessageFns<BootstrapPublishedResponse> 
     }
     if (message.publishedId !== "") {
       writer.uint32(34).string(message.publishedId);
+    }
+    if (message.promptVariables !== undefined) {
+      SessionPromptVariableBag.encode(message.promptVariables, writer.uint32(50).fork()).join();
     }
     if (message.agent !== undefined) {
       PublishedAgentExecution.encode(message.agent, writer.uint32(42).fork()).join();
@@ -1094,6 +1112,14 @@ export const BootstrapPublishedResponse: MessageFns<BootstrapPublishedResponse> 
           }
 
           message.publishedId = reader.string();
+          continue;
+        }
+        case 6: {
+          if (tag !== 50) {
+            break;
+          }
+
+          message.promptVariables = SessionPromptVariableBag.decode(reader, reader.uint32());
           continue;
         }
         case 5: {
@@ -1151,6 +1177,11 @@ export const BootstrapPublishedResponse: MessageFns<BootstrapPublishedResponse> 
         : isSet(object.published_id)
         ? globalThis.String(object.published_id)
         : "",
+      promptVariables: isSet(object.promptVariables)
+        ? SessionPromptVariableBag.fromJSON(object.promptVariables)
+        : isSet(object.prompt_variables)
+        ? SessionPromptVariableBag.fromJSON(object.prompt_variables)
+        : undefined,
       agent: isSet(object.agent) ? PublishedAgentExecution.fromJSON(object.agent) : undefined,
       voiceRuntime: isSet(object.voiceRuntime)
         ? CallRuntimeSnapshot.fromJSON(object.voiceRuntime)
@@ -1179,6 +1210,9 @@ export const BootstrapPublishedResponse: MessageFns<BootstrapPublishedResponse> 
     if (message.publishedId !== "") {
       obj.publishedId = message.publishedId;
     }
+    if (message.promptVariables !== undefined) {
+      obj.promptVariables = SessionPromptVariableBag.toJSON(message.promptVariables);
+    }
     if (message.agent !== undefined) {
       obj.agent = PublishedAgentExecution.toJSON(message.agent);
     }
@@ -1200,6 +1234,9 @@ export const BootstrapPublishedResponse: MessageFns<BootstrapPublishedResponse> 
     message.conversationId = object.conversationId ?? "";
     message.sessionId = object.sessionId ?? "";
     message.publishedId = object.publishedId ?? "";
+    message.promptVariables = (object.promptVariables !== undefined && object.promptVariables !== null)
+      ? SessionPromptVariableBag.fromPartial(object.promptVariables)
+      : undefined;
     message.agent = (object.agent !== undefined && object.agent !== null)
       ? PublishedAgentExecution.fromPartial(object.agent)
       : undefined;
@@ -1209,6 +1246,206 @@ export const BootstrapPublishedResponse: MessageFns<BootstrapPublishedResponse> 
     message.textRuntime = (object.textRuntime !== undefined && object.textRuntime !== null)
       ? TextRuntimeSnapshot.fromPartial(object.textRuntime)
       : undefined;
+    return message;
+  },
+};
+
+function createBaseSessionPromptVariableBag(): SessionPromptVariableBag {
+  return { system: [], user: [] };
+}
+
+export const SessionPromptVariableBag: MessageFns<SessionPromptVariableBag> = {
+  encode(message: SessionPromptVariableBag, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    for (const v of message.system) {
+      SessionPromptVariable.encode(v!, writer.uint32(10).fork()).join();
+    }
+    for (const v of message.user) {
+      SessionPromptVariable.encode(v!, writer.uint32(18).fork()).join();
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): SessionPromptVariableBag {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseSessionPromptVariableBag();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.system.push(SessionPromptVariable.decode(reader, reader.uint32()));
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.user.push(SessionPromptVariable.decode(reader, reader.uint32()));
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): SessionPromptVariableBag {
+    return {
+      system: globalThis.Array.isArray(object?.system)
+        ? object.system.map((e: any) => SessionPromptVariable.fromJSON(e))
+        : [],
+      user: globalThis.Array.isArray(object?.user)
+        ? object.user.map((e: any) => SessionPromptVariable.fromJSON(e))
+        : [],
+    };
+  },
+
+  toJSON(message: SessionPromptVariableBag): unknown {
+    const obj: any = {};
+    if (message.system?.length) {
+      obj.system = message.system.map((e) => SessionPromptVariable.toJSON(e));
+    }
+    if (message.user?.length) {
+      obj.user = message.user.map((e) => SessionPromptVariable.toJSON(e));
+    }
+    return obj;
+  },
+
+  create(base?: DeepPartial<SessionPromptVariableBag>): SessionPromptVariableBag {
+    return SessionPromptVariableBag.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<SessionPromptVariableBag>): SessionPromptVariableBag {
+    const message = createBaseSessionPromptVariableBag();
+    message.system = object.system?.map((e) => SessionPromptVariable.fromPartial(e)) || [];
+    message.user = object.user?.map((e) => SessionPromptVariable.fromPartial(e)) || [];
+    return message;
+  },
+};
+
+function createBaseSessionPromptVariable(): SessionPromptVariable {
+  return { name: "", stringValue: undefined, numberValue: undefined, booleanValue: undefined };
+}
+
+export const SessionPromptVariable: MessageFns<SessionPromptVariable> = {
+  encode(message: SessionPromptVariable, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.name !== "") {
+      writer.uint32(10).string(message.name);
+    }
+    if (message.stringValue !== undefined) {
+      writer.uint32(18).string(message.stringValue);
+    }
+    if (message.numberValue !== undefined) {
+      writer.uint32(25).double(message.numberValue);
+    }
+    if (message.booleanValue !== undefined) {
+      writer.uint32(32).bool(message.booleanValue);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): SessionPromptVariable {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseSessionPromptVariable();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.name = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.stringValue = reader.string();
+          continue;
+        }
+        case 3: {
+          if (tag !== 25) {
+            break;
+          }
+
+          message.numberValue = reader.double();
+          continue;
+        }
+        case 4: {
+          if (tag !== 32) {
+            break;
+          }
+
+          message.booleanValue = reader.bool();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): SessionPromptVariable {
+    return {
+      name: isSet(object.name) ? globalThis.String(object.name) : "",
+      stringValue: isSet(object.stringValue)
+        ? globalThis.String(object.stringValue)
+        : isSet(object.string_value)
+        ? globalThis.String(object.string_value)
+        : undefined,
+      numberValue: isSet(object.numberValue)
+        ? globalThis.Number(object.numberValue)
+        : isSet(object.number_value)
+        ? globalThis.Number(object.number_value)
+        : undefined,
+      booleanValue: isSet(object.booleanValue)
+        ? globalThis.Boolean(object.booleanValue)
+        : isSet(object.boolean_value)
+        ? globalThis.Boolean(object.boolean_value)
+        : undefined,
+    };
+  },
+
+  toJSON(message: SessionPromptVariable): unknown {
+    const obj: any = {};
+    if (message.name !== "") {
+      obj.name = message.name;
+    }
+    if (message.stringValue !== undefined) {
+      obj.stringValue = message.stringValue;
+    }
+    if (message.numberValue !== undefined) {
+      obj.numberValue = message.numberValue;
+    }
+    if (message.booleanValue !== undefined) {
+      obj.booleanValue = message.booleanValue;
+    }
+    return obj;
+  },
+
+  create(base?: DeepPartial<SessionPromptVariable>): SessionPromptVariable {
+    return SessionPromptVariable.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<SessionPromptVariable>): SessionPromptVariable {
+    const message = createBaseSessionPromptVariable();
+    message.name = object.name ?? "";
+    message.stringValue = object.stringValue ?? undefined;
+    message.numberValue = object.numberValue ?? undefined;
+    message.booleanValue = object.booleanValue ?? undefined;
     return message;
   },
 };

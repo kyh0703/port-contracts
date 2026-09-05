@@ -9,13 +9,13 @@ function read(relativePath) {
   return readFileSync(path.join(root, relativePath), "utf8");
 }
 
-test("npm release metadata is pinned to 6.1.0", () => {
+test("npm release metadata is pinned to 7.0.0", () => {
   const packageJson = JSON.parse(read("package.json"));
   const packageLock = JSON.parse(read("package-lock.json"));
 
-  assert.equal(packageJson.version, "6.1.0");
-  assert.equal(packageLock.version, "6.1.0");
-  assert.equal(packageLock.packages[""].version, "6.1.0");
+  assert.equal(packageJson.version, "7.0.0");
+  assert.equal(packageLock.version, "7.0.0");
+  assert.equal(packageLock.packages[""].version, "7.0.0");
 });
 
 test("legacy Node module resolution maps generated TypeScript subpaths", () => {
@@ -47,15 +47,16 @@ test("protobuf Go packages use the v4 module path", () => {
   }
 });
 
-test("publication revision is the Agent supervisor/handoff cutover", () => {
+test("publication revision includes the session prompt variable bag", () => {
   const agentSession = read("proto/port/api/v1/agent_session.proto");
   const readme = read("README.md");
-  assert.match(readme, /execution-publication-2026-09-03-r1/);
+  assert.match(readme, /execution-publication-2026-09-04-r1/);
   assert.doesNotMatch(readme, /execution-publication-2026-08-26-r1/);
   const publicationRevisionMatches = agentSession.match(
-    /\(buf\.validate\.field\)\.string\.const = "execution-publication-2026-09-03-r1"/g,
+    /\(buf\.validate\.field\)\.string\.const = "execution-publication-2026-09-04-r1"/g,
   );
   assert.equal(publicationRevisionMatches?.length, 2);
+  assert.match(agentSession, /SessionPromptVariableBag prompt_variables = 6/);
   assert.doesNotMatch(agentSession, /execution-publication-2026-08-27-r1|agent_version_id/);
 
   const snapshotBody = agentSession.match(/message CallRuntimeSnapshot \{([\s\S]*?)\n\}/)?.[1];

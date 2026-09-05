@@ -39,7 +39,7 @@ message BootstrapPublishedRequest {
   string published_id = 4 [(buf.validate.field).required = true, (buf.validate.field).string.min_len = 1];
   string contract_revision = 5 [
     (buf.validate.field).required = true,
-    (buf.validate.field).string.const = "execution-publication-2026-09-03-r1"
+    (buf.validate.field).string.const = "execution-publication-2026-09-04-r1"
   ];
 }
 
@@ -51,17 +51,50 @@ message BootstrapPublishedResponse {
 
   string contract_revision = 1 [
     (buf.validate.field).required = true,
-    (buf.validate.field).string.const = "execution-publication-2026-09-03-r1"
+    (buf.validate.field).string.const = "execution-publication-2026-09-04-r1"
   ];
   string conversation_id = 2 [(buf.validate.field).required = true, (buf.validate.field).string.min_len = 1];
   string session_id = 3 [(buf.validate.field).required = true, (buf.validate.field).string.min_len = 1];
   string published_id = 4 [(buf.validate.field).required = true, (buf.validate.field).string.min_len = 1];
 
+  SessionPromptVariableBag prompt_variables = 6 [(buf.validate.field).required = true];
   PublishedAgentExecution agent = 5 [(buf.validate.field).required = true];
   oneof runtime {
     option (buf.validate.oneof).required = true;
     CallRuntimeSnapshot voice_runtime = 7;
     TextRuntimeSnapshot text_runtime = 8;
+  }
+}
+
+// Prompt variables shared by every Agent node for the lifetime of one call.
+message SessionPromptVariableBag {
+  option (buf.validate.message).cel = {
+    id: "session_prompt_variable_bag.system_names_unique"
+    message: "system prompt variable names must be unique"
+    expression: "this.system.map(variable, variable.name).unique()"
+  };
+  option (buf.validate.message).cel = {
+    id: "session_prompt_variable_bag.user_names_unique"
+    message: "user prompt variable names must be unique"
+    expression: "this.user.map(variable, variable.name).unique()"
+  };
+  option (buf.validate.message).cel = {
+    id: "session_prompt_variable_bag.user_names_not_reserved"
+    message: "user prompt variable name is reserved"
+    expression: "this.user.all(variable, !(variable.name == 'customer' || variable.name == 'agent' || variable.name == 'conversation' || variable.name.startsWith('customer.') || variable.name.startsWith('agent.') || variable.name.startsWith('conversation.') || variable.name in ['now', 'date', 'time', 'month', 'day', 'year', 'date_iso', 'time_24h', 'datetime_iso']))"
+  };
+
+  repeated SessionPromptVariable system = 1 [(buf.validate.field).repeated = {max_items: 50}];
+  repeated SessionPromptVariable user = 2 [(buf.validate.field).repeated = {max_items: 50}];
+}
+
+message SessionPromptVariable {
+  string name = 1 [(buf.validate.field).string = {min_len: 1 max_bytes: 64 pattern: "^[a-z][a-z0-9]*(?:[._-][a-z0-9]+)*$"}];
+  oneof value {
+    option (buf.validate.oneof).required = true;
+    string string_value = 2 [(buf.validate.field).string.max_bytes = 1000];
+    double number_value = 3;
+    bool boolean_value = 4;
   }
 }
 

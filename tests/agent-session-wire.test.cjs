@@ -22,7 +22,7 @@ const {
   SendSmsTool,
 } = contracts;
 
-const publicationRevision = "execution-publication-2026-09-03-r1";
+const publicationRevision = "execution-publication-2026-09-04-r1";
 
 test("DTMF and SMS built-in tools round-trip their additive runtime payloads", () => {
   const dtmf = BuiltInTool.create({ dtmf: DtmfTool.create({}) });
@@ -82,12 +82,44 @@ test("SIP caller phone number is optional and round-trips without changing the r
       conversationId: "conversation-1",
       sessionId: "session-1",
       publishedId: "publication-1",
-      contractRevision: "execution-publication-2026-09-03-r1",
+      contractRevision: publicationRevision,
     });
     const decoded = BootstrapPublishedRequest.decode(BootstrapPublishedRequest.encode(request).finish());
     assert.deepEqual(decoded, request);
     assert.equal(decoded.admission.sip.phoneNumber, phoneNumber);
   }
+});
+
+test("session prompt variables round-trip dotted system names and primitive values", () => {
+  const promptVariables = {
+    system: [
+      { name: "customer.number", stringValue: "+821012345678" },
+      { name: "agent.number", stringValue: "+82212345678" },
+      { name: "agent.id", stringValue: "agent-1" },
+      { name: "conversation.id", stringValue: "conversation-1" },
+      { name: "conversation.channel", stringValue: "phone" },
+      { name: "date_iso", stringValue: "2026-09-04" },
+      { name: "retry_count", numberValue: 2 },
+      { name: "is_returning", booleanValue: true },
+    ],
+    user: [{ name: "order.id", stringValue: "order-1" }],
+  };
+  const response = BootstrapPublishedResponse.create({
+    contractRevision: publicationRevision,
+    conversationId: "conversation-variables",
+    sessionId: "session-variables",
+    publishedId: "publication-variables",
+    promptVariables,
+  });
+  const decoded = BootstrapPublishedResponse.decode(
+    BootstrapPublishedResponse.encode(response).finish(),
+  );
+
+  assert.deepEqual(decoded.promptVariables, response.promptVariables);
+  assert.equal(decoded.promptVariables.system[0].name, "customer.number");
+  assert.equal(decoded.promptVariables.system[6].numberValue, 2);
+  assert.equal(decoded.promptVariables.system[7].booleanValue, true);
+  assert.equal(decoded.promptVariables.user[0].stringValue, "order-1");
 });
 
 test("call runtime filler settings are optional and preserve the configured phrase", () => {
@@ -183,7 +215,7 @@ test("published runtimes round-trip configurable knowledge function metadata", (
 
 test("published agent topology references only inline node IDs", () => {
   const response = BootstrapPublishedResponse.create({
-    contractRevision: "execution-publication-2026-09-03-r1",
+    contractRevision: publicationRevision,
     conversationId: "conversation-2",
     sessionId: "session-2",
     publishedId: "agent-publication-1",
@@ -230,7 +262,7 @@ test("published agent topology references only inline node IDs", () => {
 
 test("inline runtimes round-trip Knowledge fields and default them for legacy payloads", () => {
   const response = BootstrapPublishedResponse.create({
-    contractRevision: "execution-publication-2026-09-03-r1",
+    contractRevision: publicationRevision,
     conversationId: "conversation-3",
     sessionId: "session-3",
     publishedId: "agent-publication-2",
