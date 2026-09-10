@@ -33,9 +33,10 @@ import { ApiEventServiceClient } from '@overthinker1127/port-contracts/gen/ts/po
 
 `port/api/v1/agent_session.proto` is the API's worker-only session bootstrap
 contract. `ExecutionSessionService.BootstrapPublished` admits either a one-time
-browser ticket or a verified SIP LiveKit job and returns one exact inline
-Orchestration runtime. The required revision is
-`execution-publication-2026-09-03-r1`; handoff routes now carry typed
+browser ticket or a verified SIP LiveKit job and returns one exact Agent
+supervisor or handoff runtime. The required revision is
+`execution-publication-2026-09-04-r1`; the response carries bounded typed
+system and per-call user prompt variables, and handoff routes carry typed
 parameters, `none | conversation | recent` context policy, and one blocking
 `request_start` message. Older Agent bootstrap services and revision fallbacks
 are intentionally unavailable.

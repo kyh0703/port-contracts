@@ -39,7 +39,7 @@ message BootstrapPublishedRequest {
   string published_id = 4 [(buf.validate.field).required = true, (buf.validate.field).string.min_len = 1];
   string contract_revision = 5 [
     (buf.validate.field).required = true,
-    (buf.validate.field).string.const = "execution-publication-2026-09-03-r1"
+    (buf.validate.field).string.const = "execution-publication-2026-09-04-r1"
   ];
 }
 
@@ -51,12 +51,14 @@ message BootstrapPublishedResponse {
 
   string contract_revision = 1 [
     (buf.validate.field).required = true,
-    (buf.validate.field).string.const = "execution-publication-2026-09-03-r1"
+    (buf.validate.field).string.const = "execution-publication-2026-09-04-r1"
   ];
   string conversation_id = 2 [(buf.validate.field).required = true, (buf.validate.field).string.min_len = 1];
   string session_id = 3 [(buf.validate.field).required = true, (buf.validate.field).string.min_len = 1];
   string published_id = 4 [(buf.validate.field).required = true, (buf.validate.field).string.min_len = 1];
-  PublishedOrchestrationExecution orchestration = 6 [(buf.validate.field).required = true];
+
+  SessionPromptVariableBag prompt_variables = 6 [(buf.validate.field).required = true];
+  PublishedAgentExecution agent = 5 [(buf.validate.field).required = true];
   oneof runtime {
     option (buf.validate.oneof).required = true;
     CallRuntimeSnapshot voice_runtime = 7;
@@ -64,29 +66,61 @@ message BootstrapPublishedResponse {
   }
 }
 
-message PublishedOrchestrationExecution {
+// Prompt variables shared by every Agent node for the lifetime of one call.
+message SessionPromptVariableBag {
+  option (buf.validate.message).cel = {
+    id: "session_prompt_variable_bag.system_names_unique"
+    message: "system prompt variable names must be unique"
+    expression: "this.system.map(variable, variable.name).unique()"
+  };
+  option (buf.validate.message).cel = {
+    id: "session_prompt_variable_bag.user_names_unique"
+    message: "user prompt variable names must be unique"
+    expression: "this.user.map(variable, variable.name).unique()"
+  };
+  option (buf.validate.message).cel = {
+    id: "session_prompt_variable_bag.user_names_not_reserved"
+    message: "user prompt variable name is reserved"
+    expression: "this.user.all(variable, !(variable.name == 'customer' || variable.name == 'agent' || variable.name == 'conversation' || variable.name.startsWith('customer.') || variable.name.startsWith('agent.') || variable.name.startsWith('conversation.') || variable.name in ['now', 'date', 'time', 'month', 'day', 'year', 'date_iso', 'time_24h', 'datetime_iso']))"
+  };
+
+  repeated SessionPromptVariable system = 1 [(buf.validate.field).repeated = {max_items: 50}];
+  repeated SessionPromptVariable user = 2 [(buf.validate.field).repeated = {max_items: 50}];
+}
+
+message SessionPromptVariable {
+  string name = 1 [(buf.validate.field).string = {min_len: 1 max_bytes: 64 pattern: "^[a-z][a-z0-9]*(?:[._-][a-z0-9]+)*$"}];
+  oneof value {
+    option (buf.validate.oneof).required = true;
+    string string_value = 2 [(buf.validate.field).string.max_bytes = 1000];
+    double number_value = 3;
+    bool boolean_value = 4;
+  }
+}
+
+message PublishedAgentExecution {
   option (buf.validate.message).oneof = {
     fields: ["supervisor", "handoff"]
     required: true
   };
   option (buf.validate.message).cel = {
-    id: "published_orchestration_execution.mode_snapshot"
+    id: "published_agent_execution.mode_snapshot"
     message: "mode must match the selected publication topology"
     expression: "(this.mode == 1 && has(this.supervisor)) || (this.mode == 2 && has(this.handoff))"
   };
 
-  OrchestrationMode mode = 1 [(buf.validate.field).required = true, (buf.validate.field).enum = {defined_only: true not_in: 0}];
-  repeated PublishedInlinePromptRuntime node_runtimes = 2 [(buf.validate.field).repeated.min_items = 2];
+  AgentMode mode = 1 [(buf.validate.field).required = true, (buf.validate.field).enum = {defined_only: true not_in: 0}];
+  repeated PublishedAgentNodeRuntime node_runtimes = 2 [(buf.validate.field).repeated.min_items = 2];
   PublishedSupervisorSnapshot supervisor = 3;
   PublishedHandoffSnapshot handoff = 4;
 }
 
-// Inline orchestration nodes intentionally do not expose greeting or guardrails
+// Agent nodes intentionally do not expose greeting or guardrails
 // fields. Knowledge retrieval is available through the additive fields below.
-message PublishedInlinePromptRuntime {
+message PublishedAgentNodeRuntime {
   string node_id = 1 [(buf.validate.field).string.min_len = 1];
   LlmRuntime llm_worker = 2 [(buf.validate.field).required = true];
-  InlinePromptInstructions instructions = 3 [(buf.validate.field).required = true];
+  AgentInstructions instructions = 3 [(buf.validate.field).required = true];
   ContextPolicy context_policy = 4 [(buf.validate.field).enum = {defined_only: true not_in: 0}];
   repeated NodeToolMetadata tools = 5;
   repeated McpServerRuntime mcp_servers = 6;
@@ -216,7 +250,25 @@ message CallRuntimeSnapshot {
   SpeechPolicyRuntime speech_policy = 7 [(buf.validate.field).required = true];
   CallLimitsRuntime limits = 8 [(buf.validate.field).required = true];
   ConversationFillerRuntime conversation_filler = 9;
+  ConversationControlRuntime conversation_control = 10 [(buf.validate.field).required = true];
 }
+
+message ConversationControlRuntime {
+  optional string end_call_message = 1 [(buf.validate.field).string = {min_len: 1 max_len: 1000}];
+  repeated string end_call_phrases = 2 [(buf.validate.field).repeated.items.string = {min_len: 2 max_len: 140}];
+  repeated TimeElapsedActionRuntime time_elapsed_actions = 3;
+}
+
+message TimeElapsedActionRuntime {
+  uint32 at_seconds = 1 [(buf.validate.field).uint32 = {gte: 1 lte: 3600}];
+  oneof action {
+    option (buf.validate.oneof).required = true;
+    string say = 2 [(buf.validate.field).string = {min_len: 1 max_len: 1000}];
+    EndCallActionRuntime end_call = 3;
+  }
+}
+
+message EndCallActionRuntime {}
 
 enum CallTransportSource {
   CALL_TRANSPORT_SOURCE_UNSPECIFIED = 0;
@@ -256,8 +308,8 @@ message SpeechPolicyRuntime {
 
 message CallLimitsRuntime {
   uint32 dial_wait_time_seconds = 1 [(buf.validate.field).uint32 = {gte: 10 lte: 90}];
-  uint32 max_call_duration_seconds = 2 [(buf.validate.field).uint32 = {gte: 60 lte: 900}];
-  uint32 no_answer_timeout_seconds = 3 [(buf.validate.field).uint32 = {gte: 10 lte: 300}];
+  uint32 max_call_duration_seconds = 2 [(buf.validate.field).uint32 = {gte: 10 lte: 43200}];
+  uint32 no_answer_timeout_seconds = 3 [(buf.validate.field).uint32 = {gte: 5 lte: 3600}];
 }
 
 enum BackgroundAudioPreset {
@@ -282,19 +334,14 @@ message DtmfInputRuntime {
   optional string end_key = 2 [(buf.validate.field).string.pattern = "^[0-9#*]$"];
 }
 
-message PromptInstructions {
-  string system_prompt = 1 [(buf.validate.field).string.min_len = 1];
-  repeated string guardrails = 2;
-}
-
-message InlinePromptInstructions {
+message AgentInstructions {
   string system_prompt = 1 [(buf.validate.field).string.min_len = 1];
 }
 
-enum OrchestrationMode {
-  ORCHESTRATION_MODE_UNSPECIFIED = 0;
-  ORCHESTRATION_MODE_SUPERVISOR = 1;
-  ORCHESTRATION_MODE_HANDOFF = 2;
+enum AgentMode {
+  AGENT_MODE_UNSPECIFIED = 0;
+  AGENT_MODE_SUPERVISOR = 1;
+  AGENT_MODE_HANDOFF = 2;
 }
 
 message NodeToolMetadata {
@@ -374,6 +421,8 @@ message BuiltInTool {
     option (buf.validate.oneof).required = true;
     EndCallTool end_call = 1;
     TransferToHumanTool transfer_to_human = 2;
+    DtmfTool dtmf = 3;
+    SendSmsTool send_sms = 4;
   }
 }
 
@@ -388,6 +437,16 @@ message TransferToHumanTool {
   string sip_call_to = 1 [(buf.validate.field).string.min_len = 1];
   optional string hold_phrase = 2;
   uint32 ringing_timeout_ms = 3 [(buf.validate.field).uint32 = {gte: 5000 lte: 600000}];
+  // User-authored invocation condition. Runtime appends locked operational wording.
+  string condition = 4;
+}
+
+message DtmfTool {}
+
+message SendSmsTool {
+  string recipient = 1 [(buf.validate.field).string.min_len = 1];
+  string template = 2 [(buf.validate.field).string.min_len = 1];
+  uint32 max_sends = 3 [(buf.validate.field).uint32 = {gte: 1 lte: 5}];
   // User-authored invocation condition. Runtime appends locked operational wording.
   string condition = 4;
 }

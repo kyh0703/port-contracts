@@ -11,7 +11,7 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-const publicationContractRevision = "execution-publication-2026-09-03-r1"
+const publicationContractRevision = "execution-publication-2026-09-04-r1"
 
 func TestValidateRejectsMissingRequiredFields(t *testing.T) {
 	if err := Validate(&apiv1.RecordGatewayEventRequest{}); err == nil {
@@ -61,6 +61,37 @@ func TestKnowledgeToolMetadataValidation(t *testing.T) {
 	}
 }
 
+func TestBuiltInToolValidation(t *testing.T) {
+	valid := []*apiv1.BuiltInTool{
+		{Config: &apiv1.BuiltInTool_Dtmf{Dtmf: &apiv1.DtmfTool{}}},
+		{Config: &apiv1.BuiltInTool_SendSms{SendSms: &apiv1.SendSmsTool{
+			Recipient: "{{caller_number}}",
+			Template:  "안내 메시지",
+			MaxSends:  3,
+		}}},
+	}
+	for _, tool := range valid {
+		if err := Validate(tool); err != nil {
+			t.Fatalf("Validate(valid built-in tool) = %v, want nil", err)
+		}
+	}
+
+	for _, tt := range []struct {
+		name string
+		msg  *apiv1.BuiltInTool
+	}{
+		{name: "missing config", msg: &apiv1.BuiltInTool{}},
+		{name: "sms max sends below minimum", msg: &apiv1.BuiltInTool{Config: &apiv1.BuiltInTool_SendSms{SendSms: &apiv1.SendSmsTool{Recipient: "{{caller_number}}", Template: "안내", MaxSends: 0}}}},
+		{name: "sms max sends above maximum", msg: &apiv1.BuiltInTool{Config: &apiv1.BuiltInTool_SendSms{SendSms: &apiv1.SendSmsTool{Recipient: "{{caller_number}}", Template: "안내", MaxSends: 6}}}},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			if err := Validate(tt.msg); err == nil {
+				t.Fatal("Validate() = nil, want rejection")
+			}
+		})
+	}
+}
+
 func TestExecutionSessionServiceExposesOnlyPublishedBootstrap(t *testing.T) {
 	descriptor, err := protoregistry.GlobalFiles.FindDescriptorByName("port.api.v1.ExecutionSessionService")
 	if err != nil {
@@ -84,7 +115,6 @@ func TestExecutionSessionServiceExposesOnlyPublishedBootstrap(t *testing.T) {
 		"Bootstrap",
 		"BootstrapSip",
 		"BootstrapAgent",
-		"BootstrapOrchestration",
 	} {
 		if service.Methods().ByName(legacy) != nil {
 			t.Fatalf("legacy method %s remains exposed", legacy)
@@ -107,6 +137,7 @@ func TestPublishedBootstrapRequestValidation(t *testing.T) {
 		{"missing conversation", func(request *apiv1.BootstrapPublishedRequest) { request.ConversationId = "" }},
 		{"missing session", func(request *apiv1.BootstrapPublishedRequest) { request.SessionId = "" }},
 		{"missing publication", func(request *apiv1.BootstrapPublishedRequest) { request.PublishedId = "" }},
+		{"previous exact revision", func(request *apiv1.BootstrapPublishedRequest) { request.ContractRevision = "execution-publication-2026-08-27-r1" }},
 		{"wrong revision", func(request *apiv1.BootstrapPublishedRequest) { request.ContractRevision = "legacy" }},
 	}
 	for _, tt := range tests {
@@ -149,32 +180,32 @@ func validSipPublishedRequest() *apiv1.BootstrapPublishedRequest {
 	request := validPublishedRequest()
 	request.Admission = &apiv1.BootstrapRequest{
 		Admission: &apiv1.BootstrapRequest_Sip{Sip: &apiv1.SipBootstrapContext{
-			JobId:                 "job-1",
-			DispatchId:            "dispatch-1",
-			RoomName:              "room-1",
-			ParticipantIdentity:   "participant-1",
-			TrunkId:               "trunk-1",
-			TrunkPhoneNumber:      "+821012300000",
-			CallIdFull:            "call-1",
+			JobId:               "job-1",
+			DispatchId:          "dispatch-1",
+			RoomName:            "room-1",
+			ParticipantIdentity: "participant-1",
+			TrunkId:             "trunk-1",
+			TrunkPhoneNumber:    "+821012300000",
+			CallIdFull:          "call-1",
 		}},
 	}
 	return request
 }
 
-func TestPublishedOrchestrationTextResponseValidation(t *testing.T) {
-	valid := validSupervisorTextResponse()
+func TestPublishedAgentTextResponseValidation(t *testing.T) {
+	valid := validAgentTextResponse()
 	if err := Validate(valid); err != nil {
-		t.Fatalf("Validate(valid orchestration text response) = %v", err)
+		t.Fatalf("Validate(valid agent text response) = %v", err)
 	}
 
 	tests := []struct {
 		name   string
 		mutate func(*apiv1.BootstrapPublishedResponse)
 	}{
-		{"wrong revision", func(response *apiv1.BootstrapPublishedResponse) { response.ContractRevision = "legacy" }},
-		{"missing orchestration", func(response *apiv1.BootstrapPublishedResponse) { response.Orchestration = nil }},
+		{"old revision", func(response *apiv1.BootstrapPublishedResponse) { response.ContractRevision = "execution-publication-2026-08-27-r1" }},
+		{"missing execution", func(response *apiv1.BootstrapPublishedResponse) { response.Agent = nil }},
 		{"missing runtime", func(response *apiv1.BootstrapPublishedResponse) { response.Runtime = nil }},
-		{"missing topology snapshot", func(response *apiv1.BootstrapPublishedResponse) { response.GetOrchestration().Supervisor = nil }},
+		{"missing agent node runtime", func(response *apiv1.BootstrapPublishedResponse) { response.GetAgent().NodeRuntimes[0] = nil }},
 		{"wrong text transport", func(response *apiv1.BootstrapPublishedResponse) { response.GetTextRuntime().Transport = "audio" }},
 	}
 	for _, tt := range tests {
@@ -189,9 +220,9 @@ func TestPublishedOrchestrationTextResponseValidation(t *testing.T) {
 }
 
 func TestPublishedVoiceRuntimeRequiresAllComponents(t *testing.T) {
-	valid := validSupervisorVoiceResponse()
+	valid := validAgentVoiceResponse()
 	if err := Validate(valid); err != nil {
-		t.Fatalf("Validate(valid orchestration voice response) = %v", err)
+		t.Fatalf("Validate(valid agent voice response) = %v", err)
 	}
 
 	for _, name := range []string{"stt", "tts", "background_audio", "dtmf", "transport", "vad", "speech_policy", "limits"} {
@@ -252,31 +283,61 @@ func TestConversationFillerRuntimeValidation(t *testing.T) {
 	}
 }
 
-func TestPublishedOrchestrationValidation(t *testing.T) {
+func TestConversationControlRuntimeValidation(t *testing.T) {
+	valid := validCallRuntime()
+	if err := Validate(valid); err != nil {
+		t.Fatalf("Validate(valid conversation control) = %v, want nil", err)
+	}
+
+	tests := []struct {
+		name   string
+		mutate func(*apiv1.CallRuntimeSnapshot)
+	}{
+		{"missing control", func(runtime *apiv1.CallRuntimeSnapshot) { runtime.ConversationControl = nil }},
+		{"empty end call message", func(runtime *apiv1.CallRuntimeSnapshot) { runtime.GetConversationControl().EndCallMessage = proto.String("") }},
+		{"short end call phrase", func(runtime *apiv1.CallRuntimeSnapshot) { runtime.GetConversationControl().EndCallPhrases = []string{"a"} }},
+		{"long elapsed say", func(runtime *apiv1.CallRuntimeSnapshot) { runtime.GetConversationControl().TimeElapsedActions[0].Action = &apiv1.TimeElapsedActionRuntime_Say{Say: strings.Repeat("a", 1001)} }},
+		{"missing elapsed action", func(runtime *apiv1.CallRuntimeSnapshot) { runtime.GetConversationControl().TimeElapsedActions[0].Action = nil }},
+		{"elapsed time out of range", func(runtime *apiv1.CallRuntimeSnapshot) { runtime.GetConversationControl().TimeElapsedActions[0].AtSeconds = 3601 }},
+		{"max duration below new minimum", func(runtime *apiv1.CallRuntimeSnapshot) { runtime.GetLimits().MaxCallDurationSeconds = 9 }},
+		{"silence timeout below new minimum", func(runtime *apiv1.CallRuntimeSnapshot) { runtime.GetLimits().NoAnswerTimeoutSeconds = 4 }},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			runtime := proto.Clone(valid).(*apiv1.CallRuntimeSnapshot)
+			tt.mutate(runtime)
+			if err := Validate(runtime); err == nil {
+				t.Fatal("Validate() = nil, want rejection")
+			}
+		})
+	}
+}
+
+func TestPublishedAgentValidation(t *testing.T) {
 	for _, valid := range []*apiv1.BootstrapPublishedResponse{
 		validSupervisorTextResponse(),
 		validHandoffTextResponse(),
 	} {
 		if err := Validate(valid); err != nil {
-			t.Fatalf("Validate(valid orchestration) = %v", err)
+			t.Fatalf("Validate(valid agent) = %v", err)
 		}
 	}
 
 	supervisor := validSupervisorTextResponse()
-	supervisor.GetOrchestration().Mode = apiv1.OrchestrationMode_ORCHESTRATION_MODE_HANDOFF
+	supervisor.GetAgent().Mode = apiv1.AgentMode_AGENT_MODE_HANDOFF
 	if err := Validate(supervisor); err == nil {
 		t.Fatal("Validate(mode/snapshot mismatch) = nil")
 	}
 
 	handoff := validHandoffTextResponse()
-	handoff.GetOrchestration().Handoff.MaxHandoffDepth = 0
+	handoff.GetAgent().Handoff.MaxHandoffDepth = 0
 	if err := Validate(handoff); err == nil {
 		t.Fatal("Validate(zero handoff depth) = nil")
 	}
 
 	t.Run("handoff rejects conversation context policy", func(t *testing.T) {
 		handoff := validHandoffTextResponse()
-		handoff.GetOrchestration().GetHandoff().Routes[0].ContextPolicy = apiv1.ContextPolicy_CONTEXT_POLICY_CONVERSATION
+		handoff.GetAgent().GetHandoff().Routes[0].ContextPolicy = apiv1.ContextPolicy_CONTEXT_POLICY_CONVERSATION
 		if err := Validate(handoff); err == nil {
 			t.Fatal("Validate(handoff conversation context policy) = nil")
 		}
@@ -284,7 +345,7 @@ func TestPublishedOrchestrationValidation(t *testing.T) {
 
 	t.Run("duplicate handoff parameter names", func(t *testing.T) {
 		handoff := validHandoffTextResponse()
-		handoff.GetOrchestration().GetHandoff().Routes[0].Parameters = []*apiv1.HandoffParameter{
+		handoff.GetAgent().GetHandoff().Routes[0].Parameters = []*apiv1.HandoffParameter{
 			{Name: "reason", Type: apiv1.HandoffParameterType_HANDOFF_PARAMETER_TYPE_STRING},
 			{Name: "reason", Type: apiv1.HandoffParameterType_HANDOFF_PARAMETER_TYPE_STRING},
 		}
@@ -295,7 +356,7 @@ func TestPublishedOrchestrationValidation(t *testing.T) {
 
 	t.Run("handoff parameter enum values must match type", func(t *testing.T) {
 		handoff := validHandoffTextResponse()
-		handoff.GetOrchestration().GetHandoff().Routes[0].Parameters = []*apiv1.HandoffParameter{{
+		handoff.GetAgent().GetHandoff().Routes[0].Parameters = []*apiv1.HandoffParameter{{
 			Name:       "reason",
 			Type:       apiv1.HandoffParameterType_HANDOFF_PARAMETER_TYPE_STRING,
 			NumberEnum: []float64{10.5},
@@ -307,7 +368,7 @@ func TestPublishedOrchestrationValidation(t *testing.T) {
 
 	t.Run("handoff rejects both announcement and request start", func(t *testing.T) {
 		handoff := validHandoffTextResponse()
-		handoff.GetOrchestration().GetHandoff().Routes[0].Announcement = "Legacy announcement."
+		handoff.GetAgent().GetHandoff().Routes[0].Announcement = "Legacy announcement."
 		if err := Validate(handoff); err == nil {
 			t.Fatal("Validate(handoff legacy and canonical start message) = nil")
 		}
@@ -315,7 +376,7 @@ func TestPublishedOrchestrationValidation(t *testing.T) {
 
 	t.Run("handoff accepts optional system prompt", func(t *testing.T) {
 		handoff := validHandoffTextResponse()
-		handoff.GetOrchestration().GetHandoff().Routes[0].SystemPrompt = proto.String("Continue without greeting the caller.")
+		handoff.GetAgent().GetHandoff().Routes[0].SystemPrompt = proto.String("Continue without greeting the caller.")
 		if err := Validate(handoff); err != nil {
 			t.Fatalf("Validate(handoff system prompt) = %v", err)
 		}
@@ -324,7 +385,7 @@ func TestPublishedOrchestrationValidation(t *testing.T) {
 	t.Run("handoff rejects present but empty or blank system prompt", func(t *testing.T) {
 		for _, prompt := range []string{"", "   \t"} {
 			handoff := validHandoffTextResponse()
-			handoff.GetOrchestration().GetHandoff().Routes[0].SystemPrompt = proto.String(prompt)
+			handoff.GetAgent().GetHandoff().Routes[0].SystemPrompt = proto.String(prompt)
 			if err := Validate(handoff); err == nil {
 				t.Fatalf("Validate(system prompt %q) = nil", prompt)
 			}
@@ -333,17 +394,64 @@ func TestPublishedOrchestrationValidation(t *testing.T) {
 
 	t.Run("supervisor rejects recent context policy", func(t *testing.T) {
 		supervisor := validSupervisorTextResponse()
-		supervisor.GetOrchestration().GetSupervisor().Specialists[0].ContextPolicy = apiv1.ContextPolicy_CONTEXT_POLICY_RECENT
+		supervisor.GetAgent().GetSupervisor().Specialists[0].ContextPolicy = apiv1.ContextPolicy_CONTEXT_POLICY_RECENT
 		if err := Validate(supervisor); err == nil {
 			t.Fatal("Validate(supervisor recent context policy) = nil")
 		}
 	})
 }
 
+func TestSessionPromptVariableBagValidation(t *testing.T) {
+	valid := &apiv1.SessionPromptVariableBag{
+		System: []*apiv1.SessionPromptVariable{
+			{Name: "customer.number", Value: &apiv1.SessionPromptVariable_StringValue{StringValue: "+821012345678"}},
+			{Name: "agent.number", Value: &apiv1.SessionPromptVariable_StringValue{StringValue: "+82212345678"}},
+			{Name: "agent.id", Value: &apiv1.SessionPromptVariable_StringValue{StringValue: "agent-1"}},
+			{Name: "conversation.id", Value: &apiv1.SessionPromptVariable_StringValue{StringValue: "conversation-1"}},
+			{Name: "conversation.channel", Value: &apiv1.SessionPromptVariable_StringValue{StringValue: "phone"}},
+			{Name: "date_iso", Value: &apiv1.SessionPromptVariable_StringValue{StringValue: "2026-09-04"}},
+			{Name: "retry_count", Value: &apiv1.SessionPromptVariable_NumberValue{NumberValue: 2}},
+			{Name: "is_returning", Value: &apiv1.SessionPromptVariable_BooleanValue{BooleanValue: true}},
+		},
+		User: []*apiv1.SessionPromptVariable{{Name: "order.id", Value: &apiv1.SessionPromptVariable_StringValue{StringValue: "order-1"}}},
+	}
+	if err := Validate(valid); err != nil {
+		t.Fatalf("Validate(valid variable bag) = %v", err)
+	}
+
+	tests := []struct {
+		name   string
+		mutate func(*apiv1.SessionPromptVariableBag)
+	}{
+		{"duplicate system names", func(bag *apiv1.SessionPromptVariableBag) { bag.System = append(bag.System, bag.System[0]) }},
+		{"duplicate user names", func(bag *apiv1.SessionPromptVariableBag) { bag.User = append(bag.User, bag.User[0]) }},
+		{"malformed key", func(bag *apiv1.SessionPromptVariableBag) { bag.User[0].Name = "Order ID" }},
+		{"reserved namespace", func(bag *apiv1.SessionPromptVariableBag) { bag.User[0].Name = "customer.name" }},
+		{"reserved customer root", func(bag *apiv1.SessionPromptVariableBag) { bag.User[0].Name = "customer" }},
+		{"reserved agent root", func(bag *apiv1.SessionPromptVariableBag) { bag.User[0].Name = "agent" }},
+		{"reserved conversation root", func(bag *apiv1.SessionPromptVariableBag) { bag.User[0].Name = "conversation" }},
+		{"reserved date key", func(bag *apiv1.SessionPromptVariableBag) { bag.User[0].Name = "datetime_iso" }},
+		{"missing value", func(bag *apiv1.SessionPromptVariableBag) { bag.User[0].Value = nil }},
+		{"oversized string", func(bag *apiv1.SessionPromptVariableBag) { bag.User[0].Value = &apiv1.SessionPromptVariable_StringValue{StringValue: strings.Repeat("x", 1001)} }},
+		{"too many system entries", func(bag *apiv1.SessionPromptVariableBag) { bag.System = make([]*apiv1.SessionPromptVariable, 51); for i := range bag.System { bag.System[i] = &apiv1.SessionPromptVariable{Name: "key." + string(rune('a'+i/26)) + string(rune('a'+i%26)), Value: &apiv1.SessionPromptVariable_StringValue{StringValue: "v"}} } }},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			bag := proto.Clone(valid).(*apiv1.SessionPromptVariableBag)
+			tt.mutate(bag)
+			if err := Validate(bag); err == nil {
+				t.Fatal("Validate() = nil, want rejection")
+			}
+		})
+	}
+}
+
 func TestPublishedBootstrapWireRoundTrip(t *testing.T) {
 	for _, source := range []proto.Message{
 		validPublishedRequest(),
 		validSipPublishedRequest(),
+		validAgentTextResponse(),
+		validAgentVoiceResponse(),
 		validSupervisorTextResponse(),
 		validSupervisorVoiceResponse(),
 		validHandoffTextResponse(),
@@ -374,11 +482,11 @@ func validPublishedRequest() *apiv1.BootstrapPublishedRequest {
 	}
 }
 
-func validInlineRuntime(id string) *apiv1.PublishedInlinePromptRuntime {
-	return &apiv1.PublishedInlinePromptRuntime{
+func validAgentNodeRuntime(id string) *apiv1.PublishedAgentNodeRuntime {
+	return &apiv1.PublishedAgentNodeRuntime{
 		NodeId:        id,
 		LlmWorker:     &apiv1.LlmRuntime{ApiKey: "llm-key", Model: "llm-model"},
-		Instructions:  &apiv1.InlinePromptInstructions{SystemPrompt: "Help."},
+		Instructions:  &apiv1.AgentInstructions{SystemPrompt: "Help."},
 		ContextPolicy: apiv1.ContextPolicy_CONTEXT_POLICY_CONVERSATION,
 	}
 }
@@ -406,6 +514,14 @@ func validCallRuntime() *apiv1.CallRuntimeSnapshot {
 		Vad:          &apiv1.VadRuntime{NoiseCancellation: apiv1.NoiseCancellationMode_NOISE_CANCELLATION_MODE_STANDARD, RecognitionSensitivity: proto.Float64(0.5)},
 		SpeechPolicy: &apiv1.SpeechPolicyRuntime{ResponseSpeed: proto.Float64(0.5), AllowInterruptions: proto.Bool(true)},
 		Limits:       &apiv1.CallLimitsRuntime{DialWaitTimeSeconds: 30, MaxCallDurationSeconds: 600, NoAnswerTimeoutSeconds: 30},
+		ConversationControl: &apiv1.ConversationControlRuntime{
+			EndCallMessage: proto.String("상담을 종료하겠습니다."),
+			EndCallPhrases: []string{"감사합니다"},
+			TimeElapsedActions: []*apiv1.TimeElapsedActionRuntime{{
+				AtSeconds: 300,
+				Action: &apiv1.TimeElapsedActionRuntime_Say{Say: "곧 상담을 마무리하겠습니다."},
+			}},
+		},
 	}
 }
 
@@ -415,14 +531,28 @@ func basePublishedResponse() *apiv1.BootstrapPublishedResponse {
 		ConversationId:   "conversation-1",
 		SessionId:        "session-1",
 		PublishedId:      "publication-1",
+		PromptVariables: &apiv1.SessionPromptVariableBag{},
 	}
+}
+
+func validAgentTextResponse() *apiv1.BootstrapPublishedResponse {
+	response := basePublishedResponse()
+	response.Agent = &apiv1.PublishedAgentExecution{Mode: apiv1.AgentMode_AGENT_MODE_HANDOFF, NodeRuntimes: []*apiv1.PublishedAgentNodeRuntime{validAgentNodeRuntime("node-1"), validAgentNodeRuntime("node-2")}, Handoff: &apiv1.PublishedHandoffSnapshot{EntryNodeId: "node-1", MaxHandoffDepth: 1, Routes: []*apiv1.PublishedHandoffRoute{{TransitionId: "route-1", SourceNodeId: "node-1", TargetNodeId: "node-2", RoutingDescription: "Finish", ContextPolicy: apiv1.ContextPolicy_CONTEXT_POLICY_RECENT}}}}
+	response.Runtime = &apiv1.BootstrapPublishedResponse_TextRuntime{TextRuntime: validTextRuntime()}
+	return response
+}
+
+func validAgentVoiceResponse() *apiv1.BootstrapPublishedResponse {
+	response := validAgentTextResponse()
+	response.Runtime = &apiv1.BootstrapPublishedResponse_VoiceRuntime{VoiceRuntime: validCallRuntime()}
+	return response
 }
 
 func validSupervisorTextResponse() *apiv1.BootstrapPublishedResponse {
 	response := basePublishedResponse()
-	response.Orchestration = &apiv1.PublishedOrchestrationExecution{
-		Mode:         apiv1.OrchestrationMode_ORCHESTRATION_MODE_SUPERVISOR,
-		NodeRuntimes: []*apiv1.PublishedInlinePromptRuntime{validInlineRuntime("supervisor-node"), validInlineRuntime("specialist-node")},
+	response.Agent = &apiv1.PublishedAgentExecution{
+		Mode:         apiv1.AgentMode_AGENT_MODE_SUPERVISOR,
+		NodeRuntimes: []*apiv1.PublishedAgentNodeRuntime{validAgentNodeRuntime("supervisor-node"), validAgentNodeRuntime("specialist-node")},
 		Supervisor: &apiv1.PublishedSupervisorSnapshot{
 			SupervisorNodeId: "supervisor-node",
 			Specialists: []*apiv1.PublishedSupervisorSpecialist{{
@@ -445,11 +575,11 @@ func validSupervisorVoiceResponse() *apiv1.BootstrapPublishedResponse {
 
 func validHandoffTextResponse() *apiv1.BootstrapPublishedResponse {
 	response := basePublishedResponse()
-	response.Orchestration = &apiv1.PublishedOrchestrationExecution{
-		Mode:         apiv1.OrchestrationMode_ORCHESTRATION_MODE_HANDOFF,
-		NodeRuntimes: []*apiv1.PublishedInlinePromptRuntime{validInlineRuntime("entry-node"), validInlineRuntime("target-node")},
+	response.Agent = &apiv1.PublishedAgentExecution{
+		Mode:         apiv1.AgentMode_AGENT_MODE_HANDOFF,
+		NodeRuntimes: []*apiv1.PublishedAgentNodeRuntime{validAgentNodeRuntime("entry-node"), validAgentNodeRuntime("target-node")},
 		Handoff: &apiv1.PublishedHandoffSnapshot{
-			EntryNodeId:      "entry-node",
+			EntryNodeId:     "entry-node",
 			MaxHandoffDepth: 2,
 			Routes: []*apiv1.PublishedHandoffRoute{{
 				TransitionId:       "billing",

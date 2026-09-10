@@ -39,11 +39,11 @@ class BackgroundAudioPreset(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     BACKGROUND_AUDIO_PRESET_CONTACT_CENTER: _ClassVar[BackgroundAudioPreset]
     BACKGROUND_AUDIO_PRESET_LIBRARY: _ClassVar[BackgroundAudioPreset]
 
-class OrchestrationMode(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
+class AgentMode(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     __slots__ = ()
-    ORCHESTRATION_MODE_UNSPECIFIED: _ClassVar[OrchestrationMode]
-    ORCHESTRATION_MODE_SUPERVISOR: _ClassVar[OrchestrationMode]
-    ORCHESTRATION_MODE_HANDOFF: _ClassVar[OrchestrationMode]
+    AGENT_MODE_UNSPECIFIED: _ClassVar[AgentMode]
+    AGENT_MODE_SUPERVISOR: _ClassVar[AgentMode]
+    AGENT_MODE_HANDOFF: _ClassVar[AgentMode]
 
 class ContextPolicy(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     __slots__ = ()
@@ -69,9 +69,9 @@ BACKGROUND_AUDIO_PRESET_CAFE: BackgroundAudioPreset
 BACKGROUND_AUDIO_PRESET_OFFICE: BackgroundAudioPreset
 BACKGROUND_AUDIO_PRESET_CONTACT_CENTER: BackgroundAudioPreset
 BACKGROUND_AUDIO_PRESET_LIBRARY: BackgroundAudioPreset
-ORCHESTRATION_MODE_UNSPECIFIED: OrchestrationMode
-ORCHESTRATION_MODE_SUPERVISOR: OrchestrationMode
-ORCHESTRATION_MODE_HANDOFF: OrchestrationMode
+AGENT_MODE_UNSPECIFIED: AgentMode
+AGENT_MODE_SUPERVISOR: AgentMode
+AGENT_MODE_HANDOFF: AgentMode
 CONTEXT_POLICY_UNSPECIFIED: ContextPolicy
 CONTEXT_POLICY_NONE: ContextPolicy
 CONTEXT_POLICY_CONVERSATION: ContextPolicy
@@ -120,36 +120,58 @@ class BootstrapPublishedRequest(_message.Message):
     def __init__(self, admission: _Optional[_Union[BootstrapRequest, _Mapping]] = ..., conversation_id: _Optional[str] = ..., session_id: _Optional[str] = ..., published_id: _Optional[str] = ..., contract_revision: _Optional[str] = ...) -> None: ...
 
 class BootstrapPublishedResponse(_message.Message):
-    __slots__ = ("contract_revision", "conversation_id", "session_id", "published_id", "orchestration", "voice_runtime", "text_runtime")
+    __slots__ = ("contract_revision", "conversation_id", "session_id", "published_id", "prompt_variables", "agent", "voice_runtime", "text_runtime")
     CONTRACT_REVISION_FIELD_NUMBER: _ClassVar[int]
     CONVERSATION_ID_FIELD_NUMBER: _ClassVar[int]
     SESSION_ID_FIELD_NUMBER: _ClassVar[int]
     PUBLISHED_ID_FIELD_NUMBER: _ClassVar[int]
-    ORCHESTRATION_FIELD_NUMBER: _ClassVar[int]
+    PROMPT_VARIABLES_FIELD_NUMBER: _ClassVar[int]
+    AGENT_FIELD_NUMBER: _ClassVar[int]
     VOICE_RUNTIME_FIELD_NUMBER: _ClassVar[int]
     TEXT_RUNTIME_FIELD_NUMBER: _ClassVar[int]
     contract_revision: str
     conversation_id: str
     session_id: str
     published_id: str
-    orchestration: PublishedOrchestrationExecution
+    prompt_variables: SessionPromptVariableBag
+    agent: PublishedAgentExecution
     voice_runtime: CallRuntimeSnapshot
     text_runtime: TextRuntimeSnapshot
-    def __init__(self, contract_revision: _Optional[str] = ..., conversation_id: _Optional[str] = ..., session_id: _Optional[str] = ..., published_id: _Optional[str] = ..., orchestration: _Optional[_Union[PublishedOrchestrationExecution, _Mapping]] = ..., voice_runtime: _Optional[_Union[CallRuntimeSnapshot, _Mapping]] = ..., text_runtime: _Optional[_Union[TextRuntimeSnapshot, _Mapping]] = ...) -> None: ...
+    def __init__(self, contract_revision: _Optional[str] = ..., conversation_id: _Optional[str] = ..., session_id: _Optional[str] = ..., published_id: _Optional[str] = ..., prompt_variables: _Optional[_Union[SessionPromptVariableBag, _Mapping]] = ..., agent: _Optional[_Union[PublishedAgentExecution, _Mapping]] = ..., voice_runtime: _Optional[_Union[CallRuntimeSnapshot, _Mapping]] = ..., text_runtime: _Optional[_Union[TextRuntimeSnapshot, _Mapping]] = ...) -> None: ...
 
-class PublishedOrchestrationExecution(_message.Message):
+class SessionPromptVariableBag(_message.Message):
+    __slots__ = ("system", "user")
+    SYSTEM_FIELD_NUMBER: _ClassVar[int]
+    USER_FIELD_NUMBER: _ClassVar[int]
+    system: _containers.RepeatedCompositeFieldContainer[SessionPromptVariable]
+    user: _containers.RepeatedCompositeFieldContainer[SessionPromptVariable]
+    def __init__(self, system: _Optional[_Iterable[_Union[SessionPromptVariable, _Mapping]]] = ..., user: _Optional[_Iterable[_Union[SessionPromptVariable, _Mapping]]] = ...) -> None: ...
+
+class SessionPromptVariable(_message.Message):
+    __slots__ = ("name", "string_value", "number_value", "boolean_value")
+    NAME_FIELD_NUMBER: _ClassVar[int]
+    STRING_VALUE_FIELD_NUMBER: _ClassVar[int]
+    NUMBER_VALUE_FIELD_NUMBER: _ClassVar[int]
+    BOOLEAN_VALUE_FIELD_NUMBER: _ClassVar[int]
+    name: str
+    string_value: str
+    number_value: float
+    boolean_value: bool
+    def __init__(self, name: _Optional[str] = ..., string_value: _Optional[str] = ..., number_value: _Optional[float] = ..., boolean_value: _Optional[bool] = ...) -> None: ...
+
+class PublishedAgentExecution(_message.Message):
     __slots__ = ("mode", "node_runtimes", "supervisor", "handoff")
     MODE_FIELD_NUMBER: _ClassVar[int]
     NODE_RUNTIMES_FIELD_NUMBER: _ClassVar[int]
     SUPERVISOR_FIELD_NUMBER: _ClassVar[int]
     HANDOFF_FIELD_NUMBER: _ClassVar[int]
-    mode: OrchestrationMode
-    node_runtimes: _containers.RepeatedCompositeFieldContainer[PublishedInlinePromptRuntime]
+    mode: AgentMode
+    node_runtimes: _containers.RepeatedCompositeFieldContainer[PublishedAgentNodeRuntime]
     supervisor: PublishedSupervisorSnapshot
     handoff: PublishedHandoffSnapshot
-    def __init__(self, mode: _Optional[_Union[OrchestrationMode, str]] = ..., node_runtimes: _Optional[_Iterable[_Union[PublishedInlinePromptRuntime, _Mapping]]] = ..., supervisor: _Optional[_Union[PublishedSupervisorSnapshot, _Mapping]] = ..., handoff: _Optional[_Union[PublishedHandoffSnapshot, _Mapping]] = ...) -> None: ...
+    def __init__(self, mode: _Optional[_Union[AgentMode, str]] = ..., node_runtimes: _Optional[_Iterable[_Union[PublishedAgentNodeRuntime, _Mapping]]] = ..., supervisor: _Optional[_Union[PublishedSupervisorSnapshot, _Mapping]] = ..., handoff: _Optional[_Union[PublishedHandoffSnapshot, _Mapping]] = ...) -> None: ...
 
-class PublishedInlinePromptRuntime(_message.Message):
+class PublishedAgentNodeRuntime(_message.Message):
     __slots__ = ("node_id", "llm_worker", "instructions", "context_policy", "tools", "mcp_servers", "api_tool_runtimes", "a2a_tool_runtimes", "built_in_tools", "knowledge_revision_id", "knowledge_retrieval_capability", "knowledge_function_name", "knowledge_description", "knowledge_tool_runtimes", "authoring")
     NODE_ID_FIELD_NUMBER: _ClassVar[int]
     LLM_WORKER_FIELD_NUMBER: _ClassVar[int]
@@ -168,7 +190,7 @@ class PublishedInlinePromptRuntime(_message.Message):
     AUTHORING_FIELD_NUMBER: _ClassVar[int]
     node_id: str
     llm_worker: _voice_runtime_pb2.LlmRuntime
-    instructions: InlinePromptInstructions
+    instructions: AgentInstructions
     context_policy: ContextPolicy
     tools: _containers.RepeatedCompositeFieldContainer[NodeToolMetadata]
     mcp_servers: _containers.RepeatedCompositeFieldContainer[McpServerRuntime]
@@ -181,7 +203,7 @@ class PublishedInlinePromptRuntime(_message.Message):
     knowledge_description: str
     knowledge_tool_runtimes: _containers.RepeatedCompositeFieldContainer[KnowledgeToolRuntime]
     authoring: InlineAuthoringOptions
-    def __init__(self, node_id: _Optional[str] = ..., llm_worker: _Optional[_Union[_voice_runtime_pb2.LlmRuntime, _Mapping]] = ..., instructions: _Optional[_Union[InlinePromptInstructions, _Mapping]] = ..., context_policy: _Optional[_Union[ContextPolicy, str]] = ..., tools: _Optional[_Iterable[_Union[NodeToolMetadata, _Mapping]]] = ..., mcp_servers: _Optional[_Iterable[_Union[McpServerRuntime, _Mapping]]] = ..., api_tool_runtimes: _Optional[_Iterable[_Union[ApiToolRuntime, _Mapping]]] = ..., a2a_tool_runtimes: _Optional[_Iterable[_Union[A2aToolRuntime, _Mapping]]] = ..., built_in_tools: _Optional[_Iterable[_Union[BuiltInTool, _Mapping]]] = ..., knowledge_revision_id: _Optional[str] = ..., knowledge_retrieval_capability: _Optional[str] = ..., knowledge_function_name: _Optional[str] = ..., knowledge_description: _Optional[str] = ..., knowledge_tool_runtimes: _Optional[_Iterable[_Union[KnowledgeToolRuntime, _Mapping]]] = ..., authoring: _Optional[_Union[InlineAuthoringOptions, _Mapping]] = ...) -> None: ...
+    def __init__(self, node_id: _Optional[str] = ..., llm_worker: _Optional[_Union[_voice_runtime_pb2.LlmRuntime, _Mapping]] = ..., instructions: _Optional[_Union[AgentInstructions, _Mapping]] = ..., context_policy: _Optional[_Union[ContextPolicy, str]] = ..., tools: _Optional[_Iterable[_Union[NodeToolMetadata, _Mapping]]] = ..., mcp_servers: _Optional[_Iterable[_Union[McpServerRuntime, _Mapping]]] = ..., api_tool_runtimes: _Optional[_Iterable[_Union[ApiToolRuntime, _Mapping]]] = ..., a2a_tool_runtimes: _Optional[_Iterable[_Union[A2aToolRuntime, _Mapping]]] = ..., built_in_tools: _Optional[_Iterable[_Union[BuiltInTool, _Mapping]]] = ..., knowledge_revision_id: _Optional[str] = ..., knowledge_retrieval_capability: _Optional[str] = ..., knowledge_function_name: _Optional[str] = ..., knowledge_description: _Optional[str] = ..., knowledge_tool_runtimes: _Optional[_Iterable[_Union[KnowledgeToolRuntime, _Mapping]]] = ..., authoring: _Optional[_Union[InlineAuthoringOptions, _Mapping]] = ...) -> None: ...
 
 class InlineAuthoringOptions(_message.Message):
     __slots__ = ("model", "tool_bindings")
@@ -298,7 +320,7 @@ class TextRuntimeSnapshot(_message.Message):
     def __init__(self, transport: _Optional[str] = ..., room_name: _Optional[str] = ..., participant_identity: _Optional[str] = ..., idle_timeout_seconds: _Optional[int] = ..., max_session_duration_seconds: _Optional[int] = ...) -> None: ...
 
 class CallRuntimeSnapshot(_message.Message):
-    __slots__ = ("stt", "tts", "background_audio", "dtmf", "transport", "vad", "speech_policy", "limits", "conversation_filler")
+    __slots__ = ("stt", "tts", "background_audio", "dtmf", "transport", "vad", "speech_policy", "limits", "conversation_filler", "conversation_control")
     STT_FIELD_NUMBER: _ClassVar[int]
     TTS_FIELD_NUMBER: _ClassVar[int]
     BACKGROUND_AUDIO_FIELD_NUMBER: _ClassVar[int]
@@ -308,6 +330,7 @@ class CallRuntimeSnapshot(_message.Message):
     SPEECH_POLICY_FIELD_NUMBER: _ClassVar[int]
     LIMITS_FIELD_NUMBER: _ClassVar[int]
     CONVERSATION_FILLER_FIELD_NUMBER: _ClassVar[int]
+    CONVERSATION_CONTROL_FIELD_NUMBER: _ClassVar[int]
     stt: _voice_runtime_pb2.SttRuntime
     tts: _voice_runtime_pb2.TtsRuntime
     background_audio: BackgroundAudioRuntime
@@ -317,7 +340,32 @@ class CallRuntimeSnapshot(_message.Message):
     speech_policy: SpeechPolicyRuntime
     limits: CallLimitsRuntime
     conversation_filler: ConversationFillerRuntime
-    def __init__(self, stt: _Optional[_Union[_voice_runtime_pb2.SttRuntime, _Mapping]] = ..., tts: _Optional[_Union[_voice_runtime_pb2.TtsRuntime, _Mapping]] = ..., background_audio: _Optional[_Union[BackgroundAudioRuntime, _Mapping]] = ..., dtmf: _Optional[_Union[DtmfInputRuntime, _Mapping]] = ..., transport: _Optional[_Union[TransportRuntime, _Mapping]] = ..., vad: _Optional[_Union[VadRuntime, _Mapping]] = ..., speech_policy: _Optional[_Union[SpeechPolicyRuntime, _Mapping]] = ..., limits: _Optional[_Union[CallLimitsRuntime, _Mapping]] = ..., conversation_filler: _Optional[_Union[ConversationFillerRuntime, _Mapping]] = ...) -> None: ...
+    conversation_control: ConversationControlRuntime
+    def __init__(self, stt: _Optional[_Union[_voice_runtime_pb2.SttRuntime, _Mapping]] = ..., tts: _Optional[_Union[_voice_runtime_pb2.TtsRuntime, _Mapping]] = ..., background_audio: _Optional[_Union[BackgroundAudioRuntime, _Mapping]] = ..., dtmf: _Optional[_Union[DtmfInputRuntime, _Mapping]] = ..., transport: _Optional[_Union[TransportRuntime, _Mapping]] = ..., vad: _Optional[_Union[VadRuntime, _Mapping]] = ..., speech_policy: _Optional[_Union[SpeechPolicyRuntime, _Mapping]] = ..., limits: _Optional[_Union[CallLimitsRuntime, _Mapping]] = ..., conversation_filler: _Optional[_Union[ConversationFillerRuntime, _Mapping]] = ..., conversation_control: _Optional[_Union[ConversationControlRuntime, _Mapping]] = ...) -> None: ...
+
+class ConversationControlRuntime(_message.Message):
+    __slots__ = ("end_call_message", "end_call_phrases", "time_elapsed_actions")
+    END_CALL_MESSAGE_FIELD_NUMBER: _ClassVar[int]
+    END_CALL_PHRASES_FIELD_NUMBER: _ClassVar[int]
+    TIME_ELAPSED_ACTIONS_FIELD_NUMBER: _ClassVar[int]
+    end_call_message: str
+    end_call_phrases: _containers.RepeatedScalarFieldContainer[str]
+    time_elapsed_actions: _containers.RepeatedCompositeFieldContainer[TimeElapsedActionRuntime]
+    def __init__(self, end_call_message: _Optional[str] = ..., end_call_phrases: _Optional[_Iterable[str]] = ..., time_elapsed_actions: _Optional[_Iterable[_Union[TimeElapsedActionRuntime, _Mapping]]] = ...) -> None: ...
+
+class TimeElapsedActionRuntime(_message.Message):
+    __slots__ = ("at_seconds", "say", "end_call")
+    AT_SECONDS_FIELD_NUMBER: _ClassVar[int]
+    SAY_FIELD_NUMBER: _ClassVar[int]
+    END_CALL_FIELD_NUMBER: _ClassVar[int]
+    at_seconds: int
+    say: str
+    end_call: EndCallActionRuntime
+    def __init__(self, at_seconds: _Optional[int] = ..., say: _Optional[str] = ..., end_call: _Optional[_Union[EndCallActionRuntime, _Mapping]] = ...) -> None: ...
+
+class EndCallActionRuntime(_message.Message):
+    __slots__ = ()
+    def __init__(self) -> None: ...
 
 class TransportRuntime(_message.Message):
     __slots__ = ("source", "room_name", "caller_participant_identity")
@@ -371,15 +419,7 @@ class DtmfInputRuntime(_message.Message):
     end_key: str
     def __init__(self, timeout_seconds: _Optional[int] = ..., end_key: _Optional[str] = ...) -> None: ...
 
-class PromptInstructions(_message.Message):
-    __slots__ = ("system_prompt", "guardrails")
-    SYSTEM_PROMPT_FIELD_NUMBER: _ClassVar[int]
-    GUARDRAILS_FIELD_NUMBER: _ClassVar[int]
-    system_prompt: str
-    guardrails: _containers.RepeatedScalarFieldContainer[str]
-    def __init__(self, system_prompt: _Optional[str] = ..., guardrails: _Optional[_Iterable[str]] = ...) -> None: ...
-
-class InlinePromptInstructions(_message.Message):
+class AgentInstructions(_message.Message):
     __slots__ = ("system_prompt",)
     SYSTEM_PROMPT_FIELD_NUMBER: _ClassVar[int]
     system_prompt: str
@@ -480,12 +520,16 @@ class KnowledgeToolRuntime(_message.Message):
     def __init__(self, tool_id: _Optional[str] = ..., retrieval_capability: _Optional[str] = ...) -> None: ...
 
 class BuiltInTool(_message.Message):
-    __slots__ = ("end_call", "transfer_to_human")
+    __slots__ = ("end_call", "transfer_to_human", "dtmf", "send_sms")
     END_CALL_FIELD_NUMBER: _ClassVar[int]
     TRANSFER_TO_HUMAN_FIELD_NUMBER: _ClassVar[int]
+    DTMF_FIELD_NUMBER: _ClassVar[int]
+    SEND_SMS_FIELD_NUMBER: _ClassVar[int]
     end_call: EndCallTool
     transfer_to_human: TransferToHumanTool
-    def __init__(self, end_call: _Optional[_Union[EndCallTool, _Mapping]] = ..., transfer_to_human: _Optional[_Union[TransferToHumanTool, _Mapping]] = ...) -> None: ...
+    dtmf: DtmfTool
+    send_sms: SendSmsTool
+    def __init__(self, end_call: _Optional[_Union[EndCallTool, _Mapping]] = ..., transfer_to_human: _Optional[_Union[TransferToHumanTool, _Mapping]] = ..., dtmf: _Optional[_Union[DtmfTool, _Mapping]] = ..., send_sms: _Optional[_Union[SendSmsTool, _Mapping]] = ...) -> None: ...
 
 class EndCallTool(_message.Message):
     __slots__ = ("closing_phrase", "confirm", "condition")
@@ -508,6 +552,22 @@ class TransferToHumanTool(_message.Message):
     ringing_timeout_ms: int
     condition: str
     def __init__(self, sip_call_to: _Optional[str] = ..., hold_phrase: _Optional[str] = ..., ringing_timeout_ms: _Optional[int] = ..., condition: _Optional[str] = ...) -> None: ...
+
+class DtmfTool(_message.Message):
+    __slots__ = ()
+    def __init__(self) -> None: ...
+
+class SendSmsTool(_message.Message):
+    __slots__ = ("recipient", "template", "max_sends", "condition")
+    RECIPIENT_FIELD_NUMBER: _ClassVar[int]
+    TEMPLATE_FIELD_NUMBER: _ClassVar[int]
+    MAX_SENDS_FIELD_NUMBER: _ClassVar[int]
+    CONDITION_FIELD_NUMBER: _ClassVar[int]
+    recipient: str
+    template: str
+    max_sends: int
+    condition: str
+    def __init__(self, recipient: _Optional[str] = ..., template: _Optional[str] = ..., max_sends: _Optional[int] = ..., condition: _Optional[str] = ...) -> None: ...
 
 class McpServerRuntime(_message.Message):
     __slots__ = ("name", "transport", "url", "headers")

@@ -214,40 +214,40 @@ export function backgroundAudioPresetToJSON(object: BackgroundAudioPreset): stri
   }
 }
 
-export enum OrchestrationMode {
-  ORCHESTRATION_MODE_UNSPECIFIED = 0,
-  ORCHESTRATION_MODE_SUPERVISOR = 1,
-  ORCHESTRATION_MODE_HANDOFF = 2,
+export enum AgentMode {
+  AGENT_MODE_UNSPECIFIED = 0,
+  AGENT_MODE_SUPERVISOR = 1,
+  AGENT_MODE_HANDOFF = 2,
   UNRECOGNIZED = -1,
 }
 
-export function orchestrationModeFromJSON(object: any): OrchestrationMode {
+export function agentModeFromJSON(object: any): AgentMode {
   switch (object) {
     case 0:
-    case "ORCHESTRATION_MODE_UNSPECIFIED":
-      return OrchestrationMode.ORCHESTRATION_MODE_UNSPECIFIED;
+    case "AGENT_MODE_UNSPECIFIED":
+      return AgentMode.AGENT_MODE_UNSPECIFIED;
     case 1:
-    case "ORCHESTRATION_MODE_SUPERVISOR":
-      return OrchestrationMode.ORCHESTRATION_MODE_SUPERVISOR;
+    case "AGENT_MODE_SUPERVISOR":
+      return AgentMode.AGENT_MODE_SUPERVISOR;
     case 2:
-    case "ORCHESTRATION_MODE_HANDOFF":
-      return OrchestrationMode.ORCHESTRATION_MODE_HANDOFF;
+    case "AGENT_MODE_HANDOFF":
+      return AgentMode.AGENT_MODE_HANDOFF;
     case -1:
     case "UNRECOGNIZED":
     default:
-      return OrchestrationMode.UNRECOGNIZED;
+      return AgentMode.UNRECOGNIZED;
   }
 }
 
-export function orchestrationModeToJSON(object: OrchestrationMode): string {
+export function agentModeToJSON(object: AgentMode): string {
   switch (object) {
-    case OrchestrationMode.ORCHESTRATION_MODE_UNSPECIFIED:
-      return "ORCHESTRATION_MODE_UNSPECIFIED";
-    case OrchestrationMode.ORCHESTRATION_MODE_SUPERVISOR:
-      return "ORCHESTRATION_MODE_SUPERVISOR";
-    case OrchestrationMode.ORCHESTRATION_MODE_HANDOFF:
-      return "ORCHESTRATION_MODE_HANDOFF";
-    case OrchestrationMode.UNRECOGNIZED:
+    case AgentMode.AGENT_MODE_UNSPECIFIED:
+      return "AGENT_MODE_UNSPECIFIED";
+    case AgentMode.AGENT_MODE_SUPERVISOR:
+      return "AGENT_MODE_SUPERVISOR";
+    case AgentMode.AGENT_MODE_HANDOFF:
+      return "AGENT_MODE_HANDOFF";
+    case AgentMode.UNRECOGNIZED:
     default:
       return "UNRECOGNIZED";
   }
@@ -328,26 +328,40 @@ export interface BootstrapPublishedResponse {
   conversationId: string;
   sessionId: string;
   publishedId: string;
-  orchestration?: PublishedOrchestrationExecution | undefined;
+  promptVariables?: SessionPromptVariableBag | undefined;
+  agent?: PublishedAgentExecution | undefined;
   voiceRuntime?: CallRuntimeSnapshot | undefined;
   textRuntime?: TextRuntimeSnapshot | undefined;
 }
 
-export interface PublishedOrchestrationExecution {
-  mode: OrchestrationMode;
-  nodeRuntimes: PublishedInlinePromptRuntime[];
+/** Prompt variables shared by every Agent node for the lifetime of one call. */
+export interface SessionPromptVariableBag {
+  system: SessionPromptVariable[];
+  user: SessionPromptVariable[];
+}
+
+export interface SessionPromptVariable {
+  name: string;
+  stringValue?: string | undefined;
+  numberValue?: number | undefined;
+  booleanValue?: boolean | undefined;
+}
+
+export interface PublishedAgentExecution {
+  mode: AgentMode;
+  nodeRuntimes: PublishedAgentNodeRuntime[];
   supervisor?: PublishedSupervisorSnapshot | undefined;
   handoff?: PublishedHandoffSnapshot | undefined;
 }
 
 /**
- * Inline orchestration nodes intentionally do not expose greeting or guardrails
+ * Agent nodes intentionally do not expose greeting or guardrails
  * fields. Knowledge retrieval is available through the additive fields below.
  */
-export interface PublishedInlinePromptRuntime {
+export interface PublishedAgentNodeRuntime {
   nodeId: string;
   llmWorker?: LlmRuntime | undefined;
-  instructions?: InlinePromptInstructions | undefined;
+  instructions?: AgentInstructions | undefined;
   contextPolicy: ContextPolicy;
   tools: NodeToolMetadata[];
   mcpServers: McpServerRuntime[];
@@ -440,6 +454,22 @@ export interface CallRuntimeSnapshot {
   speechPolicy?: SpeechPolicyRuntime | undefined;
   limits?: CallLimitsRuntime | undefined;
   conversationFiller?: ConversationFillerRuntime | undefined;
+  conversationControl?: ConversationControlRuntime | undefined;
+}
+
+export interface ConversationControlRuntime {
+  endCallMessage?: string | undefined;
+  endCallPhrases: string[];
+  timeElapsedActions: TimeElapsedActionRuntime[];
+}
+
+export interface TimeElapsedActionRuntime {
+  atSeconds: number;
+  say?: string | undefined;
+  endCall?: EndCallActionRuntime | undefined;
+}
+
+export interface EndCallActionRuntime {
 }
 
 export interface TransportRuntime {
@@ -474,12 +504,7 @@ export interface DtmfInputRuntime {
   endKey?: string | undefined;
 }
 
-export interface PromptInstructions {
-  systemPrompt: string;
-  guardrails: string[];
-}
-
-export interface InlinePromptInstructions {
+export interface AgentInstructions {
   systemPrompt: string;
 }
 
@@ -545,6 +570,8 @@ export interface KnowledgeToolRuntime {
 export interface BuiltInTool {
   endCall?: EndCallTool | undefined;
   transferToHuman?: TransferToHumanTool | undefined;
+  dtmf?: DtmfTool | undefined;
+  sendSms?: SendSmsTool | undefined;
 }
 
 export interface EndCallTool {
@@ -558,6 +585,17 @@ export interface TransferToHumanTool {
   sipCallTo: string;
   holdPhrase?: string | undefined;
   ringingTimeoutMs: number;
+  /** User-authored invocation condition. Runtime appends locked operational wording. */
+  condition: string;
+}
+
+export interface DtmfTool {
+}
+
+export interface SendSmsTool {
+  recipient: string;
+  template: string;
+  maxSends: number;
   /** User-authored invocation condition. Runtime appends locked operational wording. */
   condition: string;
 }
@@ -1021,7 +1059,8 @@ function createBaseBootstrapPublishedResponse(): BootstrapPublishedResponse {
     conversationId: "",
     sessionId: "",
     publishedId: "",
-    orchestration: undefined,
+    promptVariables: undefined,
+    agent: undefined,
     voiceRuntime: undefined,
     textRuntime: undefined,
   };
@@ -1041,8 +1080,11 @@ export const BootstrapPublishedResponse: MessageFns<BootstrapPublishedResponse> 
     if (message.publishedId !== "") {
       writer.uint32(34).string(message.publishedId);
     }
-    if (message.orchestration !== undefined) {
-      PublishedOrchestrationExecution.encode(message.orchestration, writer.uint32(50).fork()).join();
+    if (message.promptVariables !== undefined) {
+      SessionPromptVariableBag.encode(message.promptVariables, writer.uint32(50).fork()).join();
+    }
+    if (message.agent !== undefined) {
+      PublishedAgentExecution.encode(message.agent, writer.uint32(42).fork()).join();
     }
     if (message.voiceRuntime !== undefined) {
       CallRuntimeSnapshot.encode(message.voiceRuntime, writer.uint32(58).fork()).join();
@@ -1097,7 +1139,15 @@ export const BootstrapPublishedResponse: MessageFns<BootstrapPublishedResponse> 
             break;
           }
 
-          message.orchestration = PublishedOrchestrationExecution.decode(reader, reader.uint32());
+          message.promptVariables = SessionPromptVariableBag.decode(reader, reader.uint32());
+          continue;
+        }
+        case 5: {
+          if (tag !== 42) {
+            break;
+          }
+
+          message.agent = PublishedAgentExecution.decode(reader, reader.uint32());
           continue;
         }
         case 7: {
@@ -1147,9 +1197,12 @@ export const BootstrapPublishedResponse: MessageFns<BootstrapPublishedResponse> 
         : isSet(object.published_id)
         ? globalThis.String(object.published_id)
         : "",
-      orchestration: isSet(object.orchestration)
-        ? PublishedOrchestrationExecution.fromJSON(object.orchestration)
+      promptVariables: isSet(object.promptVariables)
+        ? SessionPromptVariableBag.fromJSON(object.promptVariables)
+        : isSet(object.prompt_variables)
+        ? SessionPromptVariableBag.fromJSON(object.prompt_variables)
         : undefined,
+      agent: isSet(object.agent) ? PublishedAgentExecution.fromJSON(object.agent) : undefined,
       voiceRuntime: isSet(object.voiceRuntime)
         ? CallRuntimeSnapshot.fromJSON(object.voiceRuntime)
         : isSet(object.voice_runtime)
@@ -1177,8 +1230,11 @@ export const BootstrapPublishedResponse: MessageFns<BootstrapPublishedResponse> 
     if (message.publishedId !== "") {
       obj.publishedId = message.publishedId;
     }
-    if (message.orchestration !== undefined) {
-      obj.orchestration = PublishedOrchestrationExecution.toJSON(message.orchestration);
+    if (message.promptVariables !== undefined) {
+      obj.promptVariables = SessionPromptVariableBag.toJSON(message.promptVariables);
+    }
+    if (message.agent !== undefined) {
+      obj.agent = PublishedAgentExecution.toJSON(message.agent);
     }
     if (message.voiceRuntime !== undefined) {
       obj.voiceRuntime = CallRuntimeSnapshot.toJSON(message.voiceRuntime);
@@ -1198,8 +1254,11 @@ export const BootstrapPublishedResponse: MessageFns<BootstrapPublishedResponse> 
     message.conversationId = object.conversationId ?? "";
     message.sessionId = object.sessionId ?? "";
     message.publishedId = object.publishedId ?? "";
-    message.orchestration = (object.orchestration !== undefined && object.orchestration !== null)
-      ? PublishedOrchestrationExecution.fromPartial(object.orchestration)
+    message.promptVariables = (object.promptVariables !== undefined && object.promptVariables !== null)
+      ? SessionPromptVariableBag.fromPartial(object.promptVariables)
+      : undefined;
+    message.agent = (object.agent !== undefined && object.agent !== null)
+      ? PublishedAgentExecution.fromPartial(object.agent)
       : undefined;
     message.voiceRuntime = (object.voiceRuntime !== undefined && object.voiceRuntime !== null)
       ? CallRuntimeSnapshot.fromPartial(object.voiceRuntime)
@@ -1211,17 +1270,217 @@ export const BootstrapPublishedResponse: MessageFns<BootstrapPublishedResponse> 
   },
 };
 
-function createBasePublishedOrchestrationExecution(): PublishedOrchestrationExecution {
+function createBaseSessionPromptVariableBag(): SessionPromptVariableBag {
+  return { system: [], user: [] };
+}
+
+export const SessionPromptVariableBag: MessageFns<SessionPromptVariableBag> = {
+  encode(message: SessionPromptVariableBag, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    for (const v of message.system) {
+      SessionPromptVariable.encode(v!, writer.uint32(10).fork()).join();
+    }
+    for (const v of message.user) {
+      SessionPromptVariable.encode(v!, writer.uint32(18).fork()).join();
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): SessionPromptVariableBag {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseSessionPromptVariableBag();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.system.push(SessionPromptVariable.decode(reader, reader.uint32()));
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.user.push(SessionPromptVariable.decode(reader, reader.uint32()));
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): SessionPromptVariableBag {
+    return {
+      system: globalThis.Array.isArray(object?.system)
+        ? object.system.map((e: any) => SessionPromptVariable.fromJSON(e))
+        : [],
+      user: globalThis.Array.isArray(object?.user)
+        ? object.user.map((e: any) => SessionPromptVariable.fromJSON(e))
+        : [],
+    };
+  },
+
+  toJSON(message: SessionPromptVariableBag): unknown {
+    const obj: any = {};
+    if (message.system?.length) {
+      obj.system = message.system.map((e) => SessionPromptVariable.toJSON(e));
+    }
+    if (message.user?.length) {
+      obj.user = message.user.map((e) => SessionPromptVariable.toJSON(e));
+    }
+    return obj;
+  },
+
+  create(base?: DeepPartial<SessionPromptVariableBag>): SessionPromptVariableBag {
+    return SessionPromptVariableBag.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<SessionPromptVariableBag>): SessionPromptVariableBag {
+    const message = createBaseSessionPromptVariableBag();
+    message.system = object.system?.map((e) => SessionPromptVariable.fromPartial(e)) || [];
+    message.user = object.user?.map((e) => SessionPromptVariable.fromPartial(e)) || [];
+    return message;
+  },
+};
+
+function createBaseSessionPromptVariable(): SessionPromptVariable {
+  return { name: "", stringValue: undefined, numberValue: undefined, booleanValue: undefined };
+}
+
+export const SessionPromptVariable: MessageFns<SessionPromptVariable> = {
+  encode(message: SessionPromptVariable, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.name !== "") {
+      writer.uint32(10).string(message.name);
+    }
+    if (message.stringValue !== undefined) {
+      writer.uint32(18).string(message.stringValue);
+    }
+    if (message.numberValue !== undefined) {
+      writer.uint32(25).double(message.numberValue);
+    }
+    if (message.booleanValue !== undefined) {
+      writer.uint32(32).bool(message.booleanValue);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): SessionPromptVariable {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseSessionPromptVariable();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.name = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.stringValue = reader.string();
+          continue;
+        }
+        case 3: {
+          if (tag !== 25) {
+            break;
+          }
+
+          message.numberValue = reader.double();
+          continue;
+        }
+        case 4: {
+          if (tag !== 32) {
+            break;
+          }
+
+          message.booleanValue = reader.bool();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): SessionPromptVariable {
+    return {
+      name: isSet(object.name) ? globalThis.String(object.name) : "",
+      stringValue: isSet(object.stringValue)
+        ? globalThis.String(object.stringValue)
+        : isSet(object.string_value)
+        ? globalThis.String(object.string_value)
+        : undefined,
+      numberValue: isSet(object.numberValue)
+        ? globalThis.Number(object.numberValue)
+        : isSet(object.number_value)
+        ? globalThis.Number(object.number_value)
+        : undefined,
+      booleanValue: isSet(object.booleanValue)
+        ? globalThis.Boolean(object.booleanValue)
+        : isSet(object.boolean_value)
+        ? globalThis.Boolean(object.boolean_value)
+        : undefined,
+    };
+  },
+
+  toJSON(message: SessionPromptVariable): unknown {
+    const obj: any = {};
+    if (message.name !== "") {
+      obj.name = message.name;
+    }
+    if (message.stringValue !== undefined) {
+      obj.stringValue = message.stringValue;
+    }
+    if (message.numberValue !== undefined) {
+      obj.numberValue = message.numberValue;
+    }
+    if (message.booleanValue !== undefined) {
+      obj.booleanValue = message.booleanValue;
+    }
+    return obj;
+  },
+
+  create(base?: DeepPartial<SessionPromptVariable>): SessionPromptVariable {
+    return SessionPromptVariable.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<SessionPromptVariable>): SessionPromptVariable {
+    const message = createBaseSessionPromptVariable();
+    message.name = object.name ?? "";
+    message.stringValue = object.stringValue ?? undefined;
+    message.numberValue = object.numberValue ?? undefined;
+    message.booleanValue = object.booleanValue ?? undefined;
+    return message;
+  },
+};
+
+function createBasePublishedAgentExecution(): PublishedAgentExecution {
   return { mode: 0, nodeRuntimes: [], supervisor: undefined, handoff: undefined };
 }
 
-export const PublishedOrchestrationExecution: MessageFns<PublishedOrchestrationExecution> = {
-  encode(message: PublishedOrchestrationExecution, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+export const PublishedAgentExecution: MessageFns<PublishedAgentExecution> = {
+  encode(message: PublishedAgentExecution, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
     if (message.mode !== 0) {
       writer.uint32(8).int32(message.mode);
     }
     for (const v of message.nodeRuntimes) {
-      PublishedInlinePromptRuntime.encode(v!, writer.uint32(18).fork()).join();
+      PublishedAgentNodeRuntime.encode(v!, writer.uint32(18).fork()).join();
     }
     if (message.supervisor !== undefined) {
       PublishedSupervisorSnapshot.encode(message.supervisor, writer.uint32(26).fork()).join();
@@ -1232,10 +1491,10 @@ export const PublishedOrchestrationExecution: MessageFns<PublishedOrchestrationE
     return writer;
   },
 
-  decode(input: BinaryReader | Uint8Array, length?: number): PublishedOrchestrationExecution {
+  decode(input: BinaryReader | Uint8Array, length?: number): PublishedAgentExecution {
     const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
     const end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBasePublishedOrchestrationExecution();
+    const message = createBasePublishedAgentExecution();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
@@ -1252,7 +1511,7 @@ export const PublishedOrchestrationExecution: MessageFns<PublishedOrchestrationE
             break;
           }
 
-          message.nodeRuntimes.push(PublishedInlinePromptRuntime.decode(reader, reader.uint32()));
+          message.nodeRuntimes.push(PublishedAgentNodeRuntime.decode(reader, reader.uint32()));
           continue;
         }
         case 3: {
@@ -1280,26 +1539,26 @@ export const PublishedOrchestrationExecution: MessageFns<PublishedOrchestrationE
     return message;
   },
 
-  fromJSON(object: any): PublishedOrchestrationExecution {
+  fromJSON(object: any): PublishedAgentExecution {
     return {
-      mode: isSet(object.mode) ? orchestrationModeFromJSON(object.mode) : 0,
+      mode: isSet(object.mode) ? agentModeFromJSON(object.mode) : 0,
       nodeRuntimes: globalThis.Array.isArray(object?.nodeRuntimes)
-        ? object.nodeRuntimes.map((e: any) => PublishedInlinePromptRuntime.fromJSON(e))
+        ? object.nodeRuntimes.map((e: any) => PublishedAgentNodeRuntime.fromJSON(e))
         : globalThis.Array.isArray(object?.node_runtimes)
-        ? object.node_runtimes.map((e: any) => PublishedInlinePromptRuntime.fromJSON(e))
+        ? object.node_runtimes.map((e: any) => PublishedAgentNodeRuntime.fromJSON(e))
         : [],
       supervisor: isSet(object.supervisor) ? PublishedSupervisorSnapshot.fromJSON(object.supervisor) : undefined,
       handoff: isSet(object.handoff) ? PublishedHandoffSnapshot.fromJSON(object.handoff) : undefined,
     };
   },
 
-  toJSON(message: PublishedOrchestrationExecution): unknown {
+  toJSON(message: PublishedAgentExecution): unknown {
     const obj: any = {};
     if (message.mode !== 0) {
-      obj.mode = orchestrationModeToJSON(message.mode);
+      obj.mode = agentModeToJSON(message.mode);
     }
     if (message.nodeRuntimes?.length) {
-      obj.nodeRuntimes = message.nodeRuntimes.map((e) => PublishedInlinePromptRuntime.toJSON(e));
+      obj.nodeRuntimes = message.nodeRuntimes.map((e) => PublishedAgentNodeRuntime.toJSON(e));
     }
     if (message.supervisor !== undefined) {
       obj.supervisor = PublishedSupervisorSnapshot.toJSON(message.supervisor);
@@ -1310,13 +1569,13 @@ export const PublishedOrchestrationExecution: MessageFns<PublishedOrchestrationE
     return obj;
   },
 
-  create(base?: DeepPartial<PublishedOrchestrationExecution>): PublishedOrchestrationExecution {
-    return PublishedOrchestrationExecution.fromPartial(base ?? {});
+  create(base?: DeepPartial<PublishedAgentExecution>): PublishedAgentExecution {
+    return PublishedAgentExecution.fromPartial(base ?? {});
   },
-  fromPartial(object: DeepPartial<PublishedOrchestrationExecution>): PublishedOrchestrationExecution {
-    const message = createBasePublishedOrchestrationExecution();
+  fromPartial(object: DeepPartial<PublishedAgentExecution>): PublishedAgentExecution {
+    const message = createBasePublishedAgentExecution();
     message.mode = object.mode ?? 0;
-    message.nodeRuntimes = object.nodeRuntimes?.map((e) => PublishedInlinePromptRuntime.fromPartial(e)) || [];
+    message.nodeRuntimes = object.nodeRuntimes?.map((e) => PublishedAgentNodeRuntime.fromPartial(e)) || [];
     message.supervisor = (object.supervisor !== undefined && object.supervisor !== null)
       ? PublishedSupervisorSnapshot.fromPartial(object.supervisor)
       : undefined;
@@ -1327,7 +1586,7 @@ export const PublishedOrchestrationExecution: MessageFns<PublishedOrchestrationE
   },
 };
 
-function createBasePublishedInlinePromptRuntime(): PublishedInlinePromptRuntime {
+function createBasePublishedAgentNodeRuntime(): PublishedAgentNodeRuntime {
   return {
     nodeId: "",
     llmWorker: undefined,
@@ -1347,8 +1606,8 @@ function createBasePublishedInlinePromptRuntime(): PublishedInlinePromptRuntime 
   };
 }
 
-export const PublishedInlinePromptRuntime: MessageFns<PublishedInlinePromptRuntime> = {
-  encode(message: PublishedInlinePromptRuntime, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+export const PublishedAgentNodeRuntime: MessageFns<PublishedAgentNodeRuntime> = {
+  encode(message: PublishedAgentNodeRuntime, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
     if (message.nodeId !== "") {
       writer.uint32(10).string(message.nodeId);
     }
@@ -1356,7 +1615,7 @@ export const PublishedInlinePromptRuntime: MessageFns<PublishedInlinePromptRunti
       LlmRuntime.encode(message.llmWorker, writer.uint32(18).fork()).join();
     }
     if (message.instructions !== undefined) {
-      InlinePromptInstructions.encode(message.instructions, writer.uint32(26).fork()).join();
+      AgentInstructions.encode(message.instructions, writer.uint32(26).fork()).join();
     }
     if (message.contextPolicy !== 0) {
       writer.uint32(32).int32(message.contextPolicy);
@@ -1397,10 +1656,10 @@ export const PublishedInlinePromptRuntime: MessageFns<PublishedInlinePromptRunti
     return writer;
   },
 
-  decode(input: BinaryReader | Uint8Array, length?: number): PublishedInlinePromptRuntime {
+  decode(input: BinaryReader | Uint8Array, length?: number): PublishedAgentNodeRuntime {
     const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
     const end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBasePublishedInlinePromptRuntime();
+    const message = createBasePublishedAgentNodeRuntime();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
@@ -1425,7 +1684,7 @@ export const PublishedInlinePromptRuntime: MessageFns<PublishedInlinePromptRunti
             break;
           }
 
-          message.instructions = InlinePromptInstructions.decode(reader, reader.uint32());
+          message.instructions = AgentInstructions.decode(reader, reader.uint32());
           continue;
         }
         case 4: {
@@ -1533,7 +1792,7 @@ export const PublishedInlinePromptRuntime: MessageFns<PublishedInlinePromptRunti
     return message;
   },
 
-  fromJSON(object: any): PublishedInlinePromptRuntime {
+  fromJSON(object: any): PublishedAgentNodeRuntime {
     return {
       nodeId: isSet(object.nodeId)
         ? globalThis.String(object.nodeId)
@@ -1545,7 +1804,7 @@ export const PublishedInlinePromptRuntime: MessageFns<PublishedInlinePromptRunti
         : isSet(object.llm_worker)
         ? LlmRuntime.fromJSON(object.llm_worker)
         : undefined,
-      instructions: isSet(object.instructions) ? InlinePromptInstructions.fromJSON(object.instructions) : undefined,
+      instructions: isSet(object.instructions) ? AgentInstructions.fromJSON(object.instructions) : undefined,
       contextPolicy: isSet(object.contextPolicy)
         ? contextPolicyFromJSON(object.contextPolicy)
         : isSet(object.context_policy)
@@ -1601,7 +1860,7 @@ export const PublishedInlinePromptRuntime: MessageFns<PublishedInlinePromptRunti
     };
   },
 
-  toJSON(message: PublishedInlinePromptRuntime): unknown {
+  toJSON(message: PublishedAgentNodeRuntime): unknown {
     const obj: any = {};
     if (message.nodeId !== "") {
       obj.nodeId = message.nodeId;
@@ -1610,7 +1869,7 @@ export const PublishedInlinePromptRuntime: MessageFns<PublishedInlinePromptRunti
       obj.llmWorker = LlmRuntime.toJSON(message.llmWorker);
     }
     if (message.instructions !== undefined) {
-      obj.instructions = InlinePromptInstructions.toJSON(message.instructions);
+      obj.instructions = AgentInstructions.toJSON(message.instructions);
     }
     if (message.contextPolicy !== 0) {
       obj.contextPolicy = contextPolicyToJSON(message.contextPolicy);
@@ -1651,17 +1910,17 @@ export const PublishedInlinePromptRuntime: MessageFns<PublishedInlinePromptRunti
     return obj;
   },
 
-  create(base?: DeepPartial<PublishedInlinePromptRuntime>): PublishedInlinePromptRuntime {
-    return PublishedInlinePromptRuntime.fromPartial(base ?? {});
+  create(base?: DeepPartial<PublishedAgentNodeRuntime>): PublishedAgentNodeRuntime {
+    return PublishedAgentNodeRuntime.fromPartial(base ?? {});
   },
-  fromPartial(object: DeepPartial<PublishedInlinePromptRuntime>): PublishedInlinePromptRuntime {
-    const message = createBasePublishedInlinePromptRuntime();
+  fromPartial(object: DeepPartial<PublishedAgentNodeRuntime>): PublishedAgentNodeRuntime {
+    const message = createBasePublishedAgentNodeRuntime();
     message.nodeId = object.nodeId ?? "";
     message.llmWorker = (object.llmWorker !== undefined && object.llmWorker !== null)
       ? LlmRuntime.fromPartial(object.llmWorker)
       : undefined;
     message.instructions = (object.instructions !== undefined && object.instructions !== null)
-      ? InlinePromptInstructions.fromPartial(object.instructions)
+      ? AgentInstructions.fromPartial(object.instructions)
       : undefined;
     message.contextPolicy = object.contextPolicy ?? 0;
     message.tools = object.tools?.map((e) => NodeToolMetadata.fromPartial(e)) || [];
@@ -2850,6 +3109,7 @@ function createBaseCallRuntimeSnapshot(): CallRuntimeSnapshot {
     speechPolicy: undefined,
     limits: undefined,
     conversationFiller: undefined,
+    conversationControl: undefined,
   };
 }
 
@@ -2881,6 +3141,9 @@ export const CallRuntimeSnapshot: MessageFns<CallRuntimeSnapshot> = {
     }
     if (message.conversationFiller !== undefined) {
       ConversationFillerRuntime.encode(message.conversationFiller, writer.uint32(74).fork()).join();
+    }
+    if (message.conversationControl !== undefined) {
+      ConversationControlRuntime.encode(message.conversationControl, writer.uint32(82).fork()).join();
     }
     return writer;
   },
@@ -2964,6 +3227,14 @@ export const CallRuntimeSnapshot: MessageFns<CallRuntimeSnapshot> = {
           message.conversationFiller = ConversationFillerRuntime.decode(reader, reader.uint32());
           continue;
         }
+        case 10: {
+          if (tag !== 82) {
+            break;
+          }
+
+          message.conversationControl = ConversationControlRuntime.decode(reader, reader.uint32());
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -2995,6 +3266,11 @@ export const CallRuntimeSnapshot: MessageFns<CallRuntimeSnapshot> = {
         ? ConversationFillerRuntime.fromJSON(object.conversationFiller)
         : isSet(object.conversation_filler)
         ? ConversationFillerRuntime.fromJSON(object.conversation_filler)
+        : undefined,
+      conversationControl: isSet(object.conversationControl)
+        ? ConversationControlRuntime.fromJSON(object.conversationControl)
+        : isSet(object.conversation_control)
+        ? ConversationControlRuntime.fromJSON(object.conversation_control)
         : undefined,
     };
   },
@@ -3028,6 +3304,9 @@ export const CallRuntimeSnapshot: MessageFns<CallRuntimeSnapshot> = {
     if (message.conversationFiller !== undefined) {
       obj.conversationFiller = ConversationFillerRuntime.toJSON(message.conversationFiller);
     }
+    if (message.conversationControl !== undefined) {
+      obj.conversationControl = ConversationControlRuntime.toJSON(message.conversationControl);
+    }
     return obj;
   },
 
@@ -3057,6 +3336,258 @@ export const CallRuntimeSnapshot: MessageFns<CallRuntimeSnapshot> = {
     message.conversationFiller = (object.conversationFiller !== undefined && object.conversationFiller !== null)
       ? ConversationFillerRuntime.fromPartial(object.conversationFiller)
       : undefined;
+    message.conversationControl = (object.conversationControl !== undefined && object.conversationControl !== null)
+      ? ConversationControlRuntime.fromPartial(object.conversationControl)
+      : undefined;
+    return message;
+  },
+};
+
+function createBaseConversationControlRuntime(): ConversationControlRuntime {
+  return { endCallMessage: undefined, endCallPhrases: [], timeElapsedActions: [] };
+}
+
+export const ConversationControlRuntime: MessageFns<ConversationControlRuntime> = {
+  encode(message: ConversationControlRuntime, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.endCallMessage !== undefined) {
+      writer.uint32(10).string(message.endCallMessage);
+    }
+    for (const v of message.endCallPhrases) {
+      writer.uint32(18).string(v!);
+    }
+    for (const v of message.timeElapsedActions) {
+      TimeElapsedActionRuntime.encode(v!, writer.uint32(26).fork()).join();
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): ConversationControlRuntime {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseConversationControlRuntime();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.endCallMessage = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.endCallPhrases.push(reader.string());
+          continue;
+        }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.timeElapsedActions.push(TimeElapsedActionRuntime.decode(reader, reader.uint32()));
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): ConversationControlRuntime {
+    return {
+      endCallMessage: isSet(object.endCallMessage)
+        ? globalThis.String(object.endCallMessage)
+        : isSet(object.end_call_message)
+        ? globalThis.String(object.end_call_message)
+        : undefined,
+      endCallPhrases: globalThis.Array.isArray(object?.endCallPhrases)
+        ? object.endCallPhrases.map((e: any) => globalThis.String(e))
+        : globalThis.Array.isArray(object?.end_call_phrases)
+        ? object.end_call_phrases.map((e: any) => globalThis.String(e))
+        : [],
+      timeElapsedActions: globalThis.Array.isArray(object?.timeElapsedActions)
+        ? object.timeElapsedActions.map((e: any) => TimeElapsedActionRuntime.fromJSON(e))
+        : globalThis.Array.isArray(object?.time_elapsed_actions)
+        ? object.time_elapsed_actions.map((e: any) => TimeElapsedActionRuntime.fromJSON(e))
+        : [],
+    };
+  },
+
+  toJSON(message: ConversationControlRuntime): unknown {
+    const obj: any = {};
+    if (message.endCallMessage !== undefined) {
+      obj.endCallMessage = message.endCallMessage;
+    }
+    if (message.endCallPhrases?.length) {
+      obj.endCallPhrases = message.endCallPhrases;
+    }
+    if (message.timeElapsedActions?.length) {
+      obj.timeElapsedActions = message.timeElapsedActions.map((e) => TimeElapsedActionRuntime.toJSON(e));
+    }
+    return obj;
+  },
+
+  create(base?: DeepPartial<ConversationControlRuntime>): ConversationControlRuntime {
+    return ConversationControlRuntime.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<ConversationControlRuntime>): ConversationControlRuntime {
+    const message = createBaseConversationControlRuntime();
+    message.endCallMessage = object.endCallMessage ?? undefined;
+    message.endCallPhrases = object.endCallPhrases?.map((e) => e) || [];
+    message.timeElapsedActions = object.timeElapsedActions?.map((e) => TimeElapsedActionRuntime.fromPartial(e)) || [];
+    return message;
+  },
+};
+
+function createBaseTimeElapsedActionRuntime(): TimeElapsedActionRuntime {
+  return { atSeconds: 0, say: undefined, endCall: undefined };
+}
+
+export const TimeElapsedActionRuntime: MessageFns<TimeElapsedActionRuntime> = {
+  encode(message: TimeElapsedActionRuntime, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.atSeconds !== 0) {
+      writer.uint32(8).uint32(message.atSeconds);
+    }
+    if (message.say !== undefined) {
+      writer.uint32(18).string(message.say);
+    }
+    if (message.endCall !== undefined) {
+      EndCallActionRuntime.encode(message.endCall, writer.uint32(26).fork()).join();
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): TimeElapsedActionRuntime {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseTimeElapsedActionRuntime();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 8) {
+            break;
+          }
+
+          message.atSeconds = reader.uint32();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.say = reader.string();
+          continue;
+        }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.endCall = EndCallActionRuntime.decode(reader, reader.uint32());
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): TimeElapsedActionRuntime {
+    return {
+      atSeconds: isSet(object.atSeconds)
+        ? globalThis.Number(object.atSeconds)
+        : isSet(object.at_seconds)
+        ? globalThis.Number(object.at_seconds)
+        : 0,
+      say: isSet(object.say) ? globalThis.String(object.say) : undefined,
+      endCall: isSet(object.endCall)
+        ? EndCallActionRuntime.fromJSON(object.endCall)
+        : isSet(object.end_call)
+        ? EndCallActionRuntime.fromJSON(object.end_call)
+        : undefined,
+    };
+  },
+
+  toJSON(message: TimeElapsedActionRuntime): unknown {
+    const obj: any = {};
+    if (message.atSeconds !== 0) {
+      obj.atSeconds = Math.round(message.atSeconds);
+    }
+    if (message.say !== undefined) {
+      obj.say = message.say;
+    }
+    if (message.endCall !== undefined) {
+      obj.endCall = EndCallActionRuntime.toJSON(message.endCall);
+    }
+    return obj;
+  },
+
+  create(base?: DeepPartial<TimeElapsedActionRuntime>): TimeElapsedActionRuntime {
+    return TimeElapsedActionRuntime.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<TimeElapsedActionRuntime>): TimeElapsedActionRuntime {
+    const message = createBaseTimeElapsedActionRuntime();
+    message.atSeconds = object.atSeconds ?? 0;
+    message.say = object.say ?? undefined;
+    message.endCall = (object.endCall !== undefined && object.endCall !== null)
+      ? EndCallActionRuntime.fromPartial(object.endCall)
+      : undefined;
+    return message;
+  },
+};
+
+function createBaseEndCallActionRuntime(): EndCallActionRuntime {
+  return {};
+}
+
+export const EndCallActionRuntime: MessageFns<EndCallActionRuntime> = {
+  encode(_: EndCallActionRuntime, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): EndCallActionRuntime {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseEndCallActionRuntime();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(_: any): EndCallActionRuntime {
+    return {};
+  },
+
+  toJSON(_: EndCallActionRuntime): unknown {
+    const obj: any = {};
+    return obj;
+  },
+
+  create(base?: DeepPartial<EndCallActionRuntime>): EndCallActionRuntime {
+    return EndCallActionRuntime.fromPartial(base ?? {});
+  },
+  fromPartial(_: DeepPartial<EndCallActionRuntime>): EndCallActionRuntime {
+    const message = createBaseEndCallActionRuntime();
     return message;
   },
 };
@@ -3593,104 +4124,22 @@ export const DtmfInputRuntime: MessageFns<DtmfInputRuntime> = {
   },
 };
 
-function createBasePromptInstructions(): PromptInstructions {
-  return { systemPrompt: "", guardrails: [] };
-}
-
-export const PromptInstructions: MessageFns<PromptInstructions> = {
-  encode(message: PromptInstructions, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
-    if (message.systemPrompt !== "") {
-      writer.uint32(10).string(message.systemPrompt);
-    }
-    for (const v of message.guardrails) {
-      writer.uint32(18).string(v!);
-    }
-    return writer;
-  },
-
-  decode(input: BinaryReader | Uint8Array, length?: number): PromptInstructions {
-    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
-    const end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBasePromptInstructions();
-    while (reader.pos < end) {
-      const tag = reader.uint32();
-      switch (tag >>> 3) {
-        case 1: {
-          if (tag !== 10) {
-            break;
-          }
-
-          message.systemPrompt = reader.string();
-          continue;
-        }
-        case 2: {
-          if (tag !== 18) {
-            break;
-          }
-
-          message.guardrails.push(reader.string());
-          continue;
-        }
-      }
-      if ((tag & 7) === 4 || tag === 0) {
-        break;
-      }
-      reader.skip(tag & 7);
-    }
-    return message;
-  },
-
-  fromJSON(object: any): PromptInstructions {
-    return {
-      systemPrompt: isSet(object.systemPrompt)
-        ? globalThis.String(object.systemPrompt)
-        : isSet(object.system_prompt)
-        ? globalThis.String(object.system_prompt)
-        : "",
-      guardrails: globalThis.Array.isArray(object?.guardrails)
-        ? object.guardrails.map((e: any) => globalThis.String(e))
-        : [],
-    };
-  },
-
-  toJSON(message: PromptInstructions): unknown {
-    const obj: any = {};
-    if (message.systemPrompt !== "") {
-      obj.systemPrompt = message.systemPrompt;
-    }
-    if (message.guardrails?.length) {
-      obj.guardrails = message.guardrails;
-    }
-    return obj;
-  },
-
-  create(base?: DeepPartial<PromptInstructions>): PromptInstructions {
-    return PromptInstructions.fromPartial(base ?? {});
-  },
-  fromPartial(object: DeepPartial<PromptInstructions>): PromptInstructions {
-    const message = createBasePromptInstructions();
-    message.systemPrompt = object.systemPrompt ?? "";
-    message.guardrails = object.guardrails?.map((e) => e) || [];
-    return message;
-  },
-};
-
-function createBaseInlinePromptInstructions(): InlinePromptInstructions {
+function createBaseAgentInstructions(): AgentInstructions {
   return { systemPrompt: "" };
 }
 
-export const InlinePromptInstructions: MessageFns<InlinePromptInstructions> = {
-  encode(message: InlinePromptInstructions, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+export const AgentInstructions: MessageFns<AgentInstructions> = {
+  encode(message: AgentInstructions, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
     if (message.systemPrompt !== "") {
       writer.uint32(10).string(message.systemPrompt);
     }
     return writer;
   },
 
-  decode(input: BinaryReader | Uint8Array, length?: number): InlinePromptInstructions {
+  decode(input: BinaryReader | Uint8Array, length?: number): AgentInstructions {
     const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
     const end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBaseInlinePromptInstructions();
+    const message = createBaseAgentInstructions();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
@@ -3711,7 +4160,7 @@ export const InlinePromptInstructions: MessageFns<InlinePromptInstructions> = {
     return message;
   },
 
-  fromJSON(object: any): InlinePromptInstructions {
+  fromJSON(object: any): AgentInstructions {
     return {
       systemPrompt: isSet(object.systemPrompt)
         ? globalThis.String(object.systemPrompt)
@@ -3721,7 +4170,7 @@ export const InlinePromptInstructions: MessageFns<InlinePromptInstructions> = {
     };
   },
 
-  toJSON(message: InlinePromptInstructions): unknown {
+  toJSON(message: AgentInstructions): unknown {
     const obj: any = {};
     if (message.systemPrompt !== "") {
       obj.systemPrompt = message.systemPrompt;
@@ -3729,11 +4178,11 @@ export const InlinePromptInstructions: MessageFns<InlinePromptInstructions> = {
     return obj;
   },
 
-  create(base?: DeepPartial<InlinePromptInstructions>): InlinePromptInstructions {
-    return InlinePromptInstructions.fromPartial(base ?? {});
+  create(base?: DeepPartial<AgentInstructions>): AgentInstructions {
+    return AgentInstructions.fromPartial(base ?? {});
   },
-  fromPartial(object: DeepPartial<InlinePromptInstructions>): InlinePromptInstructions {
-    const message = createBaseInlinePromptInstructions();
+  fromPartial(object: DeepPartial<AgentInstructions>): AgentInstructions {
+    const message = createBaseAgentInstructions();
     message.systemPrompt = object.systemPrompt ?? "";
     return message;
   },
@@ -4739,7 +5188,7 @@ export const KnowledgeToolRuntime: MessageFns<KnowledgeToolRuntime> = {
 };
 
 function createBaseBuiltInTool(): BuiltInTool {
-  return { endCall: undefined, transferToHuman: undefined };
+  return { endCall: undefined, transferToHuman: undefined, dtmf: undefined, sendSms: undefined };
 }
 
 export const BuiltInTool: MessageFns<BuiltInTool> = {
@@ -4749,6 +5198,12 @@ export const BuiltInTool: MessageFns<BuiltInTool> = {
     }
     if (message.transferToHuman !== undefined) {
       TransferToHumanTool.encode(message.transferToHuman, writer.uint32(18).fork()).join();
+    }
+    if (message.dtmf !== undefined) {
+      DtmfTool.encode(message.dtmf, writer.uint32(26).fork()).join();
+    }
+    if (message.sendSms !== undefined) {
+      SendSmsTool.encode(message.sendSms, writer.uint32(34).fork()).join();
     }
     return writer;
   },
@@ -4776,6 +5231,22 @@ export const BuiltInTool: MessageFns<BuiltInTool> = {
           message.transferToHuman = TransferToHumanTool.decode(reader, reader.uint32());
           continue;
         }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.dtmf = DtmfTool.decode(reader, reader.uint32());
+          continue;
+        }
+        case 4: {
+          if (tag !== 34) {
+            break;
+          }
+
+          message.sendSms = SendSmsTool.decode(reader, reader.uint32());
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -4797,6 +5268,12 @@ export const BuiltInTool: MessageFns<BuiltInTool> = {
         : isSet(object.transfer_to_human)
         ? TransferToHumanTool.fromJSON(object.transfer_to_human)
         : undefined,
+      dtmf: isSet(object.dtmf) ? DtmfTool.fromJSON(object.dtmf) : undefined,
+      sendSms: isSet(object.sendSms)
+        ? SendSmsTool.fromJSON(object.sendSms)
+        : isSet(object.send_sms)
+        ? SendSmsTool.fromJSON(object.send_sms)
+        : undefined,
     };
   },
 
@@ -4807,6 +5284,12 @@ export const BuiltInTool: MessageFns<BuiltInTool> = {
     }
     if (message.transferToHuman !== undefined) {
       obj.transferToHuman = TransferToHumanTool.toJSON(message.transferToHuman);
+    }
+    if (message.dtmf !== undefined) {
+      obj.dtmf = DtmfTool.toJSON(message.dtmf);
+    }
+    if (message.sendSms !== undefined) {
+      obj.sendSms = SendSmsTool.toJSON(message.sendSms);
     }
     return obj;
   },
@@ -4821,6 +5304,10 @@ export const BuiltInTool: MessageFns<BuiltInTool> = {
       : undefined;
     message.transferToHuman = (object.transferToHuman !== undefined && object.transferToHuman !== null)
       ? TransferToHumanTool.fromPartial(object.transferToHuman)
+      : undefined;
+    message.dtmf = (object.dtmf !== undefined && object.dtmf !== null) ? DtmfTool.fromPartial(object.dtmf) : undefined;
+    message.sendSms = (object.sendSms !== undefined && object.sendSms !== null)
+      ? SendSmsTool.fromPartial(object.sendSms)
       : undefined;
     return message;
   },
@@ -5037,6 +5524,161 @@ export const TransferToHumanTool: MessageFns<TransferToHumanTool> = {
     message.sipCallTo = object.sipCallTo ?? "";
     message.holdPhrase = object.holdPhrase ?? undefined;
     message.ringingTimeoutMs = object.ringingTimeoutMs ?? 0;
+    message.condition = object.condition ?? "";
+    return message;
+  },
+};
+
+function createBaseDtmfTool(): DtmfTool {
+  return {};
+}
+
+export const DtmfTool: MessageFns<DtmfTool> = {
+  encode(_: DtmfTool, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): DtmfTool {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseDtmfTool();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(_: any): DtmfTool {
+    return {};
+  },
+
+  toJSON(_: DtmfTool): unknown {
+    const obj: any = {};
+    return obj;
+  },
+
+  create(base?: DeepPartial<DtmfTool>): DtmfTool {
+    return DtmfTool.fromPartial(base ?? {});
+  },
+  fromPartial(_: DeepPartial<DtmfTool>): DtmfTool {
+    const message = createBaseDtmfTool();
+    return message;
+  },
+};
+
+function createBaseSendSmsTool(): SendSmsTool {
+  return { recipient: "", template: "", maxSends: 0, condition: "" };
+}
+
+export const SendSmsTool: MessageFns<SendSmsTool> = {
+  encode(message: SendSmsTool, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.recipient !== "") {
+      writer.uint32(10).string(message.recipient);
+    }
+    if (message.template !== "") {
+      writer.uint32(18).string(message.template);
+    }
+    if (message.maxSends !== 0) {
+      writer.uint32(24).uint32(message.maxSends);
+    }
+    if (message.condition !== "") {
+      writer.uint32(34).string(message.condition);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): SendSmsTool {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseSendSmsTool();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.recipient = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.template = reader.string();
+          continue;
+        }
+        case 3: {
+          if (tag !== 24) {
+            break;
+          }
+
+          message.maxSends = reader.uint32();
+          continue;
+        }
+        case 4: {
+          if (tag !== 34) {
+            break;
+          }
+
+          message.condition = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): SendSmsTool {
+    return {
+      recipient: isSet(object.recipient) ? globalThis.String(object.recipient) : "",
+      template: isSet(object.template) ? globalThis.String(object.template) : "",
+      maxSends: isSet(object.maxSends)
+        ? globalThis.Number(object.maxSends)
+        : isSet(object.max_sends)
+        ? globalThis.Number(object.max_sends)
+        : 0,
+      condition: isSet(object.condition) ? globalThis.String(object.condition) : "",
+    };
+  },
+
+  toJSON(message: SendSmsTool): unknown {
+    const obj: any = {};
+    if (message.recipient !== "") {
+      obj.recipient = message.recipient;
+    }
+    if (message.template !== "") {
+      obj.template = message.template;
+    }
+    if (message.maxSends !== 0) {
+      obj.maxSends = Math.round(message.maxSends);
+    }
+    if (message.condition !== "") {
+      obj.condition = message.condition;
+    }
+    return obj;
+  },
+
+  create(base?: DeepPartial<SendSmsTool>): SendSmsTool {
+    return SendSmsTool.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<SendSmsTool>): SendSmsTool {
+    const message = createBaseSendSmsTool();
+    message.recipient = object.recipient ?? "";
+    message.template = object.template ?? "";
+    message.maxSends = object.maxSends ?? 0;
     message.condition = object.condition ?? "";
     return message;
   },
