@@ -328,14 +328,9 @@ export interface BootstrapPublishedResponse {
   conversationId: string;
   sessionId: string;
   publishedId: string;
-  promptAgent?: PublishedPromptAgentExecution | undefined;
   orchestration?: PublishedOrchestrationExecution | undefined;
   voiceRuntime?: CallRuntimeSnapshot | undefined;
   textRuntime?: TextRuntimeSnapshot | undefined;
-}
-
-export interface PublishedPromptAgentExecution {
-  runtime?: PublishedPromptAgentRuntime | undefined;
 }
 
 export interface PublishedOrchestrationExecution {
@@ -343,24 +338,6 @@ export interface PublishedOrchestrationExecution {
   nodeRuntimes: PublishedInlinePromptRuntime[];
   supervisor?: PublishedSupervisorSnapshot | undefined;
   handoff?: PublishedHandoffSnapshot | undefined;
-}
-
-export interface PublishedPromptAgentRuntime {
-  promptAgentPublishedId: string;
-  llmWorker?: LlmRuntime | undefined;
-  instructions?: PromptInstructions | undefined;
-  contextPolicy: ContextPolicy;
-  tools: NodeToolMetadata[];
-  mcpServers: McpServerRuntime[];
-  greeting: string;
-  knowledgeRevisionId: string;
-  apiToolRuntimes: ApiToolRuntime[];
-  knowledgeRetrievalCapability: string;
-  a2aToolRuntimes: A2aToolRuntime[];
-  builtInTools: BuiltInTool[];
-  knowledgeFunctionName: string;
-  knowledgeDescription: string;
-  knowledgeToolRuntimes: KnowledgeToolRuntime[];
 }
 
 /**
@@ -382,6 +359,26 @@ export interface PublishedInlinePromptRuntime {
   knowledgeFunctionName: string;
   knowledgeDescription: string;
   knowledgeToolRuntimes: KnowledgeToolRuntime[];
+  authoring?: InlineAuthoringOptions | undefined;
+}
+
+/** Optional so older publications retain provider defaults. */
+export interface InlineAuthoringOptions {
+  model?: NodeModelSettings | undefined;
+  toolBindings: NodeToolBinding[];
+}
+
+export interface NodeModelSettings {
+  temperature?: number | undefined;
+  maxTokens?: number | undefined;
+  reasoningEffort?: string | undefined;
+}
+
+export interface NodeToolBinding {
+  toolId: string;
+  parameter: string;
+  variable: string;
+  target: string;
 }
 
 export interface PublishedSupervisorSnapshot {
@@ -1024,7 +1021,6 @@ function createBaseBootstrapPublishedResponse(): BootstrapPublishedResponse {
     conversationId: "",
     sessionId: "",
     publishedId: "",
-    promptAgent: undefined,
     orchestration: undefined,
     voiceRuntime: undefined,
     textRuntime: undefined,
@@ -1044,9 +1040,6 @@ export const BootstrapPublishedResponse: MessageFns<BootstrapPublishedResponse> 
     }
     if (message.publishedId !== "") {
       writer.uint32(34).string(message.publishedId);
-    }
-    if (message.promptAgent !== undefined) {
-      PublishedPromptAgentExecution.encode(message.promptAgent, writer.uint32(42).fork()).join();
     }
     if (message.orchestration !== undefined) {
       PublishedOrchestrationExecution.encode(message.orchestration, writer.uint32(50).fork()).join();
@@ -1097,14 +1090,6 @@ export const BootstrapPublishedResponse: MessageFns<BootstrapPublishedResponse> 
           }
 
           message.publishedId = reader.string();
-          continue;
-        }
-        case 5: {
-          if (tag !== 42) {
-            break;
-          }
-
-          message.promptAgent = PublishedPromptAgentExecution.decode(reader, reader.uint32());
           continue;
         }
         case 6: {
@@ -1162,11 +1147,6 @@ export const BootstrapPublishedResponse: MessageFns<BootstrapPublishedResponse> 
         : isSet(object.published_id)
         ? globalThis.String(object.published_id)
         : "",
-      promptAgent: isSet(object.promptAgent)
-        ? PublishedPromptAgentExecution.fromJSON(object.promptAgent)
-        : isSet(object.prompt_agent)
-        ? PublishedPromptAgentExecution.fromJSON(object.prompt_agent)
-        : undefined,
       orchestration: isSet(object.orchestration)
         ? PublishedOrchestrationExecution.fromJSON(object.orchestration)
         : undefined,
@@ -1197,9 +1177,6 @@ export const BootstrapPublishedResponse: MessageFns<BootstrapPublishedResponse> 
     if (message.publishedId !== "") {
       obj.publishedId = message.publishedId;
     }
-    if (message.promptAgent !== undefined) {
-      obj.promptAgent = PublishedPromptAgentExecution.toJSON(message.promptAgent);
-    }
     if (message.orchestration !== undefined) {
       obj.orchestration = PublishedOrchestrationExecution.toJSON(message.orchestration);
     }
@@ -1221,9 +1198,6 @@ export const BootstrapPublishedResponse: MessageFns<BootstrapPublishedResponse> 
     message.conversationId = object.conversationId ?? "";
     message.sessionId = object.sessionId ?? "";
     message.publishedId = object.publishedId ?? "";
-    message.promptAgent = (object.promptAgent !== undefined && object.promptAgent !== null)
-      ? PublishedPromptAgentExecution.fromPartial(object.promptAgent)
-      : undefined;
     message.orchestration = (object.orchestration !== undefined && object.orchestration !== null)
       ? PublishedOrchestrationExecution.fromPartial(object.orchestration)
       : undefined;
@@ -1232,66 +1206,6 @@ export const BootstrapPublishedResponse: MessageFns<BootstrapPublishedResponse> 
       : undefined;
     message.textRuntime = (object.textRuntime !== undefined && object.textRuntime !== null)
       ? TextRuntimeSnapshot.fromPartial(object.textRuntime)
-      : undefined;
-    return message;
-  },
-};
-
-function createBasePublishedPromptAgentExecution(): PublishedPromptAgentExecution {
-  return { runtime: undefined };
-}
-
-export const PublishedPromptAgentExecution: MessageFns<PublishedPromptAgentExecution> = {
-  encode(message: PublishedPromptAgentExecution, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
-    if (message.runtime !== undefined) {
-      PublishedPromptAgentRuntime.encode(message.runtime, writer.uint32(10).fork()).join();
-    }
-    return writer;
-  },
-
-  decode(input: BinaryReader | Uint8Array, length?: number): PublishedPromptAgentExecution {
-    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
-    const end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBasePublishedPromptAgentExecution();
-    while (reader.pos < end) {
-      const tag = reader.uint32();
-      switch (tag >>> 3) {
-        case 1: {
-          if (tag !== 10) {
-            break;
-          }
-
-          message.runtime = PublishedPromptAgentRuntime.decode(reader, reader.uint32());
-          continue;
-        }
-      }
-      if ((tag & 7) === 4 || tag === 0) {
-        break;
-      }
-      reader.skip(tag & 7);
-    }
-    return message;
-  },
-
-  fromJSON(object: any): PublishedPromptAgentExecution {
-    return { runtime: isSet(object.runtime) ? PublishedPromptAgentRuntime.fromJSON(object.runtime) : undefined };
-  },
-
-  toJSON(message: PublishedPromptAgentExecution): unknown {
-    const obj: any = {};
-    if (message.runtime !== undefined) {
-      obj.runtime = PublishedPromptAgentRuntime.toJSON(message.runtime);
-    }
-    return obj;
-  },
-
-  create(base?: DeepPartial<PublishedPromptAgentExecution>): PublishedPromptAgentExecution {
-    return PublishedPromptAgentExecution.fromPartial(base ?? {});
-  },
-  fromPartial(object: DeepPartial<PublishedPromptAgentExecution>): PublishedPromptAgentExecution {
-    const message = createBasePublishedPromptAgentExecution();
-    message.runtime = (object.runtime !== undefined && object.runtime !== null)
-      ? PublishedPromptAgentRuntime.fromPartial(object.runtime)
       : undefined;
     return message;
   },
@@ -1413,358 +1327,6 @@ export const PublishedOrchestrationExecution: MessageFns<PublishedOrchestrationE
   },
 };
 
-function createBasePublishedPromptAgentRuntime(): PublishedPromptAgentRuntime {
-  return {
-    promptAgentPublishedId: "",
-    llmWorker: undefined,
-    instructions: undefined,
-    contextPolicy: 0,
-    tools: [],
-    mcpServers: [],
-    greeting: "",
-    knowledgeRevisionId: "",
-    apiToolRuntimes: [],
-    knowledgeRetrievalCapability: "",
-    a2aToolRuntimes: [],
-    builtInTools: [],
-    knowledgeFunctionName: "",
-    knowledgeDescription: "",
-    knowledgeToolRuntimes: [],
-  };
-}
-
-export const PublishedPromptAgentRuntime: MessageFns<PublishedPromptAgentRuntime> = {
-  encode(message: PublishedPromptAgentRuntime, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
-    if (message.promptAgentPublishedId !== "") {
-      writer.uint32(10).string(message.promptAgentPublishedId);
-    }
-    if (message.llmWorker !== undefined) {
-      LlmRuntime.encode(message.llmWorker, writer.uint32(18).fork()).join();
-    }
-    if (message.instructions !== undefined) {
-      PromptInstructions.encode(message.instructions, writer.uint32(26).fork()).join();
-    }
-    if (message.contextPolicy !== 0) {
-      writer.uint32(32).int32(message.contextPolicy);
-    }
-    for (const v of message.tools) {
-      NodeToolMetadata.encode(v!, writer.uint32(42).fork()).join();
-    }
-    for (const v of message.mcpServers) {
-      McpServerRuntime.encode(v!, writer.uint32(50).fork()).join();
-    }
-    if (message.greeting !== "") {
-      writer.uint32(58).string(message.greeting);
-    }
-    if (message.knowledgeRevisionId !== "") {
-      writer.uint32(66).string(message.knowledgeRevisionId);
-    }
-    for (const v of message.apiToolRuntimes) {
-      ApiToolRuntime.encode(v!, writer.uint32(74).fork()).join();
-    }
-    if (message.knowledgeRetrievalCapability !== "") {
-      writer.uint32(82).string(message.knowledgeRetrievalCapability);
-    }
-    for (const v of message.a2aToolRuntimes) {
-      A2aToolRuntime.encode(v!, writer.uint32(90).fork()).join();
-    }
-    for (const v of message.builtInTools) {
-      BuiltInTool.encode(v!, writer.uint32(98).fork()).join();
-    }
-    if (message.knowledgeFunctionName !== "") {
-      writer.uint32(106).string(message.knowledgeFunctionName);
-    }
-    if (message.knowledgeDescription !== "") {
-      writer.uint32(114).string(message.knowledgeDescription);
-    }
-    for (const v of message.knowledgeToolRuntimes) {
-      KnowledgeToolRuntime.encode(v!, writer.uint32(122).fork()).join();
-    }
-    return writer;
-  },
-
-  decode(input: BinaryReader | Uint8Array, length?: number): PublishedPromptAgentRuntime {
-    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
-    const end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBasePublishedPromptAgentRuntime();
-    while (reader.pos < end) {
-      const tag = reader.uint32();
-      switch (tag >>> 3) {
-        case 1: {
-          if (tag !== 10) {
-            break;
-          }
-
-          message.promptAgentPublishedId = reader.string();
-          continue;
-        }
-        case 2: {
-          if (tag !== 18) {
-            break;
-          }
-
-          message.llmWorker = LlmRuntime.decode(reader, reader.uint32());
-          continue;
-        }
-        case 3: {
-          if (tag !== 26) {
-            break;
-          }
-
-          message.instructions = PromptInstructions.decode(reader, reader.uint32());
-          continue;
-        }
-        case 4: {
-          if (tag !== 32) {
-            break;
-          }
-
-          message.contextPolicy = reader.int32() as any;
-          continue;
-        }
-        case 5: {
-          if (tag !== 42) {
-            break;
-          }
-
-          message.tools.push(NodeToolMetadata.decode(reader, reader.uint32()));
-          continue;
-        }
-        case 6: {
-          if (tag !== 50) {
-            break;
-          }
-
-          message.mcpServers.push(McpServerRuntime.decode(reader, reader.uint32()));
-          continue;
-        }
-        case 7: {
-          if (tag !== 58) {
-            break;
-          }
-
-          message.greeting = reader.string();
-          continue;
-        }
-        case 8: {
-          if (tag !== 66) {
-            break;
-          }
-
-          message.knowledgeRevisionId = reader.string();
-          continue;
-        }
-        case 9: {
-          if (tag !== 74) {
-            break;
-          }
-
-          message.apiToolRuntimes.push(ApiToolRuntime.decode(reader, reader.uint32()));
-          continue;
-        }
-        case 10: {
-          if (tag !== 82) {
-            break;
-          }
-
-          message.knowledgeRetrievalCapability = reader.string();
-          continue;
-        }
-        case 11: {
-          if (tag !== 90) {
-            break;
-          }
-
-          message.a2aToolRuntimes.push(A2aToolRuntime.decode(reader, reader.uint32()));
-          continue;
-        }
-        case 12: {
-          if (tag !== 98) {
-            break;
-          }
-
-          message.builtInTools.push(BuiltInTool.decode(reader, reader.uint32()));
-          continue;
-        }
-        case 13: {
-          if (tag !== 106) {
-            break;
-          }
-
-          message.knowledgeFunctionName = reader.string();
-          continue;
-        }
-        case 14: {
-          if (tag !== 114) {
-            break;
-          }
-
-          message.knowledgeDescription = reader.string();
-          continue;
-        }
-        case 15: {
-          if (tag !== 122) {
-            break;
-          }
-
-          message.knowledgeToolRuntimes.push(KnowledgeToolRuntime.decode(reader, reader.uint32()));
-          continue;
-        }
-      }
-      if ((tag & 7) === 4 || tag === 0) {
-        break;
-      }
-      reader.skip(tag & 7);
-    }
-    return message;
-  },
-
-  fromJSON(object: any): PublishedPromptAgentRuntime {
-    return {
-      promptAgentPublishedId: isSet(object.promptAgentPublishedId)
-        ? globalThis.String(object.promptAgentPublishedId)
-        : isSet(object.prompt_agent_published_id)
-        ? globalThis.String(object.prompt_agent_published_id)
-        : "",
-      llmWorker: isSet(object.llmWorker)
-        ? LlmRuntime.fromJSON(object.llmWorker)
-        : isSet(object.llm_worker)
-        ? LlmRuntime.fromJSON(object.llm_worker)
-        : undefined,
-      instructions: isSet(object.instructions) ? PromptInstructions.fromJSON(object.instructions) : undefined,
-      contextPolicy: isSet(object.contextPolicy)
-        ? contextPolicyFromJSON(object.contextPolicy)
-        : isSet(object.context_policy)
-        ? contextPolicyFromJSON(object.context_policy)
-        : 0,
-      tools: globalThis.Array.isArray(object?.tools) ? object.tools.map((e: any) => NodeToolMetadata.fromJSON(e)) : [],
-      mcpServers: globalThis.Array.isArray(object?.mcpServers)
-        ? object.mcpServers.map((e: any) => McpServerRuntime.fromJSON(e))
-        : globalThis.Array.isArray(object?.mcp_servers)
-        ? object.mcp_servers.map((e: any) => McpServerRuntime.fromJSON(e))
-        : [],
-      greeting: isSet(object.greeting) ? globalThis.String(object.greeting) : "",
-      knowledgeRevisionId: isSet(object.knowledgeRevisionId)
-        ? globalThis.String(object.knowledgeRevisionId)
-        : isSet(object.knowledge_revision_id)
-        ? globalThis.String(object.knowledge_revision_id)
-        : "",
-      apiToolRuntimes: globalThis.Array.isArray(object?.apiToolRuntimes)
-        ? object.apiToolRuntimes.map((e: any) => ApiToolRuntime.fromJSON(e))
-        : globalThis.Array.isArray(object?.api_tool_runtimes)
-        ? object.api_tool_runtimes.map((e: any) => ApiToolRuntime.fromJSON(e))
-        : [],
-      knowledgeRetrievalCapability: isSet(object.knowledgeRetrievalCapability)
-        ? globalThis.String(object.knowledgeRetrievalCapability)
-        : isSet(object.knowledge_retrieval_capability)
-        ? globalThis.String(object.knowledge_retrieval_capability)
-        : "",
-      a2aToolRuntimes: globalThis.Array.isArray(object?.a2aToolRuntimes)
-        ? object.a2aToolRuntimes.map((e: any) => A2aToolRuntime.fromJSON(e))
-        : globalThis.Array.isArray(object?.a2a_tool_runtimes)
-        ? object.a2a_tool_runtimes.map((e: any) => A2aToolRuntime.fromJSON(e))
-        : [],
-      builtInTools: globalThis.Array.isArray(object?.builtInTools)
-        ? object.builtInTools.map((e: any) => BuiltInTool.fromJSON(e))
-        : globalThis.Array.isArray(object?.built_in_tools)
-        ? object.built_in_tools.map((e: any) => BuiltInTool.fromJSON(e))
-        : [],
-      knowledgeFunctionName: isSet(object.knowledgeFunctionName)
-        ? globalThis.String(object.knowledgeFunctionName)
-        : isSet(object.knowledge_function_name)
-        ? globalThis.String(object.knowledge_function_name)
-        : "",
-      knowledgeDescription: isSet(object.knowledgeDescription)
-        ? globalThis.String(object.knowledgeDescription)
-        : isSet(object.knowledge_description)
-        ? globalThis.String(object.knowledge_description)
-        : "",
-      knowledgeToolRuntimes: globalThis.Array.isArray(object?.knowledgeToolRuntimes)
-        ? object.knowledgeToolRuntimes.map((e: any) => KnowledgeToolRuntime.fromJSON(e))
-        : globalThis.Array.isArray(object?.knowledge_tool_runtimes)
-        ? object.knowledge_tool_runtimes.map((e: any) => KnowledgeToolRuntime.fromJSON(e))
-        : [],
-    };
-  },
-
-  toJSON(message: PublishedPromptAgentRuntime): unknown {
-    const obj: any = {};
-    if (message.promptAgentPublishedId !== "") {
-      obj.promptAgentPublishedId = message.promptAgentPublishedId;
-    }
-    if (message.llmWorker !== undefined) {
-      obj.llmWorker = LlmRuntime.toJSON(message.llmWorker);
-    }
-    if (message.instructions !== undefined) {
-      obj.instructions = PromptInstructions.toJSON(message.instructions);
-    }
-    if (message.contextPolicy !== 0) {
-      obj.contextPolicy = contextPolicyToJSON(message.contextPolicy);
-    }
-    if (message.tools?.length) {
-      obj.tools = message.tools.map((e) => NodeToolMetadata.toJSON(e));
-    }
-    if (message.mcpServers?.length) {
-      obj.mcpServers = message.mcpServers.map((e) => McpServerRuntime.toJSON(e));
-    }
-    if (message.greeting !== "") {
-      obj.greeting = message.greeting;
-    }
-    if (message.knowledgeRevisionId !== "") {
-      obj.knowledgeRevisionId = message.knowledgeRevisionId;
-    }
-    if (message.apiToolRuntimes?.length) {
-      obj.apiToolRuntimes = message.apiToolRuntimes.map((e) => ApiToolRuntime.toJSON(e));
-    }
-    if (message.knowledgeRetrievalCapability !== "") {
-      obj.knowledgeRetrievalCapability = message.knowledgeRetrievalCapability;
-    }
-    if (message.a2aToolRuntimes?.length) {
-      obj.a2aToolRuntimes = message.a2aToolRuntimes.map((e) => A2aToolRuntime.toJSON(e));
-    }
-    if (message.builtInTools?.length) {
-      obj.builtInTools = message.builtInTools.map((e) => BuiltInTool.toJSON(e));
-    }
-    if (message.knowledgeFunctionName !== "") {
-      obj.knowledgeFunctionName = message.knowledgeFunctionName;
-    }
-    if (message.knowledgeDescription !== "") {
-      obj.knowledgeDescription = message.knowledgeDescription;
-    }
-    if (message.knowledgeToolRuntimes?.length) {
-      obj.knowledgeToolRuntimes = message.knowledgeToolRuntimes.map((e) => KnowledgeToolRuntime.toJSON(e));
-    }
-    return obj;
-  },
-
-  create(base?: DeepPartial<PublishedPromptAgentRuntime>): PublishedPromptAgentRuntime {
-    return PublishedPromptAgentRuntime.fromPartial(base ?? {});
-  },
-  fromPartial(object: DeepPartial<PublishedPromptAgentRuntime>): PublishedPromptAgentRuntime {
-    const message = createBasePublishedPromptAgentRuntime();
-    message.promptAgentPublishedId = object.promptAgentPublishedId ?? "";
-    message.llmWorker = (object.llmWorker !== undefined && object.llmWorker !== null)
-      ? LlmRuntime.fromPartial(object.llmWorker)
-      : undefined;
-    message.instructions = (object.instructions !== undefined && object.instructions !== null)
-      ? PromptInstructions.fromPartial(object.instructions)
-      : undefined;
-    message.contextPolicy = object.contextPolicy ?? 0;
-    message.tools = object.tools?.map((e) => NodeToolMetadata.fromPartial(e)) || [];
-    message.mcpServers = object.mcpServers?.map((e) => McpServerRuntime.fromPartial(e)) || [];
-    message.greeting = object.greeting ?? "";
-    message.knowledgeRevisionId = object.knowledgeRevisionId ?? "";
-    message.apiToolRuntimes = object.apiToolRuntimes?.map((e) => ApiToolRuntime.fromPartial(e)) || [];
-    message.knowledgeRetrievalCapability = object.knowledgeRetrievalCapability ?? "";
-    message.a2aToolRuntimes = object.a2aToolRuntimes?.map((e) => A2aToolRuntime.fromPartial(e)) || [];
-    message.builtInTools = object.builtInTools?.map((e) => BuiltInTool.fromPartial(e)) || [];
-    message.knowledgeFunctionName = object.knowledgeFunctionName ?? "";
-    message.knowledgeDescription = object.knowledgeDescription ?? "";
-    message.knowledgeToolRuntimes = object.knowledgeToolRuntimes?.map((e) => KnowledgeToolRuntime.fromPartial(e)) || [];
-    return message;
-  },
-};
-
 function createBasePublishedInlinePromptRuntime(): PublishedInlinePromptRuntime {
   return {
     nodeId: "",
@@ -1781,6 +1343,7 @@ function createBasePublishedInlinePromptRuntime(): PublishedInlinePromptRuntime 
     knowledgeFunctionName: "",
     knowledgeDescription: "",
     knowledgeToolRuntimes: [],
+    authoring: undefined,
   };
 }
 
@@ -1827,6 +1390,9 @@ export const PublishedInlinePromptRuntime: MessageFns<PublishedInlinePromptRunti
     }
     for (const v of message.knowledgeToolRuntimes) {
       KnowledgeToolRuntime.encode(v!, writer.uint32(114).fork()).join();
+    }
+    if (message.authoring !== undefined) {
+      InlineAuthoringOptions.encode(message.authoring, writer.uint32(122).fork()).join();
     }
     return writer;
   },
@@ -1950,6 +1516,14 @@ export const PublishedInlinePromptRuntime: MessageFns<PublishedInlinePromptRunti
           message.knowledgeToolRuntimes.push(KnowledgeToolRuntime.decode(reader, reader.uint32()));
           continue;
         }
+        case 15: {
+          if (tag !== 122) {
+            break;
+          }
+
+          message.authoring = InlineAuthoringOptions.decode(reader, reader.uint32());
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -2023,6 +1597,7 @@ export const PublishedInlinePromptRuntime: MessageFns<PublishedInlinePromptRunti
         : globalThis.Array.isArray(object?.knowledge_tool_runtimes)
         ? object.knowledge_tool_runtimes.map((e: any) => KnowledgeToolRuntime.fromJSON(e))
         : [],
+      authoring: isSet(object.authoring) ? InlineAuthoringOptions.fromJSON(object.authoring) : undefined,
     };
   },
 
@@ -2070,6 +1645,9 @@ export const PublishedInlinePromptRuntime: MessageFns<PublishedInlinePromptRunti
     if (message.knowledgeToolRuntimes?.length) {
       obj.knowledgeToolRuntimes = message.knowledgeToolRuntimes.map((e) => KnowledgeToolRuntime.toJSON(e));
     }
+    if (message.authoring !== undefined) {
+      obj.authoring = InlineAuthoringOptions.toJSON(message.authoring);
+    }
     return obj;
   },
 
@@ -2096,6 +1674,303 @@ export const PublishedInlinePromptRuntime: MessageFns<PublishedInlinePromptRunti
     message.knowledgeFunctionName = object.knowledgeFunctionName ?? "";
     message.knowledgeDescription = object.knowledgeDescription ?? "";
     message.knowledgeToolRuntimes = object.knowledgeToolRuntimes?.map((e) => KnowledgeToolRuntime.fromPartial(e)) || [];
+    message.authoring = (object.authoring !== undefined && object.authoring !== null)
+      ? InlineAuthoringOptions.fromPartial(object.authoring)
+      : undefined;
+    return message;
+  },
+};
+
+function createBaseInlineAuthoringOptions(): InlineAuthoringOptions {
+  return { model: undefined, toolBindings: [] };
+}
+
+export const InlineAuthoringOptions: MessageFns<InlineAuthoringOptions> = {
+  encode(message: InlineAuthoringOptions, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.model !== undefined) {
+      NodeModelSettings.encode(message.model, writer.uint32(10).fork()).join();
+    }
+    for (const v of message.toolBindings) {
+      NodeToolBinding.encode(v!, writer.uint32(18).fork()).join();
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): InlineAuthoringOptions {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseInlineAuthoringOptions();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.model = NodeModelSettings.decode(reader, reader.uint32());
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.toolBindings.push(NodeToolBinding.decode(reader, reader.uint32()));
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): InlineAuthoringOptions {
+    return {
+      model: isSet(object.model) ? NodeModelSettings.fromJSON(object.model) : undefined,
+      toolBindings: globalThis.Array.isArray(object?.toolBindings)
+        ? object.toolBindings.map((e: any) => NodeToolBinding.fromJSON(e))
+        : globalThis.Array.isArray(object?.tool_bindings)
+        ? object.tool_bindings.map((e: any) => NodeToolBinding.fromJSON(e))
+        : [],
+    };
+  },
+
+  toJSON(message: InlineAuthoringOptions): unknown {
+    const obj: any = {};
+    if (message.model !== undefined) {
+      obj.model = NodeModelSettings.toJSON(message.model);
+    }
+    if (message.toolBindings?.length) {
+      obj.toolBindings = message.toolBindings.map((e) => NodeToolBinding.toJSON(e));
+    }
+    return obj;
+  },
+
+  create(base?: DeepPartial<InlineAuthoringOptions>): InlineAuthoringOptions {
+    return InlineAuthoringOptions.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<InlineAuthoringOptions>): InlineAuthoringOptions {
+    const message = createBaseInlineAuthoringOptions();
+    message.model = (object.model !== undefined && object.model !== null)
+      ? NodeModelSettings.fromPartial(object.model)
+      : undefined;
+    message.toolBindings = object.toolBindings?.map((e) => NodeToolBinding.fromPartial(e)) || [];
+    return message;
+  },
+};
+
+function createBaseNodeModelSettings(): NodeModelSettings {
+  return { temperature: undefined, maxTokens: undefined, reasoningEffort: undefined };
+}
+
+export const NodeModelSettings: MessageFns<NodeModelSettings> = {
+  encode(message: NodeModelSettings, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.temperature !== undefined) {
+      writer.uint32(9).double(message.temperature);
+    }
+    if (message.maxTokens !== undefined) {
+      writer.uint32(16).int32(message.maxTokens);
+    }
+    if (message.reasoningEffort !== undefined) {
+      writer.uint32(26).string(message.reasoningEffort);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): NodeModelSettings {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseNodeModelSettings();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 9) {
+            break;
+          }
+
+          message.temperature = reader.double();
+          continue;
+        }
+        case 2: {
+          if (tag !== 16) {
+            break;
+          }
+
+          message.maxTokens = reader.int32();
+          continue;
+        }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.reasoningEffort = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): NodeModelSettings {
+    return {
+      temperature: isSet(object.temperature) ? globalThis.Number(object.temperature) : undefined,
+      maxTokens: isSet(object.maxTokens)
+        ? globalThis.Number(object.maxTokens)
+        : isSet(object.max_tokens)
+        ? globalThis.Number(object.max_tokens)
+        : undefined,
+      reasoningEffort: isSet(object.reasoningEffort)
+        ? globalThis.String(object.reasoningEffort)
+        : isSet(object.reasoning_effort)
+        ? globalThis.String(object.reasoning_effort)
+        : undefined,
+    };
+  },
+
+  toJSON(message: NodeModelSettings): unknown {
+    const obj: any = {};
+    if (message.temperature !== undefined) {
+      obj.temperature = message.temperature;
+    }
+    if (message.maxTokens !== undefined) {
+      obj.maxTokens = Math.round(message.maxTokens);
+    }
+    if (message.reasoningEffort !== undefined) {
+      obj.reasoningEffort = message.reasoningEffort;
+    }
+    return obj;
+  },
+
+  create(base?: DeepPartial<NodeModelSettings>): NodeModelSettings {
+    return NodeModelSettings.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<NodeModelSettings>): NodeModelSettings {
+    const message = createBaseNodeModelSettings();
+    message.temperature = object.temperature ?? undefined;
+    message.maxTokens = object.maxTokens ?? undefined;
+    message.reasoningEffort = object.reasoningEffort ?? undefined;
+    return message;
+  },
+};
+
+function createBaseNodeToolBinding(): NodeToolBinding {
+  return { toolId: "", parameter: "", variable: "", target: "" };
+}
+
+export const NodeToolBinding: MessageFns<NodeToolBinding> = {
+  encode(message: NodeToolBinding, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.toolId !== "") {
+      writer.uint32(10).string(message.toolId);
+    }
+    if (message.parameter !== "") {
+      writer.uint32(18).string(message.parameter);
+    }
+    if (message.variable !== "") {
+      writer.uint32(26).string(message.variable);
+    }
+    if (message.target !== "") {
+      writer.uint32(34).string(message.target);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): NodeToolBinding {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseNodeToolBinding();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.toolId = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.parameter = reader.string();
+          continue;
+        }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.variable = reader.string();
+          continue;
+        }
+        case 4: {
+          if (tag !== 34) {
+            break;
+          }
+
+          message.target = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): NodeToolBinding {
+    return {
+      toolId: isSet(object.toolId)
+        ? globalThis.String(object.toolId)
+        : isSet(object.tool_id)
+        ? globalThis.String(object.tool_id)
+        : "",
+      parameter: isSet(object.parameter) ? globalThis.String(object.parameter) : "",
+      variable: isSet(object.variable) ? globalThis.String(object.variable) : "",
+      target: isSet(object.target) ? globalThis.String(object.target) : "",
+    };
+  },
+
+  toJSON(message: NodeToolBinding): unknown {
+    const obj: any = {};
+    if (message.toolId !== "") {
+      obj.toolId = message.toolId;
+    }
+    if (message.parameter !== "") {
+      obj.parameter = message.parameter;
+    }
+    if (message.variable !== "") {
+      obj.variable = message.variable;
+    }
+    if (message.target !== "") {
+      obj.target = message.target;
+    }
+    return obj;
+  },
+
+  create(base?: DeepPartial<NodeToolBinding>): NodeToolBinding {
+    return NodeToolBinding.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<NodeToolBinding>): NodeToolBinding {
+    const message = createBaseNodeToolBinding();
+    message.toolId = object.toolId ?? "";
+    message.parameter = object.parameter ?? "";
+    message.variable = object.variable ?? "";
+    message.target = object.target ?? "";
     return message;
   },
 };

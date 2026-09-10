@@ -11,7 +11,7 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-const publicationContractRevision = "execution-publication-2026-08-27-r1"
+const publicationContractRevision = "execution-publication-2026-09-03-r1"
 
 func TestValidateRejectsMissingRequiredFields(t *testing.T) {
 	if err := Validate(&apiv1.RecordGatewayEventRequest{}); err == nil {
@@ -161,10 +161,10 @@ func validSipPublishedRequest() *apiv1.BootstrapPublishedRequest {
 	return request
 }
 
-func TestPublishedDirectTextResponseValidation(t *testing.T) {
-	valid := validDirectTextResponse()
+func TestPublishedOrchestrationTextResponseValidation(t *testing.T) {
+	valid := validSupervisorTextResponse()
 	if err := Validate(valid); err != nil {
-		t.Fatalf("Validate(valid direct text response) = %v", err)
+		t.Fatalf("Validate(valid orchestration text response) = %v", err)
 	}
 
 	tests := []struct {
@@ -172,9 +172,9 @@ func TestPublishedDirectTextResponseValidation(t *testing.T) {
 		mutate func(*apiv1.BootstrapPublishedResponse)
 	}{
 		{"wrong revision", func(response *apiv1.BootstrapPublishedResponse) { response.ContractRevision = "legacy" }},
-		{"missing execution", func(response *apiv1.BootstrapPublishedResponse) { response.Execution = nil }},
+		{"missing orchestration", func(response *apiv1.BootstrapPublishedResponse) { response.Orchestration = nil }},
 		{"missing runtime", func(response *apiv1.BootstrapPublishedResponse) { response.Runtime = nil }},
-		{"missing prompt agent runtime", func(response *apiv1.BootstrapPublishedResponse) { response.GetPromptAgent().Runtime = nil }},
+		{"missing topology snapshot", func(response *apiv1.BootstrapPublishedResponse) { response.GetOrchestration().Supervisor = nil }},
 		{"wrong text transport", func(response *apiv1.BootstrapPublishedResponse) { response.GetTextRuntime().Transport = "audio" }},
 	}
 	for _, tt := range tests {
@@ -189,9 +189,9 @@ func TestPublishedDirectTextResponseValidation(t *testing.T) {
 }
 
 func TestPublishedVoiceRuntimeRequiresAllComponents(t *testing.T) {
-	valid := validDirectVoiceResponse()
+	valid := validSupervisorVoiceResponse()
 	if err := Validate(valid); err != nil {
-		t.Fatalf("Validate(valid direct voice response) = %v", err)
+		t.Fatalf("Validate(valid orchestration voice response) = %v", err)
 	}
 
 	for _, name := range []string{"stt", "tts", "background_audio", "dtmf", "transport", "vad", "speech_policy", "limits"} {
@@ -344,9 +344,8 @@ func TestPublishedBootstrapWireRoundTrip(t *testing.T) {
 	for _, source := range []proto.Message{
 		validPublishedRequest(),
 		validSipPublishedRequest(),
-		validDirectTextResponse(),
-		validDirectVoiceResponse(),
 		validSupervisorTextResponse(),
+		validSupervisorVoiceResponse(),
 		validHandoffTextResponse(),
 	} {
 		wire, err := proto.Marshal(source)
@@ -372,15 +371,6 @@ func validPublishedRequest() *apiv1.BootstrapPublishedRequest {
 		SessionId:        "session-1",
 		PublishedId:      "publication-1",
 		ContractRevision: publicationContractRevision,
-	}
-}
-
-func validPromptAgentRuntime(id string) *apiv1.PublishedPromptAgentRuntime {
-	return &apiv1.PublishedPromptAgentRuntime{
-		PromptAgentPublishedId: id,
-		LlmWorker:              &apiv1.LlmRuntime{ApiKey: "llm-key", Model: "llm-model"},
-		Instructions:           &apiv1.PromptInstructions{SystemPrompt: "Help."},
-		ContextPolicy:          apiv1.ContextPolicy_CONTEXT_POLICY_CONVERSATION,
 	}
 }
 
@@ -428,60 +418,47 @@ func basePublishedResponse() *apiv1.BootstrapPublishedResponse {
 	}
 }
 
-func validDirectTextResponse() *apiv1.BootstrapPublishedResponse {
-	response := basePublishedResponse()
-	response.Execution = &apiv1.BootstrapPublishedResponse_PromptAgent{
-		PromptAgent: &apiv1.PublishedPromptAgentExecution{Runtime: validPromptAgentRuntime("prompt-agent-publication-1")},
-	}
-	response.Runtime = &apiv1.BootstrapPublishedResponse_TextRuntime{TextRuntime: validTextRuntime()}
-	return response
-}
-
-func validDirectVoiceResponse() *apiv1.BootstrapPublishedResponse {
-	response := validDirectTextResponse()
-	response.Runtime = &apiv1.BootstrapPublishedResponse_VoiceRuntime{VoiceRuntime: validCallRuntime()}
-	return response
-}
-
 func validSupervisorTextResponse() *apiv1.BootstrapPublishedResponse {
 	response := basePublishedResponse()
-	response.Execution = &apiv1.BootstrapPublishedResponse_Orchestration{
-		Orchestration: &apiv1.PublishedOrchestrationExecution{
-			Mode:         apiv1.OrchestrationMode_ORCHESTRATION_MODE_SUPERVISOR,
-			NodeRuntimes: []*apiv1.PublishedInlinePromptRuntime{validInlineRuntime("supervisor-node"), validInlineRuntime("specialist-node")},
-			Supervisor: &apiv1.PublishedSupervisorSnapshot{
-				SupervisorNodeId: "supervisor-node",
-				Specialists: []*apiv1.PublishedSupervisorSpecialist{{
-					RelationId:       "billing",
-					TargetNodeId:     "specialist-node",
-					RouteDescription: "Handle billing",
-					ContextPolicy:    apiv1.ContextPolicy_CONTEXT_POLICY_CONVERSATION,
-				}},
-			},
+	response.Orchestration = &apiv1.PublishedOrchestrationExecution{
+		Mode:         apiv1.OrchestrationMode_ORCHESTRATION_MODE_SUPERVISOR,
+		NodeRuntimes: []*apiv1.PublishedInlinePromptRuntime{validInlineRuntime("supervisor-node"), validInlineRuntime("specialist-node")},
+		Supervisor: &apiv1.PublishedSupervisorSnapshot{
+			SupervisorNodeId: "supervisor-node",
+			Specialists: []*apiv1.PublishedSupervisorSpecialist{{
+				RelationId:       "billing",
+				TargetNodeId:     "specialist-node",
+				RouteDescription: "Handle billing",
+				ContextPolicy:    apiv1.ContextPolicy_CONTEXT_POLICY_CONVERSATION,
+			}},
 		},
 	}
 	response.Runtime = &apiv1.BootstrapPublishedResponse_TextRuntime{TextRuntime: validTextRuntime()}
 	return response
 }
 
+func validSupervisorVoiceResponse() *apiv1.BootstrapPublishedResponse {
+	response := validSupervisorTextResponse()
+	response.Runtime = &apiv1.BootstrapPublishedResponse_VoiceRuntime{VoiceRuntime: validCallRuntime()}
+	return response
+}
+
 func validHandoffTextResponse() *apiv1.BootstrapPublishedResponse {
 	response := basePublishedResponse()
-	response.Execution = &apiv1.BootstrapPublishedResponse_Orchestration{
-		Orchestration: &apiv1.PublishedOrchestrationExecution{
-			Mode:         apiv1.OrchestrationMode_ORCHESTRATION_MODE_HANDOFF,
-			NodeRuntimes: []*apiv1.PublishedInlinePromptRuntime{validInlineRuntime("entry-node"), validInlineRuntime("target-node")},
-			Handoff: &apiv1.PublishedHandoffSnapshot{
-				EntryNodeId:      "entry-node",
-				MaxHandoffDepth: 2,
-				Routes: []*apiv1.PublishedHandoffRoute{{
-					TransitionId:       "billing",
-					SourceNodeId:       "entry-node",
-					TargetNodeId:       "target-node",
-					RoutingDescription: "Handle billing",
-					ContextPolicy:      apiv1.ContextPolicy_CONTEXT_POLICY_RECENT,
-					RequestStart:       "Connecting you to billing.",
-				}},
-			},
+	response.Orchestration = &apiv1.PublishedOrchestrationExecution{
+		Mode:         apiv1.OrchestrationMode_ORCHESTRATION_MODE_HANDOFF,
+		NodeRuntimes: []*apiv1.PublishedInlinePromptRuntime{validInlineRuntime("entry-node"), validInlineRuntime("target-node")},
+		Handoff: &apiv1.PublishedHandoffSnapshot{
+			EntryNodeId:      "entry-node",
+			MaxHandoffDepth: 2,
+			Routes: []*apiv1.PublishedHandoffRoute{{
+				TransitionId:       "billing",
+				SourceNodeId:       "entry-node",
+				TargetNodeId:       "target-node",
+				RoutingDescription: "Handle billing",
+				ContextPolicy:      apiv1.ContextPolicy_CONTEXT_POLICY_RECENT,
+				RequestStart:       "Connecting you to billing.",
+			}},
 		},
 	}
 	response.Runtime = &apiv1.BootstrapPublishedResponse_TextRuntime{TextRuntime: validTextRuntime()}

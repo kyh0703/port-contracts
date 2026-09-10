@@ -47,16 +47,16 @@ test("protobuf Go packages use the v4 module path", () => {
   }
 });
 
-test("publication revision is the Prompt Agent inline orchestration cutover", () => {
+test("publication revision is the Agent-only orchestration cutover", () => {
   const agentSession = read("proto/port/api/v1/agent_session.proto");
   const readme = read("README.md");
-  assert.match(readme, /execution-publication-2026-08-27-r1/);
-  assert.doesNotMatch(readme, /execution-publication-2026-08-26-r1/);
+  assert.match(readme, /execution-publication-2026-09-03-r1/);
+  assert.doesNotMatch(readme, /execution-publication-2026-08-27-r1/);
   const publicationRevisionMatches = agentSession.match(
-    /\(buf\.validate\.field\)\.string\.const = "execution-publication-2026-08-27-r1"/g,
+    /\(buf\.validate\.field\)\.string\.const = "execution-publication-2026-09-03-r1"/g,
   );
   assert.equal(publicationRevisionMatches?.length, 2);
-  assert.doesNotMatch(agentSession, /orchestration-2026-08-07-r4|agent_version_id|orchestration_version_id/);
+  assert.doesNotMatch(agentSession, /orchestration-2026-08-07-r4|agent_version_id|orchestration_version_id|prompt_agent/);
 
   const snapshotBody = agentSession.match(/message CallRuntimeSnapshot \{([\s\S]*?)\n\}/)?.[1];
   assert.ok(snapshotBody, "CallRuntimeSnapshot message is missing");

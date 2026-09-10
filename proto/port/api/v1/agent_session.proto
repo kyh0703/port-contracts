@@ -39,15 +39,11 @@ message BootstrapPublishedRequest {
   string published_id = 4 [(buf.validate.field).required = true, (buf.validate.field).string.min_len = 1];
   string contract_revision = 5 [
     (buf.validate.field).required = true,
-    (buf.validate.field).string.const = "execution-publication-2026-08-27-r1"
+    (buf.validate.field).string.const = "execution-publication-2026-09-03-r1"
   ];
 }
 
 message BootstrapPublishedResponse {
-  option (buf.validate.message).oneof = {
-    fields: ["prompt_agent", "orchestration"]
-    required: true
-  };
   option (buf.validate.message).oneof = {
     fields: ["voice_runtime", "text_runtime"]
     required: true
@@ -55,26 +51,17 @@ message BootstrapPublishedResponse {
 
   string contract_revision = 1 [
     (buf.validate.field).required = true,
-    (buf.validate.field).string.const = "execution-publication-2026-08-27-r1"
+    (buf.validate.field).string.const = "execution-publication-2026-09-03-r1"
   ];
   string conversation_id = 2 [(buf.validate.field).required = true, (buf.validate.field).string.min_len = 1];
   string session_id = 3 [(buf.validate.field).required = true, (buf.validate.field).string.min_len = 1];
   string published_id = 4 [(buf.validate.field).required = true, (buf.validate.field).string.min_len = 1];
-
-  oneof execution {
-    option (buf.validate.oneof).required = true;
-    PublishedPromptAgentExecution prompt_agent = 5;
-    PublishedOrchestrationExecution orchestration = 6;
-  }
+  PublishedOrchestrationExecution orchestration = 6 [(buf.validate.field).required = true];
   oneof runtime {
     option (buf.validate.oneof).required = true;
     CallRuntimeSnapshot voice_runtime = 7;
     TextRuntimeSnapshot text_runtime = 8;
   }
-}
-
-message PublishedPromptAgentExecution {
-  PublishedPromptAgentRuntime runtime = 1 [(buf.validate.field).required = true];
 }
 
 message PublishedOrchestrationExecution {
@@ -94,24 +81,6 @@ message PublishedOrchestrationExecution {
   PublishedHandoffSnapshot handoff = 4;
 }
 
-message PublishedPromptAgentRuntime {
-  string prompt_agent_published_id = 1 [(buf.validate.field).string.min_len = 1];
-  LlmRuntime llm_worker = 2 [(buf.validate.field).required = true];
-  PromptInstructions instructions = 3 [(buf.validate.field).required = true];
-  ContextPolicy context_policy = 4 [(buf.validate.field).enum = {defined_only: true not_in: 0}];
-  repeated NodeToolMetadata tools = 5;
-  repeated McpServerRuntime mcp_servers = 6;
-  string greeting = 7;
-  string knowledge_revision_id = 8;
-  repeated ApiToolRuntime api_tool_runtimes = 9;
-  string knowledge_retrieval_capability = 10;
-  repeated A2aToolRuntime a2a_tool_runtimes = 11;
-  repeated BuiltInTool built_in_tools = 12;
-  string knowledge_function_name = 13;
-  string knowledge_description = 14;
-  repeated KnowledgeToolRuntime knowledge_tool_runtimes = 15;
-}
-
 // Inline orchestration nodes intentionally do not expose greeting or guardrails
 // fields. Knowledge retrieval is available through the additive fields below.
 message PublishedInlinePromptRuntime {
@@ -129,6 +98,26 @@ message PublishedInlinePromptRuntime {
   string knowledge_function_name = 12;
   string knowledge_description = 13;
   repeated KnowledgeToolRuntime knowledge_tool_runtimes = 14;
+  InlineAuthoringOptions authoring = 15;
+}
+
+// Optional so older publications retain provider defaults.
+message InlineAuthoringOptions {
+  NodeModelSettings model = 1;
+  repeated NodeToolBinding tool_bindings = 2 [(buf.validate.field).repeated.max_items = 30];
+}
+
+message NodeModelSettings {
+  optional double temperature = 1 [(buf.validate.field).double = {gte: 0, lte: 2}];
+  optional int32 max_tokens = 2 [(buf.validate.field).int32 = {gte: 1, lte: 4096}];
+  optional string reasoning_effort = 3 [(buf.validate.field).string = {in: ["low", "medium", "high"]}];
+}
+
+message NodeToolBinding {
+  string tool_id = 1 [(buf.validate.field).string.min_len = 1];
+  string parameter = 2 [(buf.validate.field).string.min_len = 1];
+  string variable = 3 [(buf.validate.field).string.min_len = 1];
+  string target = 4 [(buf.validate.field).string = {in: ["argument", "template"]}];
 }
 
 message PublishedSupervisorSnapshot {
