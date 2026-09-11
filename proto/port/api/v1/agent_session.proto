@@ -10,6 +10,7 @@ option go_package = "github.com/kyh0703/port-contracts/v4/gen/go/port/api/v1;api
 // ExecutionSessionService is the worker-only API boundary for LiveKit jobs.
 service ExecutionSessionService {
   rpc BootstrapPublished(BootstrapPublishedRequest) returns (BootstrapPublishedResponse);
+  rpc CommandSipTransfer(CommandSipTransferRequest) returns (CommandSipTransferResponse);
 }
 
 message BootstrapRequest {
@@ -44,6 +45,11 @@ message BootstrapPublishedRequest {
 }
 
 message BootstrapPublishedResponse {
+  option (buf.validate.message).cel = {
+    id: "transfer_capability.voice_binding"
+    message: "transfer capability is only valid for a voice runtime"
+    expression: "!has(this.transfer_capability) || has(this.voice_runtime)"
+  };
   option (buf.validate.message).oneof = {
     fields: ["voice_runtime", "text_runtime"]
     required: true
@@ -56,6 +62,9 @@ message BootstrapPublishedResponse {
   string conversation_id = 2 [(buf.validate.field).required = true, (buf.validate.field).string.min_len = 1];
   string session_id = 3 [(buf.validate.field).required = true, (buf.validate.field).string.min_len = 1];
   string published_id = 4 [(buf.validate.field).required = true, (buf.validate.field).string.min_len = 1];
+
+  // Short-lived control capability bound to this admitted voice session.
+  optional string transfer_capability = 9 [(buf.validate.field).string = {min_len: 1 max_len: 8192}];
 
   SessionPromptVariableBag prompt_variables = 6 [(buf.validate.field).required = true];
   PublishedAgentExecution agent = 5 [(buf.validate.field).required = true];
@@ -439,6 +448,9 @@ message TransferToHumanTool {
   uint32 ringing_timeout_ms = 3 [(buf.validate.field).uint32 = {gte: 5000 lte: 600000}];
   // User-authored invocation condition. Runtime appends locked operational wording.
   string condition = 4;
+  // Missing legacy policy is normalized to consultative by the API.
+  optional string mode = 5 [(buf.validate.field).string = {in: ["single", "consultative"]}];
+  optional uint32 consultation_timeout_ms = 6 [(buf.validate.field).uint32 = {gte: 5000 lte: 180000}];
 }
 
 message DtmfTool {}
@@ -460,4 +472,54 @@ message McpServerRuntime {
 
 message ConversationFillerRuntime {
   string phrase = 1 [(buf.validate.field).string = {min_len: 1 max_len: 200}];
+}
+
+// Worker-only transfer commands. The API resolves destination and policy from
+// the pinned publication; the request cannot supply a phone number or room.
+message CommandSipTransferRequest {
+  option (buf.validate.message).cel = {
+    id: "transfer_command.operation_binding"
+    message: "start requires a node; subsequent commands require an attempt"
+    expression: "this.action == 'start' ? this.node_id != '' : this.attempt_id != ''"
+  };
+  option (buf.validate.message).cel = {
+    id: "transfer_command.consent_identity"
+    message: "accept requires consultant identity and voice or DTMF evidence"
+    expression: "this.action != 'accept' || (this.consultant_identity != '' && has(this.consent_source))"
+  };
+  string capability = 1 [(buf.validate.field).string.min_len = 1];
+  string conversation_id = 2 [(buf.validate.field).string.min_len = 1];
+  string session_id = 3 [(buf.validate.field).string.min_len = 1];
+  string request_id = 4 [(buf.validate.field).string.min_len = 1];
+  string node_id = 5;
+  string attempt_id = 6;
+  string action = 7 [(buf.validate.field).string = {in: ["start", "briefing", "ready", "accept", "reject", "cancel"]}];
+  string reason = 8 [(buf.validate.field).string.max_len = 1000];
+  string consultant_identity = 9;
+  // Private briefing evidence; never published as a customer conversation turn.
+  string briefing = 10 [(buf.validate.field).string.max_len = 10000];
+  // Web consent enters through the authenticated owner HTTP API.
+  optional string consent_source = 11 [(buf.validate.field).string = {in: ["voice", "dtmf"]}];
+}
+
+message CommandSipTransferResponse {
+  option (buf.validate.message).cel = {
+    id: "transfer_response.deadline"
+    message: "expires_at must be a valid RFC3339 timestamp after the Unix epoch"
+    expression: "timestamp(this.expires_at) > timestamp('1970-01-01T00:00:00Z')"
+  };
+  string attempt_id = 1 [(buf.validate.field).string.min_len = 1];
+  string state = 2 [(buf.validate.field).string = {in: ["dialing", "briefing", "awaiting_consent", "connecting", "completed", "rejected", "cancelled", "failed", "timed_out"]}];
+  string mode = 3 [(buf.validate.field).string = {in: ["single", "consultative"]}];
+  SipTransferConsultation consultation = 4;
+  string expires_at = 5 [(buf.validate.field).string = {min_len: 1 max_len: 64}];
+  string reason = 6;
+}
+
+message SipTransferConsultation {
+  string room_name = 1 [(buf.validate.field).string.min_len = 1];
+  string consultant_identity = 2 [(buf.validate.field).string.min_len = 1];
+  string worker_identity = 3 [(buf.validate.field).string.min_len = 1];
+  string livekit_url = 4 [(buf.validate.field).string.min_len = 1];
+  string participant_token = 5 [(buf.validate.field).string.min_len = 1];
 }

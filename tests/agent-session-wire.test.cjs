@@ -153,8 +153,8 @@ test("conversation controls round-trip end-call policies and elapsed actions", (
   assert.ok(decoded.conversationControl.timeElapsedActions[1].endCall);
 });
 
-test("the worker contract exposes only canonical publication bootstrap", () => {
-  assert.deepEqual(Object.keys(ExecutionSessionServiceService), ["bootstrapPublished"]);
+test("the worker contract exposes canonical bootstrap and session-bound transfer control", () => {
+  assert.deepEqual(Object.keys(ExecutionSessionServiceService), ["bootstrapPublished", "commandSipTransfer"]);
   assert.equal(contracts.AgentSessionServiceService, undefined);
   assert.equal(contracts.BootstrapAgentRequest, undefined);
   assert.equal(contracts.BootstrapSipRequest, undefined);

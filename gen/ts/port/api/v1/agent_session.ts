@@ -328,6 +328,8 @@ export interface BootstrapPublishedResponse {
   conversationId: string;
   sessionId: string;
   publishedId: string;
+  /** Short-lived control capability bound to this admitted voice session. */
+  transferCapability?: string | undefined;
   promptVariables?: SessionPromptVariableBag | undefined;
   agent?: PublishedAgentExecution | undefined;
   voiceRuntime?: CallRuntimeSnapshot | undefined;
@@ -587,6 +589,9 @@ export interface TransferToHumanTool {
   ringingTimeoutMs: number;
   /** User-authored invocation condition. Runtime appends locked operational wording. */
   condition: string;
+  /** Missing legacy policy is normalized to consultative by the API. */
+  mode?: string | undefined;
+  consultationTimeoutMs?: number | undefined;
 }
 
 export interface DtmfTool {
@@ -614,6 +619,43 @@ export interface McpServerRuntime_HeadersEntry {
 
 export interface ConversationFillerRuntime {
   phrase: string;
+}
+
+/**
+ * Worker-only transfer commands. The API resolves destination and policy from
+ * the pinned publication; the request cannot supply a phone number or room.
+ */
+export interface CommandSipTransferRequest {
+  capability: string;
+  conversationId: string;
+  sessionId: string;
+  requestId: string;
+  nodeId: string;
+  attemptId: string;
+  action: string;
+  reason: string;
+  consultantIdentity: string;
+  /** Private briefing evidence; never published as a customer conversation turn. */
+  briefing: string;
+  /** Web consent enters through the authenticated owner HTTP API. */
+  consentSource?: string | undefined;
+}
+
+export interface CommandSipTransferResponse {
+  attemptId: string;
+  state: string;
+  mode: string;
+  consultation?: SipTransferConsultation | undefined;
+  expiresAt: string;
+  reason: string;
+}
+
+export interface SipTransferConsultation {
+  roomName: string;
+  consultantIdentity: string;
+  workerIdentity: string;
+  livekitUrl: string;
+  participantToken: string;
 }
 
 function createBaseBootstrapRequest(): BootstrapRequest {
@@ -1059,6 +1101,7 @@ function createBaseBootstrapPublishedResponse(): BootstrapPublishedResponse {
     conversationId: "",
     sessionId: "",
     publishedId: "",
+    transferCapability: undefined,
     promptVariables: undefined,
     agent: undefined,
     voiceRuntime: undefined,
@@ -1079,6 +1122,9 @@ export const BootstrapPublishedResponse: MessageFns<BootstrapPublishedResponse> 
     }
     if (message.publishedId !== "") {
       writer.uint32(34).string(message.publishedId);
+    }
+    if (message.transferCapability !== undefined) {
+      writer.uint32(74).string(message.transferCapability);
     }
     if (message.promptVariables !== undefined) {
       SessionPromptVariableBag.encode(message.promptVariables, writer.uint32(50).fork()).join();
@@ -1132,6 +1178,14 @@ export const BootstrapPublishedResponse: MessageFns<BootstrapPublishedResponse> 
           }
 
           message.publishedId = reader.string();
+          continue;
+        }
+        case 9: {
+          if (tag !== 74) {
+            break;
+          }
+
+          message.transferCapability = reader.string();
           continue;
         }
         case 6: {
@@ -1197,6 +1251,11 @@ export const BootstrapPublishedResponse: MessageFns<BootstrapPublishedResponse> 
         : isSet(object.published_id)
         ? globalThis.String(object.published_id)
         : "",
+      transferCapability: isSet(object.transferCapability)
+        ? globalThis.String(object.transferCapability)
+        : isSet(object.transfer_capability)
+        ? globalThis.String(object.transfer_capability)
+        : undefined,
       promptVariables: isSet(object.promptVariables)
         ? SessionPromptVariableBag.fromJSON(object.promptVariables)
         : isSet(object.prompt_variables)
@@ -1230,6 +1289,9 @@ export const BootstrapPublishedResponse: MessageFns<BootstrapPublishedResponse> 
     if (message.publishedId !== "") {
       obj.publishedId = message.publishedId;
     }
+    if (message.transferCapability !== undefined) {
+      obj.transferCapability = message.transferCapability;
+    }
     if (message.promptVariables !== undefined) {
       obj.promptVariables = SessionPromptVariableBag.toJSON(message.promptVariables);
     }
@@ -1254,6 +1316,7 @@ export const BootstrapPublishedResponse: MessageFns<BootstrapPublishedResponse> 
     message.conversationId = object.conversationId ?? "";
     message.sessionId = object.sessionId ?? "";
     message.publishedId = object.publishedId ?? "";
+    message.transferCapability = object.transferCapability ?? undefined;
     message.promptVariables = (object.promptVariables !== undefined && object.promptVariables !== null)
       ? SessionPromptVariableBag.fromPartial(object.promptVariables)
       : undefined;
@@ -5410,7 +5473,14 @@ export const EndCallTool: MessageFns<EndCallTool> = {
 };
 
 function createBaseTransferToHumanTool(): TransferToHumanTool {
-  return { sipCallTo: "", holdPhrase: undefined, ringingTimeoutMs: 0, condition: "" };
+  return {
+    sipCallTo: "",
+    holdPhrase: undefined,
+    ringingTimeoutMs: 0,
+    condition: "",
+    mode: undefined,
+    consultationTimeoutMs: undefined,
+  };
 }
 
 export const TransferToHumanTool: MessageFns<TransferToHumanTool> = {
@@ -5426,6 +5496,12 @@ export const TransferToHumanTool: MessageFns<TransferToHumanTool> = {
     }
     if (message.condition !== "") {
       writer.uint32(34).string(message.condition);
+    }
+    if (message.mode !== undefined) {
+      writer.uint32(42).string(message.mode);
+    }
+    if (message.consultationTimeoutMs !== undefined) {
+      writer.uint32(48).uint32(message.consultationTimeoutMs);
     }
     return writer;
   },
@@ -5469,6 +5545,22 @@ export const TransferToHumanTool: MessageFns<TransferToHumanTool> = {
           message.condition = reader.string();
           continue;
         }
+        case 5: {
+          if (tag !== 42) {
+            break;
+          }
+
+          message.mode = reader.string();
+          continue;
+        }
+        case 6: {
+          if (tag !== 48) {
+            break;
+          }
+
+          message.consultationTimeoutMs = reader.uint32();
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -5496,6 +5588,12 @@ export const TransferToHumanTool: MessageFns<TransferToHumanTool> = {
         ? globalThis.Number(object.ringing_timeout_ms)
         : 0,
       condition: isSet(object.condition) ? globalThis.String(object.condition) : "",
+      mode: isSet(object.mode) ? globalThis.String(object.mode) : undefined,
+      consultationTimeoutMs: isSet(object.consultationTimeoutMs)
+        ? globalThis.Number(object.consultationTimeoutMs)
+        : isSet(object.consultation_timeout_ms)
+        ? globalThis.Number(object.consultation_timeout_ms)
+        : undefined,
     };
   },
 
@@ -5513,6 +5611,12 @@ export const TransferToHumanTool: MessageFns<TransferToHumanTool> = {
     if (message.condition !== "") {
       obj.condition = message.condition;
     }
+    if (message.mode !== undefined) {
+      obj.mode = message.mode;
+    }
+    if (message.consultationTimeoutMs !== undefined) {
+      obj.consultationTimeoutMs = Math.round(message.consultationTimeoutMs);
+    }
     return obj;
   },
 
@@ -5525,6 +5629,8 @@ export const TransferToHumanTool: MessageFns<TransferToHumanTool> = {
     message.holdPhrase = object.holdPhrase ?? undefined;
     message.ringingTimeoutMs = object.ringingTimeoutMs ?? 0;
     message.condition = object.condition ?? "";
+    message.mode = object.mode ?? undefined;
+    message.consultationTimeoutMs = object.consultationTimeoutMs ?? undefined;
     return message;
   },
 };
@@ -5951,6 +6057,560 @@ export const ConversationFillerRuntime: MessageFns<ConversationFillerRuntime> = 
   },
 };
 
+function createBaseCommandSipTransferRequest(): CommandSipTransferRequest {
+  return {
+    capability: "",
+    conversationId: "",
+    sessionId: "",
+    requestId: "",
+    nodeId: "",
+    attemptId: "",
+    action: "",
+    reason: "",
+    consultantIdentity: "",
+    briefing: "",
+    consentSource: undefined,
+  };
+}
+
+export const CommandSipTransferRequest: MessageFns<CommandSipTransferRequest> = {
+  encode(message: CommandSipTransferRequest, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.capability !== "") {
+      writer.uint32(10).string(message.capability);
+    }
+    if (message.conversationId !== "") {
+      writer.uint32(18).string(message.conversationId);
+    }
+    if (message.sessionId !== "") {
+      writer.uint32(26).string(message.sessionId);
+    }
+    if (message.requestId !== "") {
+      writer.uint32(34).string(message.requestId);
+    }
+    if (message.nodeId !== "") {
+      writer.uint32(42).string(message.nodeId);
+    }
+    if (message.attemptId !== "") {
+      writer.uint32(50).string(message.attemptId);
+    }
+    if (message.action !== "") {
+      writer.uint32(58).string(message.action);
+    }
+    if (message.reason !== "") {
+      writer.uint32(66).string(message.reason);
+    }
+    if (message.consultantIdentity !== "") {
+      writer.uint32(74).string(message.consultantIdentity);
+    }
+    if (message.briefing !== "") {
+      writer.uint32(82).string(message.briefing);
+    }
+    if (message.consentSource !== undefined) {
+      writer.uint32(90).string(message.consentSource);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): CommandSipTransferRequest {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseCommandSipTransferRequest();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.capability = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.conversationId = reader.string();
+          continue;
+        }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.sessionId = reader.string();
+          continue;
+        }
+        case 4: {
+          if (tag !== 34) {
+            break;
+          }
+
+          message.requestId = reader.string();
+          continue;
+        }
+        case 5: {
+          if (tag !== 42) {
+            break;
+          }
+
+          message.nodeId = reader.string();
+          continue;
+        }
+        case 6: {
+          if (tag !== 50) {
+            break;
+          }
+
+          message.attemptId = reader.string();
+          continue;
+        }
+        case 7: {
+          if (tag !== 58) {
+            break;
+          }
+
+          message.action = reader.string();
+          continue;
+        }
+        case 8: {
+          if (tag !== 66) {
+            break;
+          }
+
+          message.reason = reader.string();
+          continue;
+        }
+        case 9: {
+          if (tag !== 74) {
+            break;
+          }
+
+          message.consultantIdentity = reader.string();
+          continue;
+        }
+        case 10: {
+          if (tag !== 82) {
+            break;
+          }
+
+          message.briefing = reader.string();
+          continue;
+        }
+        case 11: {
+          if (tag !== 90) {
+            break;
+          }
+
+          message.consentSource = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): CommandSipTransferRequest {
+    return {
+      capability: isSet(object.capability) ? globalThis.String(object.capability) : "",
+      conversationId: isSet(object.conversationId)
+        ? globalThis.String(object.conversationId)
+        : isSet(object.conversation_id)
+        ? globalThis.String(object.conversation_id)
+        : "",
+      sessionId: isSet(object.sessionId)
+        ? globalThis.String(object.sessionId)
+        : isSet(object.session_id)
+        ? globalThis.String(object.session_id)
+        : "",
+      requestId: isSet(object.requestId)
+        ? globalThis.String(object.requestId)
+        : isSet(object.request_id)
+        ? globalThis.String(object.request_id)
+        : "",
+      nodeId: isSet(object.nodeId)
+        ? globalThis.String(object.nodeId)
+        : isSet(object.node_id)
+        ? globalThis.String(object.node_id)
+        : "",
+      attemptId: isSet(object.attemptId)
+        ? globalThis.String(object.attemptId)
+        : isSet(object.attempt_id)
+        ? globalThis.String(object.attempt_id)
+        : "",
+      action: isSet(object.action) ? globalThis.String(object.action) : "",
+      reason: isSet(object.reason) ? globalThis.String(object.reason) : "",
+      consultantIdentity: isSet(object.consultantIdentity)
+        ? globalThis.String(object.consultantIdentity)
+        : isSet(object.consultant_identity)
+        ? globalThis.String(object.consultant_identity)
+        : "",
+      briefing: isSet(object.briefing) ? globalThis.String(object.briefing) : "",
+      consentSource: isSet(object.consentSource)
+        ? globalThis.String(object.consentSource)
+        : isSet(object.consent_source)
+        ? globalThis.String(object.consent_source)
+        : undefined,
+    };
+  },
+
+  toJSON(message: CommandSipTransferRequest): unknown {
+    const obj: any = {};
+    if (message.capability !== "") {
+      obj.capability = message.capability;
+    }
+    if (message.conversationId !== "") {
+      obj.conversationId = message.conversationId;
+    }
+    if (message.sessionId !== "") {
+      obj.sessionId = message.sessionId;
+    }
+    if (message.requestId !== "") {
+      obj.requestId = message.requestId;
+    }
+    if (message.nodeId !== "") {
+      obj.nodeId = message.nodeId;
+    }
+    if (message.attemptId !== "") {
+      obj.attemptId = message.attemptId;
+    }
+    if (message.action !== "") {
+      obj.action = message.action;
+    }
+    if (message.reason !== "") {
+      obj.reason = message.reason;
+    }
+    if (message.consultantIdentity !== "") {
+      obj.consultantIdentity = message.consultantIdentity;
+    }
+    if (message.briefing !== "") {
+      obj.briefing = message.briefing;
+    }
+    if (message.consentSource !== undefined) {
+      obj.consentSource = message.consentSource;
+    }
+    return obj;
+  },
+
+  create(base?: DeepPartial<CommandSipTransferRequest>): CommandSipTransferRequest {
+    return CommandSipTransferRequest.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<CommandSipTransferRequest>): CommandSipTransferRequest {
+    const message = createBaseCommandSipTransferRequest();
+    message.capability = object.capability ?? "";
+    message.conversationId = object.conversationId ?? "";
+    message.sessionId = object.sessionId ?? "";
+    message.requestId = object.requestId ?? "";
+    message.nodeId = object.nodeId ?? "";
+    message.attemptId = object.attemptId ?? "";
+    message.action = object.action ?? "";
+    message.reason = object.reason ?? "";
+    message.consultantIdentity = object.consultantIdentity ?? "";
+    message.briefing = object.briefing ?? "";
+    message.consentSource = object.consentSource ?? undefined;
+    return message;
+  },
+};
+
+function createBaseCommandSipTransferResponse(): CommandSipTransferResponse {
+  return { attemptId: "", state: "", mode: "", consultation: undefined, expiresAt: "", reason: "" };
+}
+
+export const CommandSipTransferResponse: MessageFns<CommandSipTransferResponse> = {
+  encode(message: CommandSipTransferResponse, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.attemptId !== "") {
+      writer.uint32(10).string(message.attemptId);
+    }
+    if (message.state !== "") {
+      writer.uint32(18).string(message.state);
+    }
+    if (message.mode !== "") {
+      writer.uint32(26).string(message.mode);
+    }
+    if (message.consultation !== undefined) {
+      SipTransferConsultation.encode(message.consultation, writer.uint32(34).fork()).join();
+    }
+    if (message.expiresAt !== "") {
+      writer.uint32(42).string(message.expiresAt);
+    }
+    if (message.reason !== "") {
+      writer.uint32(50).string(message.reason);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): CommandSipTransferResponse {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseCommandSipTransferResponse();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.attemptId = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.state = reader.string();
+          continue;
+        }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.mode = reader.string();
+          continue;
+        }
+        case 4: {
+          if (tag !== 34) {
+            break;
+          }
+
+          message.consultation = SipTransferConsultation.decode(reader, reader.uint32());
+          continue;
+        }
+        case 5: {
+          if (tag !== 42) {
+            break;
+          }
+
+          message.expiresAt = reader.string();
+          continue;
+        }
+        case 6: {
+          if (tag !== 50) {
+            break;
+          }
+
+          message.reason = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): CommandSipTransferResponse {
+    return {
+      attemptId: isSet(object.attemptId)
+        ? globalThis.String(object.attemptId)
+        : isSet(object.attempt_id)
+        ? globalThis.String(object.attempt_id)
+        : "",
+      state: isSet(object.state) ? globalThis.String(object.state) : "",
+      mode: isSet(object.mode) ? globalThis.String(object.mode) : "",
+      consultation: isSet(object.consultation) ? SipTransferConsultation.fromJSON(object.consultation) : undefined,
+      expiresAt: isSet(object.expiresAt)
+        ? globalThis.String(object.expiresAt)
+        : isSet(object.expires_at)
+        ? globalThis.String(object.expires_at)
+        : "",
+      reason: isSet(object.reason) ? globalThis.String(object.reason) : "",
+    };
+  },
+
+  toJSON(message: CommandSipTransferResponse): unknown {
+    const obj: any = {};
+    if (message.attemptId !== "") {
+      obj.attemptId = message.attemptId;
+    }
+    if (message.state !== "") {
+      obj.state = message.state;
+    }
+    if (message.mode !== "") {
+      obj.mode = message.mode;
+    }
+    if (message.consultation !== undefined) {
+      obj.consultation = SipTransferConsultation.toJSON(message.consultation);
+    }
+    if (message.expiresAt !== "") {
+      obj.expiresAt = message.expiresAt;
+    }
+    if (message.reason !== "") {
+      obj.reason = message.reason;
+    }
+    return obj;
+  },
+
+  create(base?: DeepPartial<CommandSipTransferResponse>): CommandSipTransferResponse {
+    return CommandSipTransferResponse.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<CommandSipTransferResponse>): CommandSipTransferResponse {
+    const message = createBaseCommandSipTransferResponse();
+    message.attemptId = object.attemptId ?? "";
+    message.state = object.state ?? "";
+    message.mode = object.mode ?? "";
+    message.consultation = (object.consultation !== undefined && object.consultation !== null)
+      ? SipTransferConsultation.fromPartial(object.consultation)
+      : undefined;
+    message.expiresAt = object.expiresAt ?? "";
+    message.reason = object.reason ?? "";
+    return message;
+  },
+};
+
+function createBaseSipTransferConsultation(): SipTransferConsultation {
+  return { roomName: "", consultantIdentity: "", workerIdentity: "", livekitUrl: "", participantToken: "" };
+}
+
+export const SipTransferConsultation: MessageFns<SipTransferConsultation> = {
+  encode(message: SipTransferConsultation, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.roomName !== "") {
+      writer.uint32(10).string(message.roomName);
+    }
+    if (message.consultantIdentity !== "") {
+      writer.uint32(18).string(message.consultantIdentity);
+    }
+    if (message.workerIdentity !== "") {
+      writer.uint32(26).string(message.workerIdentity);
+    }
+    if (message.livekitUrl !== "") {
+      writer.uint32(34).string(message.livekitUrl);
+    }
+    if (message.participantToken !== "") {
+      writer.uint32(42).string(message.participantToken);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): SipTransferConsultation {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseSipTransferConsultation();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.roomName = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.consultantIdentity = reader.string();
+          continue;
+        }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.workerIdentity = reader.string();
+          continue;
+        }
+        case 4: {
+          if (tag !== 34) {
+            break;
+          }
+
+          message.livekitUrl = reader.string();
+          continue;
+        }
+        case 5: {
+          if (tag !== 42) {
+            break;
+          }
+
+          message.participantToken = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): SipTransferConsultation {
+    return {
+      roomName: isSet(object.roomName)
+        ? globalThis.String(object.roomName)
+        : isSet(object.room_name)
+        ? globalThis.String(object.room_name)
+        : "",
+      consultantIdentity: isSet(object.consultantIdentity)
+        ? globalThis.String(object.consultantIdentity)
+        : isSet(object.consultant_identity)
+        ? globalThis.String(object.consultant_identity)
+        : "",
+      workerIdentity: isSet(object.workerIdentity)
+        ? globalThis.String(object.workerIdentity)
+        : isSet(object.worker_identity)
+        ? globalThis.String(object.worker_identity)
+        : "",
+      livekitUrl: isSet(object.livekitUrl)
+        ? globalThis.String(object.livekitUrl)
+        : isSet(object.livekit_url)
+        ? globalThis.String(object.livekit_url)
+        : "",
+      participantToken: isSet(object.participantToken)
+        ? globalThis.String(object.participantToken)
+        : isSet(object.participant_token)
+        ? globalThis.String(object.participant_token)
+        : "",
+    };
+  },
+
+  toJSON(message: SipTransferConsultation): unknown {
+    const obj: any = {};
+    if (message.roomName !== "") {
+      obj.roomName = message.roomName;
+    }
+    if (message.consultantIdentity !== "") {
+      obj.consultantIdentity = message.consultantIdentity;
+    }
+    if (message.workerIdentity !== "") {
+      obj.workerIdentity = message.workerIdentity;
+    }
+    if (message.livekitUrl !== "") {
+      obj.livekitUrl = message.livekitUrl;
+    }
+    if (message.participantToken !== "") {
+      obj.participantToken = message.participantToken;
+    }
+    return obj;
+  },
+
+  create(base?: DeepPartial<SipTransferConsultation>): SipTransferConsultation {
+    return SipTransferConsultation.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<SipTransferConsultation>): SipTransferConsultation {
+    const message = createBaseSipTransferConsultation();
+    message.roomName = object.roomName ?? "";
+    message.consultantIdentity = object.consultantIdentity ?? "";
+    message.workerIdentity = object.workerIdentity ?? "";
+    message.livekitUrl = object.livekitUrl ?? "";
+    message.participantToken = object.participantToken ?? "";
+    return message;
+  },
+};
+
 /** ExecutionSessionService is the worker-only API boundary for LiveKit jobs. */
 export type ExecutionSessionServiceService = typeof ExecutionSessionServiceService;
 export const ExecutionSessionServiceService = {
@@ -5965,10 +6625,22 @@ export const ExecutionSessionServiceService = {
       Buffer.from(BootstrapPublishedResponse.encode(value).finish()),
     responseDeserialize: (value: Buffer): BootstrapPublishedResponse => BootstrapPublishedResponse.decode(value),
   },
+  commandSipTransfer: {
+    path: "/port.api.v1.ExecutionSessionService/CommandSipTransfer" as const,
+    requestStream: false as const,
+    responseStream: false as const,
+    requestSerialize: (value: CommandSipTransferRequest): Buffer =>
+      Buffer.from(CommandSipTransferRequest.encode(value).finish()),
+    requestDeserialize: (value: Buffer): CommandSipTransferRequest => CommandSipTransferRequest.decode(value),
+    responseSerialize: (value: CommandSipTransferResponse): Buffer =>
+      Buffer.from(CommandSipTransferResponse.encode(value).finish()),
+    responseDeserialize: (value: Buffer): CommandSipTransferResponse => CommandSipTransferResponse.decode(value),
+  },
 } as const;
 
 export interface ExecutionSessionServiceServer extends UntypedServiceImplementation {
   bootstrapPublished: handleUnaryCall<BootstrapPublishedRequest, BootstrapPublishedResponse>;
+  commandSipTransfer: handleUnaryCall<CommandSipTransferRequest, CommandSipTransferResponse>;
 }
 
 export interface ExecutionSessionServiceClient extends Client {
@@ -5986,6 +6658,21 @@ export interface ExecutionSessionServiceClient extends Client {
     metadata: Metadata,
     options: Partial<CallOptions>,
     callback: (error: ServiceError | null, response: BootstrapPublishedResponse) => void,
+  ): ClientUnaryCall;
+  commandSipTransfer(
+    request: CommandSipTransferRequest,
+    callback: (error: ServiceError | null, response: CommandSipTransferResponse) => void,
+  ): ClientUnaryCall;
+  commandSipTransfer(
+    request: CommandSipTransferRequest,
+    metadata: Metadata,
+    callback: (error: ServiceError | null, response: CommandSipTransferResponse) => void,
+  ): ClientUnaryCall;
+  commandSipTransfer(
+    request: CommandSipTransferRequest,
+    metadata: Metadata,
+    options: Partial<CallOptions>,
+    callback: (error: ServiceError | null, response: CommandSipTransferResponse) => void,
   ): ClientUnaryCall;
 }
 

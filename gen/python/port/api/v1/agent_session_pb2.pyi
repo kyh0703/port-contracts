@@ -120,11 +120,12 @@ class BootstrapPublishedRequest(_message.Message):
     def __init__(self, admission: _Optional[_Union[BootstrapRequest, _Mapping]] = ..., conversation_id: _Optional[str] = ..., session_id: _Optional[str] = ..., published_id: _Optional[str] = ..., contract_revision: _Optional[str] = ...) -> None: ...
 
 class BootstrapPublishedResponse(_message.Message):
-    __slots__ = ("contract_revision", "conversation_id", "session_id", "published_id", "prompt_variables", "agent", "voice_runtime", "text_runtime")
+    __slots__ = ("contract_revision", "conversation_id", "session_id", "published_id", "transfer_capability", "prompt_variables", "agent", "voice_runtime", "text_runtime")
     CONTRACT_REVISION_FIELD_NUMBER: _ClassVar[int]
     CONVERSATION_ID_FIELD_NUMBER: _ClassVar[int]
     SESSION_ID_FIELD_NUMBER: _ClassVar[int]
     PUBLISHED_ID_FIELD_NUMBER: _ClassVar[int]
+    TRANSFER_CAPABILITY_FIELD_NUMBER: _ClassVar[int]
     PROMPT_VARIABLES_FIELD_NUMBER: _ClassVar[int]
     AGENT_FIELD_NUMBER: _ClassVar[int]
     VOICE_RUNTIME_FIELD_NUMBER: _ClassVar[int]
@@ -133,11 +134,12 @@ class BootstrapPublishedResponse(_message.Message):
     conversation_id: str
     session_id: str
     published_id: str
+    transfer_capability: str
     prompt_variables: SessionPromptVariableBag
     agent: PublishedAgentExecution
     voice_runtime: CallRuntimeSnapshot
     text_runtime: TextRuntimeSnapshot
-    def __init__(self, contract_revision: _Optional[str] = ..., conversation_id: _Optional[str] = ..., session_id: _Optional[str] = ..., published_id: _Optional[str] = ..., prompt_variables: _Optional[_Union[SessionPromptVariableBag, _Mapping]] = ..., agent: _Optional[_Union[PublishedAgentExecution, _Mapping]] = ..., voice_runtime: _Optional[_Union[CallRuntimeSnapshot, _Mapping]] = ..., text_runtime: _Optional[_Union[TextRuntimeSnapshot, _Mapping]] = ...) -> None: ...
+    def __init__(self, contract_revision: _Optional[str] = ..., conversation_id: _Optional[str] = ..., session_id: _Optional[str] = ..., published_id: _Optional[str] = ..., transfer_capability: _Optional[str] = ..., prompt_variables: _Optional[_Union[SessionPromptVariableBag, _Mapping]] = ..., agent: _Optional[_Union[PublishedAgentExecution, _Mapping]] = ..., voice_runtime: _Optional[_Union[CallRuntimeSnapshot, _Mapping]] = ..., text_runtime: _Optional[_Union[TextRuntimeSnapshot, _Mapping]] = ...) -> None: ...
 
 class SessionPromptVariableBag(_message.Message):
     __slots__ = ("system", "user")
@@ -542,16 +544,20 @@ class EndCallTool(_message.Message):
     def __init__(self, closing_phrase: _Optional[str] = ..., confirm: _Optional[bool] = ..., condition: _Optional[str] = ...) -> None: ...
 
 class TransferToHumanTool(_message.Message):
-    __slots__ = ("sip_call_to", "hold_phrase", "ringing_timeout_ms", "condition")
+    __slots__ = ("sip_call_to", "hold_phrase", "ringing_timeout_ms", "condition", "mode", "consultation_timeout_ms")
     SIP_CALL_TO_FIELD_NUMBER: _ClassVar[int]
     HOLD_PHRASE_FIELD_NUMBER: _ClassVar[int]
     RINGING_TIMEOUT_MS_FIELD_NUMBER: _ClassVar[int]
     CONDITION_FIELD_NUMBER: _ClassVar[int]
+    MODE_FIELD_NUMBER: _ClassVar[int]
+    CONSULTATION_TIMEOUT_MS_FIELD_NUMBER: _ClassVar[int]
     sip_call_to: str
     hold_phrase: str
     ringing_timeout_ms: int
     condition: str
-    def __init__(self, sip_call_to: _Optional[str] = ..., hold_phrase: _Optional[str] = ..., ringing_timeout_ms: _Optional[int] = ..., condition: _Optional[str] = ...) -> None: ...
+    mode: str
+    consultation_timeout_ms: int
+    def __init__(self, sip_call_to: _Optional[str] = ..., hold_phrase: _Optional[str] = ..., ringing_timeout_ms: _Optional[int] = ..., condition: _Optional[str] = ..., mode: _Optional[str] = ..., consultation_timeout_ms: _Optional[int] = ...) -> None: ...
 
 class DtmfTool(_message.Message):
     __slots__ = ()
@@ -593,3 +599,59 @@ class ConversationFillerRuntime(_message.Message):
     PHRASE_FIELD_NUMBER: _ClassVar[int]
     phrase: str
     def __init__(self, phrase: _Optional[str] = ...) -> None: ...
+
+class CommandSipTransferRequest(_message.Message):
+    __slots__ = ("capability", "conversation_id", "session_id", "request_id", "node_id", "attempt_id", "action", "reason", "consultant_identity", "briefing", "consent_source")
+    CAPABILITY_FIELD_NUMBER: _ClassVar[int]
+    CONVERSATION_ID_FIELD_NUMBER: _ClassVar[int]
+    SESSION_ID_FIELD_NUMBER: _ClassVar[int]
+    REQUEST_ID_FIELD_NUMBER: _ClassVar[int]
+    NODE_ID_FIELD_NUMBER: _ClassVar[int]
+    ATTEMPT_ID_FIELD_NUMBER: _ClassVar[int]
+    ACTION_FIELD_NUMBER: _ClassVar[int]
+    REASON_FIELD_NUMBER: _ClassVar[int]
+    CONSULTANT_IDENTITY_FIELD_NUMBER: _ClassVar[int]
+    BRIEFING_FIELD_NUMBER: _ClassVar[int]
+    CONSENT_SOURCE_FIELD_NUMBER: _ClassVar[int]
+    capability: str
+    conversation_id: str
+    session_id: str
+    request_id: str
+    node_id: str
+    attempt_id: str
+    action: str
+    reason: str
+    consultant_identity: str
+    briefing: str
+    consent_source: str
+    def __init__(self, capability: _Optional[str] = ..., conversation_id: _Optional[str] = ..., session_id: _Optional[str] = ..., request_id: _Optional[str] = ..., node_id: _Optional[str] = ..., attempt_id: _Optional[str] = ..., action: _Optional[str] = ..., reason: _Optional[str] = ..., consultant_identity: _Optional[str] = ..., briefing: _Optional[str] = ..., consent_source: _Optional[str] = ...) -> None: ...
+
+class CommandSipTransferResponse(_message.Message):
+    __slots__ = ("attempt_id", "state", "mode", "consultation", "expires_at", "reason")
+    ATTEMPT_ID_FIELD_NUMBER: _ClassVar[int]
+    STATE_FIELD_NUMBER: _ClassVar[int]
+    MODE_FIELD_NUMBER: _ClassVar[int]
+    CONSULTATION_FIELD_NUMBER: _ClassVar[int]
+    EXPIRES_AT_FIELD_NUMBER: _ClassVar[int]
+    REASON_FIELD_NUMBER: _ClassVar[int]
+    attempt_id: str
+    state: str
+    mode: str
+    consultation: SipTransferConsultation
+    expires_at: str
+    reason: str
+    def __init__(self, attempt_id: _Optional[str] = ..., state: _Optional[str] = ..., mode: _Optional[str] = ..., consultation: _Optional[_Union[SipTransferConsultation, _Mapping]] = ..., expires_at: _Optional[str] = ..., reason: _Optional[str] = ...) -> None: ...
+
+class SipTransferConsultation(_message.Message):
+    __slots__ = ("room_name", "consultant_identity", "worker_identity", "livekit_url", "participant_token")
+    ROOM_NAME_FIELD_NUMBER: _ClassVar[int]
+    CONSULTANT_IDENTITY_FIELD_NUMBER: _ClassVar[int]
+    WORKER_IDENTITY_FIELD_NUMBER: _ClassVar[int]
+    LIVEKIT_URL_FIELD_NUMBER: _ClassVar[int]
+    PARTICIPANT_TOKEN_FIELD_NUMBER: _ClassVar[int]
+    room_name: str
+    consultant_identity: str
+    worker_identity: str
+    livekit_url: str
+    participant_token: str
+    def __init__(self, room_name: _Optional[str] = ..., consultant_identity: _Optional[str] = ..., worker_identity: _Optional[str] = ..., livekit_url: _Optional[str] = ..., participant_token: _Optional[str] = ...) -> None: ...

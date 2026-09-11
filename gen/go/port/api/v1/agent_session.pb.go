@@ -597,13 +597,15 @@ func (x *BootstrapPublishedRequest) GetContractRevision() string {
 }
 
 type BootstrapPublishedResponse struct {
-	state            protoimpl.MessageState    `protogen:"open.v1"`
-	ContractRevision string                    `protobuf:"bytes,1,opt,name=contract_revision,json=contractRevision,proto3" json:"contract_revision,omitempty"`
-	ConversationId   string                    `protobuf:"bytes,2,opt,name=conversation_id,json=conversationId,proto3" json:"conversation_id,omitempty"`
-	SessionId        string                    `protobuf:"bytes,3,opt,name=session_id,json=sessionId,proto3" json:"session_id,omitempty"`
-	PublishedId      string                    `protobuf:"bytes,4,opt,name=published_id,json=publishedId,proto3" json:"published_id,omitempty"`
-	PromptVariables  *SessionPromptVariableBag `protobuf:"bytes,6,opt,name=prompt_variables,json=promptVariables,proto3" json:"prompt_variables,omitempty"`
-	Agent            *PublishedAgentExecution  `protobuf:"bytes,5,opt,name=agent,proto3" json:"agent,omitempty"`
+	state            protoimpl.MessageState `protogen:"open.v1"`
+	ContractRevision string                 `protobuf:"bytes,1,opt,name=contract_revision,json=contractRevision,proto3" json:"contract_revision,omitempty"`
+	ConversationId   string                 `protobuf:"bytes,2,opt,name=conversation_id,json=conversationId,proto3" json:"conversation_id,omitempty"`
+	SessionId        string                 `protobuf:"bytes,3,opt,name=session_id,json=sessionId,proto3" json:"session_id,omitempty"`
+	PublishedId      string                 `protobuf:"bytes,4,opt,name=published_id,json=publishedId,proto3" json:"published_id,omitempty"`
+	// Short-lived control capability bound to this admitted voice session.
+	TransferCapability *string                   `protobuf:"bytes,9,opt,name=transfer_capability,json=transferCapability,proto3,oneof" json:"transfer_capability,omitempty"`
+	PromptVariables    *SessionPromptVariableBag `protobuf:"bytes,6,opt,name=prompt_variables,json=promptVariables,proto3" json:"prompt_variables,omitempty"`
+	Agent              *PublishedAgentExecution  `protobuf:"bytes,5,opt,name=agent,proto3" json:"agent,omitempty"`
 	// Types that are valid to be assigned to Runtime:
 	//
 	//	*BootstrapPublishedResponse_VoiceRuntime
@@ -667,6 +669,13 @@ func (x *BootstrapPublishedResponse) GetSessionId() string {
 func (x *BootstrapPublishedResponse) GetPublishedId() string {
 	if x != nil {
 		return x.PublishedId
+	}
+	return ""
+}
+
+func (x *BootstrapPublishedResponse) GetTransferCapability() string {
+	if x != nil && x.TransferCapability != nil {
+		return *x.TransferCapability
 	}
 	return ""
 }
@@ -3132,9 +3141,12 @@ type TransferToHumanTool struct {
 	HoldPhrase       *string                `protobuf:"bytes,2,opt,name=hold_phrase,json=holdPhrase,proto3,oneof" json:"hold_phrase,omitempty"`
 	RingingTimeoutMs uint32                 `protobuf:"varint,3,opt,name=ringing_timeout_ms,json=ringingTimeoutMs,proto3" json:"ringing_timeout_ms,omitempty"`
 	// User-authored invocation condition. Runtime appends locked operational wording.
-	Condition     string `protobuf:"bytes,4,opt,name=condition,proto3" json:"condition,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	Condition string `protobuf:"bytes,4,opt,name=condition,proto3" json:"condition,omitempty"`
+	// Missing legacy policy is normalized to consultative by the API.
+	Mode                  *string `protobuf:"bytes,5,opt,name=mode,proto3,oneof" json:"mode,omitempty"`
+	ConsultationTimeoutMs *uint32 `protobuf:"varint,6,opt,name=consultation_timeout_ms,json=consultationTimeoutMs,proto3,oneof" json:"consultation_timeout_ms,omitempty"`
+	unknownFields         protoimpl.UnknownFields
+	sizeCache             protoimpl.SizeCache
 }
 
 func (x *TransferToHumanTool) Reset() {
@@ -3193,6 +3205,20 @@ func (x *TransferToHumanTool) GetCondition() string {
 		return x.Condition
 	}
 	return ""
+}
+
+func (x *TransferToHumanTool) GetMode() string {
+	if x != nil && x.Mode != nil {
+		return *x.Mode
+	}
+	return ""
+}
+
+func (x *TransferToHumanTool) GetConsultationTimeoutMs() uint32 {
+	if x != nil && x.ConsultationTimeoutMs != nil {
+		return *x.ConsultationTimeoutMs
+	}
+	return 0
 }
 
 type DtmfTool struct {
@@ -3412,6 +3438,294 @@ func (x *ConversationFillerRuntime) GetPhrase() string {
 	return ""
 }
 
+// Worker-only transfer commands. The API resolves destination and policy from
+// the pinned publication; the request cannot supply a phone number or room.
+type CommandSipTransferRequest struct {
+	state              protoimpl.MessageState `protogen:"open.v1"`
+	Capability         string                 `protobuf:"bytes,1,opt,name=capability,proto3" json:"capability,omitempty"`
+	ConversationId     string                 `protobuf:"bytes,2,opt,name=conversation_id,json=conversationId,proto3" json:"conversation_id,omitempty"`
+	SessionId          string                 `protobuf:"bytes,3,opt,name=session_id,json=sessionId,proto3" json:"session_id,omitempty"`
+	RequestId          string                 `protobuf:"bytes,4,opt,name=request_id,json=requestId,proto3" json:"request_id,omitempty"`
+	NodeId             string                 `protobuf:"bytes,5,opt,name=node_id,json=nodeId,proto3" json:"node_id,omitempty"`
+	AttemptId          string                 `protobuf:"bytes,6,opt,name=attempt_id,json=attemptId,proto3" json:"attempt_id,omitempty"`
+	Action             string                 `protobuf:"bytes,7,opt,name=action,proto3" json:"action,omitempty"`
+	Reason             string                 `protobuf:"bytes,8,opt,name=reason,proto3" json:"reason,omitempty"`
+	ConsultantIdentity string                 `protobuf:"bytes,9,opt,name=consultant_identity,json=consultantIdentity,proto3" json:"consultant_identity,omitempty"`
+	// Private briefing evidence; never published as a customer conversation turn.
+	Briefing string `protobuf:"bytes,10,opt,name=briefing,proto3" json:"briefing,omitempty"`
+	// Web consent enters through the authenticated owner HTTP API.
+	ConsentSource *string `protobuf:"bytes,11,opt,name=consent_source,json=consentSource,proto3,oneof" json:"consent_source,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CommandSipTransferRequest) Reset() {
+	*x = CommandSipTransferRequest{}
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[43]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CommandSipTransferRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CommandSipTransferRequest) ProtoMessage() {}
+
+func (x *CommandSipTransferRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[43]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CommandSipTransferRequest.ProtoReflect.Descriptor instead.
+func (*CommandSipTransferRequest) Descriptor() ([]byte, []int) {
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{43}
+}
+
+func (x *CommandSipTransferRequest) GetCapability() string {
+	if x != nil {
+		return x.Capability
+	}
+	return ""
+}
+
+func (x *CommandSipTransferRequest) GetConversationId() string {
+	if x != nil {
+		return x.ConversationId
+	}
+	return ""
+}
+
+func (x *CommandSipTransferRequest) GetSessionId() string {
+	if x != nil {
+		return x.SessionId
+	}
+	return ""
+}
+
+func (x *CommandSipTransferRequest) GetRequestId() string {
+	if x != nil {
+		return x.RequestId
+	}
+	return ""
+}
+
+func (x *CommandSipTransferRequest) GetNodeId() string {
+	if x != nil {
+		return x.NodeId
+	}
+	return ""
+}
+
+func (x *CommandSipTransferRequest) GetAttemptId() string {
+	if x != nil {
+		return x.AttemptId
+	}
+	return ""
+}
+
+func (x *CommandSipTransferRequest) GetAction() string {
+	if x != nil {
+		return x.Action
+	}
+	return ""
+}
+
+func (x *CommandSipTransferRequest) GetReason() string {
+	if x != nil {
+		return x.Reason
+	}
+	return ""
+}
+
+func (x *CommandSipTransferRequest) GetConsultantIdentity() string {
+	if x != nil {
+		return x.ConsultantIdentity
+	}
+	return ""
+}
+
+func (x *CommandSipTransferRequest) GetBriefing() string {
+	if x != nil {
+		return x.Briefing
+	}
+	return ""
+}
+
+func (x *CommandSipTransferRequest) GetConsentSource() string {
+	if x != nil && x.ConsentSource != nil {
+		return *x.ConsentSource
+	}
+	return ""
+}
+
+type CommandSipTransferResponse struct {
+	state         protoimpl.MessageState   `protogen:"open.v1"`
+	AttemptId     string                   `protobuf:"bytes,1,opt,name=attempt_id,json=attemptId,proto3" json:"attempt_id,omitempty"`
+	State         string                   `protobuf:"bytes,2,opt,name=state,proto3" json:"state,omitempty"`
+	Mode          string                   `protobuf:"bytes,3,opt,name=mode,proto3" json:"mode,omitempty"`
+	Consultation  *SipTransferConsultation `protobuf:"bytes,4,opt,name=consultation,proto3" json:"consultation,omitempty"`
+	ExpiresAt     string                   `protobuf:"bytes,5,opt,name=expires_at,json=expiresAt,proto3" json:"expires_at,omitempty"`
+	Reason        string                   `protobuf:"bytes,6,opt,name=reason,proto3" json:"reason,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CommandSipTransferResponse) Reset() {
+	*x = CommandSipTransferResponse{}
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[44]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CommandSipTransferResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CommandSipTransferResponse) ProtoMessage() {}
+
+func (x *CommandSipTransferResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[44]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CommandSipTransferResponse.ProtoReflect.Descriptor instead.
+func (*CommandSipTransferResponse) Descriptor() ([]byte, []int) {
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{44}
+}
+
+func (x *CommandSipTransferResponse) GetAttemptId() string {
+	if x != nil {
+		return x.AttemptId
+	}
+	return ""
+}
+
+func (x *CommandSipTransferResponse) GetState() string {
+	if x != nil {
+		return x.State
+	}
+	return ""
+}
+
+func (x *CommandSipTransferResponse) GetMode() string {
+	if x != nil {
+		return x.Mode
+	}
+	return ""
+}
+
+func (x *CommandSipTransferResponse) GetConsultation() *SipTransferConsultation {
+	if x != nil {
+		return x.Consultation
+	}
+	return nil
+}
+
+func (x *CommandSipTransferResponse) GetExpiresAt() string {
+	if x != nil {
+		return x.ExpiresAt
+	}
+	return ""
+}
+
+func (x *CommandSipTransferResponse) GetReason() string {
+	if x != nil {
+		return x.Reason
+	}
+	return ""
+}
+
+type SipTransferConsultation struct {
+	state              protoimpl.MessageState `protogen:"open.v1"`
+	RoomName           string                 `protobuf:"bytes,1,opt,name=room_name,json=roomName,proto3" json:"room_name,omitempty"`
+	ConsultantIdentity string                 `protobuf:"bytes,2,opt,name=consultant_identity,json=consultantIdentity,proto3" json:"consultant_identity,omitempty"`
+	WorkerIdentity     string                 `protobuf:"bytes,3,opt,name=worker_identity,json=workerIdentity,proto3" json:"worker_identity,omitempty"`
+	LivekitUrl         string                 `protobuf:"bytes,4,opt,name=livekit_url,json=livekitUrl,proto3" json:"livekit_url,omitempty"`
+	ParticipantToken   string                 `protobuf:"bytes,5,opt,name=participant_token,json=participantToken,proto3" json:"participant_token,omitempty"`
+	unknownFields      protoimpl.UnknownFields
+	sizeCache          protoimpl.SizeCache
+}
+
+func (x *SipTransferConsultation) Reset() {
+	*x = SipTransferConsultation{}
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[45]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SipTransferConsultation) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SipTransferConsultation) ProtoMessage() {}
+
+func (x *SipTransferConsultation) ProtoReflect() protoreflect.Message {
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[45]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SipTransferConsultation.ProtoReflect.Descriptor instead.
+func (*SipTransferConsultation) Descriptor() ([]byte, []int) {
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{45}
+}
+
+func (x *SipTransferConsultation) GetRoomName() string {
+	if x != nil {
+		return x.RoomName
+	}
+	return ""
+}
+
+func (x *SipTransferConsultation) GetConsultantIdentity() string {
+	if x != nil {
+		return x.ConsultantIdentity
+	}
+	return ""
+}
+
+func (x *SipTransferConsultation) GetWorkerIdentity() string {
+	if x != nil {
+		return x.WorkerIdentity
+	}
+	return ""
+}
+
+func (x *SipTransferConsultation) GetLivekitUrl() string {
+	if x != nil {
+		return x.LivekitUrl
+	}
+	return ""
+}
+
+func (x *SipTransferConsultation) GetParticipantToken() string {
+	if x != nil {
+		return x.ParticipantToken
+	}
+	return ""
+}
+
 var File_port_api_v1_agent_session_proto protoreflect.FileDescriptor
 
 const file_port_api_v1_agent_session_proto_rawDesc = "" +
@@ -3443,7 +3757,7 @@ const file_port_api_v1_agent_session_proto_rawDesc = "" +
 	"\fpublished_id\x18\x04 \x01(\tB\n" +
 	"\xbaH\a\xc8\x01\x01r\x02\x10\x01R\vpublishedId\x12Z\n" +
 	"\x11contract_revision\x18\x05 \x01(\tB-\xbaH*\xc8\x01\x01r%\n" +
-	"#execution-publication-2026-09-04-r1R\x10contractRevision\"\xed\x04\n" +
+	"#execution-publication-2026-09-04-r1R\x10contractRevision\"\xe1\x06\n" +
 	"\x1aBootstrapPublishedResponse\x12Z\n" +
 	"\x11contract_revision\x18\x01 \x01(\tB-\xbaH*\xc8\x01\x01r%\n" +
 	"#execution-publication-2026-09-04-r1R\x10contractRevision\x123\n" +
@@ -3453,14 +3767,18 @@ const file_port_api_v1_agent_session_proto_rawDesc = "" +
 	"session_id\x18\x03 \x01(\tB\n" +
 	"\xbaH\a\xc8\x01\x01r\x02\x10\x01R\tsessionId\x12-\n" +
 	"\fpublished_id\x18\x04 \x01(\tB\n" +
-	"\xbaH\a\xc8\x01\x01r\x02\x10\x01R\vpublishedId\x12X\n" +
+	"\xbaH\a\xc8\x01\x01r\x02\x10\x01R\vpublishedId\x12@\n" +
+	"\x13transfer_capability\x18\t \x01(\tB\n" +
+	"\xbaH\ar\x05\x10\x01\x18\x80@H\x01R\x12transferCapability\x88\x01\x01\x12X\n" +
 	"\x10prompt_variables\x18\x06 \x01(\v2%.port.api.v1.SessionPromptVariableBagB\x06\xbaH\x03\xc8\x01\x01R\x0fpromptVariables\x12B\n" +
 	"\x05agent\x18\x05 \x01(\v2$.port.api.v1.PublishedAgentExecutionB\x06\xbaH\x03\xc8\x01\x01R\x05agent\x12G\n" +
 	"\rvoice_runtime\x18\a \x01(\v2 .port.api.v1.CallRuntimeSnapshotH\x00R\fvoiceRuntime\x12E\n" +
-	"\ftext_runtime\x18\b \x01(\v2 .port.api.v1.TextRuntimeSnapshotH\x00R\vtextRuntime:$\xbaH!\"\x1f\n" +
+	"\ftext_runtime\x18\b \x01(\v2 .port.api.v1.TextRuntimeSnapshotH\x00R\vtextRuntime:\xbd\x01\xbaH\xb9\x01\x1a\x95\x01\n" +
+	"!transfer_capability.voice_binding\x125transfer capability is only valid for a voice runtime\x1a9!has(this.transfer_capability) || has(this.voice_runtime)\"\x1f\n" +
 	"\rvoice_runtime\n" +
 	"\ftext_runtime\x10\x01B\x10\n" +
-	"\aruntime\x12\x05\xbaH\x02\b\x01\"\x8b\a\n" +
+	"\aruntime\x12\x05\xbaH\x02\b\x01B\x16\n" +
+	"\x14_transfer_capability\"\x8b\a\n" +
 	"\x18SessionPromptVariableBag\x12D\n" +
 	"\x06system\x18\x01 \x03(\v2\".port.api.v1.SessionPromptVariableB\b\xbaH\x05\x92\x01\x02\x102R\x06system\x12@\n" +
 	"\x04user\x18\x02 \x03(\v2\".port.api.v1.SessionPromptVariableB\b\xbaH\x05\x92\x01\x02\x102R\x04user:\xe6\x05\xbaH\xe2\x05\x1a\x91\x01\n" +
@@ -3689,14 +4007,19 @@ const file_port_api_v1_agent_session_proto_rawDesc = "" +
 	"\x0eclosing_phrase\x18\x01 \x01(\tH\x00R\rclosingPhrase\x88\x01\x01\x12\x18\n" +
 	"\aconfirm\x18\x02 \x01(\bR\aconfirm\x12\x1c\n" +
 	"\tcondition\x18\x03 \x01(\tR\tconditionB\x11\n" +
-	"\x0f_closing_phrase\"\xce\x01\n" +
+	"\x0f_closing_phrase\"\xf4\x02\n" +
 	"\x13TransferToHumanTool\x12'\n" +
 	"\vsip_call_to\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\tsipCallTo\x12$\n" +
 	"\vhold_phrase\x18\x02 \x01(\tH\x00R\n" +
 	"holdPhrase\x88\x01\x01\x12:\n" +
 	"\x12ringing_timeout_ms\x18\x03 \x01(\rB\f\xbaH\t*\a\x18\xc0\xcf$(\x88'R\x10ringingTimeoutMs\x12\x1c\n" +
-	"\tcondition\x18\x04 \x01(\tR\tconditionB\x0e\n" +
-	"\f_hold_phrase\"\n" +
+	"\tcondition\x18\x04 \x01(\tR\tcondition\x124\n" +
+	"\x04mode\x18\x05 \x01(\tB\x1b\xbaH\x18r\x16R\x06singleR\fconsultativeH\x01R\x04mode\x88\x01\x01\x12I\n" +
+	"\x17consultation_timeout_ms\x18\x06 \x01(\rB\f\xbaH\t*\a\x18\xa0\xfe\n" +
+	"(\x88'H\x02R\x15consultationTimeoutMs\x88\x01\x01B\x0e\n" +
+	"\f_hold_phraseB\a\n" +
+	"\x05_modeB\x1a\n" +
+	"\x18_consultation_timeout_ms\"\n" +
 	"\n" +
 	"\bDtmfTool\"\x9f\x01\n" +
 	"\vSendSmsTool\x12%\n" +
@@ -3714,7 +4037,46 @@ const file_port_api_v1_agent_session_proto_rawDesc = "" +
 	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"?\n" +
 	"\x19ConversationFillerRuntime\x12\"\n" +
 	"\x06phrase\x18\x01 \x01(\tB\n" +
-	"\xbaH\ar\x05\x10\x01\x18\xc8\x01R\x06phrase*\xa8\x01\n" +
+	"\xbaH\ar\x05\x10\x01\x18\xc8\x01R\x06phrase\"\x8a\a\n" +
+	"\x19CommandSipTransferRequest\x12'\n" +
+	"\n" +
+	"capability\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\n" +
+	"capability\x120\n" +
+	"\x0fconversation_id\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x0econversationId\x12&\n" +
+	"\n" +
+	"session_id\x18\x03 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\tsessionId\x12&\n" +
+	"\n" +
+	"request_id\x18\x04 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\trequestId\x12\x17\n" +
+	"\anode_id\x18\x05 \x01(\tR\x06nodeId\x12\x1d\n" +
+	"\n" +
+	"attempt_id\x18\x06 \x01(\tR\tattemptId\x12M\n" +
+	"\x06action\x18\a \x01(\tB5\xbaH2r0R\x05startR\bbriefingR\x05readyR\x06acceptR\x06rejectR\x06cancelR\x06action\x12 \n" +
+	"\x06reason\x18\b \x01(\tB\b\xbaH\x05r\x03\x18\xe8\aR\x06reason\x12/\n" +
+	"\x13consultant_identity\x18\t \x01(\tR\x12consultantIdentity\x12$\n" +
+	"\bbriefing\x18\n" +
+	" \x01(\tB\b\xbaH\x05r\x03\x18\x90NR\bbriefing\x12>\n" +
+	"\x0econsent_source\x18\v \x01(\tB\x12\xbaH\x0fr\rR\x05voiceR\x04dtmfH\x00R\rconsentSource\x88\x01\x01:\xee\x02\xbaH\xea\x02\x1a\xa8\x01\n" +
+	"\"transfer_command.operation_binding\x12=start requires a node; subsequent commands require an attempt\x1aCthis.action == 'start' ? this.node_id != '' : this.attempt_id != ''\x1a\xbc\x01\n" +
+	"!transfer_command.consent_identity\x12>accept requires consultant identity and voice or DTMF evidence\x1aWthis.action != 'accept' || (this.consultant_identity != '' && has(this.consent_source))B\x11\n" +
+	"\x0f_consent_source\"\xab\x04\n" +
+	"\x1aCommandSipTransferResponse\x12&\n" +
+	"\n" +
+	"attempt_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\tattemptId\x12\x7f\n" +
+	"\x05state\x18\x02 \x01(\tBi\xbaHfrdR\adialingR\bbriefingR\x10awaiting_consentR\n" +
+	"connectingR\tcompletedR\brejectedR\tcancelledR\x06failedR\ttimed_outR\x05state\x12/\n" +
+	"\x04mode\x18\x03 \x01(\tB\x1b\xbaH\x18r\x16R\x06singleR\fconsultativeR\x04mode\x12H\n" +
+	"\fconsultation\x18\x04 \x01(\v2$.port.api.v1.SipTransferConsultationR\fconsultation\x12(\n" +
+	"\n" +
+	"expires_at\x18\x05 \x01(\tB\t\xbaH\x06r\x04\x10\x01\x18@R\texpiresAt\x12\x16\n" +
+	"\x06reason\x18\x06 \x01(\tR\x06reason:\xa6\x01\xbaH\xa2\x01\x1a\x9f\x01\n" +
+	"\x1atransfer_response.deadline\x12Aexpires_at must be a valid RFC3339 timestamp after the Unix epoch\x1a>timestamp(this.expires_at) > timestamp('1970-01-01T00:00:00Z')\"\x8b\x02\n" +
+	"\x17SipTransferConsultation\x12$\n" +
+	"\troom_name\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\broomName\x128\n" +
+	"\x13consultant_identity\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x12consultantIdentity\x120\n" +
+	"\x0fworker_identity\x18\x03 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x0eworkerIdentity\x12(\n" +
+	"\vlivekit_url\x18\x04 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\n" +
+	"livekitUrl\x124\n" +
+	"\x11participant_token\x18\x05 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x10participantToken*\xa8\x01\n" +
 	"\x14HandoffParameterType\x12&\n" +
 	"\"HANDOFF_PARAMETER_TYPE_UNSPECIFIED\x10\x00\x12!\n" +
 	"\x1dHANDOFF_PARAMETER_TYPE_STRING\x10\x01\x12!\n" +
@@ -3745,9 +4107,10 @@ const file_port_api_v1_agent_session_proto_rawDesc = "" +
 	"\x1aCONTEXT_POLICY_UNSPECIFIED\x10\x00\x12\x17\n" +
 	"\x13CONTEXT_POLICY_NONE\x10\x01\x12\x1f\n" +
 	"\x1bCONTEXT_POLICY_CONVERSATION\x10\x02\x12\x19\n" +
-	"\x15CONTEXT_POLICY_RECENT\x10\x032\x80\x01\n" +
+	"\x15CONTEXT_POLICY_RECENT\x10\x032\xe7\x01\n" +
 	"\x17ExecutionSessionService\x12e\n" +
-	"\x12BootstrapPublished\x12&.port.api.v1.BootstrapPublishedRequest\x1a'.port.api.v1.BootstrapPublishedResponseB?Z=github.com/kyh0703/port-contracts/v4/gen/go/port/api/v1;apiv1b\x06proto3"
+	"\x12BootstrapPublished\x12&.port.api.v1.BootstrapPublishedRequest\x1a'.port.api.v1.BootstrapPublishedResponse\x12e\n" +
+	"\x12CommandSipTransfer\x12&.port.api.v1.CommandSipTransferRequest\x1a'.port.api.v1.CommandSipTransferResponseB?Z=github.com/kyh0703/port-contracts/v4/gen/go/port/api/v1;apiv1b\x06proto3"
 
 var (
 	file_port_api_v1_agent_session_proto_rawDescOnce sync.Once
@@ -3762,7 +4125,7 @@ func file_port_api_v1_agent_session_proto_rawDescGZIP() []byte {
 }
 
 var file_port_api_v1_agent_session_proto_enumTypes = make([]protoimpl.EnumInfo, 6)
-var file_port_api_v1_agent_session_proto_msgTypes = make([]protoimpl.MessageInfo, 46)
+var file_port_api_v1_agent_session_proto_msgTypes = make([]protoimpl.MessageInfo, 49)
 var file_port_api_v1_agent_session_proto_goTypes = []any{
 	(HandoffParameterType)(0),             // 0: port.api.v1.HandoffParameterType
 	(CallTransportSource)(0),              // 1: port.api.v1.CallTransportSource
@@ -3813,12 +4176,15 @@ var file_port_api_v1_agent_session_proto_goTypes = []any{
 	(*SendSmsTool)(nil),                   // 46: port.api.v1.SendSmsTool
 	(*McpServerRuntime)(nil),              // 47: port.api.v1.McpServerRuntime
 	(*ConversationFillerRuntime)(nil),     // 48: port.api.v1.ConversationFillerRuntime
-	nil,                                   // 49: port.api.v1.ApiToolRuntime.HeadersEntry
-	nil,                                   // 50: port.api.v1.A2aToolRuntime.HeadersEntry
-	nil,                                   // 51: port.api.v1.McpServerRuntime.HeadersEntry
-	(*LlmRuntime)(nil),                    // 52: port.api.v1.LlmRuntime
-	(*SttRuntime)(nil),                    // 53: port.api.v1.SttRuntime
-	(*TtsRuntime)(nil),                    // 54: port.api.v1.TtsRuntime
+	(*CommandSipTransferRequest)(nil),     // 49: port.api.v1.CommandSipTransferRequest
+	(*CommandSipTransferResponse)(nil),    // 50: port.api.v1.CommandSipTransferResponse
+	(*SipTransferConsultation)(nil),       // 51: port.api.v1.SipTransferConsultation
+	nil,                                   // 52: port.api.v1.ApiToolRuntime.HeadersEntry
+	nil,                                   // 53: port.api.v1.A2aToolRuntime.HeadersEntry
+	nil,                                   // 54: port.api.v1.McpServerRuntime.HeadersEntry
+	(*LlmRuntime)(nil),                    // 55: port.api.v1.LlmRuntime
+	(*SttRuntime)(nil),                    // 56: port.api.v1.SttRuntime
+	(*TtsRuntime)(nil),                    // 57: port.api.v1.TtsRuntime
 }
 var file_port_api_v1_agent_session_proto_depIdxs = []int32{
 	7,  // 0: port.api.v1.BootstrapRequest.sip:type_name -> port.api.v1.SipBootstrapContext
@@ -3833,7 +4199,7 @@ var file_port_api_v1_agent_session_proto_depIdxs = []int32{
 	13, // 9: port.api.v1.PublishedAgentExecution.node_runtimes:type_name -> port.api.v1.PublishedAgentNodeRuntime
 	17, // 10: port.api.v1.PublishedAgentExecution.supervisor:type_name -> port.api.v1.PublishedSupervisorSnapshot
 	19, // 11: port.api.v1.PublishedAgentExecution.handoff:type_name -> port.api.v1.PublishedHandoffSnapshot
-	52, // 12: port.api.v1.PublishedAgentNodeRuntime.llm_worker:type_name -> port.api.v1.LlmRuntime
+	55, // 12: port.api.v1.PublishedAgentNodeRuntime.llm_worker:type_name -> port.api.v1.LlmRuntime
 	33, // 13: port.api.v1.PublishedAgentNodeRuntime.instructions:type_name -> port.api.v1.AgentInstructions
 	5,  // 14: port.api.v1.PublishedAgentNodeRuntime.context_policy:type_name -> port.api.v1.ContextPolicy
 	34, // 15: port.api.v1.PublishedAgentNodeRuntime.tools:type_name -> port.api.v1.NodeToolMetadata
@@ -3851,8 +4217,8 @@ var file_port_api_v1_agent_session_proto_depIdxs = []int32{
 	5,  // 27: port.api.v1.PublishedHandoffRoute.context_policy:type_name -> port.api.v1.ContextPolicy
 	21, // 28: port.api.v1.PublishedHandoffRoute.parameters:type_name -> port.api.v1.HandoffParameter
 	0,  // 29: port.api.v1.HandoffParameter.type:type_name -> port.api.v1.HandoffParameterType
-	53, // 30: port.api.v1.CallRuntimeSnapshot.stt:type_name -> port.api.v1.SttRuntime
-	54, // 31: port.api.v1.CallRuntimeSnapshot.tts:type_name -> port.api.v1.TtsRuntime
+	56, // 30: port.api.v1.CallRuntimeSnapshot.stt:type_name -> port.api.v1.SttRuntime
+	57, // 31: port.api.v1.CallRuntimeSnapshot.tts:type_name -> port.api.v1.TtsRuntime
 	31, // 32: port.api.v1.CallRuntimeSnapshot.background_audio:type_name -> port.api.v1.BackgroundAudioRuntime
 	32, // 33: port.api.v1.CallRuntimeSnapshot.dtmf:type_name -> port.api.v1.DtmfInputRuntime
 	27, // 34: port.api.v1.CallRuntimeSnapshot.transport:type_name -> port.api.v1.TransportRuntime
@@ -3870,20 +4236,23 @@ var file_port_api_v1_agent_session_proto_depIdxs = []int32{
 	36, // 46: port.api.v1.NodeToolMetadata.api:type_name -> port.api.v1.ApiToolMetadata
 	37, // 47: port.api.v1.NodeToolMetadata.a2a:type_name -> port.api.v1.A2aToolMetadata
 	38, // 48: port.api.v1.NodeToolMetadata.knowledge:type_name -> port.api.v1.KnowledgeToolMetadata
-	49, // 49: port.api.v1.ApiToolRuntime.headers:type_name -> port.api.v1.ApiToolRuntime.HeadersEntry
-	50, // 50: port.api.v1.A2aToolRuntime.headers:type_name -> port.api.v1.A2aToolRuntime.HeadersEntry
+	52, // 49: port.api.v1.ApiToolRuntime.headers:type_name -> port.api.v1.ApiToolRuntime.HeadersEntry
+	53, // 50: port.api.v1.A2aToolRuntime.headers:type_name -> port.api.v1.A2aToolRuntime.HeadersEntry
 	43, // 51: port.api.v1.BuiltInTool.end_call:type_name -> port.api.v1.EndCallTool
 	44, // 52: port.api.v1.BuiltInTool.transfer_to_human:type_name -> port.api.v1.TransferToHumanTool
 	45, // 53: port.api.v1.BuiltInTool.dtmf:type_name -> port.api.v1.DtmfTool
 	46, // 54: port.api.v1.BuiltInTool.send_sms:type_name -> port.api.v1.SendSmsTool
-	51, // 55: port.api.v1.McpServerRuntime.headers:type_name -> port.api.v1.McpServerRuntime.HeadersEntry
-	8,  // 56: port.api.v1.ExecutionSessionService.BootstrapPublished:input_type -> port.api.v1.BootstrapPublishedRequest
-	9,  // 57: port.api.v1.ExecutionSessionService.BootstrapPublished:output_type -> port.api.v1.BootstrapPublishedResponse
-	57, // [57:58] is the sub-list for method output_type
-	56, // [56:57] is the sub-list for method input_type
-	56, // [56:56] is the sub-list for extension type_name
-	56, // [56:56] is the sub-list for extension extendee
-	0,  // [0:56] is the sub-list for field type_name
+	54, // 55: port.api.v1.McpServerRuntime.headers:type_name -> port.api.v1.McpServerRuntime.HeadersEntry
+	51, // 56: port.api.v1.CommandSipTransferResponse.consultation:type_name -> port.api.v1.SipTransferConsultation
+	8,  // 57: port.api.v1.ExecutionSessionService.BootstrapPublished:input_type -> port.api.v1.BootstrapPublishedRequest
+	49, // 58: port.api.v1.ExecutionSessionService.CommandSipTransfer:input_type -> port.api.v1.CommandSipTransferRequest
+	9,  // 59: port.api.v1.ExecutionSessionService.BootstrapPublished:output_type -> port.api.v1.BootstrapPublishedResponse
+	50, // 60: port.api.v1.ExecutionSessionService.CommandSipTransfer:output_type -> port.api.v1.CommandSipTransferResponse
+	59, // [59:61] is the sub-list for method output_type
+	57, // [57:59] is the sub-list for method input_type
+	57, // [57:57] is the sub-list for extension type_name
+	57, // [57:57] is the sub-list for extension extendee
+	0,  // [0:57] is the sub-list for field type_name
 }
 
 func init() { file_port_api_v1_agent_session_proto_init() }
@@ -3931,13 +4300,14 @@ func file_port_api_v1_agent_session_proto_init() {
 	}
 	file_port_api_v1_agent_session_proto_msgTypes[37].OneofWrappers = []any{}
 	file_port_api_v1_agent_session_proto_msgTypes[38].OneofWrappers = []any{}
+	file_port_api_v1_agent_session_proto_msgTypes[43].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_port_api_v1_agent_session_proto_rawDesc), len(file_port_api_v1_agent_session_proto_rawDesc)),
 			NumEnums:      6,
-			NumMessages:   46,
+			NumMessages:   49,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

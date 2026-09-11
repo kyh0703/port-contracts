@@ -92,14 +92,14 @@ func TestBuiltInToolValidation(t *testing.T) {
 	}
 }
 
-func TestExecutionSessionServiceExposesOnlyPublishedBootstrap(t *testing.T) {
+func TestExecutionSessionServiceExposesBootstrapAndTransferControl(t *testing.T) {
 	descriptor, err := protoregistry.GlobalFiles.FindDescriptorByName("port.api.v1.ExecutionSessionService")
 	if err != nil {
 		t.Fatal(err)
 	}
 	service := descriptor.(protoreflect.ServiceDescriptor)
-	if service.Methods().Len() != 1 {
-		t.Fatalf("ExecutionSessionService method count = %d, want 1", service.Methods().Len())
+	if service.Methods().Len() != 2 {
+		t.Fatalf("ExecutionSessionService method count = %d, want 2", service.Methods().Len())
 	}
 	method := service.Methods().ByName("BootstrapPublished")
 	if method == nil {
@@ -137,7 +137,9 @@ func TestPublishedBootstrapRequestValidation(t *testing.T) {
 		{"missing conversation", func(request *apiv1.BootstrapPublishedRequest) { request.ConversationId = "" }},
 		{"missing session", func(request *apiv1.BootstrapPublishedRequest) { request.SessionId = "" }},
 		{"missing publication", func(request *apiv1.BootstrapPublishedRequest) { request.PublishedId = "" }},
-		{"previous exact revision", func(request *apiv1.BootstrapPublishedRequest) { request.ContractRevision = "execution-publication-2026-08-27-r1" }},
+		{"previous exact revision", func(request *apiv1.BootstrapPublishedRequest) {
+			request.ContractRevision = "execution-publication-2026-08-27-r1"
+		}},
 		{"wrong revision", func(request *apiv1.BootstrapPublishedRequest) { request.ContractRevision = "legacy" }},
 	}
 	for _, tt := range tests {
@@ -202,7 +204,9 @@ func TestPublishedAgentTextResponseValidation(t *testing.T) {
 		name   string
 		mutate func(*apiv1.BootstrapPublishedResponse)
 	}{
-		{"old revision", func(response *apiv1.BootstrapPublishedResponse) { response.ContractRevision = "execution-publication-2026-08-27-r1" }},
+		{"old revision", func(response *apiv1.BootstrapPublishedResponse) {
+			response.ContractRevision = "execution-publication-2026-08-27-r1"
+		}},
 		{"missing execution", func(response *apiv1.BootstrapPublishedResponse) { response.Agent = nil }},
 		{"missing runtime", func(response *apiv1.BootstrapPublishedResponse) { response.Runtime = nil }},
 		{"missing agent node runtime", func(response *apiv1.BootstrapPublishedResponse) { response.GetAgent().NodeRuntimes[0] = nil }},
@@ -294,11 +298,21 @@ func TestConversationControlRuntimeValidation(t *testing.T) {
 		mutate func(*apiv1.CallRuntimeSnapshot)
 	}{
 		{"missing control", func(runtime *apiv1.CallRuntimeSnapshot) { runtime.ConversationControl = nil }},
-		{"empty end call message", func(runtime *apiv1.CallRuntimeSnapshot) { runtime.GetConversationControl().EndCallMessage = proto.String("") }},
-		{"short end call phrase", func(runtime *apiv1.CallRuntimeSnapshot) { runtime.GetConversationControl().EndCallPhrases = []string{"a"} }},
-		{"long elapsed say", func(runtime *apiv1.CallRuntimeSnapshot) { runtime.GetConversationControl().TimeElapsedActions[0].Action = &apiv1.TimeElapsedActionRuntime_Say{Say: strings.Repeat("a", 1001)} }},
-		{"missing elapsed action", func(runtime *apiv1.CallRuntimeSnapshot) { runtime.GetConversationControl().TimeElapsedActions[0].Action = nil }},
-		{"elapsed time out of range", func(runtime *apiv1.CallRuntimeSnapshot) { runtime.GetConversationControl().TimeElapsedActions[0].AtSeconds = 3601 }},
+		{"empty end call message", func(runtime *apiv1.CallRuntimeSnapshot) {
+			runtime.GetConversationControl().EndCallMessage = proto.String("")
+		}},
+		{"short end call phrase", func(runtime *apiv1.CallRuntimeSnapshot) {
+			runtime.GetConversationControl().EndCallPhrases = []string{"a"}
+		}},
+		{"long elapsed say", func(runtime *apiv1.CallRuntimeSnapshot) {
+			runtime.GetConversationControl().TimeElapsedActions[0].Action = &apiv1.TimeElapsedActionRuntime_Say{Say: strings.Repeat("a", 1001)}
+		}},
+		{"missing elapsed action", func(runtime *apiv1.CallRuntimeSnapshot) {
+			runtime.GetConversationControl().TimeElapsedActions[0].Action = nil
+		}},
+		{"elapsed time out of range", func(runtime *apiv1.CallRuntimeSnapshot) {
+			runtime.GetConversationControl().TimeElapsedActions[0].AtSeconds = 3601
+		}},
 		{"max duration below new minimum", func(runtime *apiv1.CallRuntimeSnapshot) { runtime.GetLimits().MaxCallDurationSeconds = 9 }},
 		{"silence timeout below new minimum", func(runtime *apiv1.CallRuntimeSnapshot) { runtime.GetLimits().NoAnswerTimeoutSeconds = 4 }},
 	}
@@ -432,8 +446,15 @@ func TestSessionPromptVariableBagValidation(t *testing.T) {
 		{"reserved conversation root", func(bag *apiv1.SessionPromptVariableBag) { bag.User[0].Name = "conversation" }},
 		{"reserved date key", func(bag *apiv1.SessionPromptVariableBag) { bag.User[0].Name = "datetime_iso" }},
 		{"missing value", func(bag *apiv1.SessionPromptVariableBag) { bag.User[0].Value = nil }},
-		{"oversized string", func(bag *apiv1.SessionPromptVariableBag) { bag.User[0].Value = &apiv1.SessionPromptVariable_StringValue{StringValue: strings.Repeat("x", 1001)} }},
-		{"too many system entries", func(bag *apiv1.SessionPromptVariableBag) { bag.System = make([]*apiv1.SessionPromptVariable, 51); for i := range bag.System { bag.System[i] = &apiv1.SessionPromptVariable{Name: "key." + string(rune('a'+i/26)) + string(rune('a'+i%26)), Value: &apiv1.SessionPromptVariable_StringValue{StringValue: "v"}} } }},
+		{"oversized string", func(bag *apiv1.SessionPromptVariableBag) {
+			bag.User[0].Value = &apiv1.SessionPromptVariable_StringValue{StringValue: strings.Repeat("x", 1001)}
+		}},
+		{"too many system entries", func(bag *apiv1.SessionPromptVariableBag) {
+			bag.System = make([]*apiv1.SessionPromptVariable, 51)
+			for i := range bag.System {
+				bag.System[i] = &apiv1.SessionPromptVariable{Name: "key." + string(rune('a'+i/26)) + string(rune('a'+i%26)), Value: &apiv1.SessionPromptVariable_StringValue{StringValue: "v"}}
+			}
+		}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -519,7 +540,7 @@ func validCallRuntime() *apiv1.CallRuntimeSnapshot {
 			EndCallPhrases: []string{"감사합니다"},
 			TimeElapsedActions: []*apiv1.TimeElapsedActionRuntime{{
 				AtSeconds: 300,
-				Action: &apiv1.TimeElapsedActionRuntime_Say{Say: "곧 상담을 마무리하겠습니다."},
+				Action:    &apiv1.TimeElapsedActionRuntime_Say{Say: "곧 상담을 마무리하겠습니다."},
 			}},
 		},
 	}
@@ -531,7 +552,7 @@ func basePublishedResponse() *apiv1.BootstrapPublishedResponse {
 		ConversationId:   "conversation-1",
 		SessionId:        "session-1",
 		PublishedId:      "publication-1",
-		PromptVariables: &apiv1.SessionPromptVariableBag{},
+		PromptVariables:  &apiv1.SessionPromptVariableBag{},
 	}
 }
 
@@ -593,4 +614,99 @@ func validHandoffTextResponse() *apiv1.BootstrapPublishedResponse {
 	}
 	response.Runtime = &apiv1.BootstrapPublishedResponse_TextRuntime{TextRuntime: validTextRuntime()}
 	return response
+}
+
+func TestTransferCommandRequiresOperationBinding(t *testing.T) {
+	for _, tc := range []struct {
+		name, action, node, attempt, consultant string
+		valid                                   bool
+	}{
+		{"start", "start", "node", "", "", true},
+		{"start without node", "start", "", "", "", false},
+		{"accept", "accept", "", "attempt", "consultant", true},
+		{"accept without consultant", "accept", "", "attempt", "", false},
+		{"cancel without attempt", "cancel", "", "", "", false},
+		{"unknown action", "merge", "node", "attempt", "consultant", false},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			err := Validate(&apiv1.CommandSipTransferRequest{Capability: "cap", ConversationId: "conversation", SessionId: "session", RequestId: "request", Action: tc.action, ConsentSource: proto.String("voice"), NodeId: tc.node, AttemptId: tc.attempt, ConsultantIdentity: tc.consultant})
+			if (err == nil) != tc.valid {
+				t.Fatalf("validation error = %v, valid = %v", err, tc.valid)
+			}
+		})
+	}
+}
+
+func TestTransferPolicyValidation(t *testing.T) {
+	for _, tc := range []struct {
+		name    string
+		mode    *string
+		timeout *uint32
+		valid   bool
+	}{
+		{"legacy", nil, nil, true},
+		{"consultative", proto.String("consultative"), proto.Uint32(60000), true},
+		{"single", proto.String("single"), nil, true},
+		{"unknown mode", proto.String("blind"), nil, false},
+		{"too short", proto.String("consultative"), proto.Uint32(4999), false},
+		{"too long", proto.String("consultative"), proto.Uint32(180001), false},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			err := Validate(&apiv1.TransferToHumanTool{SipCallTo: "+821012345678", RingingTimeoutMs: 30000, Mode: tc.mode, ConsultationTimeoutMs: tc.timeout})
+			if (err == nil) != tc.valid {
+				t.Fatalf("validation error = %v, valid = %v", err, tc.valid)
+			}
+		})
+	}
+}
+
+func TestTransferCapabilityVoiceBinding(t *testing.T) {
+	for _, tc := range []struct {
+		name       string
+		text       bool
+		capability *string
+		valid      bool
+	}{
+		{"legacy text", true, nil, true},
+		{"voice", false, proto.String("cap"), true},
+		{"text capability", true, proto.String("cap"), false},
+		{"empty capability", false, proto.String(""), false},
+		{"oversized capability", false, proto.String(strings.Repeat("x", 8193)), false},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			response := validAgentVoiceResponse()
+			if tc.text {
+				response = validAgentTextResponse()
+			}
+			response.TransferCapability = tc.capability
+			if err := Validate(response); (err == nil) != tc.valid {
+				t.Fatalf("validation error = %v, valid = %v", err, tc.valid)
+			}
+		})
+	}
+}
+
+func TestTransferAcceptRequiresConsentSource(t *testing.T) {
+	request := &apiv1.CommandSipTransferRequest{Capability: "cap", ConversationId: "conversation", SessionId: "session", RequestId: "request", Action: "accept", AttemptId: "attempt", ConsultantIdentity: "consultant"}
+	if err := Validate(request); err == nil {
+		t.Fatal("accept without consent source must fail")
+	}
+}
+
+func TestTransferResponseDeadlineValidation(t *testing.T) {
+	for _, tc := range []struct {
+		deadline string
+		valid    bool
+	}{
+		{"2026-09-11T06:00:00.000Z", true},
+		{"2026-09-11T15:00:00+09:00", true},
+		{"", false}, {"tomorrow", false}, {"2026-02-31T06:00:00Z", false},
+	} {
+		t.Run(tc.deadline, func(t *testing.T) {
+			response := &apiv1.CommandSipTransferResponse{AttemptId: "attempt", State: "dialing", Mode: "consultative", ExpiresAt: tc.deadline}
+			if err := Validate(response); (err == nil) != tc.valid {
+				t.Fatalf("validation error = %v, valid = %v", err, tc.valid)
+			}
+		})
+	}
 }
