@@ -463,6 +463,17 @@ export interface ConversationControlRuntime {
   endCallMessage?: string | undefined;
   endCallPhrases: string[];
   timeElapsedActions: TimeElapsedActionRuntime[];
+  /** Absent on legacy sessions or when idle prompting is disabled. */
+  idleMessage?: IdleMessageRuntime | undefined;
+}
+
+export interface IdleMessageRuntime {
+  mode: string;
+  /** Exact mode preserves wording and whitespace. Prompt mode supplies generation instructions. */
+  message: string;
+  timeoutSeconds: number;
+  maxCount: number;
+  resetOnUserSpeech: boolean;
 }
 
 export interface TimeElapsedActionRuntime {
@@ -3417,7 +3428,7 @@ export const CallRuntimeSnapshot: MessageFns<CallRuntimeSnapshot> = {
 };
 
 function createBaseConversationControlRuntime(): ConversationControlRuntime {
-  return { endCallMessage: undefined, endCallPhrases: [], timeElapsedActions: [] };
+  return { endCallMessage: undefined, endCallPhrases: [], timeElapsedActions: [], idleMessage: undefined };
 }
 
 export const ConversationControlRuntime: MessageFns<ConversationControlRuntime> = {
@@ -3430,6 +3441,9 @@ export const ConversationControlRuntime: MessageFns<ConversationControlRuntime> 
     }
     for (const v of message.timeElapsedActions) {
       TimeElapsedActionRuntime.encode(v!, writer.uint32(26).fork()).join();
+    }
+    if (message.idleMessage !== undefined) {
+      IdleMessageRuntime.encode(message.idleMessage, writer.uint32(34).fork()).join();
     }
     return writer;
   },
@@ -3465,6 +3479,14 @@ export const ConversationControlRuntime: MessageFns<ConversationControlRuntime> 
           message.timeElapsedActions.push(TimeElapsedActionRuntime.decode(reader, reader.uint32()));
           continue;
         }
+        case 4: {
+          if (tag !== 34) {
+            break;
+          }
+
+          message.idleMessage = IdleMessageRuntime.decode(reader, reader.uint32());
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -3491,6 +3513,11 @@ export const ConversationControlRuntime: MessageFns<ConversationControlRuntime> 
         : globalThis.Array.isArray(object?.time_elapsed_actions)
         ? object.time_elapsed_actions.map((e: any) => TimeElapsedActionRuntime.fromJSON(e))
         : [],
+      idleMessage: isSet(object.idleMessage)
+        ? IdleMessageRuntime.fromJSON(object.idleMessage)
+        : isSet(object.idle_message)
+        ? IdleMessageRuntime.fromJSON(object.idle_message)
+        : undefined,
     };
   },
 
@@ -3505,6 +3532,9 @@ export const ConversationControlRuntime: MessageFns<ConversationControlRuntime> 
     if (message.timeElapsedActions?.length) {
       obj.timeElapsedActions = message.timeElapsedActions.map((e) => TimeElapsedActionRuntime.toJSON(e));
     }
+    if (message.idleMessage !== undefined) {
+      obj.idleMessage = IdleMessageRuntime.toJSON(message.idleMessage);
+    }
     return obj;
   },
 
@@ -3516,6 +3546,145 @@ export const ConversationControlRuntime: MessageFns<ConversationControlRuntime> 
     message.endCallMessage = object.endCallMessage ?? undefined;
     message.endCallPhrases = object.endCallPhrases?.map((e) => e) || [];
     message.timeElapsedActions = object.timeElapsedActions?.map((e) => TimeElapsedActionRuntime.fromPartial(e)) || [];
+    message.idleMessage = (object.idleMessage !== undefined && object.idleMessage !== null)
+      ? IdleMessageRuntime.fromPartial(object.idleMessage)
+      : undefined;
+    return message;
+  },
+};
+
+function createBaseIdleMessageRuntime(): IdleMessageRuntime {
+  return { mode: "", message: "", timeoutSeconds: 0, maxCount: 0, resetOnUserSpeech: false };
+}
+
+export const IdleMessageRuntime: MessageFns<IdleMessageRuntime> = {
+  encode(message: IdleMessageRuntime, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.mode !== "") {
+      writer.uint32(10).string(message.mode);
+    }
+    if (message.message !== "") {
+      writer.uint32(18).string(message.message);
+    }
+    if (message.timeoutSeconds !== 0) {
+      writer.uint32(24).uint32(message.timeoutSeconds);
+    }
+    if (message.maxCount !== 0) {
+      writer.uint32(32).uint32(message.maxCount);
+    }
+    if (message.resetOnUserSpeech !== false) {
+      writer.uint32(40).bool(message.resetOnUserSpeech);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): IdleMessageRuntime {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseIdleMessageRuntime();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.mode = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.message = reader.string();
+          continue;
+        }
+        case 3: {
+          if (tag !== 24) {
+            break;
+          }
+
+          message.timeoutSeconds = reader.uint32();
+          continue;
+        }
+        case 4: {
+          if (tag !== 32) {
+            break;
+          }
+
+          message.maxCount = reader.uint32();
+          continue;
+        }
+        case 5: {
+          if (tag !== 40) {
+            break;
+          }
+
+          message.resetOnUserSpeech = reader.bool();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): IdleMessageRuntime {
+    return {
+      mode: isSet(object.mode) ? globalThis.String(object.mode) : "",
+      message: isSet(object.message) ? globalThis.String(object.message) : "",
+      timeoutSeconds: isSet(object.timeoutSeconds)
+        ? globalThis.Number(object.timeoutSeconds)
+        : isSet(object.timeout_seconds)
+        ? globalThis.Number(object.timeout_seconds)
+        : 0,
+      maxCount: isSet(object.maxCount)
+        ? globalThis.Number(object.maxCount)
+        : isSet(object.max_count)
+        ? globalThis.Number(object.max_count)
+        : 0,
+      resetOnUserSpeech: isSet(object.resetOnUserSpeech)
+        ? globalThis.Boolean(object.resetOnUserSpeech)
+        : isSet(object.reset_on_user_speech)
+        ? globalThis.Boolean(object.reset_on_user_speech)
+        : false,
+    };
+  },
+
+  toJSON(message: IdleMessageRuntime): unknown {
+    const obj: any = {};
+    if (message.mode !== "") {
+      obj.mode = message.mode;
+    }
+    if (message.message !== "") {
+      obj.message = message.message;
+    }
+    if (message.timeoutSeconds !== 0) {
+      obj.timeoutSeconds = Math.round(message.timeoutSeconds);
+    }
+    if (message.maxCount !== 0) {
+      obj.maxCount = Math.round(message.maxCount);
+    }
+    if (message.resetOnUserSpeech !== false) {
+      obj.resetOnUserSpeech = message.resetOnUserSpeech;
+    }
+    return obj;
+  },
+
+  create(base?: DeepPartial<IdleMessageRuntime>): IdleMessageRuntime {
+    return IdleMessageRuntime.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<IdleMessageRuntime>): IdleMessageRuntime {
+    const message = createBaseIdleMessageRuntime();
+    message.mode = object.mode ?? "";
+    message.message = object.message ?? "";
+    message.timeoutSeconds = object.timeoutSeconds ?? 0;
+    message.maxCount = object.maxCount ?? 0;
+    message.resetOnUserSpeech = object.resetOnUserSpeech ?? false;
     return message;
   },
 };

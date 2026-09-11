@@ -266,6 +266,17 @@ message ConversationControlRuntime {
   optional string end_call_message = 1 [(buf.validate.field).string = {min_len: 1 max_len: 1000}];
   repeated string end_call_phrases = 2 [(buf.validate.field).repeated.items.string = {min_len: 2 max_len: 140}];
   repeated TimeElapsedActionRuntime time_elapsed_actions = 3;
+  // Absent on legacy sessions or when idle prompting is disabled.
+  IdleMessageRuntime idle_message = 4;
+}
+
+message IdleMessageRuntime {
+  string mode = 1 [(buf.validate.field).string = {in: ["exact", "prompt"]}];
+  // Exact mode preserves wording and whitespace. Prompt mode supplies generation instructions.
+  string message = 2 [(buf.validate.field).string = {min_len: 1 max_len: 1000 pattern: "\\S"}];
+  uint32 timeout_seconds = 3 [(buf.validate.field).uint32 = {gte: 1 lte: 1000}];
+  uint32 max_count = 4 [(buf.validate.field).uint32 = {gte: 1 lte: 10}];
+  bool reset_on_user_speech = 5;
 }
 
 message TimeElapsedActionRuntime {

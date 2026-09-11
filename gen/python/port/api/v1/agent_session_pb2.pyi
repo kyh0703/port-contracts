@@ -346,14 +346,30 @@ class CallRuntimeSnapshot(_message.Message):
     def __init__(self, stt: _Optional[_Union[_voice_runtime_pb2.SttRuntime, _Mapping]] = ..., tts: _Optional[_Union[_voice_runtime_pb2.TtsRuntime, _Mapping]] = ..., background_audio: _Optional[_Union[BackgroundAudioRuntime, _Mapping]] = ..., dtmf: _Optional[_Union[DtmfInputRuntime, _Mapping]] = ..., transport: _Optional[_Union[TransportRuntime, _Mapping]] = ..., vad: _Optional[_Union[VadRuntime, _Mapping]] = ..., speech_policy: _Optional[_Union[SpeechPolicyRuntime, _Mapping]] = ..., limits: _Optional[_Union[CallLimitsRuntime, _Mapping]] = ..., conversation_filler: _Optional[_Union[ConversationFillerRuntime, _Mapping]] = ..., conversation_control: _Optional[_Union[ConversationControlRuntime, _Mapping]] = ...) -> None: ...
 
 class ConversationControlRuntime(_message.Message):
-    __slots__ = ("end_call_message", "end_call_phrases", "time_elapsed_actions")
+    __slots__ = ("end_call_message", "end_call_phrases", "time_elapsed_actions", "idle_message")
     END_CALL_MESSAGE_FIELD_NUMBER: _ClassVar[int]
     END_CALL_PHRASES_FIELD_NUMBER: _ClassVar[int]
     TIME_ELAPSED_ACTIONS_FIELD_NUMBER: _ClassVar[int]
+    IDLE_MESSAGE_FIELD_NUMBER: _ClassVar[int]
     end_call_message: str
     end_call_phrases: _containers.RepeatedScalarFieldContainer[str]
     time_elapsed_actions: _containers.RepeatedCompositeFieldContainer[TimeElapsedActionRuntime]
-    def __init__(self, end_call_message: _Optional[str] = ..., end_call_phrases: _Optional[_Iterable[str]] = ..., time_elapsed_actions: _Optional[_Iterable[_Union[TimeElapsedActionRuntime, _Mapping]]] = ...) -> None: ...
+    idle_message: IdleMessageRuntime
+    def __init__(self, end_call_message: _Optional[str] = ..., end_call_phrases: _Optional[_Iterable[str]] = ..., time_elapsed_actions: _Optional[_Iterable[_Union[TimeElapsedActionRuntime, _Mapping]]] = ..., idle_message: _Optional[_Union[IdleMessageRuntime, _Mapping]] = ...) -> None: ...
+
+class IdleMessageRuntime(_message.Message):
+    __slots__ = ("mode", "message", "timeout_seconds", "max_count", "reset_on_user_speech")
+    MODE_FIELD_NUMBER: _ClassVar[int]
+    MESSAGE_FIELD_NUMBER: _ClassVar[int]
+    TIMEOUT_SECONDS_FIELD_NUMBER: _ClassVar[int]
+    MAX_COUNT_FIELD_NUMBER: _ClassVar[int]
+    RESET_ON_USER_SPEECH_FIELD_NUMBER: _ClassVar[int]
+    mode: str
+    message: str
+    timeout_seconds: int
+    max_count: int
+    reset_on_user_speech: bool
+    def __init__(self, mode: _Optional[str] = ..., message: _Optional[str] = ..., timeout_seconds: _Optional[int] = ..., max_count: _Optional[int] = ..., reset_on_user_speech: _Optional[bool] = ...) -> None: ...
 
 class TimeElapsedActionRuntime(_message.Message):
     __slots__ = ("at_seconds", "say", "end_call")
