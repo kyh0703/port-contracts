@@ -20,6 +20,11 @@ class ExecutionSessionServiceStub:
                 request_serializer=port_dot_api_dot_v1_dot_agent__session__pb2.BootstrapPublishedRequest.SerializeToString,
                 response_deserializer=port_dot_api_dot_v1_dot_agent__session__pb2.BootstrapPublishedResponse.FromString,
                 _registered_method=True)
+        self.CommandSipTransfer = channel.unary_unary(
+                '/port.api.v1.ExecutionSessionService/CommandSipTransfer',
+                request_serializer=port_dot_api_dot_v1_dot_agent__session__pb2.CommandSipTransferRequest.SerializeToString,
+                response_deserializer=port_dot_api_dot_v1_dot_agent__session__pb2.CommandSipTransferResponse.FromString,
+                _registered_method=True)
 
 
 class ExecutionSessionServiceServicer:
@@ -32,6 +37,12 @@ class ExecutionSessionServiceServicer:
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def CommandSipTransfer(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_ExecutionSessionServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
@@ -39,6 +50,11 @@ def add_ExecutionSessionServiceServicer_to_server(servicer, server):
                     servicer.BootstrapPublished,
                     request_deserializer=port_dot_api_dot_v1_dot_agent__session__pb2.BootstrapPublishedRequest.FromString,
                     response_serializer=port_dot_api_dot_v1_dot_agent__session__pb2.BootstrapPublishedResponse.SerializeToString,
+            ),
+            'CommandSipTransfer': grpc.unary_unary_rpc_method_handler(
+                    servicer.CommandSipTransfer,
+                    request_deserializer=port_dot_api_dot_v1_dot_agent__session__pb2.CommandSipTransferRequest.FromString,
+                    response_serializer=port_dot_api_dot_v1_dot_agent__session__pb2.CommandSipTransferResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -69,6 +85,33 @@ class ExecutionSessionService:
             '/port.api.v1.ExecutionSessionService/BootstrapPublished',
             port_dot_api_dot_v1_dot_agent__session__pb2.BootstrapPublishedRequest.SerializeToString,
             port_dot_api_dot_v1_dot_agent__session__pb2.BootstrapPublishedResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def CommandSipTransfer(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/port.api.v1.ExecutionSessionService/CommandSipTransfer',
+            port_dot_api_dot_v1_dot_agent__session__pb2.CommandSipTransferRequest.SerializeToString,
+            port_dot_api_dot_v1_dot_agent__session__pb2.CommandSipTransferResponse.FromString,
             options,
             channel_credentials,
             insecure,

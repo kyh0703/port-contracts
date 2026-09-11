@@ -20,6 +20,7 @@ const _ = grpc.SupportPackageIsVersion9
 
 const (
 	ExecutionSessionService_BootstrapPublished_FullMethodName = "/port.api.v1.ExecutionSessionService/BootstrapPublished"
+	ExecutionSessionService_CommandSipTransfer_FullMethodName = "/port.api.v1.ExecutionSessionService/CommandSipTransfer"
 )
 
 // ExecutionSessionServiceClient is the client API for ExecutionSessionService service.
@@ -29,6 +30,7 @@ const (
 // ExecutionSessionService is the worker-only API boundary for LiveKit jobs.
 type ExecutionSessionServiceClient interface {
 	BootstrapPublished(ctx context.Context, in *BootstrapPublishedRequest, opts ...grpc.CallOption) (*BootstrapPublishedResponse, error)
+	CommandSipTransfer(ctx context.Context, in *CommandSipTransferRequest, opts ...grpc.CallOption) (*CommandSipTransferResponse, error)
 }
 
 type executionSessionServiceClient struct {
@@ -49,6 +51,16 @@ func (c *executionSessionServiceClient) BootstrapPublished(ctx context.Context, 
 	return out, nil
 }
 
+func (c *executionSessionServiceClient) CommandSipTransfer(ctx context.Context, in *CommandSipTransferRequest, opts ...grpc.CallOption) (*CommandSipTransferResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(CommandSipTransferResponse)
+	err := c.cc.Invoke(ctx, ExecutionSessionService_CommandSipTransfer_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // ExecutionSessionServiceServer is the server API for ExecutionSessionService service.
 // All implementations must embed UnimplementedExecutionSessionServiceServer
 // for forward compatibility.
@@ -56,6 +68,7 @@ func (c *executionSessionServiceClient) BootstrapPublished(ctx context.Context, 
 // ExecutionSessionService is the worker-only API boundary for LiveKit jobs.
 type ExecutionSessionServiceServer interface {
 	BootstrapPublished(context.Context, *BootstrapPublishedRequest) (*BootstrapPublishedResponse, error)
+	CommandSipTransfer(context.Context, *CommandSipTransferRequest) (*CommandSipTransferResponse, error)
 	mustEmbedUnimplementedExecutionSessionServiceServer()
 }
 
@@ -68,6 +81,9 @@ type UnimplementedExecutionSessionServiceServer struct{}
 
 func (UnimplementedExecutionSessionServiceServer) BootstrapPublished(context.Context, *BootstrapPublishedRequest) (*BootstrapPublishedResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method BootstrapPublished not implemented")
+}
+func (UnimplementedExecutionSessionServiceServer) CommandSipTransfer(context.Context, *CommandSipTransferRequest) (*CommandSipTransferResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method CommandSipTransfer not implemented")
 }
 func (UnimplementedExecutionSessionServiceServer) mustEmbedUnimplementedExecutionSessionServiceServer() {
 }
@@ -109,6 +125,24 @@ func _ExecutionSessionService_BootstrapPublished_Handler(srv interface{}, ctx co
 	return interceptor(ctx, in, info, handler)
 }
 
+func _ExecutionSessionService_CommandSipTransfer_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CommandSipTransferRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ExecutionSessionServiceServer).CommandSipTransfer(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ExecutionSessionService_CommandSipTransfer_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ExecutionSessionServiceServer).CommandSipTransfer(ctx, req.(*CommandSipTransferRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // ExecutionSessionService_ServiceDesc is the grpc.ServiceDesc for ExecutionSessionService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -119,6 +153,10 @@ var ExecutionSessionService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "BootstrapPublished",
 			Handler:    _ExecutionSessionService_BootstrapPublished_Handler,
+		},
+		{
+			MethodName: "CommandSipTransfer",
+			Handler:    _ExecutionSessionService_CommandSipTransfer_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
