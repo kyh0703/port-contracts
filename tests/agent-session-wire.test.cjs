@@ -24,6 +24,19 @@ const {
 
 const publicationRevision = "execution-publication-2026-09-04-r1";
 
+test("Speaker preserves the exact script and consent settings on the wire", () => {
+  const config = {
+    condition: "계약 내용을 고지해야 할 때",
+    script: "  제1조. 계약 내용입니다.\n\n금액: 10,000원.  ",
+    consentQuestion: " 위 내용에 동의하십니까? ",
+    responseTimeoutSeconds: 30,
+  };
+  const tool = BuiltInTool.fromJSON({ speaker: config });
+  const decoded = BuiltInTool.decode(BuiltInTool.encode(tool).finish());
+  assert.deepEqual(decoded.speaker, config);
+  assert.deepEqual(BuiltInTool.toJSON(decoded).speaker, config);
+});
+
 test("DTMF and SMS built-in tools round-trip their additive runtime payloads", () => {
   const dtmf = BuiltInTool.create({ dtmf: DtmfTool.create({}) });
   const sms = BuiltInTool.create({

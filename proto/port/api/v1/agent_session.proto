@@ -432,6 +432,7 @@ message BuiltInTool {
     TransferToHumanTool transfer_to_human = 2;
     DtmfTool dtmf = 3;
     SendSmsTool send_sms = 4;
+    SpeakerTool speaker = 5;
   }
 }
 
@@ -461,6 +462,15 @@ message SendSmsTool {
   uint32 max_sends = 3 [(buf.validate.field).uint32 = {gte: 1 lte: 5}];
   // User-authored invocation condition. Runtime appends locked operational wording.
   string condition = 4;
+}
+
+// Reads a pinned disclosure verbatim, then collects explicit consent.
+message SpeakerTool {
+  string condition = 1 [(buf.validate.field).string = {min_len: 1 max_len: 1000 pattern: "\\S"}];
+  // Preserve whitespace and wording; the runtime must not summarize this text.
+  string script = 2 [(buf.validate.field).string = {min_len: 1 max_len: 20000 pattern: "\\S"}];
+  string consent_question = 3 [(buf.validate.field).string = {min_len: 1 max_len: 1000 pattern: "\\S"}];
+  uint32 response_timeout_seconds = 4 [(buf.validate.field).uint32 = {gte: 5 lte: 120}];
 }
 
 message McpServerRuntime {

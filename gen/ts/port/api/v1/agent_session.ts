@@ -574,6 +574,7 @@ export interface BuiltInTool {
   transferToHuman?: TransferToHumanTool | undefined;
   dtmf?: DtmfTool | undefined;
   sendSms?: SendSmsTool | undefined;
+  speaker?: SpeakerTool | undefined;
 }
 
 export interface EndCallTool {
@@ -603,6 +604,15 @@ export interface SendSmsTool {
   maxSends: number;
   /** User-authored invocation condition. Runtime appends locked operational wording. */
   condition: string;
+}
+
+/** Reads a pinned disclosure verbatim, then collects explicit consent. */
+export interface SpeakerTool {
+  condition: string;
+  /** Preserve whitespace and wording; the runtime must not summarize this text. */
+  script: string;
+  consentQuestion: string;
+  responseTimeoutSeconds: number;
 }
 
 export interface McpServerRuntime {
@@ -5251,7 +5261,7 @@ export const KnowledgeToolRuntime: MessageFns<KnowledgeToolRuntime> = {
 };
 
 function createBaseBuiltInTool(): BuiltInTool {
-  return { endCall: undefined, transferToHuman: undefined, dtmf: undefined, sendSms: undefined };
+  return { endCall: undefined, transferToHuman: undefined, dtmf: undefined, sendSms: undefined, speaker: undefined };
 }
 
 export const BuiltInTool: MessageFns<BuiltInTool> = {
@@ -5267,6 +5277,9 @@ export const BuiltInTool: MessageFns<BuiltInTool> = {
     }
     if (message.sendSms !== undefined) {
       SendSmsTool.encode(message.sendSms, writer.uint32(34).fork()).join();
+    }
+    if (message.speaker !== undefined) {
+      SpeakerTool.encode(message.speaker, writer.uint32(42).fork()).join();
     }
     return writer;
   },
@@ -5310,6 +5323,14 @@ export const BuiltInTool: MessageFns<BuiltInTool> = {
           message.sendSms = SendSmsTool.decode(reader, reader.uint32());
           continue;
         }
+        case 5: {
+          if (tag !== 42) {
+            break;
+          }
+
+          message.speaker = SpeakerTool.decode(reader, reader.uint32());
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -5337,6 +5358,7 @@ export const BuiltInTool: MessageFns<BuiltInTool> = {
         : isSet(object.send_sms)
         ? SendSmsTool.fromJSON(object.send_sms)
         : undefined,
+      speaker: isSet(object.speaker) ? SpeakerTool.fromJSON(object.speaker) : undefined,
     };
   },
 
@@ -5353,6 +5375,9 @@ export const BuiltInTool: MessageFns<BuiltInTool> = {
     }
     if (message.sendSms !== undefined) {
       obj.sendSms = SendSmsTool.toJSON(message.sendSms);
+    }
+    if (message.speaker !== undefined) {
+      obj.speaker = SpeakerTool.toJSON(message.speaker);
     }
     return obj;
   },
@@ -5371,6 +5396,9 @@ export const BuiltInTool: MessageFns<BuiltInTool> = {
     message.dtmf = (object.dtmf !== undefined && object.dtmf !== null) ? DtmfTool.fromPartial(object.dtmf) : undefined;
     message.sendSms = (object.sendSms !== undefined && object.sendSms !== null)
       ? SendSmsTool.fromPartial(object.sendSms)
+      : undefined;
+    message.speaker = (object.speaker !== undefined && object.speaker !== null)
+      ? SpeakerTool.fromPartial(object.speaker)
       : undefined;
     return message;
   },
@@ -5786,6 +5814,122 @@ export const SendSmsTool: MessageFns<SendSmsTool> = {
     message.template = object.template ?? "";
     message.maxSends = object.maxSends ?? 0;
     message.condition = object.condition ?? "";
+    return message;
+  },
+};
+
+function createBaseSpeakerTool(): SpeakerTool {
+  return { condition: "", script: "", consentQuestion: "", responseTimeoutSeconds: 0 };
+}
+
+export const SpeakerTool: MessageFns<SpeakerTool> = {
+  encode(message: SpeakerTool, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.condition !== "") {
+      writer.uint32(10).string(message.condition);
+    }
+    if (message.script !== "") {
+      writer.uint32(18).string(message.script);
+    }
+    if (message.consentQuestion !== "") {
+      writer.uint32(26).string(message.consentQuestion);
+    }
+    if (message.responseTimeoutSeconds !== 0) {
+      writer.uint32(32).uint32(message.responseTimeoutSeconds);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): SpeakerTool {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseSpeakerTool();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.condition = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.script = reader.string();
+          continue;
+        }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.consentQuestion = reader.string();
+          continue;
+        }
+        case 4: {
+          if (tag !== 32) {
+            break;
+          }
+
+          message.responseTimeoutSeconds = reader.uint32();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): SpeakerTool {
+    return {
+      condition: isSet(object.condition) ? globalThis.String(object.condition) : "",
+      script: isSet(object.script) ? globalThis.String(object.script) : "",
+      consentQuestion: isSet(object.consentQuestion)
+        ? globalThis.String(object.consentQuestion)
+        : isSet(object.consent_question)
+        ? globalThis.String(object.consent_question)
+        : "",
+      responseTimeoutSeconds: isSet(object.responseTimeoutSeconds)
+        ? globalThis.Number(object.responseTimeoutSeconds)
+        : isSet(object.response_timeout_seconds)
+        ? globalThis.Number(object.response_timeout_seconds)
+        : 0,
+    };
+  },
+
+  toJSON(message: SpeakerTool): unknown {
+    const obj: any = {};
+    if (message.condition !== "") {
+      obj.condition = message.condition;
+    }
+    if (message.script !== "") {
+      obj.script = message.script;
+    }
+    if (message.consentQuestion !== "") {
+      obj.consentQuestion = message.consentQuestion;
+    }
+    if (message.responseTimeoutSeconds !== 0) {
+      obj.responseTimeoutSeconds = Math.round(message.responseTimeoutSeconds);
+    }
+    return obj;
+  },
+
+  create(base?: DeepPartial<SpeakerTool>): SpeakerTool {
+    return SpeakerTool.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<SpeakerTool>): SpeakerTool {
+    const message = createBaseSpeakerTool();
+    message.condition = object.condition ?? "";
+    message.script = object.script ?? "";
+    message.consentQuestion = object.consentQuestion ?? "";
+    message.responseTimeoutSeconds = object.responseTimeoutSeconds ?? 0;
     return message;
   },
 };
