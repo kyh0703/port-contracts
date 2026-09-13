@@ -369,8 +369,8 @@ export interface AgentPromptConfigSnapshot {
 }
 
 /**
- * Agent nodes intentionally do not expose greeting or guardrails
- * fields. Knowledge retrieval is available through the additive fields below.
+ * Agent nodes expose the optional start greeting alongside the raw system prompt.
+ * It is only played for the publication's primary start node by the runtime.
  */
 export interface PublishedAgentNodeRuntime {
   nodeId: string;
@@ -389,6 +389,7 @@ export interface PublishedAgentNodeRuntime {
   knowledgeToolRuntimes: KnowledgeToolRuntime[];
   authoring?: InlineAuthoringOptions | undefined;
   displayName?: string | undefined;
+  greeting?: string | undefined;
 }
 
 /** Optional so older publications retain provider defaults. */
@@ -1932,6 +1933,7 @@ function createBasePublishedAgentNodeRuntime(): PublishedAgentNodeRuntime {
     knowledgeToolRuntimes: [],
     authoring: undefined,
     displayName: undefined,
+    greeting: undefined,
   };
 }
 
@@ -1984,6 +1986,9 @@ export const PublishedAgentNodeRuntime: MessageFns<PublishedAgentNodeRuntime> = 
     }
     if (message.displayName !== undefined) {
       writer.uint32(130).string(message.displayName);
+    }
+    if (message.greeting !== undefined) {
+      writer.uint32(138).string(message.greeting);
     }
     return writer;
   },
@@ -2123,6 +2128,14 @@ export const PublishedAgentNodeRuntime: MessageFns<PublishedAgentNodeRuntime> = 
           message.displayName = reader.string();
           continue;
         }
+        case 17: {
+          if (tag !== 138) {
+            break;
+          }
+
+          message.greeting = reader.string();
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -2202,6 +2215,7 @@ export const PublishedAgentNodeRuntime: MessageFns<PublishedAgentNodeRuntime> = 
         : isSet(object.display_name)
         ? globalThis.String(object.display_name)
         : undefined,
+      greeting: isSet(object.greeting) ? globalThis.String(object.greeting) : undefined,
     };
   },
 
@@ -2255,6 +2269,9 @@ export const PublishedAgentNodeRuntime: MessageFns<PublishedAgentNodeRuntime> = 
     if (message.displayName !== undefined) {
       obj.displayName = message.displayName;
     }
+    if (message.greeting !== undefined) {
+      obj.greeting = message.greeting;
+    }
     return obj;
   },
 
@@ -2285,6 +2302,7 @@ export const PublishedAgentNodeRuntime: MessageFns<PublishedAgentNodeRuntime> = 
       ? InlineAuthoringOptions.fromPartial(object.authoring)
       : undefined;
     message.displayName = object.displayName ?? undefined;
+    message.greeting = object.greeting ?? undefined;
     return message;
   },
 };
