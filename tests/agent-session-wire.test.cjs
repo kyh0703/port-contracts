@@ -273,6 +273,50 @@ test("published agent topology references only inline node IDs", () => {
   assert.equal(decoded.agent.nodeRuntimes[0].knowledgeRetrievalCapability, "");
 });
 
+test("mode prompt config snapshots and optional node display names round-trip", () => {
+  const response = BootstrapPublishedResponse.create({
+    contractRevision: publicationRevision,
+    conversationId: "conversation-mode-prompt",
+    sessionId: "session-mode-prompt",
+    publishedId: "agent-mode-prompt",
+    agent: {
+      mode: AgentMode.AGENT_MODE_HANDOFF,
+      promptConfig: {
+        revision: 4,
+        systemGuardrail: "Guard",
+        crewSystemContext: "Crew",
+        handoffContext: "Forward",
+        supervisorContext: "Delegate",
+        specialistContext: "Return a summary",
+        voiceRules: "Speak clearly",
+        dtmfRules: "Read keypad input literally",
+      },
+      nodeRuntimes: [{ ...inlineRuntime("entry", "Raw node prompt."), displayName: "Entry" }],
+      handoff: {
+        entryNodeId: "entry",
+        maxHandoffDepth: 1,
+        routes: [],
+      },
+    },
+    textRuntime: {
+      transport: "text_stream",
+      roomName: "room-mode-prompt",
+      participantIdentity: "participant-mode-prompt",
+      idleTimeoutSeconds: 300,
+      maxSessionDurationSeconds: 3600,
+    },
+  });
+
+  const decoded = BootstrapPublishedResponse.decode(
+    BootstrapPublishedResponse.encode(response).finish(),
+  );
+  assert.deepEqual(decoded, response);
+  assert.equal(decoded.agent.promptConfig.revision, 4);
+  assert.equal(decoded.agent.promptConfig.handoffContext, "Forward");
+  assert.equal(decoded.agent.nodeRuntimes[0].displayName, "Entry");
+  assert.equal(decoded.agent.nodeRuntimes[0].instructions.systemPrompt, "Raw node prompt.");
+});
+
 test("inline runtimes round-trip Knowledge fields and default them for legacy payloads", () => {
   const response = BootstrapPublishedResponse.create({
     contractRevision: publicationRevision,

@@ -162,19 +162,41 @@ class SessionPromptVariable(_message.Message):
     def __init__(self, name: _Optional[str] = ..., string_value: _Optional[str] = ..., number_value: _Optional[float] = ..., boolean_value: _Optional[bool] = ...) -> None: ...
 
 class PublishedAgentExecution(_message.Message):
-    __slots__ = ("mode", "node_runtimes", "supervisor", "handoff")
+    __slots__ = ("mode", "node_runtimes", "supervisor", "handoff", "prompt_config")
     MODE_FIELD_NUMBER: _ClassVar[int]
     NODE_RUNTIMES_FIELD_NUMBER: _ClassVar[int]
     SUPERVISOR_FIELD_NUMBER: _ClassVar[int]
     HANDOFF_FIELD_NUMBER: _ClassVar[int]
+    PROMPT_CONFIG_FIELD_NUMBER: _ClassVar[int]
     mode: AgentMode
     node_runtimes: _containers.RepeatedCompositeFieldContainer[PublishedAgentNodeRuntime]
     supervisor: PublishedSupervisorSnapshot
     handoff: PublishedHandoffSnapshot
-    def __init__(self, mode: _Optional[_Union[AgentMode, str]] = ..., node_runtimes: _Optional[_Iterable[_Union[PublishedAgentNodeRuntime, _Mapping]]] = ..., supervisor: _Optional[_Union[PublishedSupervisorSnapshot, _Mapping]] = ..., handoff: _Optional[_Union[PublishedHandoffSnapshot, _Mapping]] = ...) -> None: ...
+    prompt_config: AgentPromptConfigSnapshot
+    def __init__(self, mode: _Optional[_Union[AgentMode, str]] = ..., node_runtimes: _Optional[_Iterable[_Union[PublishedAgentNodeRuntime, _Mapping]]] = ..., supervisor: _Optional[_Union[PublishedSupervisorSnapshot, _Mapping]] = ..., handoff: _Optional[_Union[PublishedHandoffSnapshot, _Mapping]] = ..., prompt_config: _Optional[_Union[AgentPromptConfigSnapshot, _Mapping]] = ...) -> None: ...
+
+class AgentPromptConfigSnapshot(_message.Message):
+    __slots__ = ("revision", "system_guardrail", "crew_system_context", "handoff_context", "supervisor_context", "specialist_context", "voice_rules", "dtmf_rules")
+    REVISION_FIELD_NUMBER: _ClassVar[int]
+    SYSTEM_GUARDRAIL_FIELD_NUMBER: _ClassVar[int]
+    CREW_SYSTEM_CONTEXT_FIELD_NUMBER: _ClassVar[int]
+    HANDOFF_CONTEXT_FIELD_NUMBER: _ClassVar[int]
+    SUPERVISOR_CONTEXT_FIELD_NUMBER: _ClassVar[int]
+    SPECIALIST_CONTEXT_FIELD_NUMBER: _ClassVar[int]
+    VOICE_RULES_FIELD_NUMBER: _ClassVar[int]
+    DTMF_RULES_FIELD_NUMBER: _ClassVar[int]
+    revision: int
+    system_guardrail: str
+    crew_system_context: str
+    handoff_context: str
+    supervisor_context: str
+    specialist_context: str
+    voice_rules: str
+    dtmf_rules: str
+    def __init__(self, revision: _Optional[int] = ..., system_guardrail: _Optional[str] = ..., crew_system_context: _Optional[str] = ..., handoff_context: _Optional[str] = ..., supervisor_context: _Optional[str] = ..., specialist_context: _Optional[str] = ..., voice_rules: _Optional[str] = ..., dtmf_rules: _Optional[str] = ...) -> None: ...
 
 class PublishedAgentNodeRuntime(_message.Message):
-    __slots__ = ("node_id", "llm_worker", "instructions", "context_policy", "tools", "mcp_servers", "api_tool_runtimes", "a2a_tool_runtimes", "built_in_tools", "knowledge_revision_id", "knowledge_retrieval_capability", "knowledge_function_name", "knowledge_description", "knowledge_tool_runtimes", "authoring")
+    __slots__ = ("node_id", "llm_worker", "instructions", "context_policy", "tools", "mcp_servers", "api_tool_runtimes", "a2a_tool_runtimes", "built_in_tools", "knowledge_revision_id", "knowledge_retrieval_capability", "knowledge_function_name", "knowledge_description", "knowledge_tool_runtimes", "authoring", "display_name")
     NODE_ID_FIELD_NUMBER: _ClassVar[int]
     LLM_WORKER_FIELD_NUMBER: _ClassVar[int]
     INSTRUCTIONS_FIELD_NUMBER: _ClassVar[int]
@@ -190,6 +212,7 @@ class PublishedAgentNodeRuntime(_message.Message):
     KNOWLEDGE_DESCRIPTION_FIELD_NUMBER: _ClassVar[int]
     KNOWLEDGE_TOOL_RUNTIMES_FIELD_NUMBER: _ClassVar[int]
     AUTHORING_FIELD_NUMBER: _ClassVar[int]
+    DISPLAY_NAME_FIELD_NUMBER: _ClassVar[int]
     node_id: str
     llm_worker: _voice_runtime_pb2.LlmRuntime
     instructions: AgentInstructions
@@ -205,7 +228,8 @@ class PublishedAgentNodeRuntime(_message.Message):
     knowledge_description: str
     knowledge_tool_runtimes: _containers.RepeatedCompositeFieldContainer[KnowledgeToolRuntime]
     authoring: InlineAuthoringOptions
-    def __init__(self, node_id: _Optional[str] = ..., llm_worker: _Optional[_Union[_voice_runtime_pb2.LlmRuntime, _Mapping]] = ..., instructions: _Optional[_Union[AgentInstructions, _Mapping]] = ..., context_policy: _Optional[_Union[ContextPolicy, str]] = ..., tools: _Optional[_Iterable[_Union[NodeToolMetadata, _Mapping]]] = ..., mcp_servers: _Optional[_Iterable[_Union[McpServerRuntime, _Mapping]]] = ..., api_tool_runtimes: _Optional[_Iterable[_Union[ApiToolRuntime, _Mapping]]] = ..., a2a_tool_runtimes: _Optional[_Iterable[_Union[A2aToolRuntime, _Mapping]]] = ..., built_in_tools: _Optional[_Iterable[_Union[BuiltInTool, _Mapping]]] = ..., knowledge_revision_id: _Optional[str] = ..., knowledge_retrieval_capability: _Optional[str] = ..., knowledge_function_name: _Optional[str] = ..., knowledge_description: _Optional[str] = ..., knowledge_tool_runtimes: _Optional[_Iterable[_Union[KnowledgeToolRuntime, _Mapping]]] = ..., authoring: _Optional[_Union[InlineAuthoringOptions, _Mapping]] = ...) -> None: ...
+    display_name: str
+    def __init__(self, node_id: _Optional[str] = ..., llm_worker: _Optional[_Union[_voice_runtime_pb2.LlmRuntime, _Mapping]] = ..., instructions: _Optional[_Union[AgentInstructions, _Mapping]] = ..., context_policy: _Optional[_Union[ContextPolicy, str]] = ..., tools: _Optional[_Iterable[_Union[NodeToolMetadata, _Mapping]]] = ..., mcp_servers: _Optional[_Iterable[_Union[McpServerRuntime, _Mapping]]] = ..., api_tool_runtimes: _Optional[_Iterable[_Union[ApiToolRuntime, _Mapping]]] = ..., a2a_tool_runtimes: _Optional[_Iterable[_Union[A2aToolRuntime, _Mapping]]] = ..., built_in_tools: _Optional[_Iterable[_Union[BuiltInTool, _Mapping]]] = ..., knowledge_revision_id: _Optional[str] = ..., knowledge_retrieval_capability: _Optional[str] = ..., knowledge_function_name: _Optional[str] = ..., knowledge_description: _Optional[str] = ..., knowledge_tool_runtimes: _Optional[_Iterable[_Union[KnowledgeToolRuntime, _Mapping]]] = ..., authoring: _Optional[_Union[InlineAuthoringOptions, _Mapping]] = ..., display_name: _Optional[str] = ...) -> None: ...
 
 class InlineAuthoringOptions(_message.Message):
     __slots__ = ("model", "tool_bindings")

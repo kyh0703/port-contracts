@@ -415,6 +415,43 @@ func TestPublishedAgentValidation(t *testing.T) {
 	})
 }
 
+func TestPublishedAgentPromptConfigSnapshotValidation(t *testing.T) {
+	valid := validHandoffTextResponse()
+	valid.GetAgent().PromptConfig = &apiv1.AgentPromptConfigSnapshot{
+		Revision:           4,
+		SystemGuardrail:    "Guard",
+		CrewSystemContext:  "Crew",
+		HandoffContext:     "Forward",
+		SupervisorContext:  "Delegate",
+		SpecialistContext:  "Return a summary",
+		VoiceRules:         "Speak clearly",
+		DtmfRules:          "Read keypad input literally",
+	}
+	if err := Validate(valid); err != nil {
+		t.Fatalf("Validate(valid prompt config snapshot) = %v", err)
+	}
+
+	for _, mutate := range []func(*apiv1.AgentPromptConfigSnapshot){
+		func(snapshot *apiv1.AgentPromptConfigSnapshot) { snapshot.Revision = 0 },
+		func(snapshot *apiv1.AgentPromptConfigSnapshot) { snapshot.HandoffContext = "   " },
+		func(snapshot *apiv1.AgentPromptConfigSnapshot) { snapshot.VoiceRules = "" },
+	} {
+		t.Run("rejects malformed snapshot", func(t *testing.T) {
+			response := proto.Clone(valid).(*apiv1.BootstrapPublishedResponse)
+			mutate(response.GetAgent().GetPromptConfig())
+			if err := Validate(response); err == nil {
+				t.Fatal("Validate(malformed prompt config snapshot) = nil")
+			}
+		})
+	}
+
+	legacy := proto.Clone(valid).(*apiv1.BootstrapPublishedResponse)
+	legacy.GetAgent().PromptConfig = nil
+	if err := Validate(legacy); err != nil {
+		t.Fatalf("Validate(legacy response without prompt config) = %v", err)
+	}
+}
+
 func TestSessionPromptVariableBagValidation(t *testing.T) {
 	valid := &apiv1.SessionPromptVariableBag{
 		System: []*apiv1.SessionPromptVariable{

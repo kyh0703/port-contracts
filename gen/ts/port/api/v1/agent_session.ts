@@ -354,6 +354,18 @@ export interface PublishedAgentExecution {
   nodeRuntimes: PublishedAgentNodeRuntime[];
   supervisor?: PublishedSupervisorSnapshot | undefined;
   handoff?: PublishedHandoffSnapshot | undefined;
+  promptConfig?: AgentPromptConfigSnapshot | undefined;
+}
+
+export interface AgentPromptConfigSnapshot {
+  revision: number;
+  systemGuardrail: string;
+  crewSystemContext: string;
+  handoffContext: string;
+  supervisorContext: string;
+  specialistContext: string;
+  voiceRules: string;
+  dtmfRules: string;
 }
 
 /**
@@ -376,6 +388,7 @@ export interface PublishedAgentNodeRuntime {
   knowledgeDescription: string;
   knowledgeToolRuntimes: KnowledgeToolRuntime[];
   authoring?: InlineAuthoringOptions | undefined;
+  displayName?: string | undefined;
 }
 
 /** Optional so older publications retain provider defaults. */
@@ -1555,7 +1568,7 @@ export const SessionPromptVariable: MessageFns<SessionPromptVariable> = {
 };
 
 function createBasePublishedAgentExecution(): PublishedAgentExecution {
-  return { mode: 0, nodeRuntimes: [], supervisor: undefined, handoff: undefined };
+  return { mode: 0, nodeRuntimes: [], supervisor: undefined, handoff: undefined, promptConfig: undefined };
 }
 
 export const PublishedAgentExecution: MessageFns<PublishedAgentExecution> = {
@@ -1571,6 +1584,9 @@ export const PublishedAgentExecution: MessageFns<PublishedAgentExecution> = {
     }
     if (message.handoff !== undefined) {
       PublishedHandoffSnapshot.encode(message.handoff, writer.uint32(34).fork()).join();
+    }
+    if (message.promptConfig !== undefined) {
+      AgentPromptConfigSnapshot.encode(message.promptConfig, writer.uint32(42).fork()).join();
     }
     return writer;
   },
@@ -1614,6 +1630,14 @@ export const PublishedAgentExecution: MessageFns<PublishedAgentExecution> = {
           message.handoff = PublishedHandoffSnapshot.decode(reader, reader.uint32());
           continue;
         }
+        case 5: {
+          if (tag !== 42) {
+            break;
+          }
+
+          message.promptConfig = AgentPromptConfigSnapshot.decode(reader, reader.uint32());
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -1633,6 +1657,11 @@ export const PublishedAgentExecution: MessageFns<PublishedAgentExecution> = {
         : [],
       supervisor: isSet(object.supervisor) ? PublishedSupervisorSnapshot.fromJSON(object.supervisor) : undefined,
       handoff: isSet(object.handoff) ? PublishedHandoffSnapshot.fromJSON(object.handoff) : undefined,
+      promptConfig: isSet(object.promptConfig)
+        ? AgentPromptConfigSnapshot.fromJSON(object.promptConfig)
+        : isSet(object.prompt_config)
+        ? AgentPromptConfigSnapshot.fromJSON(object.prompt_config)
+        : undefined,
     };
   },
 
@@ -1650,6 +1679,9 @@ export const PublishedAgentExecution: MessageFns<PublishedAgentExecution> = {
     if (message.handoff !== undefined) {
       obj.handoff = PublishedHandoffSnapshot.toJSON(message.handoff);
     }
+    if (message.promptConfig !== undefined) {
+      obj.promptConfig = AgentPromptConfigSnapshot.toJSON(message.promptConfig);
+    }
     return obj;
   },
 
@@ -1666,6 +1698,218 @@ export const PublishedAgentExecution: MessageFns<PublishedAgentExecution> = {
     message.handoff = (object.handoff !== undefined && object.handoff !== null)
       ? PublishedHandoffSnapshot.fromPartial(object.handoff)
       : undefined;
+    message.promptConfig = (object.promptConfig !== undefined && object.promptConfig !== null)
+      ? AgentPromptConfigSnapshot.fromPartial(object.promptConfig)
+      : undefined;
+    return message;
+  },
+};
+
+function createBaseAgentPromptConfigSnapshot(): AgentPromptConfigSnapshot {
+  return {
+    revision: 0,
+    systemGuardrail: "",
+    crewSystemContext: "",
+    handoffContext: "",
+    supervisorContext: "",
+    specialistContext: "",
+    voiceRules: "",
+    dtmfRules: "",
+  };
+}
+
+export const AgentPromptConfigSnapshot: MessageFns<AgentPromptConfigSnapshot> = {
+  encode(message: AgentPromptConfigSnapshot, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.revision !== 0) {
+      writer.uint32(8).uint32(message.revision);
+    }
+    if (message.systemGuardrail !== "") {
+      writer.uint32(18).string(message.systemGuardrail);
+    }
+    if (message.crewSystemContext !== "") {
+      writer.uint32(26).string(message.crewSystemContext);
+    }
+    if (message.handoffContext !== "") {
+      writer.uint32(34).string(message.handoffContext);
+    }
+    if (message.supervisorContext !== "") {
+      writer.uint32(42).string(message.supervisorContext);
+    }
+    if (message.specialistContext !== "") {
+      writer.uint32(50).string(message.specialistContext);
+    }
+    if (message.voiceRules !== "") {
+      writer.uint32(58).string(message.voiceRules);
+    }
+    if (message.dtmfRules !== "") {
+      writer.uint32(66).string(message.dtmfRules);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): AgentPromptConfigSnapshot {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseAgentPromptConfigSnapshot();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 8) {
+            break;
+          }
+
+          message.revision = reader.uint32();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.systemGuardrail = reader.string();
+          continue;
+        }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.crewSystemContext = reader.string();
+          continue;
+        }
+        case 4: {
+          if (tag !== 34) {
+            break;
+          }
+
+          message.handoffContext = reader.string();
+          continue;
+        }
+        case 5: {
+          if (tag !== 42) {
+            break;
+          }
+
+          message.supervisorContext = reader.string();
+          continue;
+        }
+        case 6: {
+          if (tag !== 50) {
+            break;
+          }
+
+          message.specialistContext = reader.string();
+          continue;
+        }
+        case 7: {
+          if (tag !== 58) {
+            break;
+          }
+
+          message.voiceRules = reader.string();
+          continue;
+        }
+        case 8: {
+          if (tag !== 66) {
+            break;
+          }
+
+          message.dtmfRules = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): AgentPromptConfigSnapshot {
+    return {
+      revision: isSet(object.revision) ? globalThis.Number(object.revision) : 0,
+      systemGuardrail: isSet(object.systemGuardrail)
+        ? globalThis.String(object.systemGuardrail)
+        : isSet(object.system_guardrail)
+        ? globalThis.String(object.system_guardrail)
+        : "",
+      crewSystemContext: isSet(object.crewSystemContext)
+        ? globalThis.String(object.crewSystemContext)
+        : isSet(object.crew_system_context)
+        ? globalThis.String(object.crew_system_context)
+        : "",
+      handoffContext: isSet(object.handoffContext)
+        ? globalThis.String(object.handoffContext)
+        : isSet(object.handoff_context)
+        ? globalThis.String(object.handoff_context)
+        : "",
+      supervisorContext: isSet(object.supervisorContext)
+        ? globalThis.String(object.supervisorContext)
+        : isSet(object.supervisor_context)
+        ? globalThis.String(object.supervisor_context)
+        : "",
+      specialistContext: isSet(object.specialistContext)
+        ? globalThis.String(object.specialistContext)
+        : isSet(object.specialist_context)
+        ? globalThis.String(object.specialist_context)
+        : "",
+      voiceRules: isSet(object.voiceRules)
+        ? globalThis.String(object.voiceRules)
+        : isSet(object.voice_rules)
+        ? globalThis.String(object.voice_rules)
+        : "",
+      dtmfRules: isSet(object.dtmfRules)
+        ? globalThis.String(object.dtmfRules)
+        : isSet(object.dtmf_rules)
+        ? globalThis.String(object.dtmf_rules)
+        : "",
+    };
+  },
+
+  toJSON(message: AgentPromptConfigSnapshot): unknown {
+    const obj: any = {};
+    if (message.revision !== 0) {
+      obj.revision = Math.round(message.revision);
+    }
+    if (message.systemGuardrail !== "") {
+      obj.systemGuardrail = message.systemGuardrail;
+    }
+    if (message.crewSystemContext !== "") {
+      obj.crewSystemContext = message.crewSystemContext;
+    }
+    if (message.handoffContext !== "") {
+      obj.handoffContext = message.handoffContext;
+    }
+    if (message.supervisorContext !== "") {
+      obj.supervisorContext = message.supervisorContext;
+    }
+    if (message.specialistContext !== "") {
+      obj.specialistContext = message.specialistContext;
+    }
+    if (message.voiceRules !== "") {
+      obj.voiceRules = message.voiceRules;
+    }
+    if (message.dtmfRules !== "") {
+      obj.dtmfRules = message.dtmfRules;
+    }
+    return obj;
+  },
+
+  create(base?: DeepPartial<AgentPromptConfigSnapshot>): AgentPromptConfigSnapshot {
+    return AgentPromptConfigSnapshot.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<AgentPromptConfigSnapshot>): AgentPromptConfigSnapshot {
+    const message = createBaseAgentPromptConfigSnapshot();
+    message.revision = object.revision ?? 0;
+    message.systemGuardrail = object.systemGuardrail ?? "";
+    message.crewSystemContext = object.crewSystemContext ?? "";
+    message.handoffContext = object.handoffContext ?? "";
+    message.supervisorContext = object.supervisorContext ?? "";
+    message.specialistContext = object.specialistContext ?? "";
+    message.voiceRules = object.voiceRules ?? "";
+    message.dtmfRules = object.dtmfRules ?? "";
     return message;
   },
 };
@@ -1687,6 +1931,7 @@ function createBasePublishedAgentNodeRuntime(): PublishedAgentNodeRuntime {
     knowledgeDescription: "",
     knowledgeToolRuntimes: [],
     authoring: undefined,
+    displayName: undefined,
   };
 }
 
@@ -1736,6 +1981,9 @@ export const PublishedAgentNodeRuntime: MessageFns<PublishedAgentNodeRuntime> = 
     }
     if (message.authoring !== undefined) {
       InlineAuthoringOptions.encode(message.authoring, writer.uint32(122).fork()).join();
+    }
+    if (message.displayName !== undefined) {
+      writer.uint32(130).string(message.displayName);
     }
     return writer;
   },
@@ -1867,6 +2115,14 @@ export const PublishedAgentNodeRuntime: MessageFns<PublishedAgentNodeRuntime> = 
           message.authoring = InlineAuthoringOptions.decode(reader, reader.uint32());
           continue;
         }
+        case 16: {
+          if (tag !== 130) {
+            break;
+          }
+
+          message.displayName = reader.string();
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -1941,6 +2197,11 @@ export const PublishedAgentNodeRuntime: MessageFns<PublishedAgentNodeRuntime> = 
         ? object.knowledge_tool_runtimes.map((e: any) => KnowledgeToolRuntime.fromJSON(e))
         : [],
       authoring: isSet(object.authoring) ? InlineAuthoringOptions.fromJSON(object.authoring) : undefined,
+      displayName: isSet(object.displayName)
+        ? globalThis.String(object.displayName)
+        : isSet(object.display_name)
+        ? globalThis.String(object.display_name)
+        : undefined,
     };
   },
 
@@ -1991,6 +2252,9 @@ export const PublishedAgentNodeRuntime: MessageFns<PublishedAgentNodeRuntime> = 
     if (message.authoring !== undefined) {
       obj.authoring = InlineAuthoringOptions.toJSON(message.authoring);
     }
+    if (message.displayName !== undefined) {
+      obj.displayName = message.displayName;
+    }
     return obj;
   },
 
@@ -2020,6 +2284,7 @@ export const PublishedAgentNodeRuntime: MessageFns<PublishedAgentNodeRuntime> = 
     message.authoring = (object.authoring !== undefined && object.authoring !== null)
       ? InlineAuthoringOptions.fromPartial(object.authoring)
       : undefined;
+    message.displayName = object.displayName ?? undefined;
     return message;
   },
 };

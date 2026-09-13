@@ -122,6 +122,18 @@ message PublishedAgentExecution {
   repeated PublishedAgentNodeRuntime node_runtimes = 2 [(buf.validate.field).repeated.min_items = 1];
   PublishedSupervisorSnapshot supervisor = 3;
   PublishedHandoffSnapshot handoff = 4;
+  AgentPromptConfigSnapshot prompt_config = 5;
+}
+
+message AgentPromptConfigSnapshot {
+  uint32 revision = 1 [(buf.validate.field).uint32.gt = 0];
+  string system_guardrail = 2 [(buf.validate.field).string = {min_len: 1 max_len: 16000 pattern: "\\S"}];
+  string crew_system_context = 3 [(buf.validate.field).string = {min_len: 1 max_len: 16000 pattern: "\\S"}];
+  string handoff_context = 4 [(buf.validate.field).string = {min_len: 1 max_len: 16000 pattern: "\\S"}];
+  string supervisor_context = 5 [(buf.validate.field).string = {min_len: 1 max_len: 16000 pattern: "\\S"}];
+  string specialist_context = 6 [(buf.validate.field).string = {min_len: 1 max_len: 16000 pattern: "\\S"}];
+  string voice_rules = 7 [(buf.validate.field).string = {min_len: 1 max_len: 16000 pattern: "\\S"}];
+  string dtmf_rules = 8 [(buf.validate.field).string = {min_len: 1 max_len: 16000 pattern: "\\S"}];
 }
 
 // Agent nodes intentionally do not expose greeting or guardrails
@@ -142,6 +154,7 @@ message PublishedAgentNodeRuntime {
   string knowledge_description = 13;
   repeated KnowledgeToolRuntime knowledge_tool_runtimes = 14;
   InlineAuthoringOptions authoring = 15;
+  optional string display_name = 16 [(buf.validate.field).string = {min_len: 1 pattern: "\\S"}];
 }
 
 // Optional so older publications retain provider defaults.
