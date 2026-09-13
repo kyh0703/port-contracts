@@ -380,6 +380,38 @@ test("handoff routes round-trip typed parameters, recent context, and request-st
   assert.deepEqual(route.parameters[2].booleanEnum, [true, false]);
 });
 
+test("single-member handoff with no routes round-trips on the wire", () => {
+  const response = BootstrapPublishedResponse.create({
+    contractRevision: publicationRevision,
+    conversationId: "conversation-single",
+    sessionId: "session-single",
+    publishedId: "agent-single",
+    agent: {
+      mode: AgentMode.AGENT_MODE_HANDOFF,
+      nodeRuntimes: [inlineRuntime("entry", "Entry.")],
+      handoff: {
+        entryNodeId: "entry",
+        maxHandoffDepth: 1,
+        routes: [],
+      },
+    },
+    textRuntime: {
+      transport: "text_stream",
+      roomName: "room-single",
+      participantIdentity: "participant-single",
+      idleTimeoutSeconds: 300,
+      maxSessionDurationSeconds: 3600,
+    },
+  });
+
+  const decoded = BootstrapPublishedResponse.decode(
+    BootstrapPublishedResponse.encode(response).finish(),
+  );
+  assert.deepEqual(decoded, response);
+  assert.equal(decoded.agent.nodeRuntimes.length, 1);
+  assert.deepEqual(decoded.agent.handoff.routes, []);
+});
+
 test("field-6 bytes decode into announcement", () => {
   const route = contracts.PublishedHandoffRoute.decode(Uint8Array.from([
     0x0a, 0x07, 0x72, 0x6f, 0x75, 0x74, 0x65, 0x2d, 0x31,

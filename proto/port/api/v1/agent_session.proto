@@ -119,7 +119,7 @@ message PublishedAgentExecution {
   };
 
   AgentMode mode = 1 [(buf.validate.field).required = true, (buf.validate.field).enum = {defined_only: true not_in: 0}];
-  repeated PublishedAgentNodeRuntime node_runtimes = 2 [(buf.validate.field).repeated.min_items = 2];
+  repeated PublishedAgentNodeRuntime node_runtimes = 2 [(buf.validate.field).repeated.min_items = 1];
   PublishedSupervisorSnapshot supervisor = 3;
   PublishedHandoffSnapshot handoff = 4;
 }
@@ -184,7 +184,7 @@ message PublishedSupervisorSpecialist {
 message PublishedHandoffSnapshot {
   string entry_node_id = 1 [(buf.validate.field).string.min_len = 1];
   uint32 max_handoff_depth = 2 [(buf.validate.field).uint32.gt = 0];
-  repeated PublishedHandoffRoute routes = 3 [(buf.validate.field).repeated.min_items = 1];
+  repeated PublishedHandoffRoute routes = 3;
 }
 
 message PublishedHandoffRoute {

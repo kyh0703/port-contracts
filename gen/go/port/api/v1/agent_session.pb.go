@@ -3966,7 +3966,7 @@ const file_port_api_v1_agent_session_proto_rawDesc = "" +
 	"\x17PublishedAgentExecution\x129\n" +
 	"\x04mode\x18\x01 \x01(\x0e2\x16.port.api.v1.AgentModeB\r\xbaH\n" +
 	"\xc8\x01\x01\x82\x01\x04\x10\x01 \x00R\x04mode\x12U\n" +
-	"\rnode_runtimes\x18\x02 \x03(\v2&.port.api.v1.PublishedAgentNodeRuntimeB\b\xbaH\x05\x92\x01\x02\b\x02R\fnodeRuntimes\x12H\n" +
+	"\rnode_runtimes\x18\x02 \x03(\v2&.port.api.v1.PublishedAgentNodeRuntimeB\b\xbaH\x05\x92\x01\x02\b\x01R\fnodeRuntimes\x12H\n" +
 	"\n" +
 	"supervisor\x18\x03 \x01(\v2(.port.api.v1.PublishedSupervisorSnapshotR\n" +
 	"supervisor\x12?\n" +
@@ -4022,11 +4022,11 @@ const file_port_api_v1_agent_session_proto_rawDesc = "" +
 	"\x11route_description\x18\x03 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x10routeDescription\x12M\n" +
 	"\x0econtext_policy\x18\x04 \x01(\x0e2\x1a.port.api.v1.ContextPolicyB\n" +
 	"\xbaH\a\x82\x01\x04\x10\x01 \x00R\rcontextPolicy:\xad\x01\xbaH\xa9\x01\x1a\xa6\x01\n" +
-	"6published_supervisor_specialist.context_policy_allowed\x126supervisor context policy must be none or conversation\x1a4this.context_policy == 1 || this.context_policy == 2\"\xc2\x01\n" +
+	"6published_supervisor_specialist.context_policy_allowed\x126supervisor context policy must be none or conversation\x1a4this.context_policy == 1 || this.context_policy == 2\"\xb8\x01\n" +
 	"\x18PublishedHandoffSnapshot\x12+\n" +
 	"\rentry_node_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\ventryNodeId\x123\n" +
-	"\x11max_handoff_depth\x18\x02 \x01(\rB\a\xbaH\x04*\x02 \x00R\x0fmaxHandoffDepth\x12D\n" +
-	"\x06routes\x18\x03 \x03(\v2\".port.api.v1.PublishedHandoffRouteB\b\xbaH\x05\x92\x01\x02\b\x01R\x06routes\"\xe4\a\n" +
+	"\x11max_handoff_depth\x18\x02 \x01(\rB\a\xbaH\x04*\x02 \x00R\x0fmaxHandoffDepth\x12:\n" +
+	"\x06routes\x18\x03 \x03(\v2\".port.api.v1.PublishedHandoffRouteR\x06routes\"\xe4\a\n" +
 	"\x15PublishedHandoffRoute\x12,\n" +
 	"\rtransition_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\ftransitionId\x12-\n" +
 	"\x0esource_node_id\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\fsourceNodeId\x12-\n" +
