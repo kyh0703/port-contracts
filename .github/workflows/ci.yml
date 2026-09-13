@@ -14,12 +14,14 @@ jobs:
         with:
           fetch-depth: 0
       - uses: bufbuild/buf-setup-action@v1
+        with:
+          version: 1.73.0
       - uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: npm
       - run: npm install
-      - run: docker run --rm -v "$PWD:/workspace" -w /workspace bufbuild/buf:latest lint
+      - run: docker run --rm -v "$PWD:/workspace" -w /workspace bufbuild/buf:1.73.0 lint
       - name: Check breaking changes
         if: github.event_name == 'pull_request'
         run: |
@@ -29,12 +31,12 @@ jobs:
             if [ "$current_major" -gt "$base_major" ]; then
               echo "major version bump detected; skipping backward-compatibility check"
             else
-              docker run --rm -v "$PWD:/workspace" -w /workspace bufbuild/buf:latest breaking --against '.git#ref=origin/main'
+              docker run --rm -v "$PWD:/workspace" -w /workspace bufbuild/buf:1.73.0 breaking --against '.git#ref=origin/main'
             fi
           else
             echo "origin/main not found; skipping breaking check"
           fi
-      - run: docker run --rm -v "$PWD:/workspace" -w /workspace bufbuild/buf:latest generate
+      - run: docker run --rm -v "$PWD:/workspace" -w /workspace bufbuild/buf:1.73.0 generate
       - run: npm run test:wire
       - uses: actions/setup-go@v5
         with:
