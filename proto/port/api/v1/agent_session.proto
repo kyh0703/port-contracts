@@ -423,6 +423,19 @@ message ApiToolMetadata {
   string url = 2 [(buf.validate.field).string.min_len = 1];
   string request_schema_json = 3;
   string response_schema_json = 4;
+  repeated ApiToolMessage messages = 5 [(buf.validate.field).repeated.max_items = 4];
+}
+
+message ApiToolMessage {
+  option (buf.validate.message).cel = {
+    id: "api_tool_message.timing_scope"
+    message: "timing_milliseconds is only valid for delayed responses"
+    expression: "this.type == 'request-response-delayed' ? (!has(this.timing_milliseconds) || (this.timing_milliseconds >= 500 && this.timing_milliseconds <= 30000)) : !has(this.timing_milliseconds)"
+  };
+
+  string type = 1 [(buf.validate.field).string = {in: ["request-start", "request-complete", "request-failed", "request-response-delayed"]}];
+  string content = 2 [(buf.validate.field).string = {min_len: 1 max_len: 1000 pattern: "\\S"}];
+  optional uint32 timing_milliseconds = 3 [(buf.validate.field).uint32 = {gte: 500 lte: 30000}];
 }
 
 message A2aToolMetadata {

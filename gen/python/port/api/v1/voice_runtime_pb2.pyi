@@ -28,16 +28,20 @@ class ResolveLeaseResponse(_message.Message):
     def __init__(self, stt: _Optional[_Union[SttRuntime, _Mapping]] = ..., llm: _Optional[_Union[LlmRuntime, _Mapping]] = ..., tts: _Optional[_Union[TtsRuntime, _Mapping]] = ...) -> None: ...
 
 class SttRuntime(_message.Message):
-    __slots__ = ("api_key", "model", "language", "keyterms")
+    __slots__ = ("api_key", "model", "language", "keyterms", "provider", "multilingual")
     API_KEY_FIELD_NUMBER: _ClassVar[int]
     MODEL_FIELD_NUMBER: _ClassVar[int]
     LANGUAGE_FIELD_NUMBER: _ClassVar[int]
     KEYTERMS_FIELD_NUMBER: _ClassVar[int]
+    PROVIDER_FIELD_NUMBER: _ClassVar[int]
+    MULTILINGUAL_FIELD_NUMBER: _ClassVar[int]
     api_key: str
     model: str
     language: str
     keyterms: _containers.RepeatedScalarFieldContainer[str]
-    def __init__(self, api_key: _Optional[str] = ..., model: _Optional[str] = ..., language: _Optional[str] = ..., keyterms: _Optional[_Iterable[str]] = ...) -> None: ...
+    provider: str
+    multilingual: bool
+    def __init__(self, api_key: _Optional[str] = ..., model: _Optional[str] = ..., language: _Optional[str] = ..., keyterms: _Optional[_Iterable[str]] = ..., provider: _Optional[str] = ..., multilingual: _Optional[bool] = ...) -> None: ...
 
 class LlmRuntime(_message.Message):
     __slots__ = ("api_key", "model")
@@ -48,13 +52,15 @@ class LlmRuntime(_message.Message):
     def __init__(self, api_key: _Optional[str] = ..., model: _Optional[str] = ...) -> None: ...
 
 class TtsRuntime(_message.Message):
-    __slots__ = ("api_key", "model", "language", "voice_id")
+    __slots__ = ("api_key", "model", "language", "voice_id", "provider")
     API_KEY_FIELD_NUMBER: _ClassVar[int]
     MODEL_FIELD_NUMBER: _ClassVar[int]
     LANGUAGE_FIELD_NUMBER: _ClassVar[int]
     VOICE_ID_FIELD_NUMBER: _ClassVar[int]
+    PROVIDER_FIELD_NUMBER: _ClassVar[int]
     api_key: str
     model: str
     language: str
     voice_id: str
-    def __init__(self, api_key: _Optional[str] = ..., model: _Optional[str] = ..., language: _Optional[str] = ..., voice_id: _Optional[str] = ...) -> None: ...
+    provider: str
+    def __init__(self, api_key: _Optional[str] = ..., model: _Optional[str] = ..., language: _Optional[str] = ..., voice_id: _Optional[str] = ..., provider: _Optional[str] = ...) -> None: ...

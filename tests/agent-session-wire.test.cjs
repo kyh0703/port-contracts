@@ -2,6 +2,7 @@ const assert = require("node:assert/strict");
 const test = require("node:test");
 
 const contracts = require("../dist/gen/ts/port/api/v1/agent_session.js");
+const voiceRuntime = require("../dist/gen/ts/port/api/v1/voice_runtime.js");
 const {
   ExecutionSessionServiceService,
   BootstrapPublishedRequest,
@@ -20,9 +21,45 @@ const {
   BuiltInTool,
   DtmfTool,
   SendSmsTool,
+  ApiToolMetadata,
 } = contracts;
+const { SttRuntime, TtsRuntime } = voiceRuntime;
 
 const publicationRevision = "execution-publication-2026-09-04-r1";
+
+test("speech providers and API tool messages round-trip additively", () => {
+  const stt = SttRuntime.create({
+    provider: "soniox",
+    apiKey: "stt-secret",
+    model: "stt-model",
+    language: "ko",
+    multilingual: true,
+  });
+  const tts = TtsRuntime.create({
+    provider: "elevenlabs",
+    apiKey: "tts-secret",
+    model: "tts-model",
+    language: "ko",
+    voiceId: "voice-legacy",
+  });
+  const api = ApiToolMetadata.create({
+    method: "POST",
+    url: "https://example.test/orders",
+    requestSchemaJson: "{}",
+    responseSchemaJson: "{}",
+    messages: [
+      { type: "request-start", content: "조회할게요." },
+      { type: "request-response-delayed", content: "조금만 기다려 주세요.", timingMilliseconds: 3000 },
+      { type: "request-complete", content: "조회가 끝났어요." },
+      { type: "request-failed", content: "조회에 실패했어요." },
+    ],
+  });
+
+  assert.deepEqual(SttRuntime.decode(SttRuntime.encode(stt).finish()), stt);
+  assert.deepEqual(TtsRuntime.decode(TtsRuntime.encode(tts).finish()), tts);
+  assert.deepEqual(ApiToolMetadata.decode(ApiToolMetadata.encode(api).finish()), api);
+  assert.equal(SttRuntime.decode(SttRuntime.encode(SttRuntime.create({ apiKey: "key", model: "model", language: "ko" })).finish()).provider, undefined);
+});
 
 test("Speaker preserves the exact script and consent settings on the wire", () => {
   const config = {

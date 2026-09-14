@@ -500,16 +500,28 @@ class McpToolMetadata(_message.Message):
     def __init__(self, server_name: _Optional[str] = ..., transport: _Optional[str] = ..., url: _Optional[str] = ...) -> None: ...
 
 class ApiToolMetadata(_message.Message):
-    __slots__ = ("method", "url", "request_schema_json", "response_schema_json")
+    __slots__ = ("method", "url", "request_schema_json", "response_schema_json", "messages")
     METHOD_FIELD_NUMBER: _ClassVar[int]
     URL_FIELD_NUMBER: _ClassVar[int]
     REQUEST_SCHEMA_JSON_FIELD_NUMBER: _ClassVar[int]
     RESPONSE_SCHEMA_JSON_FIELD_NUMBER: _ClassVar[int]
+    MESSAGES_FIELD_NUMBER: _ClassVar[int]
     method: str
     url: str
     request_schema_json: str
     response_schema_json: str
-    def __init__(self, method: _Optional[str] = ..., url: _Optional[str] = ..., request_schema_json: _Optional[str] = ..., response_schema_json: _Optional[str] = ...) -> None: ...
+    messages: _containers.RepeatedCompositeFieldContainer[ApiToolMessage]
+    def __init__(self, method: _Optional[str] = ..., url: _Optional[str] = ..., request_schema_json: _Optional[str] = ..., response_schema_json: _Optional[str] = ..., messages: _Optional[_Iterable[_Union[ApiToolMessage, _Mapping]]] = ...) -> None: ...
+
+class ApiToolMessage(_message.Message):
+    __slots__ = ("type", "content", "timing_milliseconds")
+    TYPE_FIELD_NUMBER: _ClassVar[int]
+    CONTENT_FIELD_NUMBER: _ClassVar[int]
+    TIMING_MILLISECONDS_FIELD_NUMBER: _ClassVar[int]
+    type: str
+    content: str
+    timing_milliseconds: int
+    def __init__(self, type: _Optional[str] = ..., content: _Optional[str] = ..., timing_milliseconds: _Optional[int] = ...) -> None: ...
 
 class A2aToolMetadata(_message.Message):
     __slots__ = ("agent_card_url",)

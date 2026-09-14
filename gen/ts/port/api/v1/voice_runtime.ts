@@ -38,6 +38,8 @@ export interface SttRuntime {
   model: string;
   language: string;
   keyterms: string[];
+  provider?: string | undefined;
+  multilingual?: boolean | undefined;
 }
 
 export interface LlmRuntime {
@@ -50,6 +52,7 @@ export interface TtsRuntime {
   model: string;
   language: string;
   voiceId: string;
+  provider?: string | undefined;
 }
 
 function createBaseResolveLeaseRequest(): ResolveLeaseRequest {
@@ -249,7 +252,7 @@ export const ResolveLeaseResponse: MessageFns<ResolveLeaseResponse> = {
 };
 
 function createBaseSttRuntime(): SttRuntime {
-  return { apiKey: "", model: "", language: "", keyterms: [] };
+  return { apiKey: "", model: "", language: "", keyterms: [], provider: undefined, multilingual: undefined };
 }
 
 export const SttRuntime: MessageFns<SttRuntime> = {
@@ -265,6 +268,12 @@ export const SttRuntime: MessageFns<SttRuntime> = {
     }
     for (const v of message.keyterms) {
       writer.uint32(34).string(v!);
+    }
+    if (message.provider !== undefined) {
+      writer.uint32(42).string(message.provider);
+    }
+    if (message.multilingual !== undefined) {
+      writer.uint32(48).bool(message.multilingual);
     }
     return writer;
   },
@@ -308,6 +317,22 @@ export const SttRuntime: MessageFns<SttRuntime> = {
           message.keyterms.push(reader.string());
           continue;
         }
+        case 5: {
+          if (tag !== 42) {
+            break;
+          }
+
+          message.provider = reader.string();
+          continue;
+        }
+        case 6: {
+          if (tag !== 48) {
+            break;
+          }
+
+          message.multilingual = reader.bool();
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -327,6 +352,8 @@ export const SttRuntime: MessageFns<SttRuntime> = {
       model: isSet(object.model) ? globalThis.String(object.model) : "",
       language: isSet(object.language) ? globalThis.String(object.language) : "",
       keyterms: globalThis.Array.isArray(object?.keyterms) ? object.keyterms.map((e: any) => globalThis.String(e)) : [],
+      provider: isSet(object.provider) ? globalThis.String(object.provider) : undefined,
+      multilingual: isSet(object.multilingual) ? globalThis.Boolean(object.multilingual) : undefined,
     };
   },
 
@@ -344,6 +371,12 @@ export const SttRuntime: MessageFns<SttRuntime> = {
     if (message.keyterms?.length) {
       obj.keyterms = message.keyterms;
     }
+    if (message.provider !== undefined) {
+      obj.provider = message.provider;
+    }
+    if (message.multilingual !== undefined) {
+      obj.multilingual = message.multilingual;
+    }
     return obj;
   },
 
@@ -356,6 +389,8 @@ export const SttRuntime: MessageFns<SttRuntime> = {
     message.model = object.model ?? "";
     message.language = object.language ?? "";
     message.keyterms = object.keyterms?.map((e) => e) || [];
+    message.provider = object.provider ?? undefined;
+    message.multilingual = object.multilingual ?? undefined;
     return message;
   },
 };
@@ -441,7 +476,7 @@ export const LlmRuntime: MessageFns<LlmRuntime> = {
 };
 
 function createBaseTtsRuntime(): TtsRuntime {
-  return { apiKey: "", model: "", language: "", voiceId: "" };
+  return { apiKey: "", model: "", language: "", voiceId: "", provider: undefined };
 }
 
 export const TtsRuntime: MessageFns<TtsRuntime> = {
@@ -457,6 +492,9 @@ export const TtsRuntime: MessageFns<TtsRuntime> = {
     }
     if (message.voiceId !== "") {
       writer.uint32(34).string(message.voiceId);
+    }
+    if (message.provider !== undefined) {
+      writer.uint32(42).string(message.provider);
     }
     return writer;
   },
@@ -500,6 +538,14 @@ export const TtsRuntime: MessageFns<TtsRuntime> = {
           message.voiceId = reader.string();
           continue;
         }
+        case 5: {
+          if (tag !== 42) {
+            break;
+          }
+
+          message.provider = reader.string();
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -523,6 +569,7 @@ export const TtsRuntime: MessageFns<TtsRuntime> = {
         : isSet(object.voice_id)
         ? globalThis.String(object.voice_id)
         : "",
+      provider: isSet(object.provider) ? globalThis.String(object.provider) : undefined,
     };
   },
 
@@ -540,6 +587,9 @@ export const TtsRuntime: MessageFns<TtsRuntime> = {
     if (message.voiceId !== "") {
       obj.voiceId = message.voiceId;
     }
+    if (message.provider !== undefined) {
+      obj.provider = message.provider;
+    }
     return obj;
   },
 
@@ -552,6 +602,7 @@ export const TtsRuntime: MessageFns<TtsRuntime> = {
     message.model = object.model ?? "";
     message.language = object.language ?? "";
     message.voiceId = object.voiceId ?? "";
+    message.provider = object.provider ?? undefined;
     return message;
   },
 };

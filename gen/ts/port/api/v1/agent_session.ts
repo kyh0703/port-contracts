@@ -557,6 +557,13 @@ export interface ApiToolMetadata {
   url: string;
   requestSchemaJson: string;
   responseSchemaJson: string;
+  messages: ApiToolMessage[];
+}
+
+export interface ApiToolMessage {
+  type: string;
+  content: string;
+  timingMilliseconds?: number | undefined;
 }
 
 export interface A2aToolMetadata {
@@ -5003,7 +5010,7 @@ export const McpToolMetadata: MessageFns<McpToolMetadata> = {
 };
 
 function createBaseApiToolMetadata(): ApiToolMetadata {
-  return { method: "", url: "", requestSchemaJson: "", responseSchemaJson: "" };
+  return { method: "", url: "", requestSchemaJson: "", responseSchemaJson: "", messages: [] };
 }
 
 export const ApiToolMetadata: MessageFns<ApiToolMetadata> = {
@@ -5019,6 +5026,9 @@ export const ApiToolMetadata: MessageFns<ApiToolMetadata> = {
     }
     if (message.responseSchemaJson !== "") {
       writer.uint32(34).string(message.responseSchemaJson);
+    }
+    for (const v of message.messages) {
+      ApiToolMessage.encode(v!, writer.uint32(42).fork()).join();
     }
     return writer;
   },
@@ -5062,6 +5072,14 @@ export const ApiToolMetadata: MessageFns<ApiToolMetadata> = {
           message.responseSchemaJson = reader.string();
           continue;
         }
+        case 5: {
+          if (tag !== 42) {
+            break;
+          }
+
+          message.messages.push(ApiToolMessage.decode(reader, reader.uint32()));
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -5085,6 +5103,9 @@ export const ApiToolMetadata: MessageFns<ApiToolMetadata> = {
         : isSet(object.response_schema_json)
         ? globalThis.String(object.response_schema_json)
         : "",
+      messages: globalThis.Array.isArray(object?.messages)
+        ? object.messages.map((e: any) => ApiToolMessage.fromJSON(e))
+        : [],
     };
   },
 
@@ -5102,6 +5123,9 @@ export const ApiToolMetadata: MessageFns<ApiToolMetadata> = {
     if (message.responseSchemaJson !== "") {
       obj.responseSchemaJson = message.responseSchemaJson;
     }
+    if (message.messages?.length) {
+      obj.messages = message.messages.map((e) => ApiToolMessage.toJSON(e));
+    }
     return obj;
   },
 
@@ -5114,6 +5138,103 @@ export const ApiToolMetadata: MessageFns<ApiToolMetadata> = {
     message.url = object.url ?? "";
     message.requestSchemaJson = object.requestSchemaJson ?? "";
     message.responseSchemaJson = object.responseSchemaJson ?? "";
+    message.messages = object.messages?.map((e) => ApiToolMessage.fromPartial(e)) || [];
+    return message;
+  },
+};
+
+function createBaseApiToolMessage(): ApiToolMessage {
+  return { type: "", content: "", timingMilliseconds: undefined };
+}
+
+export const ApiToolMessage: MessageFns<ApiToolMessage> = {
+  encode(message: ApiToolMessage, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.type !== "") {
+      writer.uint32(10).string(message.type);
+    }
+    if (message.content !== "") {
+      writer.uint32(18).string(message.content);
+    }
+    if (message.timingMilliseconds !== undefined) {
+      writer.uint32(24).uint32(message.timingMilliseconds);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): ApiToolMessage {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseApiToolMessage();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.type = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.content = reader.string();
+          continue;
+        }
+        case 3: {
+          if (tag !== 24) {
+            break;
+          }
+
+          message.timingMilliseconds = reader.uint32();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): ApiToolMessage {
+    return {
+      type: isSet(object.type) ? globalThis.String(object.type) : "",
+      content: isSet(object.content) ? globalThis.String(object.content) : "",
+      timingMilliseconds: isSet(object.timingMilliseconds)
+        ? globalThis.Number(object.timingMilliseconds)
+        : isSet(object.timing_milliseconds)
+        ? globalThis.Number(object.timing_milliseconds)
+        : undefined,
+    };
+  },
+
+  toJSON(message: ApiToolMessage): unknown {
+    const obj: any = {};
+    if (message.type !== "") {
+      obj.type = message.type;
+    }
+    if (message.content !== "") {
+      obj.content = message.content;
+    }
+    if (message.timingMilliseconds !== undefined) {
+      obj.timingMilliseconds = Math.round(message.timingMilliseconds);
+    }
+    return obj;
+  },
+
+  create(base?: DeepPartial<ApiToolMessage>): ApiToolMessage {
+    return ApiToolMessage.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<ApiToolMessage>): ApiToolMessage {
+    const message = createBaseApiToolMessage();
+    message.type = object.type ?? "";
+    message.content = object.content ?? "";
+    message.timingMilliseconds = object.timingMilliseconds ?? undefined;
     return message;
   },
 };

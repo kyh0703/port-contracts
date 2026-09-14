@@ -27,6 +27,8 @@ message SttRuntime {
   string model = 2 [(buf.validate.field).string.min_len = 1];
   string language = 3 [(buf.validate.field).string.min_len = 1];
   repeated string keyterms = 4 [(buf.validate.field).repeated.items.string.min_len = 1];
+  optional string provider = 5 [(buf.validate.field).string = {in: ["deepgram", "soniox", "xai"]}];
+  optional bool multilingual = 6;
 }
 
 message LlmRuntime {
@@ -39,4 +41,5 @@ message TtsRuntime {
   string model = 2 [(buf.validate.field).string.min_len = 1];
   string language = 3 [(buf.validate.field).string.min_len = 1];
   string voice_id = 4 [(buf.validate.field).string.min_len = 1];
+  optional string provider = 5 [(buf.validate.field).string = {in: ["cartesia", "elevenlabs", "soniox", "xai"]}];
 }
