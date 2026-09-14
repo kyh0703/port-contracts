@@ -25,6 +25,16 @@ class ExecutionSessionServiceStub:
                 request_serializer=port_dot_api_dot_v1_dot_agent__session__pb2.CommandSipTransferRequest.SerializeToString,
                 response_deserializer=port_dot_api_dot_v1_dot_agent__session__pb2.CommandSipTransferResponse.FromString,
                 _registered_method=True)
+        self.RecordLlmRequestStarted = channel.unary_unary(
+                '/port.api.v1.ExecutionSessionService/RecordLlmRequestStarted',
+                request_serializer=port_dot_api_dot_v1_dot_agent__session__pb2.RecordLlmRequestStartedRequest.SerializeToString,
+                response_deserializer=port_dot_api_dot_v1_dot_agent__session__pb2.RecordLlmRequestStartedResponse.FromString,
+                _registered_method=True)
+        self.RecordLlmRequestTerminal = channel.unary_unary(
+                '/port.api.v1.ExecutionSessionService/RecordLlmRequestTerminal',
+                request_serializer=port_dot_api_dot_v1_dot_agent__session__pb2.RecordLlmRequestTerminalRequest.SerializeToString,
+                response_deserializer=port_dot_api_dot_v1_dot_agent__session__pb2.RecordLlmRequestTerminalResponse.FromString,
+                _registered_method=True)
 
 
 class ExecutionSessionServiceServicer:
@@ -43,6 +53,18 @@ class ExecutionSessionServiceServicer:
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def RecordLlmRequestStarted(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def RecordLlmRequestTerminal(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_ExecutionSessionServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
@@ -55,6 +77,16 @@ def add_ExecutionSessionServiceServicer_to_server(servicer, server):
                     servicer.CommandSipTransfer,
                     request_deserializer=port_dot_api_dot_v1_dot_agent__session__pb2.CommandSipTransferRequest.FromString,
                     response_serializer=port_dot_api_dot_v1_dot_agent__session__pb2.CommandSipTransferResponse.SerializeToString,
+            ),
+            'RecordLlmRequestStarted': grpc.unary_unary_rpc_method_handler(
+                    servicer.RecordLlmRequestStarted,
+                    request_deserializer=port_dot_api_dot_v1_dot_agent__session__pb2.RecordLlmRequestStartedRequest.FromString,
+                    response_serializer=port_dot_api_dot_v1_dot_agent__session__pb2.RecordLlmRequestStartedResponse.SerializeToString,
+            ),
+            'RecordLlmRequestTerminal': grpc.unary_unary_rpc_method_handler(
+                    servicer.RecordLlmRequestTerminal,
+                    request_deserializer=port_dot_api_dot_v1_dot_agent__session__pb2.RecordLlmRequestTerminalRequest.FromString,
+                    response_serializer=port_dot_api_dot_v1_dot_agent__session__pb2.RecordLlmRequestTerminalResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -112,6 +144,60 @@ class ExecutionSessionService:
             '/port.api.v1.ExecutionSessionService/CommandSipTransfer',
             port_dot_api_dot_v1_dot_agent__session__pb2.CommandSipTransferRequest.SerializeToString,
             port_dot_api_dot_v1_dot_agent__session__pb2.CommandSipTransferResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def RecordLlmRequestStarted(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/port.api.v1.ExecutionSessionService/RecordLlmRequestStarted',
+            port_dot_api_dot_v1_dot_agent__session__pb2.RecordLlmRequestStartedRequest.SerializeToString,
+            port_dot_api_dot_v1_dot_agent__session__pb2.RecordLlmRequestStartedResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def RecordLlmRequestTerminal(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/port.api.v1.ExecutionSessionService/RecordLlmRequestTerminal',
+            port_dot_api_dot_v1_dot_agent__session__pb2.RecordLlmRequestTerminalRequest.SerializeToString,
+            port_dot_api_dot_v1_dot_agent__session__pb2.RecordLlmRequestTerminalResponse.FromString,
             options,
             channel_credentials,
             insecure,

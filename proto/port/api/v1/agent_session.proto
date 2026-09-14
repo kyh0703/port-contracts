@@ -11,6 +11,8 @@ option go_package = "github.com/kyh0703/port-contracts/v4/gen/go/port/api/v1;api
 service ExecutionSessionService {
   rpc BootstrapPublished(BootstrapPublishedRequest) returns (BootstrapPublishedResponse);
   rpc CommandSipTransfer(CommandSipTransferRequest) returns (CommandSipTransferResponse);
+  rpc RecordLlmRequestStarted(RecordLlmRequestStartedRequest) returns (RecordLlmRequestStartedResponse);
+  rpc RecordLlmRequestTerminal(RecordLlmRequestTerminalRequest) returns (RecordLlmRequestTerminalResponse);
 }
 
 message BootstrapRequest {
@@ -42,6 +44,9 @@ message BootstrapPublishedRequest {
     (buf.validate.field).required = true,
     (buf.validate.field).string.const = "execution-publication-2026-09-04-r1"
   ];
+  // Optional LiveKit worker job correlation for browser/text sessions. It is
+  // metadata only; admission remains bound to the ticket/session capability.
+  optional string worker_job_id = 6 [(buf.validate.field).string = {min_len: 1 max_len: 256}];
 }
 
 message BootstrapPublishedResponse {
@@ -73,6 +78,69 @@ message BootstrapPublishedResponse {
     CallRuntimeSnapshot voice_runtime = 7;
     TextRuntimeSnapshot text_runtime = 8;
   }
+
+  // Short-lived, opaque capability for the worker's LLM audit calls. The API
+  // binds the capability to the admitted session, account and publication.
+  optional LlmAuditCapability llm_audit_capability = 10;
+}
+
+message LlmAuditCapability {
+  string execution_id = 1 [(buf.validate.field).string = {min_len: 1 max_len: 128}];
+  string token = 2 [(buf.validate.field).string = {min_len: 32 max_len: 512}];
+  string expires_at = 3 [(buf.validate.field).string = {min_len: 1 max_len: 64}];
+}
+
+// Correlation fields are repeated on terminal records so the API can safely
+// accept an out-of-order terminal delivery without trusting its owner fields.
+// Ownership is always derived from LlmAuditCapability.token.
+message LlmAuditRequestContext {
+  string capability = 1 [(buf.validate.field).string = {min_len: 32 max_len: 512}];
+  string request_attempt_id = 2 [(buf.validate.field).string = {min_len: 1 max_len: 128}];
+  string logical_request_id = 3 [(buf.validate.field).string = {min_len: 1 max_len: 128}];
+  uint32 attempt_sequence = 4 [(buf.validate.field).uint32 = {gte: 1 lte: 100}];
+  string node_id = 5 [(buf.validate.field).string = {min_len: 1 max_len: 256}];
+  string agent_runtime_id = 6 [(buf.validate.field).string = {min_len: 1 max_len: 256}];
+  optional string task_run_id = 7 [(buf.validate.field).string = {min_len: 1 max_len: 256}];
+  string role = 8 [(buf.validate.field).string = {in: ["master", "worker", "handoff", "agent"]}];
+  string requested_model = 9 [(buf.validate.field).string = {min_len: 1 max_len: 512}];
+}
+
+message RecordLlmRequestStartedRequest {
+  LlmAuditRequestContext request = 1 [(buf.validate.field).required = true];
+}
+
+message RecordLlmRequestStartedResponse {
+  string request_attempt_id = 1 [(buf.validate.field).string = {min_len: 1 max_len: 128}];
+  bool recorded = 2;
+}
+
+message LlmAuditUsage {
+  optional uint64 input_tokens = 1;
+  optional uint64 output_tokens = 2;
+  optional uint64 cached_input_tokens = 3;
+  optional uint64 cache_write_tokens = 4;
+  optional uint64 reasoning_tokens = 5;
+  // Decimal string preserves provider cost precision across protobuf/JSON.
+  optional string reported_cost_usd = 6 [(buf.validate.field).string = {max_len: 64 pattern: "^(?:0|[1-9][0-9]*)(?:\\.[0-9]+)?(?:[eE][+-]?[0-9]+)?$"}];
+  // Provider-specific numeric fields after API allowlist validation. This is
+  // never a provider response body and must contain only numeric values.
+  optional string provider_usage_json = 7 [(buf.validate.field).string = {max_bytes: 4000}];
+}
+
+message RecordLlmRequestTerminalRequest {
+  LlmAuditRequestContext request = 1 [(buf.validate.field).required = true];
+  string status = 2 [(buf.validate.field).string = {in: ["completed", "cancelled", "error"]}];
+  optional uint32 http_status = 3 [(buf.validate.field).uint32 = {gte: 100 lte: 599}];
+  optional string actual_model = 4 [(buf.validate.field).string = {min_len: 1 max_len: 512}];
+  optional string provider_request_id = 5 [(buf.validate.field).string = {min_len: 1 max_len: 512}];
+  optional LlmAuditUsage usage = 6;
+  optional string error_code = 7 [(buf.validate.field).string = {min_len: 1 max_len: 128}];
+}
+
+message RecordLlmRequestTerminalResponse {
+  string request_attempt_id = 1 [(buf.validate.field).string = {min_len: 1 max_len: 128}];
+  bool recorded = 2;
+  bool duplicate = 3;
 }
 
 // Prompt variables shared by every Agent node for the lifetime of one call.

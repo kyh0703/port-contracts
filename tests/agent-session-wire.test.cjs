@@ -22,6 +22,11 @@ const {
   DtmfTool,
   SendSmsTool,
   ApiToolMetadata,
+  LlmAuditCapability,
+  LlmAuditRequestContext,
+  RecordLlmRequestStartedRequest,
+  RecordLlmRequestTerminalRequest,
+  LlmAuditUsage,
 } = contracts;
 const { SttRuntime, TtsRuntime } = voiceRuntime;
 
@@ -133,10 +138,12 @@ test("SIP caller phone number is optional and round-trips without changing the r
       sessionId: "session-1",
       publishedId: "publication-1",
       contractRevision: publicationRevision,
+      workerJobId: "worker-job-1",
     });
     const decoded = BootstrapPublishedRequest.decode(BootstrapPublishedRequest.encode(request).finish());
     assert.deepEqual(decoded, request);
     assert.equal(decoded.admission.sip.phoneNumber, phoneNumber);
+    assert.equal(decoded.workerJobId, "worker-job-1");
   }
 });
 
@@ -204,10 +211,70 @@ test("conversation controls round-trip end-call policies and elapsed actions", (
 });
 
 test("the worker contract exposes canonical bootstrap and session-bound transfer control", () => {
-  assert.deepEqual(Object.keys(ExecutionSessionServiceService), ["bootstrapPublished", "commandSipTransfer"]);
+  assert.deepEqual(Object.keys(ExecutionSessionServiceService), [
+    "bootstrapPublished",
+    "commandSipTransfer",
+    "recordLlmRequestStarted",
+    "recordLlmRequestTerminal",
+  ]);
   assert.equal(contracts.AgentSessionServiceService, undefined);
   assert.equal(contracts.BootstrapAgentRequest, undefined);
   assert.equal(contracts.BootstrapSipRequest, undefined);
+});
+
+test("LLM audit capability and attempt lifecycle preserve nullable usage and decimal cost", () => {
+  const context = LlmAuditRequestContext.create({
+    capability: "a".repeat(48),
+    requestAttemptId: "attempt-1",
+    logicalRequestId: "logical-1",
+    attemptSequence: 2,
+    nodeId: "master-node",
+    agentRuntimeId: "runtime-1",
+    taskRunId: "task-1",
+    role: "master",
+    requestedModel: "openrouter/openai/gpt-4o-mini",
+  });
+  const started = RecordLlmRequestStartedRequest.create({ request: context });
+  const terminal = RecordLlmRequestTerminalRequest.create({
+    request: context,
+    status: "completed",
+    httpStatus: 200,
+    actualModel: "openai/gpt-4o-mini",
+    providerRequestId: "provider-req-1",
+    usage: LlmAuditUsage.create({
+      inputTokens: 0,
+      outputTokens: 12,
+      reportedCostUsd: "0.0000012300",
+      providerUsageJson: '{"input_audio_tokens":0,"output_audio_tokens":12}',
+    }),
+  });
+  const capability = LlmAuditCapability.create({
+    executionId: "execution-1",
+    token: "b".repeat(48),
+    expiresAt: "2026-09-14T12:00:00.000Z",
+  });
+  const response = BootstrapPublishedResponse.create({
+    contractRevision: publicationRevision,
+    conversationId: "conversation-audit",
+    sessionId: "session-audit",
+    publishedId: "publication-audit",
+    llmAuditCapability: capability,
+  });
+
+  assert.deepEqual(
+    RecordLlmRequestStartedRequest.decode(RecordLlmRequestStartedRequest.encode(started).finish()),
+    started,
+  );
+  const decodedTerminal = RecordLlmRequestTerminalRequest.decode(
+    RecordLlmRequestTerminalRequest.encode(terminal).finish(),
+  );
+  assert.deepEqual(decodedTerminal, terminal);
+  assert.equal(decodedTerminal.usage.inputTokens, 0);
+  assert.equal(decodedTerminal.usage.reportedCostUsd, "0.0000012300");
+  assert.deepEqual(
+    BootstrapPublishedResponse.decode(BootstrapPublishedResponse.encode(response).finish()).llmAuditCapability,
+    capability,
+  );
 });
 
 test("published runtimes round-trip configurable knowledge function metadata", () => {

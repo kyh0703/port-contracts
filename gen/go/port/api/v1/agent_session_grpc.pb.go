@@ -19,8 +19,10 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	ExecutionSessionService_BootstrapPublished_FullMethodName = "/port.api.v1.ExecutionSessionService/BootstrapPublished"
-	ExecutionSessionService_CommandSipTransfer_FullMethodName = "/port.api.v1.ExecutionSessionService/CommandSipTransfer"
+	ExecutionSessionService_BootstrapPublished_FullMethodName       = "/port.api.v1.ExecutionSessionService/BootstrapPublished"
+	ExecutionSessionService_CommandSipTransfer_FullMethodName       = "/port.api.v1.ExecutionSessionService/CommandSipTransfer"
+	ExecutionSessionService_RecordLlmRequestStarted_FullMethodName  = "/port.api.v1.ExecutionSessionService/RecordLlmRequestStarted"
+	ExecutionSessionService_RecordLlmRequestTerminal_FullMethodName = "/port.api.v1.ExecutionSessionService/RecordLlmRequestTerminal"
 )
 
 // ExecutionSessionServiceClient is the client API for ExecutionSessionService service.
@@ -31,6 +33,8 @@ const (
 type ExecutionSessionServiceClient interface {
 	BootstrapPublished(ctx context.Context, in *BootstrapPublishedRequest, opts ...grpc.CallOption) (*BootstrapPublishedResponse, error)
 	CommandSipTransfer(ctx context.Context, in *CommandSipTransferRequest, opts ...grpc.CallOption) (*CommandSipTransferResponse, error)
+	RecordLlmRequestStarted(ctx context.Context, in *RecordLlmRequestStartedRequest, opts ...grpc.CallOption) (*RecordLlmRequestStartedResponse, error)
+	RecordLlmRequestTerminal(ctx context.Context, in *RecordLlmRequestTerminalRequest, opts ...grpc.CallOption) (*RecordLlmRequestTerminalResponse, error)
 }
 
 type executionSessionServiceClient struct {
@@ -61,6 +65,26 @@ func (c *executionSessionServiceClient) CommandSipTransfer(ctx context.Context, 
 	return out, nil
 }
 
+func (c *executionSessionServiceClient) RecordLlmRequestStarted(ctx context.Context, in *RecordLlmRequestStartedRequest, opts ...grpc.CallOption) (*RecordLlmRequestStartedResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(RecordLlmRequestStartedResponse)
+	err := c.cc.Invoke(ctx, ExecutionSessionService_RecordLlmRequestStarted_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *executionSessionServiceClient) RecordLlmRequestTerminal(ctx context.Context, in *RecordLlmRequestTerminalRequest, opts ...grpc.CallOption) (*RecordLlmRequestTerminalResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(RecordLlmRequestTerminalResponse)
+	err := c.cc.Invoke(ctx, ExecutionSessionService_RecordLlmRequestTerminal_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // ExecutionSessionServiceServer is the server API for ExecutionSessionService service.
 // All implementations must embed UnimplementedExecutionSessionServiceServer
 // for forward compatibility.
@@ -69,6 +93,8 @@ func (c *executionSessionServiceClient) CommandSipTransfer(ctx context.Context, 
 type ExecutionSessionServiceServer interface {
 	BootstrapPublished(context.Context, *BootstrapPublishedRequest) (*BootstrapPublishedResponse, error)
 	CommandSipTransfer(context.Context, *CommandSipTransferRequest) (*CommandSipTransferResponse, error)
+	RecordLlmRequestStarted(context.Context, *RecordLlmRequestStartedRequest) (*RecordLlmRequestStartedResponse, error)
+	RecordLlmRequestTerminal(context.Context, *RecordLlmRequestTerminalRequest) (*RecordLlmRequestTerminalResponse, error)
 	mustEmbedUnimplementedExecutionSessionServiceServer()
 }
 
@@ -84,6 +110,12 @@ func (UnimplementedExecutionSessionServiceServer) BootstrapPublished(context.Con
 }
 func (UnimplementedExecutionSessionServiceServer) CommandSipTransfer(context.Context, *CommandSipTransferRequest) (*CommandSipTransferResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method CommandSipTransfer not implemented")
+}
+func (UnimplementedExecutionSessionServiceServer) RecordLlmRequestStarted(context.Context, *RecordLlmRequestStartedRequest) (*RecordLlmRequestStartedResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method RecordLlmRequestStarted not implemented")
+}
+func (UnimplementedExecutionSessionServiceServer) RecordLlmRequestTerminal(context.Context, *RecordLlmRequestTerminalRequest) (*RecordLlmRequestTerminalResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method RecordLlmRequestTerminal not implemented")
 }
 func (UnimplementedExecutionSessionServiceServer) mustEmbedUnimplementedExecutionSessionServiceServer() {
 }
@@ -143,6 +175,42 @@ func _ExecutionSessionService_CommandSipTransfer_Handler(srv interface{}, ctx co
 	return interceptor(ctx, in, info, handler)
 }
 
+func _ExecutionSessionService_RecordLlmRequestStarted_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RecordLlmRequestStartedRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ExecutionSessionServiceServer).RecordLlmRequestStarted(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ExecutionSessionService_RecordLlmRequestStarted_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ExecutionSessionServiceServer).RecordLlmRequestStarted(ctx, req.(*RecordLlmRequestStartedRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ExecutionSessionService_RecordLlmRequestTerminal_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RecordLlmRequestTerminalRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ExecutionSessionServiceServer).RecordLlmRequestTerminal(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ExecutionSessionService_RecordLlmRequestTerminal_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ExecutionSessionServiceServer).RecordLlmRequestTerminal(ctx, req.(*RecordLlmRequestTerminalRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // ExecutionSessionService_ServiceDesc is the grpc.ServiceDesc for ExecutionSessionService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -157,6 +225,14 @@ var ExecutionSessionService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "CommandSipTransfer",
 			Handler:    _ExecutionSessionService_CommandSipTransfer_Handler,
+		},
+		{
+			MethodName: "RecordLlmRequestStarted",
+			Handler:    _ExecutionSessionService_RecordLlmRequestStarted_Handler,
+		},
+		{
+			MethodName: "RecordLlmRequestTerminal",
+			Handler:    _ExecutionSessionService_RecordLlmRequestTerminal_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

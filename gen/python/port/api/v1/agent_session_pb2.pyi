@@ -106,21 +106,23 @@ class SipBootstrapContext(_message.Message):
     def __init__(self, job_id: _Optional[str] = ..., dispatch_id: _Optional[str] = ..., room_name: _Optional[str] = ..., participant_identity: _Optional[str] = ..., trunk_id: _Optional[str] = ..., trunk_phone_number: _Optional[str] = ..., call_id_full: _Optional[str] = ..., phone_number: _Optional[str] = ...) -> None: ...
 
 class BootstrapPublishedRequest(_message.Message):
-    __slots__ = ("admission", "conversation_id", "session_id", "published_id", "contract_revision")
+    __slots__ = ("admission", "conversation_id", "session_id", "published_id", "contract_revision", "worker_job_id")
     ADMISSION_FIELD_NUMBER: _ClassVar[int]
     CONVERSATION_ID_FIELD_NUMBER: _ClassVar[int]
     SESSION_ID_FIELD_NUMBER: _ClassVar[int]
     PUBLISHED_ID_FIELD_NUMBER: _ClassVar[int]
     CONTRACT_REVISION_FIELD_NUMBER: _ClassVar[int]
+    WORKER_JOB_ID_FIELD_NUMBER: _ClassVar[int]
     admission: BootstrapRequest
     conversation_id: str
     session_id: str
     published_id: str
     contract_revision: str
-    def __init__(self, admission: _Optional[_Union[BootstrapRequest, _Mapping]] = ..., conversation_id: _Optional[str] = ..., session_id: _Optional[str] = ..., published_id: _Optional[str] = ..., contract_revision: _Optional[str] = ...) -> None: ...
+    worker_job_id: str
+    def __init__(self, admission: _Optional[_Union[BootstrapRequest, _Mapping]] = ..., conversation_id: _Optional[str] = ..., session_id: _Optional[str] = ..., published_id: _Optional[str] = ..., contract_revision: _Optional[str] = ..., worker_job_id: _Optional[str] = ...) -> None: ...
 
 class BootstrapPublishedResponse(_message.Message):
-    __slots__ = ("contract_revision", "conversation_id", "session_id", "published_id", "transfer_capability", "prompt_variables", "agent", "voice_runtime", "text_runtime")
+    __slots__ = ("contract_revision", "conversation_id", "session_id", "published_id", "transfer_capability", "prompt_variables", "agent", "voice_runtime", "text_runtime", "llm_audit_capability")
     CONTRACT_REVISION_FIELD_NUMBER: _ClassVar[int]
     CONVERSATION_ID_FIELD_NUMBER: _ClassVar[int]
     SESSION_ID_FIELD_NUMBER: _ClassVar[int]
@@ -130,6 +132,7 @@ class BootstrapPublishedResponse(_message.Message):
     AGENT_FIELD_NUMBER: _ClassVar[int]
     VOICE_RUNTIME_FIELD_NUMBER: _ClassVar[int]
     TEXT_RUNTIME_FIELD_NUMBER: _ClassVar[int]
+    LLM_AUDIT_CAPABILITY_FIELD_NUMBER: _ClassVar[int]
     contract_revision: str
     conversation_id: str
     session_id: str
@@ -139,7 +142,100 @@ class BootstrapPublishedResponse(_message.Message):
     agent: PublishedAgentExecution
     voice_runtime: CallRuntimeSnapshot
     text_runtime: TextRuntimeSnapshot
-    def __init__(self, contract_revision: _Optional[str] = ..., conversation_id: _Optional[str] = ..., session_id: _Optional[str] = ..., published_id: _Optional[str] = ..., transfer_capability: _Optional[str] = ..., prompt_variables: _Optional[_Union[SessionPromptVariableBag, _Mapping]] = ..., agent: _Optional[_Union[PublishedAgentExecution, _Mapping]] = ..., voice_runtime: _Optional[_Union[CallRuntimeSnapshot, _Mapping]] = ..., text_runtime: _Optional[_Union[TextRuntimeSnapshot, _Mapping]] = ...) -> None: ...
+    llm_audit_capability: LlmAuditCapability
+    def __init__(self, contract_revision: _Optional[str] = ..., conversation_id: _Optional[str] = ..., session_id: _Optional[str] = ..., published_id: _Optional[str] = ..., transfer_capability: _Optional[str] = ..., prompt_variables: _Optional[_Union[SessionPromptVariableBag, _Mapping]] = ..., agent: _Optional[_Union[PublishedAgentExecution, _Mapping]] = ..., voice_runtime: _Optional[_Union[CallRuntimeSnapshot, _Mapping]] = ..., text_runtime: _Optional[_Union[TextRuntimeSnapshot, _Mapping]] = ..., llm_audit_capability: _Optional[_Union[LlmAuditCapability, _Mapping]] = ...) -> None: ...
+
+class LlmAuditCapability(_message.Message):
+    __slots__ = ("execution_id", "token", "expires_at")
+    EXECUTION_ID_FIELD_NUMBER: _ClassVar[int]
+    TOKEN_FIELD_NUMBER: _ClassVar[int]
+    EXPIRES_AT_FIELD_NUMBER: _ClassVar[int]
+    execution_id: str
+    token: str
+    expires_at: str
+    def __init__(self, execution_id: _Optional[str] = ..., token: _Optional[str] = ..., expires_at: _Optional[str] = ...) -> None: ...
+
+class LlmAuditRequestContext(_message.Message):
+    __slots__ = ("capability", "request_attempt_id", "logical_request_id", "attempt_sequence", "node_id", "agent_runtime_id", "task_run_id", "role", "requested_model")
+    CAPABILITY_FIELD_NUMBER: _ClassVar[int]
+    REQUEST_ATTEMPT_ID_FIELD_NUMBER: _ClassVar[int]
+    LOGICAL_REQUEST_ID_FIELD_NUMBER: _ClassVar[int]
+    ATTEMPT_SEQUENCE_FIELD_NUMBER: _ClassVar[int]
+    NODE_ID_FIELD_NUMBER: _ClassVar[int]
+    AGENT_RUNTIME_ID_FIELD_NUMBER: _ClassVar[int]
+    TASK_RUN_ID_FIELD_NUMBER: _ClassVar[int]
+    ROLE_FIELD_NUMBER: _ClassVar[int]
+    REQUESTED_MODEL_FIELD_NUMBER: _ClassVar[int]
+    capability: str
+    request_attempt_id: str
+    logical_request_id: str
+    attempt_sequence: int
+    node_id: str
+    agent_runtime_id: str
+    task_run_id: str
+    role: str
+    requested_model: str
+    def __init__(self, capability: _Optional[str] = ..., request_attempt_id: _Optional[str] = ..., logical_request_id: _Optional[str] = ..., attempt_sequence: _Optional[int] = ..., node_id: _Optional[str] = ..., agent_runtime_id: _Optional[str] = ..., task_run_id: _Optional[str] = ..., role: _Optional[str] = ..., requested_model: _Optional[str] = ...) -> None: ...
+
+class RecordLlmRequestStartedRequest(_message.Message):
+    __slots__ = ("request",)
+    REQUEST_FIELD_NUMBER: _ClassVar[int]
+    request: LlmAuditRequestContext
+    def __init__(self, request: _Optional[_Union[LlmAuditRequestContext, _Mapping]] = ...) -> None: ...
+
+class RecordLlmRequestStartedResponse(_message.Message):
+    __slots__ = ("request_attempt_id", "recorded")
+    REQUEST_ATTEMPT_ID_FIELD_NUMBER: _ClassVar[int]
+    RECORDED_FIELD_NUMBER: _ClassVar[int]
+    request_attempt_id: str
+    recorded: bool
+    def __init__(self, request_attempt_id: _Optional[str] = ..., recorded: _Optional[bool] = ...) -> None: ...
+
+class LlmAuditUsage(_message.Message):
+    __slots__ = ("input_tokens", "output_tokens", "cached_input_tokens", "cache_write_tokens", "reasoning_tokens", "reported_cost_usd", "provider_usage_json")
+    INPUT_TOKENS_FIELD_NUMBER: _ClassVar[int]
+    OUTPUT_TOKENS_FIELD_NUMBER: _ClassVar[int]
+    CACHED_INPUT_TOKENS_FIELD_NUMBER: _ClassVar[int]
+    CACHE_WRITE_TOKENS_FIELD_NUMBER: _ClassVar[int]
+    REASONING_TOKENS_FIELD_NUMBER: _ClassVar[int]
+    REPORTED_COST_USD_FIELD_NUMBER: _ClassVar[int]
+    PROVIDER_USAGE_JSON_FIELD_NUMBER: _ClassVar[int]
+    input_tokens: int
+    output_tokens: int
+    cached_input_tokens: int
+    cache_write_tokens: int
+    reasoning_tokens: int
+    reported_cost_usd: str
+    provider_usage_json: str
+    def __init__(self, input_tokens: _Optional[int] = ..., output_tokens: _Optional[int] = ..., cached_input_tokens: _Optional[int] = ..., cache_write_tokens: _Optional[int] = ..., reasoning_tokens: _Optional[int] = ..., reported_cost_usd: _Optional[str] = ..., provider_usage_json: _Optional[str] = ...) -> None: ...
+
+class RecordLlmRequestTerminalRequest(_message.Message):
+    __slots__ = ("request", "status", "http_status", "actual_model", "provider_request_id", "usage", "error_code")
+    REQUEST_FIELD_NUMBER: _ClassVar[int]
+    STATUS_FIELD_NUMBER: _ClassVar[int]
+    HTTP_STATUS_FIELD_NUMBER: _ClassVar[int]
+    ACTUAL_MODEL_FIELD_NUMBER: _ClassVar[int]
+    PROVIDER_REQUEST_ID_FIELD_NUMBER: _ClassVar[int]
+    USAGE_FIELD_NUMBER: _ClassVar[int]
+    ERROR_CODE_FIELD_NUMBER: _ClassVar[int]
+    request: LlmAuditRequestContext
+    status: str
+    http_status: int
+    actual_model: str
+    provider_request_id: str
+    usage: LlmAuditUsage
+    error_code: str
+    def __init__(self, request: _Optional[_Union[LlmAuditRequestContext, _Mapping]] = ..., status: _Optional[str] = ..., http_status: _Optional[int] = ..., actual_model: _Optional[str] = ..., provider_request_id: _Optional[str] = ..., usage: _Optional[_Union[LlmAuditUsage, _Mapping]] = ..., error_code: _Optional[str] = ...) -> None: ...
+
+class RecordLlmRequestTerminalResponse(_message.Message):
+    __slots__ = ("request_attempt_id", "recorded", "duplicate")
+    REQUEST_ATTEMPT_ID_FIELD_NUMBER: _ClassVar[int]
+    RECORDED_FIELD_NUMBER: _ClassVar[int]
+    DUPLICATE_FIELD_NUMBER: _ClassVar[int]
+    request_attempt_id: str
+    recorded: bool
+    duplicate: bool
+    def __init__(self, request_attempt_id: _Optional[str] = ..., recorded: _Optional[bool] = ..., duplicate: _Optional[bool] = ...) -> None: ...
 
 class SessionPromptVariableBag(_message.Message):
     __slots__ = ("system", "user")

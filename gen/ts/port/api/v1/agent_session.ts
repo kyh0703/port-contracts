@@ -321,6 +321,11 @@ export interface BootstrapPublishedRequest {
   sessionId: string;
   publishedId: string;
   contractRevision: string;
+  /**
+   * Optional LiveKit worker job correlation for browser/text sessions. It is
+   * metadata only; admission remains bound to the ticket/session capability.
+   */
+  workerJobId?: string | undefined;
 }
 
 export interface BootstrapPublishedResponse {
@@ -333,7 +338,81 @@ export interface BootstrapPublishedResponse {
   promptVariables?: SessionPromptVariableBag | undefined;
   agent?: PublishedAgentExecution | undefined;
   voiceRuntime?: CallRuntimeSnapshot | undefined;
-  textRuntime?: TextRuntimeSnapshot | undefined;
+  textRuntime?:
+    | TextRuntimeSnapshot
+    | undefined;
+  /**
+   * Short-lived, opaque capability for the worker's LLM audit calls. The API
+   * binds the capability to the admitted session, account and publication.
+   */
+  llmAuditCapability?: LlmAuditCapability | undefined;
+}
+
+export interface LlmAuditCapability {
+  executionId: string;
+  token: string;
+  expiresAt: string;
+}
+
+/**
+ * Correlation fields are repeated on terminal records so the API can safely
+ * accept an out-of-order terminal delivery without trusting its owner fields.
+ * Ownership is always derived from LlmAuditCapability.token.
+ */
+export interface LlmAuditRequestContext {
+  capability: string;
+  requestAttemptId: string;
+  logicalRequestId: string;
+  attemptSequence: number;
+  nodeId: string;
+  agentRuntimeId: string;
+  taskRunId?: string | undefined;
+  role: string;
+  requestedModel: string;
+}
+
+export interface RecordLlmRequestStartedRequest {
+  request?: LlmAuditRequestContext | undefined;
+}
+
+export interface RecordLlmRequestStartedResponse {
+  requestAttemptId: string;
+  recorded: boolean;
+}
+
+export interface LlmAuditUsage {
+  inputTokens?: number | undefined;
+  outputTokens?: number | undefined;
+  cachedInputTokens?: number | undefined;
+  cacheWriteTokens?: number | undefined;
+  reasoningTokens?:
+    | number
+    | undefined;
+  /** Decimal string preserves provider cost precision across protobuf/JSON. */
+  reportedCostUsd?:
+    | string
+    | undefined;
+  /**
+   * Provider-specific numeric fields after API allowlist validation. This is
+   * never a provider response body and must contain only numeric values.
+   */
+  providerUsageJson?: string | undefined;
+}
+
+export interface RecordLlmRequestTerminalRequest {
+  request?: LlmAuditRequestContext | undefined;
+  status: string;
+  httpStatus?: number | undefined;
+  actualModel?: string | undefined;
+  providerRequestId?: string | undefined;
+  usage?: LlmAuditUsage | undefined;
+  errorCode?: string | undefined;
+}
+
+export interface RecordLlmRequestTerminalResponse {
+  requestAttemptId: string;
+  recorded: boolean;
+  duplicate: boolean;
 }
 
 /** Prompt variables shared by every Agent node for the lifetime of one call. */
@@ -996,7 +1075,14 @@ export const SipBootstrapContext: MessageFns<SipBootstrapContext> = {
 };
 
 function createBaseBootstrapPublishedRequest(): BootstrapPublishedRequest {
-  return { admission: undefined, conversationId: "", sessionId: "", publishedId: "", contractRevision: "" };
+  return {
+    admission: undefined,
+    conversationId: "",
+    sessionId: "",
+    publishedId: "",
+    contractRevision: "",
+    workerJobId: undefined,
+  };
 }
 
 export const BootstrapPublishedRequest: MessageFns<BootstrapPublishedRequest> = {
@@ -1015,6 +1101,9 @@ export const BootstrapPublishedRequest: MessageFns<BootstrapPublishedRequest> = 
     }
     if (message.contractRevision !== "") {
       writer.uint32(42).string(message.contractRevision);
+    }
+    if (message.workerJobId !== undefined) {
+      writer.uint32(50).string(message.workerJobId);
     }
     return writer;
   },
@@ -1066,6 +1155,14 @@ export const BootstrapPublishedRequest: MessageFns<BootstrapPublishedRequest> = 
           message.contractRevision = reader.string();
           continue;
         }
+        case 6: {
+          if (tag !== 50) {
+            break;
+          }
+
+          message.workerJobId = reader.string();
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -1098,6 +1195,11 @@ export const BootstrapPublishedRequest: MessageFns<BootstrapPublishedRequest> = 
         : isSet(object.contract_revision)
         ? globalThis.String(object.contract_revision)
         : "",
+      workerJobId: isSet(object.workerJobId)
+        ? globalThis.String(object.workerJobId)
+        : isSet(object.worker_job_id)
+        ? globalThis.String(object.worker_job_id)
+        : undefined,
     };
   },
 
@@ -1118,6 +1220,9 @@ export const BootstrapPublishedRequest: MessageFns<BootstrapPublishedRequest> = 
     if (message.contractRevision !== "") {
       obj.contractRevision = message.contractRevision;
     }
+    if (message.workerJobId !== undefined) {
+      obj.workerJobId = message.workerJobId;
+    }
     return obj;
   },
 
@@ -1133,6 +1238,7 @@ export const BootstrapPublishedRequest: MessageFns<BootstrapPublishedRequest> = 
     message.sessionId = object.sessionId ?? "";
     message.publishedId = object.publishedId ?? "";
     message.contractRevision = object.contractRevision ?? "";
+    message.workerJobId = object.workerJobId ?? undefined;
     return message;
   },
 };
@@ -1148,6 +1254,7 @@ function createBaseBootstrapPublishedResponse(): BootstrapPublishedResponse {
     agent: undefined,
     voiceRuntime: undefined,
     textRuntime: undefined,
+    llmAuditCapability: undefined,
   };
 }
 
@@ -1179,6 +1286,9 @@ export const BootstrapPublishedResponse: MessageFns<BootstrapPublishedResponse> 
     }
     if (message.textRuntime !== undefined) {
       TextRuntimeSnapshot.encode(message.textRuntime, writer.uint32(66).fork()).join();
+    }
+    if (message.llmAuditCapability !== undefined) {
+      LlmAuditCapability.encode(message.llmAuditCapability, writer.uint32(82).fork()).join();
     }
     return writer;
   },
@@ -1262,6 +1372,14 @@ export const BootstrapPublishedResponse: MessageFns<BootstrapPublishedResponse> 
           message.textRuntime = TextRuntimeSnapshot.decode(reader, reader.uint32());
           continue;
         }
+        case 10: {
+          if (tag !== 82) {
+            break;
+          }
+
+          message.llmAuditCapability = LlmAuditCapability.decode(reader, reader.uint32());
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -1314,6 +1432,11 @@ export const BootstrapPublishedResponse: MessageFns<BootstrapPublishedResponse> 
         : isSet(object.text_runtime)
         ? TextRuntimeSnapshot.fromJSON(object.text_runtime)
         : undefined,
+      llmAuditCapability: isSet(object.llmAuditCapability)
+        ? LlmAuditCapability.fromJSON(object.llmAuditCapability)
+        : isSet(object.llm_audit_capability)
+        ? LlmAuditCapability.fromJSON(object.llm_audit_capability)
+        : undefined,
     };
   },
 
@@ -1346,6 +1469,9 @@ export const BootstrapPublishedResponse: MessageFns<BootstrapPublishedResponse> 
     if (message.textRuntime !== undefined) {
       obj.textRuntime = TextRuntimeSnapshot.toJSON(message.textRuntime);
     }
+    if (message.llmAuditCapability !== undefined) {
+      obj.llmAuditCapability = LlmAuditCapability.toJSON(message.llmAuditCapability);
+    }
     return obj;
   },
 
@@ -1371,6 +1497,947 @@ export const BootstrapPublishedResponse: MessageFns<BootstrapPublishedResponse> 
     message.textRuntime = (object.textRuntime !== undefined && object.textRuntime !== null)
       ? TextRuntimeSnapshot.fromPartial(object.textRuntime)
       : undefined;
+    message.llmAuditCapability = (object.llmAuditCapability !== undefined && object.llmAuditCapability !== null)
+      ? LlmAuditCapability.fromPartial(object.llmAuditCapability)
+      : undefined;
+    return message;
+  },
+};
+
+function createBaseLlmAuditCapability(): LlmAuditCapability {
+  return { executionId: "", token: "", expiresAt: "" };
+}
+
+export const LlmAuditCapability: MessageFns<LlmAuditCapability> = {
+  encode(message: LlmAuditCapability, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.executionId !== "") {
+      writer.uint32(10).string(message.executionId);
+    }
+    if (message.token !== "") {
+      writer.uint32(18).string(message.token);
+    }
+    if (message.expiresAt !== "") {
+      writer.uint32(26).string(message.expiresAt);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): LlmAuditCapability {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseLlmAuditCapability();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.executionId = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.token = reader.string();
+          continue;
+        }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.expiresAt = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): LlmAuditCapability {
+    return {
+      executionId: isSet(object.executionId)
+        ? globalThis.String(object.executionId)
+        : isSet(object.execution_id)
+        ? globalThis.String(object.execution_id)
+        : "",
+      token: isSet(object.token) ? globalThis.String(object.token) : "",
+      expiresAt: isSet(object.expiresAt)
+        ? globalThis.String(object.expiresAt)
+        : isSet(object.expires_at)
+        ? globalThis.String(object.expires_at)
+        : "",
+    };
+  },
+
+  toJSON(message: LlmAuditCapability): unknown {
+    const obj: any = {};
+    if (message.executionId !== "") {
+      obj.executionId = message.executionId;
+    }
+    if (message.token !== "") {
+      obj.token = message.token;
+    }
+    if (message.expiresAt !== "") {
+      obj.expiresAt = message.expiresAt;
+    }
+    return obj;
+  },
+
+  create(base?: DeepPartial<LlmAuditCapability>): LlmAuditCapability {
+    return LlmAuditCapability.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<LlmAuditCapability>): LlmAuditCapability {
+    const message = createBaseLlmAuditCapability();
+    message.executionId = object.executionId ?? "";
+    message.token = object.token ?? "";
+    message.expiresAt = object.expiresAt ?? "";
+    return message;
+  },
+};
+
+function createBaseLlmAuditRequestContext(): LlmAuditRequestContext {
+  return {
+    capability: "",
+    requestAttemptId: "",
+    logicalRequestId: "",
+    attemptSequence: 0,
+    nodeId: "",
+    agentRuntimeId: "",
+    taskRunId: undefined,
+    role: "",
+    requestedModel: "",
+  };
+}
+
+export const LlmAuditRequestContext: MessageFns<LlmAuditRequestContext> = {
+  encode(message: LlmAuditRequestContext, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.capability !== "") {
+      writer.uint32(10).string(message.capability);
+    }
+    if (message.requestAttemptId !== "") {
+      writer.uint32(18).string(message.requestAttemptId);
+    }
+    if (message.logicalRequestId !== "") {
+      writer.uint32(26).string(message.logicalRequestId);
+    }
+    if (message.attemptSequence !== 0) {
+      writer.uint32(32).uint32(message.attemptSequence);
+    }
+    if (message.nodeId !== "") {
+      writer.uint32(42).string(message.nodeId);
+    }
+    if (message.agentRuntimeId !== "") {
+      writer.uint32(50).string(message.agentRuntimeId);
+    }
+    if (message.taskRunId !== undefined) {
+      writer.uint32(58).string(message.taskRunId);
+    }
+    if (message.role !== "") {
+      writer.uint32(66).string(message.role);
+    }
+    if (message.requestedModel !== "") {
+      writer.uint32(74).string(message.requestedModel);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): LlmAuditRequestContext {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseLlmAuditRequestContext();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.capability = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.requestAttemptId = reader.string();
+          continue;
+        }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.logicalRequestId = reader.string();
+          continue;
+        }
+        case 4: {
+          if (tag !== 32) {
+            break;
+          }
+
+          message.attemptSequence = reader.uint32();
+          continue;
+        }
+        case 5: {
+          if (tag !== 42) {
+            break;
+          }
+
+          message.nodeId = reader.string();
+          continue;
+        }
+        case 6: {
+          if (tag !== 50) {
+            break;
+          }
+
+          message.agentRuntimeId = reader.string();
+          continue;
+        }
+        case 7: {
+          if (tag !== 58) {
+            break;
+          }
+
+          message.taskRunId = reader.string();
+          continue;
+        }
+        case 8: {
+          if (tag !== 66) {
+            break;
+          }
+
+          message.role = reader.string();
+          continue;
+        }
+        case 9: {
+          if (tag !== 74) {
+            break;
+          }
+
+          message.requestedModel = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): LlmAuditRequestContext {
+    return {
+      capability: isSet(object.capability) ? globalThis.String(object.capability) : "",
+      requestAttemptId: isSet(object.requestAttemptId)
+        ? globalThis.String(object.requestAttemptId)
+        : isSet(object.request_attempt_id)
+        ? globalThis.String(object.request_attempt_id)
+        : "",
+      logicalRequestId: isSet(object.logicalRequestId)
+        ? globalThis.String(object.logicalRequestId)
+        : isSet(object.logical_request_id)
+        ? globalThis.String(object.logical_request_id)
+        : "",
+      attemptSequence: isSet(object.attemptSequence)
+        ? globalThis.Number(object.attemptSequence)
+        : isSet(object.attempt_sequence)
+        ? globalThis.Number(object.attempt_sequence)
+        : 0,
+      nodeId: isSet(object.nodeId)
+        ? globalThis.String(object.nodeId)
+        : isSet(object.node_id)
+        ? globalThis.String(object.node_id)
+        : "",
+      agentRuntimeId: isSet(object.agentRuntimeId)
+        ? globalThis.String(object.agentRuntimeId)
+        : isSet(object.agent_runtime_id)
+        ? globalThis.String(object.agent_runtime_id)
+        : "",
+      taskRunId: isSet(object.taskRunId)
+        ? globalThis.String(object.taskRunId)
+        : isSet(object.task_run_id)
+        ? globalThis.String(object.task_run_id)
+        : undefined,
+      role: isSet(object.role) ? globalThis.String(object.role) : "",
+      requestedModel: isSet(object.requestedModel)
+        ? globalThis.String(object.requestedModel)
+        : isSet(object.requested_model)
+        ? globalThis.String(object.requested_model)
+        : "",
+    };
+  },
+
+  toJSON(message: LlmAuditRequestContext): unknown {
+    const obj: any = {};
+    if (message.capability !== "") {
+      obj.capability = message.capability;
+    }
+    if (message.requestAttemptId !== "") {
+      obj.requestAttemptId = message.requestAttemptId;
+    }
+    if (message.logicalRequestId !== "") {
+      obj.logicalRequestId = message.logicalRequestId;
+    }
+    if (message.attemptSequence !== 0) {
+      obj.attemptSequence = Math.round(message.attemptSequence);
+    }
+    if (message.nodeId !== "") {
+      obj.nodeId = message.nodeId;
+    }
+    if (message.agentRuntimeId !== "") {
+      obj.agentRuntimeId = message.agentRuntimeId;
+    }
+    if (message.taskRunId !== undefined) {
+      obj.taskRunId = message.taskRunId;
+    }
+    if (message.role !== "") {
+      obj.role = message.role;
+    }
+    if (message.requestedModel !== "") {
+      obj.requestedModel = message.requestedModel;
+    }
+    return obj;
+  },
+
+  create(base?: DeepPartial<LlmAuditRequestContext>): LlmAuditRequestContext {
+    return LlmAuditRequestContext.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<LlmAuditRequestContext>): LlmAuditRequestContext {
+    const message = createBaseLlmAuditRequestContext();
+    message.capability = object.capability ?? "";
+    message.requestAttemptId = object.requestAttemptId ?? "";
+    message.logicalRequestId = object.logicalRequestId ?? "";
+    message.attemptSequence = object.attemptSequence ?? 0;
+    message.nodeId = object.nodeId ?? "";
+    message.agentRuntimeId = object.agentRuntimeId ?? "";
+    message.taskRunId = object.taskRunId ?? undefined;
+    message.role = object.role ?? "";
+    message.requestedModel = object.requestedModel ?? "";
+    return message;
+  },
+};
+
+function createBaseRecordLlmRequestStartedRequest(): RecordLlmRequestStartedRequest {
+  return { request: undefined };
+}
+
+export const RecordLlmRequestStartedRequest: MessageFns<RecordLlmRequestStartedRequest> = {
+  encode(message: RecordLlmRequestStartedRequest, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.request !== undefined) {
+      LlmAuditRequestContext.encode(message.request, writer.uint32(10).fork()).join();
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): RecordLlmRequestStartedRequest {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseRecordLlmRequestStartedRequest();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.request = LlmAuditRequestContext.decode(reader, reader.uint32());
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): RecordLlmRequestStartedRequest {
+    return { request: isSet(object.request) ? LlmAuditRequestContext.fromJSON(object.request) : undefined };
+  },
+
+  toJSON(message: RecordLlmRequestStartedRequest): unknown {
+    const obj: any = {};
+    if (message.request !== undefined) {
+      obj.request = LlmAuditRequestContext.toJSON(message.request);
+    }
+    return obj;
+  },
+
+  create(base?: DeepPartial<RecordLlmRequestStartedRequest>): RecordLlmRequestStartedRequest {
+    return RecordLlmRequestStartedRequest.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<RecordLlmRequestStartedRequest>): RecordLlmRequestStartedRequest {
+    const message = createBaseRecordLlmRequestStartedRequest();
+    message.request = (object.request !== undefined && object.request !== null)
+      ? LlmAuditRequestContext.fromPartial(object.request)
+      : undefined;
+    return message;
+  },
+};
+
+function createBaseRecordLlmRequestStartedResponse(): RecordLlmRequestStartedResponse {
+  return { requestAttemptId: "", recorded: false };
+}
+
+export const RecordLlmRequestStartedResponse: MessageFns<RecordLlmRequestStartedResponse> = {
+  encode(message: RecordLlmRequestStartedResponse, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.requestAttemptId !== "") {
+      writer.uint32(10).string(message.requestAttemptId);
+    }
+    if (message.recorded !== false) {
+      writer.uint32(16).bool(message.recorded);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): RecordLlmRequestStartedResponse {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseRecordLlmRequestStartedResponse();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.requestAttemptId = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 16) {
+            break;
+          }
+
+          message.recorded = reader.bool();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): RecordLlmRequestStartedResponse {
+    return {
+      requestAttemptId: isSet(object.requestAttemptId)
+        ? globalThis.String(object.requestAttemptId)
+        : isSet(object.request_attempt_id)
+        ? globalThis.String(object.request_attempt_id)
+        : "",
+      recorded: isSet(object.recorded) ? globalThis.Boolean(object.recorded) : false,
+    };
+  },
+
+  toJSON(message: RecordLlmRequestStartedResponse): unknown {
+    const obj: any = {};
+    if (message.requestAttemptId !== "") {
+      obj.requestAttemptId = message.requestAttemptId;
+    }
+    if (message.recorded !== false) {
+      obj.recorded = message.recorded;
+    }
+    return obj;
+  },
+
+  create(base?: DeepPartial<RecordLlmRequestStartedResponse>): RecordLlmRequestStartedResponse {
+    return RecordLlmRequestStartedResponse.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<RecordLlmRequestStartedResponse>): RecordLlmRequestStartedResponse {
+    const message = createBaseRecordLlmRequestStartedResponse();
+    message.requestAttemptId = object.requestAttemptId ?? "";
+    message.recorded = object.recorded ?? false;
+    return message;
+  },
+};
+
+function createBaseLlmAuditUsage(): LlmAuditUsage {
+  return {
+    inputTokens: undefined,
+    outputTokens: undefined,
+    cachedInputTokens: undefined,
+    cacheWriteTokens: undefined,
+    reasoningTokens: undefined,
+    reportedCostUsd: undefined,
+    providerUsageJson: undefined,
+  };
+}
+
+export const LlmAuditUsage: MessageFns<LlmAuditUsage> = {
+  encode(message: LlmAuditUsage, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.inputTokens !== undefined) {
+      writer.uint32(8).uint64(message.inputTokens);
+    }
+    if (message.outputTokens !== undefined) {
+      writer.uint32(16).uint64(message.outputTokens);
+    }
+    if (message.cachedInputTokens !== undefined) {
+      writer.uint32(24).uint64(message.cachedInputTokens);
+    }
+    if (message.cacheWriteTokens !== undefined) {
+      writer.uint32(32).uint64(message.cacheWriteTokens);
+    }
+    if (message.reasoningTokens !== undefined) {
+      writer.uint32(40).uint64(message.reasoningTokens);
+    }
+    if (message.reportedCostUsd !== undefined) {
+      writer.uint32(50).string(message.reportedCostUsd);
+    }
+    if (message.providerUsageJson !== undefined) {
+      writer.uint32(58).string(message.providerUsageJson);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): LlmAuditUsage {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseLlmAuditUsage();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 8) {
+            break;
+          }
+
+          message.inputTokens = longToNumber(reader.uint64());
+          continue;
+        }
+        case 2: {
+          if (tag !== 16) {
+            break;
+          }
+
+          message.outputTokens = longToNumber(reader.uint64());
+          continue;
+        }
+        case 3: {
+          if (tag !== 24) {
+            break;
+          }
+
+          message.cachedInputTokens = longToNumber(reader.uint64());
+          continue;
+        }
+        case 4: {
+          if (tag !== 32) {
+            break;
+          }
+
+          message.cacheWriteTokens = longToNumber(reader.uint64());
+          continue;
+        }
+        case 5: {
+          if (tag !== 40) {
+            break;
+          }
+
+          message.reasoningTokens = longToNumber(reader.uint64());
+          continue;
+        }
+        case 6: {
+          if (tag !== 50) {
+            break;
+          }
+
+          message.reportedCostUsd = reader.string();
+          continue;
+        }
+        case 7: {
+          if (tag !== 58) {
+            break;
+          }
+
+          message.providerUsageJson = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): LlmAuditUsage {
+    return {
+      inputTokens: isSet(object.inputTokens)
+        ? globalThis.Number(object.inputTokens)
+        : isSet(object.input_tokens)
+        ? globalThis.Number(object.input_tokens)
+        : undefined,
+      outputTokens: isSet(object.outputTokens)
+        ? globalThis.Number(object.outputTokens)
+        : isSet(object.output_tokens)
+        ? globalThis.Number(object.output_tokens)
+        : undefined,
+      cachedInputTokens: isSet(object.cachedInputTokens)
+        ? globalThis.Number(object.cachedInputTokens)
+        : isSet(object.cached_input_tokens)
+        ? globalThis.Number(object.cached_input_tokens)
+        : undefined,
+      cacheWriteTokens: isSet(object.cacheWriteTokens)
+        ? globalThis.Number(object.cacheWriteTokens)
+        : isSet(object.cache_write_tokens)
+        ? globalThis.Number(object.cache_write_tokens)
+        : undefined,
+      reasoningTokens: isSet(object.reasoningTokens)
+        ? globalThis.Number(object.reasoningTokens)
+        : isSet(object.reasoning_tokens)
+        ? globalThis.Number(object.reasoning_tokens)
+        : undefined,
+      reportedCostUsd: isSet(object.reportedCostUsd)
+        ? globalThis.String(object.reportedCostUsd)
+        : isSet(object.reported_cost_usd)
+        ? globalThis.String(object.reported_cost_usd)
+        : undefined,
+      providerUsageJson: isSet(object.providerUsageJson)
+        ? globalThis.String(object.providerUsageJson)
+        : isSet(object.provider_usage_json)
+        ? globalThis.String(object.provider_usage_json)
+        : undefined,
+    };
+  },
+
+  toJSON(message: LlmAuditUsage): unknown {
+    const obj: any = {};
+    if (message.inputTokens !== undefined) {
+      obj.inputTokens = Math.round(message.inputTokens);
+    }
+    if (message.outputTokens !== undefined) {
+      obj.outputTokens = Math.round(message.outputTokens);
+    }
+    if (message.cachedInputTokens !== undefined) {
+      obj.cachedInputTokens = Math.round(message.cachedInputTokens);
+    }
+    if (message.cacheWriteTokens !== undefined) {
+      obj.cacheWriteTokens = Math.round(message.cacheWriteTokens);
+    }
+    if (message.reasoningTokens !== undefined) {
+      obj.reasoningTokens = Math.round(message.reasoningTokens);
+    }
+    if (message.reportedCostUsd !== undefined) {
+      obj.reportedCostUsd = message.reportedCostUsd;
+    }
+    if (message.providerUsageJson !== undefined) {
+      obj.providerUsageJson = message.providerUsageJson;
+    }
+    return obj;
+  },
+
+  create(base?: DeepPartial<LlmAuditUsage>): LlmAuditUsage {
+    return LlmAuditUsage.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<LlmAuditUsage>): LlmAuditUsage {
+    const message = createBaseLlmAuditUsage();
+    message.inputTokens = object.inputTokens ?? undefined;
+    message.outputTokens = object.outputTokens ?? undefined;
+    message.cachedInputTokens = object.cachedInputTokens ?? undefined;
+    message.cacheWriteTokens = object.cacheWriteTokens ?? undefined;
+    message.reasoningTokens = object.reasoningTokens ?? undefined;
+    message.reportedCostUsd = object.reportedCostUsd ?? undefined;
+    message.providerUsageJson = object.providerUsageJson ?? undefined;
+    return message;
+  },
+};
+
+function createBaseRecordLlmRequestTerminalRequest(): RecordLlmRequestTerminalRequest {
+  return {
+    request: undefined,
+    status: "",
+    httpStatus: undefined,
+    actualModel: undefined,
+    providerRequestId: undefined,
+    usage: undefined,
+    errorCode: undefined,
+  };
+}
+
+export const RecordLlmRequestTerminalRequest: MessageFns<RecordLlmRequestTerminalRequest> = {
+  encode(message: RecordLlmRequestTerminalRequest, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.request !== undefined) {
+      LlmAuditRequestContext.encode(message.request, writer.uint32(10).fork()).join();
+    }
+    if (message.status !== "") {
+      writer.uint32(18).string(message.status);
+    }
+    if (message.httpStatus !== undefined) {
+      writer.uint32(24).uint32(message.httpStatus);
+    }
+    if (message.actualModel !== undefined) {
+      writer.uint32(34).string(message.actualModel);
+    }
+    if (message.providerRequestId !== undefined) {
+      writer.uint32(42).string(message.providerRequestId);
+    }
+    if (message.usage !== undefined) {
+      LlmAuditUsage.encode(message.usage, writer.uint32(50).fork()).join();
+    }
+    if (message.errorCode !== undefined) {
+      writer.uint32(58).string(message.errorCode);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): RecordLlmRequestTerminalRequest {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseRecordLlmRequestTerminalRequest();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.request = LlmAuditRequestContext.decode(reader, reader.uint32());
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.status = reader.string();
+          continue;
+        }
+        case 3: {
+          if (tag !== 24) {
+            break;
+          }
+
+          message.httpStatus = reader.uint32();
+          continue;
+        }
+        case 4: {
+          if (tag !== 34) {
+            break;
+          }
+
+          message.actualModel = reader.string();
+          continue;
+        }
+        case 5: {
+          if (tag !== 42) {
+            break;
+          }
+
+          message.providerRequestId = reader.string();
+          continue;
+        }
+        case 6: {
+          if (tag !== 50) {
+            break;
+          }
+
+          message.usage = LlmAuditUsage.decode(reader, reader.uint32());
+          continue;
+        }
+        case 7: {
+          if (tag !== 58) {
+            break;
+          }
+
+          message.errorCode = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): RecordLlmRequestTerminalRequest {
+    return {
+      request: isSet(object.request) ? LlmAuditRequestContext.fromJSON(object.request) : undefined,
+      status: isSet(object.status) ? globalThis.String(object.status) : "",
+      httpStatus: isSet(object.httpStatus)
+        ? globalThis.Number(object.httpStatus)
+        : isSet(object.http_status)
+        ? globalThis.Number(object.http_status)
+        : undefined,
+      actualModel: isSet(object.actualModel)
+        ? globalThis.String(object.actualModel)
+        : isSet(object.actual_model)
+        ? globalThis.String(object.actual_model)
+        : undefined,
+      providerRequestId: isSet(object.providerRequestId)
+        ? globalThis.String(object.providerRequestId)
+        : isSet(object.provider_request_id)
+        ? globalThis.String(object.provider_request_id)
+        : undefined,
+      usage: isSet(object.usage) ? LlmAuditUsage.fromJSON(object.usage) : undefined,
+      errorCode: isSet(object.errorCode)
+        ? globalThis.String(object.errorCode)
+        : isSet(object.error_code)
+        ? globalThis.String(object.error_code)
+        : undefined,
+    };
+  },
+
+  toJSON(message: RecordLlmRequestTerminalRequest): unknown {
+    const obj: any = {};
+    if (message.request !== undefined) {
+      obj.request = LlmAuditRequestContext.toJSON(message.request);
+    }
+    if (message.status !== "") {
+      obj.status = message.status;
+    }
+    if (message.httpStatus !== undefined) {
+      obj.httpStatus = Math.round(message.httpStatus);
+    }
+    if (message.actualModel !== undefined) {
+      obj.actualModel = message.actualModel;
+    }
+    if (message.providerRequestId !== undefined) {
+      obj.providerRequestId = message.providerRequestId;
+    }
+    if (message.usage !== undefined) {
+      obj.usage = LlmAuditUsage.toJSON(message.usage);
+    }
+    if (message.errorCode !== undefined) {
+      obj.errorCode = message.errorCode;
+    }
+    return obj;
+  },
+
+  create(base?: DeepPartial<RecordLlmRequestTerminalRequest>): RecordLlmRequestTerminalRequest {
+    return RecordLlmRequestTerminalRequest.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<RecordLlmRequestTerminalRequest>): RecordLlmRequestTerminalRequest {
+    const message = createBaseRecordLlmRequestTerminalRequest();
+    message.request = (object.request !== undefined && object.request !== null)
+      ? LlmAuditRequestContext.fromPartial(object.request)
+      : undefined;
+    message.status = object.status ?? "";
+    message.httpStatus = object.httpStatus ?? undefined;
+    message.actualModel = object.actualModel ?? undefined;
+    message.providerRequestId = object.providerRequestId ?? undefined;
+    message.usage = (object.usage !== undefined && object.usage !== null)
+      ? LlmAuditUsage.fromPartial(object.usage)
+      : undefined;
+    message.errorCode = object.errorCode ?? undefined;
+    return message;
+  },
+};
+
+function createBaseRecordLlmRequestTerminalResponse(): RecordLlmRequestTerminalResponse {
+  return { requestAttemptId: "", recorded: false, duplicate: false };
+}
+
+export const RecordLlmRequestTerminalResponse: MessageFns<RecordLlmRequestTerminalResponse> = {
+  encode(message: RecordLlmRequestTerminalResponse, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.requestAttemptId !== "") {
+      writer.uint32(10).string(message.requestAttemptId);
+    }
+    if (message.recorded !== false) {
+      writer.uint32(16).bool(message.recorded);
+    }
+    if (message.duplicate !== false) {
+      writer.uint32(24).bool(message.duplicate);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): RecordLlmRequestTerminalResponse {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseRecordLlmRequestTerminalResponse();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.requestAttemptId = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 16) {
+            break;
+          }
+
+          message.recorded = reader.bool();
+          continue;
+        }
+        case 3: {
+          if (tag !== 24) {
+            break;
+          }
+
+          message.duplicate = reader.bool();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): RecordLlmRequestTerminalResponse {
+    return {
+      requestAttemptId: isSet(object.requestAttemptId)
+        ? globalThis.String(object.requestAttemptId)
+        : isSet(object.request_attempt_id)
+        ? globalThis.String(object.request_attempt_id)
+        : "",
+      recorded: isSet(object.recorded) ? globalThis.Boolean(object.recorded) : false,
+      duplicate: isSet(object.duplicate) ? globalThis.Boolean(object.duplicate) : false,
+    };
+  },
+
+  toJSON(message: RecordLlmRequestTerminalResponse): unknown {
+    const obj: any = {};
+    if (message.requestAttemptId !== "") {
+      obj.requestAttemptId = message.requestAttemptId;
+    }
+    if (message.recorded !== false) {
+      obj.recorded = message.recorded;
+    }
+    if (message.duplicate !== false) {
+      obj.duplicate = message.duplicate;
+    }
+    return obj;
+  },
+
+  create(base?: DeepPartial<RecordLlmRequestTerminalResponse>): RecordLlmRequestTerminalResponse {
+    return RecordLlmRequestTerminalResponse.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<RecordLlmRequestTerminalResponse>): RecordLlmRequestTerminalResponse {
+    const message = createBaseRecordLlmRequestTerminalResponse();
+    message.requestAttemptId = object.requestAttemptId ?? "";
+    message.recorded = object.recorded ?? false;
+    message.duplicate = object.duplicate ?? false;
     return message;
   },
 };
@@ -7353,11 +8420,38 @@ export const ExecutionSessionServiceService = {
       Buffer.from(CommandSipTransferResponse.encode(value).finish()),
     responseDeserialize: (value: Buffer): CommandSipTransferResponse => CommandSipTransferResponse.decode(value),
   },
+  recordLlmRequestStarted: {
+    path: "/port.api.v1.ExecutionSessionService/RecordLlmRequestStarted" as const,
+    requestStream: false as const,
+    responseStream: false as const,
+    requestSerialize: (value: RecordLlmRequestStartedRequest): Buffer =>
+      Buffer.from(RecordLlmRequestStartedRequest.encode(value).finish()),
+    requestDeserialize: (value: Buffer): RecordLlmRequestStartedRequest => RecordLlmRequestStartedRequest.decode(value),
+    responseSerialize: (value: RecordLlmRequestStartedResponse): Buffer =>
+      Buffer.from(RecordLlmRequestStartedResponse.encode(value).finish()),
+    responseDeserialize: (value: Buffer): RecordLlmRequestStartedResponse =>
+      RecordLlmRequestStartedResponse.decode(value),
+  },
+  recordLlmRequestTerminal: {
+    path: "/port.api.v1.ExecutionSessionService/RecordLlmRequestTerminal" as const,
+    requestStream: false as const,
+    responseStream: false as const,
+    requestSerialize: (value: RecordLlmRequestTerminalRequest): Buffer =>
+      Buffer.from(RecordLlmRequestTerminalRequest.encode(value).finish()),
+    requestDeserialize: (value: Buffer): RecordLlmRequestTerminalRequest =>
+      RecordLlmRequestTerminalRequest.decode(value),
+    responseSerialize: (value: RecordLlmRequestTerminalResponse): Buffer =>
+      Buffer.from(RecordLlmRequestTerminalResponse.encode(value).finish()),
+    responseDeserialize: (value: Buffer): RecordLlmRequestTerminalResponse =>
+      RecordLlmRequestTerminalResponse.decode(value),
+  },
 } as const;
 
 export interface ExecutionSessionServiceServer extends UntypedServiceImplementation {
   bootstrapPublished: handleUnaryCall<BootstrapPublishedRequest, BootstrapPublishedResponse>;
   commandSipTransfer: handleUnaryCall<CommandSipTransferRequest, CommandSipTransferResponse>;
+  recordLlmRequestStarted: handleUnaryCall<RecordLlmRequestStartedRequest, RecordLlmRequestStartedResponse>;
+  recordLlmRequestTerminal: handleUnaryCall<RecordLlmRequestTerminalRequest, RecordLlmRequestTerminalResponse>;
 }
 
 export interface ExecutionSessionServiceClient extends Client {
@@ -7391,6 +8485,36 @@ export interface ExecutionSessionServiceClient extends Client {
     options: Partial<CallOptions>,
     callback: (error: ServiceError | null, response: CommandSipTransferResponse) => void,
   ): ClientUnaryCall;
+  recordLlmRequestStarted(
+    request: RecordLlmRequestStartedRequest,
+    callback: (error: ServiceError | null, response: RecordLlmRequestStartedResponse) => void,
+  ): ClientUnaryCall;
+  recordLlmRequestStarted(
+    request: RecordLlmRequestStartedRequest,
+    metadata: Metadata,
+    callback: (error: ServiceError | null, response: RecordLlmRequestStartedResponse) => void,
+  ): ClientUnaryCall;
+  recordLlmRequestStarted(
+    request: RecordLlmRequestStartedRequest,
+    metadata: Metadata,
+    options: Partial<CallOptions>,
+    callback: (error: ServiceError | null, response: RecordLlmRequestStartedResponse) => void,
+  ): ClientUnaryCall;
+  recordLlmRequestTerminal(
+    request: RecordLlmRequestTerminalRequest,
+    callback: (error: ServiceError | null, response: RecordLlmRequestTerminalResponse) => void,
+  ): ClientUnaryCall;
+  recordLlmRequestTerminal(
+    request: RecordLlmRequestTerminalRequest,
+    metadata: Metadata,
+    callback: (error: ServiceError | null, response: RecordLlmRequestTerminalResponse) => void,
+  ): ClientUnaryCall;
+  recordLlmRequestTerminal(
+    request: RecordLlmRequestTerminalRequest,
+    metadata: Metadata,
+    options: Partial<CallOptions>,
+    callback: (error: ServiceError | null, response: RecordLlmRequestTerminalResponse) => void,
+  ): ClientUnaryCall;
 }
 
 export const ExecutionSessionServiceClient = makeGenericClientConstructor(
@@ -7413,6 +8537,17 @@ export type DeepPartial<T> = T extends Builtin ? T
   : T extends ReadonlyArray<infer U> ? ReadonlyArray<DeepPartial<U>>
   : T extends {} ? { [K in keyof T]?: DeepPartial<T[K]> }
   : Partial<T>;
+
+function longToNumber(int64: { toString(): string }): number {
+  const num = globalThis.Number(int64.toString());
+  if (num > globalThis.Number.MAX_SAFE_INTEGER) {
+    throw new globalThis.Error("Value is larger than Number.MAX_SAFE_INTEGER");
+  }
+  if (num < globalThis.Number.MIN_SAFE_INTEGER) {
+    throw new globalThis.Error("Value is smaller than Number.MIN_SAFE_INTEGER");
+  }
+  return num;
+}
 
 function isObject(value: any): boolean {
   return typeof value === "object" && value !== null;
