@@ -288,10 +288,13 @@ func (AgentMode) EnumDescriptor() ([]byte, []int) {
 type ContextPolicy int32
 
 const (
-	ContextPolicy_CONTEXT_POLICY_UNSPECIFIED  ContextPolicy = 0
-	ContextPolicy_CONTEXT_POLICY_NONE         ContextPolicy = 1
-	ContextPolicy_CONTEXT_POLICY_CONVERSATION ContextPolicy = 2
-	ContextPolicy_CONTEXT_POLICY_RECENT       ContextPolicy = 3
+	ContextPolicy_CONTEXT_POLICY_UNSPECIFIED                 ContextPolicy = 0
+	ContextPolicy_CONTEXT_POLICY_NONE                        ContextPolicy = 1
+	ContextPolicy_CONTEXT_POLICY_CONVERSATION                ContextPolicy = 2
+	ContextPolicy_CONTEXT_POLICY_RECENT                      ContextPolicy = 3
+	ContextPolicy_CONTEXT_POLICY_ALL                         ContextPolicy = 4
+	ContextPolicy_CONTEXT_POLICY_USER_AND_ASSISTANT_MESSAGES ContextPolicy = 5
+	ContextPolicy_CONTEXT_POLICY_PREVIOUS_ASSISTANT_MESSAGES ContextPolicy = 6
 )
 
 // Enum value maps for ContextPolicy.
@@ -301,12 +304,18 @@ var (
 		1: "CONTEXT_POLICY_NONE",
 		2: "CONTEXT_POLICY_CONVERSATION",
 		3: "CONTEXT_POLICY_RECENT",
+		4: "CONTEXT_POLICY_ALL",
+		5: "CONTEXT_POLICY_USER_AND_ASSISTANT_MESSAGES",
+		6: "CONTEXT_POLICY_PREVIOUS_ASSISTANT_MESSAGES",
 	}
 	ContextPolicy_value = map[string]int32{
-		"CONTEXT_POLICY_UNSPECIFIED":  0,
-		"CONTEXT_POLICY_NONE":         1,
-		"CONTEXT_POLICY_CONVERSATION": 2,
-		"CONTEXT_POLICY_RECENT":       3,
+		"CONTEXT_POLICY_UNSPECIFIED":                 0,
+		"CONTEXT_POLICY_NONE":                        1,
+		"CONTEXT_POLICY_CONVERSATION":                2,
+		"CONTEXT_POLICY_RECENT":                      3,
+		"CONTEXT_POLICY_ALL":                         4,
+		"CONTEXT_POLICY_USER_AND_ASSISTANT_MESSAGES": 5,
+		"CONTEXT_POLICY_PREVIOUS_ASSISTANT_MESSAGES": 6,
 	}
 )
 
@@ -2151,6 +2160,7 @@ type PublishedHandoffRoute struct {
 	Parameters    []*HandoffParameter `protobuf:"bytes,7,rep,name=parameters,proto3" json:"parameters,omitempty"`
 	RequestStart  string              `protobuf:"bytes,8,opt,name=request_start,json=requestStart,proto3" json:"request_start,omitempty"`
 	SystemPrompt  *string             `protobuf:"bytes,9,opt,name=system_prompt,json=systemPrompt,proto3,oneof" json:"system_prompt,omitempty"`
+	MaxMessages   *uint32             `protobuf:"varint,10,opt,name=max_messages,json=maxMessages,proto3,oneof" json:"max_messages,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -2247,6 +2257,13 @@ func (x *PublishedHandoffRoute) GetSystemPrompt() string {
 		return *x.SystemPrompt
 	}
 	return ""
+}
+
+func (x *PublishedHandoffRoute) GetMaxMessages() uint32 {
+	if x != nil && x.MaxMessages != nil {
+		return *x.MaxMessages
+	}
+	return 0
 }
 
 type HandoffParameter struct {
@@ -4846,7 +4863,7 @@ const file_port_api_v1_agent_session_proto_rawDesc = "" +
 	"\x18PublishedHandoffSnapshot\x12+\n" +
 	"\rentry_node_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\ventryNodeId\x123\n" +
 	"\x11max_handoff_depth\x18\x02 \x01(\rB\a\xbaH\x04*\x02 \x00R\x0fmaxHandoffDepth\x12:\n" +
-	"\x06routes\x18\x03 \x03(\v2\".port.api.v1.PublishedHandoffRouteR\x06routes\"\xe4\a\n" +
+	"\x06routes\x18\x03 \x03(\v2\".port.api.v1.PublishedHandoffRouteR\x06routes\"\xa6\v\n" +
 	"\x15PublishedHandoffRoute\x12,\n" +
 	"\rtransition_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\ftransitionId\x12-\n" +
 	"\x0esource_node_id\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\fsourceNodeId\x12-\n" +
@@ -4859,11 +4876,15 @@ const file_port_api_v1_agent_session_proto_rawDesc = "" +
 	"parameters\x18\a \x03(\v2\x1d.port.api.v1.HandoffParameterR\n" +
 	"parameters\x12#\n" +
 	"\rrequest_start\x18\b \x01(\tR\frequestStart\x125\n" +
-	"\rsystem_prompt\x18\t \x01(\tB\v\xbaH\br\x06\x10\x012\x02\\SH\x00R\fsystemPrompt\x88\x01\x01:\xe0\x03\xbaH\xdc\x03\x1a\x95\x01\n" +
-	".published_handoff_route.context_policy_allowed\x12-handoff context policy must be none or recent\x1a4this.context_policy == 1 || this.context_policy == 3\x1a\x91\x01\n" +
+	"\rsystem_prompt\x18\t \x01(\tB\v\xbaH\br\x06\x10\x012\x02\\SH\x00R\fsystemPrompt\x88\x01\x01\x121\n" +
+	"\fmax_messages\x18\n" +
+	" \x01(\rB\t\xbaH\x06*\x04\x18d(\x01H\x01R\vmaxMessages\x88\x01\x01:\xde\x06\xbaH\xda\x06\x1a\xaa\x02\n" +
+	".published_handoff_route.context_policy_allowed\x12mhandoff context policy must be none, recent, all, user_and_assistant_messages, or previous_assistant_messages\x1a\x88\x01this.context_policy == 1 || this.context_policy == 3 || this.context_policy == 4 || this.context_policy == 5 || this.context_policy == 6\x1a\xe6\x01\n" +
+	"*published_handoff_route.max_messages_scope\x12Kmax_messages is only valid for recent context and must be between 1 and 100\x1ak!has(this.max_messages) || (this.context_policy == 3 && this.max_messages >= 1 && this.max_messages <= 100)\x1a\x91\x01\n" +
 	".published_handoff_route.parameter_names_unique\x12&handoff parameter names must be unique\x1a7this.parameters.map(parameter, parameter.name).unique()\x1a\xad\x01\n" +
 	",published_handoff_route.start_message_source\x12Hhandoff route may use either announcement or request_start, but not both\x1a3this.announcement == '' || this.request_start == ''B\x10\n" +
-	"\x0e_system_prompt\"\x94\x05\n" +
+	"\x0e_system_promptB\x0f\n" +
+	"\r_max_messages\"\x94\x05\n" +
 	"\x10HandoffParameter\x12\x1b\n" +
 	"\x04name\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x04name\x12A\n" +
 	"\x04type\x18\x02 \x01(\x0e2!.port.api.v1.HandoffParameterTypeB\n" +
@@ -5117,12 +5138,15 @@ const file_port_api_v1_agent_session_proto_rawDesc = "" +
 	"\tAgentMode\x12\x1a\n" +
 	"\x16AGENT_MODE_UNSPECIFIED\x10\x00\x12\x19\n" +
 	"\x15AGENT_MODE_SUPERVISOR\x10\x01\x12\x16\n" +
-	"\x12AGENT_MODE_HANDOFF\x10\x02*\x84\x01\n" +
+	"\x12AGENT_MODE_HANDOFF\x10\x02*\xfc\x01\n" +
 	"\rContextPolicy\x12\x1e\n" +
 	"\x1aCONTEXT_POLICY_UNSPECIFIED\x10\x00\x12\x17\n" +
 	"\x13CONTEXT_POLICY_NONE\x10\x01\x12\x1f\n" +
 	"\x1bCONTEXT_POLICY_CONVERSATION\x10\x02\x12\x19\n" +
-	"\x15CONTEXT_POLICY_RECENT\x10\x032\xd6\x03\n" +
+	"\x15CONTEXT_POLICY_RECENT\x10\x03\x12\x16\n" +
+	"\x12CONTEXT_POLICY_ALL\x10\x04\x12.\n" +
+	"*CONTEXT_POLICY_USER_AND_ASSISTANT_MESSAGES\x10\x05\x12.\n" +
+	"*CONTEXT_POLICY_PREVIOUS_ASSISTANT_MESSAGES\x10\x062\xd6\x03\n" +
 	"\x17ExecutionSessionService\x12e\n" +
 	"\x12BootstrapPublished\x12&.port.api.v1.BootstrapPublishedRequest\x1a'.port.api.v1.BootstrapPublishedResponse\x12e\n" +
 	"\x12CommandSipTransfer\x12&.port.api.v1.CommandSipTransferRequest\x1a'.port.api.v1.CommandSipTransferResponse\x12t\n" +

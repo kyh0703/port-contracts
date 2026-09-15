@@ -272,8 +272,13 @@ message PublishedHandoffSnapshot {
 message PublishedHandoffRoute {
   option (buf.validate.message).cel = {
     id: "published_handoff_route.context_policy_allowed"
-    message: "handoff context policy must be none or recent"
-    expression: "this.context_policy == 1 || this.context_policy == 3"
+    message: "handoff context policy must be none, recent, all, user_and_assistant_messages, or previous_assistant_messages"
+    expression: "this.context_policy == 1 || this.context_policy == 3 || this.context_policy == 4 || this.context_policy == 5 || this.context_policy == 6"
+  };
+  option (buf.validate.message).cel = {
+    id: "published_handoff_route.max_messages_scope"
+    message: "max_messages is only valid for recent context and must be between 1 and 100"
+    expression: "!has(this.max_messages) || (this.context_policy == 3 && this.max_messages >= 1 && this.max_messages <= 100)"
   };
   option (buf.validate.message).cel = {
     id: "published_handoff_route.parameter_names_unique"
@@ -295,6 +300,7 @@ message PublishedHandoffRoute {
   repeated HandoffParameter parameters = 7;
   string request_start = 8;
   optional string system_prompt = 9 [(buf.validate.field).string = {min_len: 1 pattern: "\\S"}];
+  optional uint32 max_messages = 10 [(buf.validate.field).uint32 = {gte: 1 lte: 100}];
 }
 
 enum HandoffParameterType {
@@ -475,6 +481,9 @@ enum ContextPolicy {
   CONTEXT_POLICY_NONE = 1;
   CONTEXT_POLICY_CONVERSATION = 2;
   CONTEXT_POLICY_RECENT = 3;
+  CONTEXT_POLICY_ALL = 4;
+  CONTEXT_POLICY_USER_AND_ASSISTANT_MESSAGES = 5;
+  CONTEXT_POLICY_PREVIOUS_ASSISTANT_MESSAGES = 6;
 }
 
 message McpToolMetadata {

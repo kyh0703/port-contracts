@@ -258,6 +258,9 @@ export enum ContextPolicy {
   CONTEXT_POLICY_NONE = 1,
   CONTEXT_POLICY_CONVERSATION = 2,
   CONTEXT_POLICY_RECENT = 3,
+  CONTEXT_POLICY_ALL = 4,
+  CONTEXT_POLICY_USER_AND_ASSISTANT_MESSAGES = 5,
+  CONTEXT_POLICY_PREVIOUS_ASSISTANT_MESSAGES = 6,
   UNRECOGNIZED = -1,
 }
 
@@ -275,6 +278,15 @@ export function contextPolicyFromJSON(object: any): ContextPolicy {
     case 3:
     case "CONTEXT_POLICY_RECENT":
       return ContextPolicy.CONTEXT_POLICY_RECENT;
+    case 4:
+    case "CONTEXT_POLICY_ALL":
+      return ContextPolicy.CONTEXT_POLICY_ALL;
+    case 5:
+    case "CONTEXT_POLICY_USER_AND_ASSISTANT_MESSAGES":
+      return ContextPolicy.CONTEXT_POLICY_USER_AND_ASSISTANT_MESSAGES;
+    case 6:
+    case "CONTEXT_POLICY_PREVIOUS_ASSISTANT_MESSAGES":
+      return ContextPolicy.CONTEXT_POLICY_PREVIOUS_ASSISTANT_MESSAGES;
     case -1:
     case "UNRECOGNIZED":
     default:
@@ -292,6 +304,12 @@ export function contextPolicyToJSON(object: ContextPolicy): string {
       return "CONTEXT_POLICY_CONVERSATION";
     case ContextPolicy.CONTEXT_POLICY_RECENT:
       return "CONTEXT_POLICY_RECENT";
+    case ContextPolicy.CONTEXT_POLICY_ALL:
+      return "CONTEXT_POLICY_ALL";
+    case ContextPolicy.CONTEXT_POLICY_USER_AND_ASSISTANT_MESSAGES:
+      return "CONTEXT_POLICY_USER_AND_ASSISTANT_MESSAGES";
+    case ContextPolicy.CONTEXT_POLICY_PREVIOUS_ASSISTANT_MESSAGES:
+      return "CONTEXT_POLICY_PREVIOUS_ASSISTANT_MESSAGES";
     case ContextPolicy.UNRECOGNIZED:
     default:
       return "UNRECOGNIZED";
@@ -519,6 +537,7 @@ export interface PublishedHandoffRoute {
   parameters: HandoffParameter[];
   requestStart: string;
   systemPrompt?: string | undefined;
+  maxMessages?: number | undefined;
 }
 
 export interface HandoffParameter {
@@ -3994,6 +4013,7 @@ function createBasePublishedHandoffRoute(): PublishedHandoffRoute {
     parameters: [],
     requestStart: "",
     systemPrompt: undefined,
+    maxMessages: undefined,
   };
 }
 
@@ -4025,6 +4045,9 @@ export const PublishedHandoffRoute: MessageFns<PublishedHandoffRoute> = {
     }
     if (message.systemPrompt !== undefined) {
       writer.uint32(74).string(message.systemPrompt);
+    }
+    if (message.maxMessages !== undefined) {
+      writer.uint32(80).uint32(message.maxMessages);
     }
     return writer;
   },
@@ -4108,6 +4131,14 @@ export const PublishedHandoffRoute: MessageFns<PublishedHandoffRoute> = {
           message.systemPrompt = reader.string();
           continue;
         }
+        case 10: {
+          if (tag !== 80) {
+            break;
+          }
+
+          message.maxMessages = reader.uint32();
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -4158,6 +4189,11 @@ export const PublishedHandoffRoute: MessageFns<PublishedHandoffRoute> = {
         : isSet(object.system_prompt)
         ? globalThis.String(object.system_prompt)
         : undefined,
+      maxMessages: isSet(object.maxMessages)
+        ? globalThis.Number(object.maxMessages)
+        : isSet(object.max_messages)
+        ? globalThis.Number(object.max_messages)
+        : undefined,
     };
   },
 
@@ -4190,6 +4226,9 @@ export const PublishedHandoffRoute: MessageFns<PublishedHandoffRoute> = {
     if (message.systemPrompt !== undefined) {
       obj.systemPrompt = message.systemPrompt;
     }
+    if (message.maxMessages !== undefined) {
+      obj.maxMessages = Math.round(message.maxMessages);
+    }
     return obj;
   },
 
@@ -4207,6 +4246,7 @@ export const PublishedHandoffRoute: MessageFns<PublishedHandoffRoute> = {
     message.parameters = object.parameters?.map((e) => HandoffParameter.fromPartial(e)) || [];
     message.requestStart = object.requestStart ?? "";
     message.systemPrompt = object.systemPrompt ?? undefined;
+    message.maxMessages = object.maxMessages ?? undefined;
     return message;
   },
 };

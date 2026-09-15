@@ -9,13 +9,13 @@ function read(relativePath) {
   return readFileSync(path.join(root, relativePath), "utf8");
 }
 
-test("npm release metadata is pinned to 7.9.0", () => {
+test("npm release metadata is pinned to 7.10.0", () => {
   const packageJson = JSON.parse(read("package.json"));
   const packageLock = JSON.parse(read("package-lock.json"));
 
-  assert.equal(packageJson.version, "7.9.0");
-  assert.equal(packageLock.version, "7.9.0");
-  assert.equal(packageLock.packages[""].version, "7.9.0");
+  assert.equal(packageJson.version, "7.10.0");
+  assert.equal(packageLock.version, "7.10.0");
+  assert.equal(packageLock.packages[""].version, "7.10.0");
 });
 
 test("legacy Node module resolution maps generated TypeScript subpaths", () => {
@@ -92,4 +92,8 @@ test("handoff route wire shape keeps compatibility field-6 announcement and cano
   assert.match(routeBody, /optional string system_prompt = 9/);
   assert.doesNotMatch(routeBody, /\bcontext_mode\b|HandoffContextMode/);
   assert.match(agentSession, /CONTEXT_POLICY_RECENT = 3;/);
+  assert.match(agentSession, /CONTEXT_POLICY_ALL = 4;/);
+  assert.match(agentSession, /CONTEXT_POLICY_USER_AND_ASSISTANT_MESSAGES = 5;/);
+  assert.match(agentSession, /CONTEXT_POLICY_PREVIOUS_ASSISTANT_MESSAGES = 6;/);
+  assert.match(routeBody, /optional uint32 max_messages = 10/);
 });

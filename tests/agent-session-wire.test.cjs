@@ -22,6 +22,7 @@ const {
   DtmfTool,
   SendSmsTool,
   ApiToolMetadata,
+  PublishedHandoffRoute,
   LlmAuditCapability,
   LlmAuditRequestContext,
   RecordLlmRequestStartedRequest,
@@ -220,6 +221,39 @@ test("the worker contract exposes canonical bootstrap and session-bound transfer
   assert.equal(contracts.AgentSessionServiceService, undefined);
   assert.equal(contracts.BootstrapAgentRequest, undefined);
   assert.equal(contracts.BootstrapSipRequest, undefined);
+});
+
+test("handoff context policies preserve legacy recent and optional last-N max messages", () => {
+  assert.equal(ContextPolicy.CONTEXT_POLICY_ALL, 4);
+  assert.equal(ContextPolicy.CONTEXT_POLICY_USER_AND_ASSISTANT_MESSAGES, 5);
+  assert.equal(ContextPolicy.CONTEXT_POLICY_PREVIOUS_ASSISTANT_MESSAGES, 6);
+
+  const legacyRecent = PublishedHandoffRoute.create({
+    transitionId: "legacy-recent",
+    sourceNodeId: "entry",
+    targetNodeId: "worker",
+    routingDescription: "Recent",
+    contextPolicy: ContextPolicy.CONTEXT_POLICY_RECENT,
+  });
+  const lastN = PublishedHandoffRoute.create({
+    transitionId: "last-n",
+    sourceNodeId: "entry",
+    targetNodeId: "worker",
+    routingDescription: "Last N",
+    contextPolicy: ContextPolicy.CONTEXT_POLICY_RECENT,
+    maxMessages: 8,
+  });
+  const previous = PublishedHandoffRoute.create({
+    transitionId: "previous",
+    sourceNodeId: "entry",
+    targetNodeId: "worker",
+    routingDescription: "Previous assistant",
+    contextPolicy: ContextPolicy.CONTEXT_POLICY_PREVIOUS_ASSISTANT_MESSAGES,
+  });
+
+  assert.equal(PublishedHandoffRoute.decode(PublishedHandoffRoute.encode(legacyRecent).finish()).maxMessages, undefined);
+  assert.equal(PublishedHandoffRoute.decode(PublishedHandoffRoute.encode(lastN).finish()).maxMessages, 8);
+  assert.equal(PublishedHandoffRoute.decode(PublishedHandoffRoute.encode(previous).finish()).contextPolicy, ContextPolicy.CONTEXT_POLICY_PREVIOUS_ASSISTANT_MESSAGES);
 });
 
 test("LLM audit capability and attempt lifecycle preserve nullable usage and decimal cost", () => {
