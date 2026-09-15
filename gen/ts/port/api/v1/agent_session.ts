@@ -548,6 +548,18 @@ export interface HandoffParameter {
   stringEnum: string[];
   numberEnum: number[];
   booleanEnum: boolean[];
+  /** Missing collection preserves legacy LLM-extracted handoff arguments. */
+  collection?: HandoffParameterCollection | undefined;
+}
+
+/** The runtime collects these digits before activating the edge target. */
+export interface HandoffParameterCollection {
+  input: string;
+  digits: number;
+  prompt: string;
+  /** Overall deadline, including retries and optional confirmation. */
+  timeoutSeconds: number;
+  confirm: boolean;
 }
 
 export interface TextRuntimeSnapshot {
@@ -4252,7 +4264,16 @@ export const PublishedHandoffRoute: MessageFns<PublishedHandoffRoute> = {
 };
 
 function createBaseHandoffParameter(): HandoffParameter {
-  return { name: "", type: 0, description: "", required: false, stringEnum: [], numberEnum: [], booleanEnum: [] };
+  return {
+    name: "",
+    type: 0,
+    description: "",
+    required: false,
+    stringEnum: [],
+    numberEnum: [],
+    booleanEnum: [],
+    collection: undefined,
+  };
 }
 
 export const HandoffParameter: MessageFns<HandoffParameter> = {
@@ -4277,6 +4298,9 @@ export const HandoffParameter: MessageFns<HandoffParameter> = {
     }
     for (const v of message.booleanEnum) {
       writer.uint32(56).bool(v!);
+    }
+    if (message.collection !== undefined) {
+      HandoffParameterCollection.encode(message.collection, writer.uint32(66).fork()).join();
     }
     return writer;
   },
@@ -4364,6 +4388,14 @@ export const HandoffParameter: MessageFns<HandoffParameter> = {
 
           break;
         }
+        case 8: {
+          if (tag !== 66) {
+            break;
+          }
+
+          message.collection = HandoffParameterCollection.decode(reader, reader.uint32());
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -4394,6 +4426,7 @@ export const HandoffParameter: MessageFns<HandoffParameter> = {
         : globalThis.Array.isArray(object?.boolean_enum)
         ? object.boolean_enum.map((e: any) => globalThis.Boolean(e))
         : [],
+      collection: isSet(object.collection) ? HandoffParameterCollection.fromJSON(object.collection) : undefined,
     };
   },
 
@@ -4420,6 +4453,9 @@ export const HandoffParameter: MessageFns<HandoffParameter> = {
     if (message.booleanEnum?.length) {
       obj.booleanEnum = message.booleanEnum;
     }
+    if (message.collection !== undefined) {
+      obj.collection = HandoffParameterCollection.toJSON(message.collection);
+    }
     return obj;
   },
 
@@ -4435,6 +4471,137 @@ export const HandoffParameter: MessageFns<HandoffParameter> = {
     message.stringEnum = object.stringEnum?.map((e) => e) || [];
     message.numberEnum = object.numberEnum?.map((e) => e) || [];
     message.booleanEnum = object.booleanEnum?.map((e) => e) || [];
+    message.collection = (object.collection !== undefined && object.collection !== null)
+      ? HandoffParameterCollection.fromPartial(object.collection)
+      : undefined;
+    return message;
+  },
+};
+
+function createBaseHandoffParameterCollection(): HandoffParameterCollection {
+  return { input: "", digits: 0, prompt: "", timeoutSeconds: 0, confirm: false };
+}
+
+export const HandoffParameterCollection: MessageFns<HandoffParameterCollection> = {
+  encode(message: HandoffParameterCollection, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.input !== "") {
+      writer.uint32(10).string(message.input);
+    }
+    if (message.digits !== 0) {
+      writer.uint32(16).uint32(message.digits);
+    }
+    if (message.prompt !== "") {
+      writer.uint32(26).string(message.prompt);
+    }
+    if (message.timeoutSeconds !== 0) {
+      writer.uint32(32).uint32(message.timeoutSeconds);
+    }
+    if (message.confirm !== false) {
+      writer.uint32(40).bool(message.confirm);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): HandoffParameterCollection {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseHandoffParameterCollection();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.input = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 16) {
+            break;
+          }
+
+          message.digits = reader.uint32();
+          continue;
+        }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.prompt = reader.string();
+          continue;
+        }
+        case 4: {
+          if (tag !== 32) {
+            break;
+          }
+
+          message.timeoutSeconds = reader.uint32();
+          continue;
+        }
+        case 5: {
+          if (tag !== 40) {
+            break;
+          }
+
+          message.confirm = reader.bool();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): HandoffParameterCollection {
+    return {
+      input: isSet(object.input) ? globalThis.String(object.input) : "",
+      digits: isSet(object.digits) ? globalThis.Number(object.digits) : 0,
+      prompt: isSet(object.prompt) ? globalThis.String(object.prompt) : "",
+      timeoutSeconds: isSet(object.timeoutSeconds)
+        ? globalThis.Number(object.timeoutSeconds)
+        : isSet(object.timeout_seconds)
+        ? globalThis.Number(object.timeout_seconds)
+        : 0,
+      confirm: isSet(object.confirm) ? globalThis.Boolean(object.confirm) : false,
+    };
+  },
+
+  toJSON(message: HandoffParameterCollection): unknown {
+    const obj: any = {};
+    if (message.input !== "") {
+      obj.input = message.input;
+    }
+    if (message.digits !== 0) {
+      obj.digits = Math.round(message.digits);
+    }
+    if (message.prompt !== "") {
+      obj.prompt = message.prompt;
+    }
+    if (message.timeoutSeconds !== 0) {
+      obj.timeoutSeconds = Math.round(message.timeoutSeconds);
+    }
+    if (message.confirm !== false) {
+      obj.confirm = message.confirm;
+    }
+    return obj;
+  },
+
+  create(base?: DeepPartial<HandoffParameterCollection>): HandoffParameterCollection {
+    return HandoffParameterCollection.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<HandoffParameterCollection>): HandoffParameterCollection {
+    const message = createBaseHandoffParameterCollection();
+    message.input = object.input ?? "";
+    message.digits = object.digits ?? 0;
+    message.prompt = object.prompt ?? "";
+    message.timeoutSeconds = object.timeoutSeconds ?? 0;
+    message.confirm = object.confirm ?? false;
     return message;
   },
 };

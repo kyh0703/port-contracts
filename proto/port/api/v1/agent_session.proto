@@ -312,6 +312,11 @@ enum HandoffParameterType {
 
 message HandoffParameter {
   option (buf.validate.message).cel = {
+    id: "handoff_parameter.collection_scope"
+    message: "collection requires a required string parameter without enum values"
+    expression: "!has(this.collection) || (this.type == 1 && this.required && size(this.string_enum) == 0 && size(this.number_enum) == 0 && size(this.boolean_enum) == 0)"
+  };
+  option (buf.validate.message).cel = {
     id: "handoff_parameter.enum_matches_type"
     message: "only the enum values matching type may be populated"
     expression: "(this.type == 1 && size(this.number_enum) == 0 && size(this.boolean_enum) == 0) || (this.type == 2 && size(this.string_enum) == 0 && size(this.boolean_enum) == 0) || (this.type == 3 && size(this.string_enum) == 0 && size(this.number_enum) == 0)"
@@ -327,6 +332,18 @@ message HandoffParameter {
   ];
   repeated double number_enum = 6 [(buf.validate.field).repeated.unique = true];
   repeated bool boolean_enum = 7 [(buf.validate.field).repeated.unique = true];
+  // Missing collection preserves legacy LLM-extracted handoff arguments.
+  HandoffParameterCollection collection = 8;
+}
+
+// The runtime collects these digits before activating the edge target.
+message HandoffParameterCollection {
+  string input = 1 [(buf.validate.field).string.const = "dtmf"];
+  uint32 digits = 2 [(buf.validate.field).uint32 = {gte: 1 lte: 32}];
+  string prompt = 3 [(buf.validate.field).string = {min_len: 1 max_len: 1000 pattern: "\\S"}];
+  // Overall deadline, including retries and optional confirmation.
+  uint32 timeout_seconds = 4 [(buf.validate.field).uint32 = {gte: 5 lte: 120}];
+  bool confirm = 5;
 }
 
 message TextRuntimeSnapshot {

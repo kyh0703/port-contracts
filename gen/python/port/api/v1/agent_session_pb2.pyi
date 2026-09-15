@@ -420,7 +420,7 @@ class PublishedHandoffRoute(_message.Message):
     def __init__(self, transition_id: _Optional[str] = ..., source_node_id: _Optional[str] = ..., target_node_id: _Optional[str] = ..., routing_description: _Optional[str] = ..., context_policy: _Optional[_Union[ContextPolicy, str]] = ..., announcement: _Optional[str] = ..., parameters: _Optional[_Iterable[_Union[HandoffParameter, _Mapping]]] = ..., request_start: _Optional[str] = ..., system_prompt: _Optional[str] = ..., max_messages: _Optional[int] = ...) -> None: ...
 
 class HandoffParameter(_message.Message):
-    __slots__ = ("name", "type", "description", "required", "string_enum", "number_enum", "boolean_enum")
+    __slots__ = ("name", "type", "description", "required", "string_enum", "number_enum", "boolean_enum", "collection")
     NAME_FIELD_NUMBER: _ClassVar[int]
     TYPE_FIELD_NUMBER: _ClassVar[int]
     DESCRIPTION_FIELD_NUMBER: _ClassVar[int]
@@ -428,6 +428,7 @@ class HandoffParameter(_message.Message):
     STRING_ENUM_FIELD_NUMBER: _ClassVar[int]
     NUMBER_ENUM_FIELD_NUMBER: _ClassVar[int]
     BOOLEAN_ENUM_FIELD_NUMBER: _ClassVar[int]
+    COLLECTION_FIELD_NUMBER: _ClassVar[int]
     name: str
     type: HandoffParameterType
     description: str
@@ -435,7 +436,22 @@ class HandoffParameter(_message.Message):
     string_enum: _containers.RepeatedScalarFieldContainer[str]
     number_enum: _containers.RepeatedScalarFieldContainer[float]
     boolean_enum: _containers.RepeatedScalarFieldContainer[bool]
-    def __init__(self, name: _Optional[str] = ..., type: _Optional[_Union[HandoffParameterType, str]] = ..., description: _Optional[str] = ..., required: _Optional[bool] = ..., string_enum: _Optional[_Iterable[str]] = ..., number_enum: _Optional[_Iterable[float]] = ..., boolean_enum: _Optional[_Iterable[bool]] = ...) -> None: ...
+    collection: HandoffParameterCollection
+    def __init__(self, name: _Optional[str] = ..., type: _Optional[_Union[HandoffParameterType, str]] = ..., description: _Optional[str] = ..., required: _Optional[bool] = ..., string_enum: _Optional[_Iterable[str]] = ..., number_enum: _Optional[_Iterable[float]] = ..., boolean_enum: _Optional[_Iterable[bool]] = ..., collection: _Optional[_Union[HandoffParameterCollection, _Mapping]] = ...) -> None: ...
+
+class HandoffParameterCollection(_message.Message):
+    __slots__ = ("input", "digits", "prompt", "timeout_seconds", "confirm")
+    INPUT_FIELD_NUMBER: _ClassVar[int]
+    DIGITS_FIELD_NUMBER: _ClassVar[int]
+    PROMPT_FIELD_NUMBER: _ClassVar[int]
+    TIMEOUT_SECONDS_FIELD_NUMBER: _ClassVar[int]
+    CONFIRM_FIELD_NUMBER: _ClassVar[int]
+    input: str
+    digits: int
+    prompt: str
+    timeout_seconds: int
+    confirm: bool
+    def __init__(self, input: _Optional[str] = ..., digits: _Optional[int] = ..., prompt: _Optional[str] = ..., timeout_seconds: _Optional[int] = ..., confirm: _Optional[bool] = ...) -> None: ...
 
 class TextRuntimeSnapshot(_message.Message):
     __slots__ = ("transport", "room_name", "participant_identity", "idle_timeout_seconds", "max_session_duration_seconds")

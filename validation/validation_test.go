@@ -98,8 +98,13 @@ func TestExecutionSessionServiceExposesBootstrapAndTransferControl(t *testing.T)
 		t.Fatal(err)
 	}
 	service := descriptor.(protoreflect.ServiceDescriptor)
-	if service.Methods().Len() != 2 {
-		t.Fatalf("ExecutionSessionService method count = %d, want 2", service.Methods().Len())
+	if service.Methods().Len() != 4 {
+		t.Fatalf("ExecutionSessionService method count = %d, want 4", service.Methods().Len())
+	}
+	for _, name := range []protoreflect.Name{"CommandSipTransfer", "RecordLlmRequestStarted", "RecordLlmRequestTerminal"} {
+		if service.Methods().ByName(name) == nil {
+			t.Fatalf("execution service method %s is missing", name)
+		}
 	}
 	method := service.Methods().ByName("BootstrapPublished")
 	if method == nil {
@@ -418,14 +423,14 @@ func TestPublishedAgentValidation(t *testing.T) {
 func TestPublishedAgentPromptConfigSnapshotValidation(t *testing.T) {
 	valid := validHandoffTextResponse()
 	valid.GetAgent().PromptConfig = &apiv1.AgentPromptConfigSnapshot{
-		Revision:           4,
-		SystemGuardrail:    "Guard",
-		CrewSystemContext:  "Crew",
-		HandoffContext:     "Forward",
-		SupervisorContext:  "Delegate",
-		SpecialistContext:  "Return a summary",
-		VoiceRules:         "Speak clearly",
-		DtmfRules:          "Read keypad input literally",
+		Revision:          4,
+		SystemGuardrail:   "Guard",
+		CrewSystemContext: "Crew",
+		HandoffContext:    "Forward",
+		SupervisorContext: "Delegate",
+		SpecialistContext: "Return a summary",
+		VoiceRules:        "Speak clearly",
+		DtmfRules:         "Read keypad input literally",
 	}
 	if err := Validate(valid); err != nil {
 		t.Fatalf("Validate(valid prompt config snapshot) = %v", err)
