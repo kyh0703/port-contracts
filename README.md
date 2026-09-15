@@ -35,7 +35,9 @@ import { ApiEventServiceClient } from '@overthinker1127/port-contracts/gen/ts/po
 and transfer control contract. `ExecutionSessionService.BootstrapPublished`
 admits either a one-time browser ticket or a verified SIP LiveKit job and returns one exact Agent
 supervisor or handoff runtime. The required revision is
-`execution-publication-2026-09-04-r1`; the response carries bounded typed
+`execution-publication-2026-09-15-r2` for keypad collection. The wire also recognizes
+legacy `execution-publication-2026-09-04-r1`; services enforce the negotiated
+revision so older workers cannot silently skip collection. The response carries bounded typed
 system and per-call user prompt variables, and handoff routes carry typed
 parameters, `none | conversation | recent` context policy, and one blocking
 `request_start` message. Older Agent bootstrap services and revision fallbacks

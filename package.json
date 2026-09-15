@@ -1,6 +1,6 @@
 {
   "name": "@overthinker1127/port-contracts",
-  "version": "7.11.0",
+  "version": "7.12.0",
   "description": "Shared protobuf contracts for port services.",
   "private": false,
   "license": "UNLICENSED",

@@ -9,13 +9,13 @@ function read(relativePath) {
   return readFileSync(path.join(root, relativePath), "utf8");
 }
 
-test("npm release metadata is pinned to 7.11.0", () => {
+test("npm release metadata is pinned to 7.12.0", () => {
   const packageJson = JSON.parse(read("package.json"));
   const packageLock = JSON.parse(read("package-lock.json"));
 
-  assert.equal(packageJson.version, "7.11.0");
-  assert.equal(packageLock.version, "7.11.0");
-  assert.equal(packageLock.packages[""].version, "7.11.0");
+  assert.equal(packageJson.version, "7.12.0");
+  assert.equal(packageLock.version, "7.12.0");
+  assert.equal(packageLock.packages[""].version, "7.12.0");
 });
 
 test("legacy Node module resolution maps generated TypeScript subpaths", () => {
@@ -53,7 +53,7 @@ test("publication revision includes the session prompt variable bag", () => {
   assert.match(readme, /execution-publication-2026-09-04-r1/);
   assert.doesNotMatch(readme, /execution-publication-2026-08-26-r1/);
   const publicationRevisionMatches = agentSession.match(
-    /\(buf\.validate\.field\)\.string\.const = "execution-publication-2026-09-04-r1"/g,
+    /\(buf\.validate\.field\)\.string = \{in: \["execution-publication-2026-09-04-r1", "execution-publication-2026-09-15-r2"\]\}/g,
   );
   assert.equal(publicationRevisionMatches?.length, 2);
   assert.match(agentSession, /SessionPromptVariableBag prompt_variables = 6/);

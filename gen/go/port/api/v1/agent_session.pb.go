@@ -4748,7 +4748,7 @@ const file_port_api_v1_agent_session_proto_rawDesc = "" +
 	"\fcall_id_full\x18\a \x01(\tB\a\xbaH\x04r\x02\x10\x01R\n" +
 	"callIdFull\x12/\n" +
 	"\fphone_number\x18\b \x01(\tB\a\xbaH\x04r\x02\x10\x01H\x00R\vphoneNumber\x88\x01\x01B\x0f\n" +
-	"\r_phone_number\"\x92\x03\n" +
+	"\r_phone_number\"\xb7\x03\n" +
 	"\x19BootstrapPublishedRequest\x12C\n" +
 	"\tadmission\x18\x01 \x01(\v2\x1d.port.api.v1.BootstrapRequestB\x06\xbaH\x03\xc8\x01\x01R\tadmission\x123\n" +
 	"\x0fconversation_id\x18\x02 \x01(\tB\n" +
@@ -4757,15 +4757,13 @@ const file_port_api_v1_agent_session_proto_rawDesc = "" +
 	"session_id\x18\x03 \x01(\tB\n" +
 	"\xbaH\a\xc8\x01\x01r\x02\x10\x01R\tsessionId\x12-\n" +
 	"\fpublished_id\x18\x04 \x01(\tB\n" +
-	"\xbaH\a\xc8\x01\x01r\x02\x10\x01R\vpublishedId\x12Z\n" +
-	"\x11contract_revision\x18\x05 \x01(\tB-\xbaH*\xc8\x01\x01r%\n" +
-	"#execution-publication-2026-09-04-r1R\x10contractRevision\x123\n" +
+	"\xbaH\a\xc8\x01\x01r\x02\x10\x01R\vpublishedId\x12\x7f\n" +
+	"\x11contract_revision\x18\x05 \x01(\tBR\xbaHO\xc8\x01\x01rJR#execution-publication-2026-09-04-r1R#execution-publication-2026-09-15-r2R\x10contractRevision\x123\n" +
 	"\rworker_job_id\x18\x06 \x01(\tB\n" +
 	"\xbaH\ar\x05\x10\x01\x18\x80\x02H\x00R\vworkerJobId\x88\x01\x01B\x10\n" +
-	"\x0e_worker_job_id\"\xd2\a\n" +
-	"\x1aBootstrapPublishedResponse\x12Z\n" +
-	"\x11contract_revision\x18\x01 \x01(\tB-\xbaH*\xc8\x01\x01r%\n" +
-	"#execution-publication-2026-09-04-r1R\x10contractRevision\x123\n" +
+	"\x0e_worker_job_id\"\xf7\a\n" +
+	"\x1aBootstrapPublishedResponse\x12\x7f\n" +
+	"\x11contract_revision\x18\x01 \x01(\tBR\xbaHO\xc8\x01\x01rJR#execution-publication-2026-09-04-r1R#execution-publication-2026-09-15-r2R\x10contractRevision\x123\n" +
 	"\x0fconversation_id\x18\x02 \x01(\tB\n" +
 	"\xbaH\a\xc8\x01\x01r\x02\x10\x01R\x0econversationId\x12)\n" +
 	"\n" +

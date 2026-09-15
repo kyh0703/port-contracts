@@ -42,7 +42,7 @@ message BootstrapPublishedRequest {
   string published_id = 4 [(buf.validate.field).required = true, (buf.validate.field).string.min_len = 1];
   string contract_revision = 5 [
     (buf.validate.field).required = true,
-    (buf.validate.field).string.const = "execution-publication-2026-09-04-r1"
+    (buf.validate.field).string = {in: ["execution-publication-2026-09-04-r1", "execution-publication-2026-09-15-r2"]}
   ];
   // Optional LiveKit worker job correlation for browser/text sessions. It is
   // metadata only; admission remains bound to the ticket/session capability.
@@ -62,7 +62,7 @@ message BootstrapPublishedResponse {
 
   string contract_revision = 1 [
     (buf.validate.field).required = true,
-    (buf.validate.field).string.const = "execution-publication-2026-09-04-r1"
+    (buf.validate.field).string = {in: ["execution-publication-2026-09-04-r1", "execution-publication-2026-09-15-r2"]}
   ];
   string conversation_id = 2 [(buf.validate.field).required = true, (buf.validate.field).string.min_len = 1];
   string session_id = 3 [(buf.validate.field).required = true, (buf.validate.field).string.min_len = 1];

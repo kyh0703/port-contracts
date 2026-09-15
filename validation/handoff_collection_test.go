@@ -54,3 +54,20 @@ func TestHandoffCollectionValidation(t *testing.T) {
 		t.Fatalf("legacy parameter rejected: %v", err)
 	}
 }
+
+func TestCollectionRevisionR2OnBootstrap(t *testing.T) {
+	request := validPublishedRequest()
+	request.ContractRevision = "execution-publication-2026-09-15-r2"
+	if err := Validate(request); err != nil {
+		t.Fatalf("r2 request rejected: %v", err)
+	}
+	response := validAgentTextResponse()
+	response.ContractRevision = "execution-publication-2026-09-15-r2"
+	if err := Validate(response); err != nil {
+		t.Fatalf("r2 response rejected: %v", err)
+	}
+	request.ContractRevision = "unknown-revision"
+	if Validate(request) == nil {
+		t.Fatal("unknown revision accepted")
+	}
+}
