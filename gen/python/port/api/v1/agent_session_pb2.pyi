@@ -162,7 +162,7 @@ class LlmAuditCapability(_message.Message):
     def __init__(self, execution_id: _Optional[str] = ..., token: _Optional[str] = ..., expires_at: _Optional[str] = ...) -> None: ...
 
 class LlmAuditRequestContext(_message.Message):
-    __slots__ = ("capability", "request_attempt_id", "logical_request_id", "attempt_sequence", "node_id", "agent_runtime_id", "task_run_id", "role", "requested_model")
+    __slots__ = ("capability", "request_attempt_id", "logical_request_id", "attempt_sequence", "node_id", "agent_runtime_id", "task_run_id", "role", "requested_model", "provider")
     CAPABILITY_FIELD_NUMBER: _ClassVar[int]
     REQUEST_ATTEMPT_ID_FIELD_NUMBER: _ClassVar[int]
     LOGICAL_REQUEST_ID_FIELD_NUMBER: _ClassVar[int]
@@ -172,6 +172,7 @@ class LlmAuditRequestContext(_message.Message):
     TASK_RUN_ID_FIELD_NUMBER: _ClassVar[int]
     ROLE_FIELD_NUMBER: _ClassVar[int]
     REQUESTED_MODEL_FIELD_NUMBER: _ClassVar[int]
+    PROVIDER_FIELD_NUMBER: _ClassVar[int]
     capability: str
     request_attempt_id: str
     logical_request_id: str
@@ -181,7 +182,8 @@ class LlmAuditRequestContext(_message.Message):
     task_run_id: str
     role: str
     requested_model: str
-    def __init__(self, capability: _Optional[str] = ..., request_attempt_id: _Optional[str] = ..., logical_request_id: _Optional[str] = ..., attempt_sequence: _Optional[int] = ..., node_id: _Optional[str] = ..., agent_runtime_id: _Optional[str] = ..., task_run_id: _Optional[str] = ..., role: _Optional[str] = ..., requested_model: _Optional[str] = ...) -> None: ...
+    provider: str
+    def __init__(self, capability: _Optional[str] = ..., request_attempt_id: _Optional[str] = ..., logical_request_id: _Optional[str] = ..., attempt_sequence: _Optional[int] = ..., node_id: _Optional[str] = ..., agent_runtime_id: _Optional[str] = ..., task_run_id: _Optional[str] = ..., role: _Optional[str] = ..., requested_model: _Optional[str] = ..., provider: _Optional[str] = ...) -> None: ...
 
 class RecordLlmRequestStartedRequest(_message.Message):
     __slots__ = ("request",)

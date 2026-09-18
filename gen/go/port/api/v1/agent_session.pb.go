@@ -838,8 +838,10 @@ type LlmAuditRequestContext struct {
 	TaskRunId        *string                `protobuf:"bytes,7,opt,name=task_run_id,json=taskRunId,proto3,oneof" json:"task_run_id,omitempty"`
 	Role             string                 `protobuf:"bytes,8,opt,name=role,proto3" json:"role,omitempty"`
 	RequestedModel   string                 `protobuf:"bytes,9,opt,name=requested_model,json=requestedModel,proto3" json:"requested_model,omitempty"`
-	unknownFields    protoimpl.UnknownFields
-	sizeCache        protoimpl.SizeCache
+	// Kept separate from the model so historical costs cannot change after rerouting.
+	Provider      *string `protobuf:"bytes,10,opt,name=provider,proto3,oneof" json:"provider,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
 }
 
 func (x *LlmAuditRequestContext) Reset() {
@@ -931,6 +933,13 @@ func (x *LlmAuditRequestContext) GetRole() string {
 func (x *LlmAuditRequestContext) GetRequestedModel() string {
 	if x != nil {
 		return x.RequestedModel
+	}
+	return ""
+}
+
+func (x *LlmAuditRequestContext) GetProvider() string {
+	if x != nil && x.Provider != nil {
+		return *x.Provider
 	}
 	return ""
 }
@@ -4860,7 +4869,7 @@ const file_port_api_v1_agent_session_proto_rawDesc = "" +
 	"\x05token\x18\x02 \x01(\tB\n" +
 	"\xbaH\ar\x05\x10 \x18\x80\x04R\x05token\x12(\n" +
 	"\n" +
-	"expires_at\x18\x03 \x01(\tB\t\xbaH\x06r\x04\x10\x01\x18@R\texpiresAt\"\xfa\x03\n" +
+	"expires_at\x18\x03 \x01(\tB\t\xbaH\x06r\x04\x10\x01\x18@R\texpiresAt\"\xc3\x04\n" +
 	"\x16LlmAuditRequestContext\x12*\n" +
 	"\n" +
 	"capability\x18\x01 \x01(\tB\n" +
@@ -4879,8 +4888,12 @@ const file_port_api_v1_agent_session_proto_rawDesc = "" +
 	"\xbaH\ar\x05\x10\x01\x18\x80\x02H\x00R\ttaskRunId\x88\x01\x01\x129\n" +
 	"\x04role\x18\b \x01(\tB%\xbaH\"r R\x06masterR\x06workerR\ahandoffR\x05agentR\x04role\x123\n" +
 	"\x0frequested_model\x18\t \x01(\tB\n" +
-	"\xbaH\ar\x05\x10\x01\x18\x80\x04R\x0erequestedModelB\x0e\n" +
-	"\f_task_run_id\"g\n" +
+	"\xbaH\ar\x05\x10\x01\x18\x80\x04R\x0erequestedModel\x12:\n" +
+	"\bprovider\x18\n" +
+	" \x01(\tB\x19\xbaH\x16r\x14R\x06openaiR\n" +
+	"openrouterH\x01R\bprovider\x88\x01\x01B\x0e\n" +
+	"\f_task_run_idB\v\n" +
+	"\t_provider\"g\n" +
 	"\x1eRecordLlmRequestStartedRequest\x12E\n" +
 	"\arequest\x18\x01 \x01(\v2#.port.api.v1.LlmAuditRequestContextB\x06\xbaH\x03\xc8\x01\x01R\arequest\"w\n" +
 	"\x1fRecordLlmRequestStartedResponse\x128\n" +

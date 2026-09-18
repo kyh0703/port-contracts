@@ -34,6 +34,8 @@ message SttRuntime {
 message LlmRuntime {
   string api_key = 1 [(buf.validate.field).string.min_len = 1];
   string model = 2 [(buf.validate.field).string.min_len = 1];
+  // API-pinned connection identity. Absence preserves legacy OpenRouter routing.
+  optional string provider = 3 [(buf.validate.field).string = {in: ["openai", "openrouter"]}];
 }
 
 message TtsRuntime {

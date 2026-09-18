@@ -45,6 +45,8 @@ export interface SttRuntime {
 export interface LlmRuntime {
   apiKey: string;
   model: string;
+  /** API-pinned connection identity. Absence preserves legacy OpenRouter routing. */
+  provider?: string | undefined;
 }
 
 export interface TtsRuntime {
@@ -396,7 +398,7 @@ export const SttRuntime: MessageFns<SttRuntime> = {
 };
 
 function createBaseLlmRuntime(): LlmRuntime {
-  return { apiKey: "", model: "" };
+  return { apiKey: "", model: "", provider: undefined };
 }
 
 export const LlmRuntime: MessageFns<LlmRuntime> = {
@@ -406,6 +408,9 @@ export const LlmRuntime: MessageFns<LlmRuntime> = {
     }
     if (message.model !== "") {
       writer.uint32(18).string(message.model);
+    }
+    if (message.provider !== undefined) {
+      writer.uint32(26).string(message.provider);
     }
     return writer;
   },
@@ -433,6 +438,14 @@ export const LlmRuntime: MessageFns<LlmRuntime> = {
           message.model = reader.string();
           continue;
         }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.provider = reader.string();
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -450,6 +463,7 @@ export const LlmRuntime: MessageFns<LlmRuntime> = {
         ? globalThis.String(object.api_key)
         : "",
       model: isSet(object.model) ? globalThis.String(object.model) : "",
+      provider: isSet(object.provider) ? globalThis.String(object.provider) : undefined,
     };
   },
 
@@ -461,6 +475,9 @@ export const LlmRuntime: MessageFns<LlmRuntime> = {
     if (message.model !== "") {
       obj.model = message.model;
     }
+    if (message.provider !== undefined) {
+      obj.provider = message.provider;
+    }
     return obj;
   },
 
@@ -471,6 +488,7 @@ export const LlmRuntime: MessageFns<LlmRuntime> = {
     const message = createBaseLlmRuntime();
     message.apiKey = object.apiKey ?? "";
     message.model = object.model ?? "";
+    message.provider = object.provider ?? undefined;
     return message;
   },
 };

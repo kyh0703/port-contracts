@@ -227,9 +227,11 @@ func (x *SttRuntime) GetMultilingual() bool {
 }
 
 type LlmRuntime struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	ApiKey        string                 `protobuf:"bytes,1,opt,name=api_key,json=apiKey,proto3" json:"api_key,omitempty"`
-	Model         string                 `protobuf:"bytes,2,opt,name=model,proto3" json:"model,omitempty"`
+	state  protoimpl.MessageState `protogen:"open.v1"`
+	ApiKey string                 `protobuf:"bytes,1,opt,name=api_key,json=apiKey,proto3" json:"api_key,omitempty"`
+	Model  string                 `protobuf:"bytes,2,opt,name=model,proto3" json:"model,omitempty"`
+	// API-pinned connection identity. Absence preserves legacy OpenRouter routing.
+	Provider      *string `protobuf:"bytes,3,opt,name=provider,proto3,oneof" json:"provider,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -274,6 +276,13 @@ func (x *LlmRuntime) GetApiKey() string {
 func (x *LlmRuntime) GetModel() string {
 	if x != nil {
 		return x.Model
+	}
+	return ""
+}
+
+func (x *LlmRuntime) GetProvider() string {
+	if x != nil && x.Provider != nil {
+		return *x.Provider
 	}
 	return ""
 }
@@ -377,11 +386,14 @@ const file_port_api_v1_voice_runtime_proto_rawDesc = "" +
 	"\bprovider\x18\x05 \x01(\tB\x1c\xbaH\x19r\x17R\bdeepgramR\x06sonioxR\x03xaiH\x00R\bprovider\x88\x01\x01\x12'\n" +
 	"\fmultilingual\x18\x06 \x01(\bH\x01R\fmultilingual\x88\x01\x01B\v\n" +
 	"\t_providerB\x0f\n" +
-	"\r_multilingual\"M\n" +
+	"\r_multilingual\"\x96\x01\n" +
 	"\n" +
 	"LlmRuntime\x12 \n" +
 	"\aapi_key\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x06apiKey\x12\x1d\n" +
-	"\x05model\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x05model\"\xee\x01\n" +
+	"\x05model\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x05model\x12:\n" +
+	"\bprovider\x18\x03 \x01(\tB\x19\xbaH\x16r\x14R\x06openaiR\n" +
+	"openrouterH\x00R\bprovider\x88\x01\x01B\v\n" +
+	"\t_provider\"\xee\x01\n" +
 	"\n" +
 	"TtsRuntime\x12 \n" +
 	"\aapi_key\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x06apiKey\x12\x1d\n" +
@@ -433,6 +445,7 @@ func file_port_api_v1_voice_runtime_proto_init() {
 		return
 	}
 	file_port_api_v1_voice_runtime_proto_msgTypes[2].OneofWrappers = []any{}
+	file_port_api_v1_voice_runtime_proto_msgTypes[3].OneofWrappers = []any{}
 	file_port_api_v1_voice_runtime_proto_msgTypes[4].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{

@@ -44,12 +44,14 @@ class SttRuntime(_message.Message):
     def __init__(self, api_key: _Optional[str] = ..., model: _Optional[str] = ..., language: _Optional[str] = ..., keyterms: _Optional[_Iterable[str]] = ..., provider: _Optional[str] = ..., multilingual: _Optional[bool] = ...) -> None: ...
 
 class LlmRuntime(_message.Message):
-    __slots__ = ("api_key", "model")
+    __slots__ = ("api_key", "model", "provider")
     API_KEY_FIELD_NUMBER: _ClassVar[int]
     MODEL_FIELD_NUMBER: _ClassVar[int]
+    PROVIDER_FIELD_NUMBER: _ClassVar[int]
     api_key: str
     model: str
-    def __init__(self, api_key: _Optional[str] = ..., model: _Optional[str] = ...) -> None: ...
+    provider: str
+    def __init__(self, api_key: _Optional[str] = ..., model: _Optional[str] = ..., provider: _Optional[str] = ...) -> None: ...
 
 class TtsRuntime(_message.Message):
     __slots__ = ("api_key", "model", "language", "voice_id", "provider")

@@ -25,7 +25,7 @@ _sym_db = _symbol_database.Default()
 from buf.validate import validate_pb2 as buf_dot_validate_dot_validate__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x1fport/api/v1/voice_runtime.proto\x12\x0bport.api.v1\x1a\x1b\x62uf/validate/validate.proto\"\x93\x01\n\x13ResolveLeaseRequest\x12\"\n\x08lease_id\x18\x01 \x01(\tB\x07\xbaH\x04r\x02\x10\x01R\x07leaseId\x12\x30\n\x0f\x63onversation_id\x18\x02 \x01(\tB\x07\xbaH\x04r\x02\x10\x01R\x0e\x63onversationId\x12&\n\nsession_id\x18\x03 \x01(\tB\x07\xbaH\x04r\x02\x10\x01R\tsessionId\"\xaf\x01\n\x14ResolveLeaseResponse\x12\x31\n\x03stt\x18\x01 \x01(\x0b\x32\x17.port.api.v1.SttRuntimeB\x06\xbaH\x03\xc8\x01\x01R\x03stt\x12\x31\n\x03llm\x18\x02 \x01(\x0b\x32\x17.port.api.v1.LlmRuntimeB\x06\xbaH\x03\xc8\x01\x01R\x03llm\x12\x31\n\x03tts\x18\x03 \x01(\x0b\x32\x17.port.api.v1.TtsRuntimeB\x06\xbaH\x03\xc8\x01\x01R\x03tts\"\xa2\x02\n\nSttRuntime\x12 \n\x07\x61pi_key\x18\x01 \x01(\tB\x07\xbaH\x04r\x02\x10\x01R\x06\x61piKey\x12\x1d\n\x05model\x18\x02 \x01(\tB\x07\xbaH\x04r\x02\x10\x01R\x05model\x12#\n\x08language\x18\x03 \x01(\tB\x07\xbaH\x04r\x02\x10\x01R\x08language\x12(\n\x08keyterms\x18\x04 \x03(\tB\x0c\xbaH\t\x92\x01\x06\"\x04r\x02\x10\x01R\x08keyterms\x12=\n\x08provider\x18\x05 \x01(\tB\x1c\xbaH\x19r\x17R\x08\x64\x65\x65pgramR\x06sonioxR\x03xaiH\x00R\x08provider\x88\x01\x01\x12\'\n\x0cmultilingual\x18\x06 \x01(\x08H\x01R\x0cmultilingual\x88\x01\x01\x42\x0b\n\t_providerB\x0f\n\r_multilingual\"M\n\nLlmRuntime\x12 \n\x07\x61pi_key\x18\x01 \x01(\tB\x07\xbaH\x04r\x02\x10\x01R\x06\x61piKey\x12\x1d\n\x05model\x18\x02 \x01(\tB\x07\xbaH\x04r\x02\x10\x01R\x05model\"\xee\x01\n\nTtsRuntime\x12 \n\x07\x61pi_key\x18\x01 \x01(\tB\x07\xbaH\x04r\x02\x10\x01R\x06\x61piKey\x12\x1d\n\x05model\x18\x02 \x01(\tB\x07\xbaH\x04r\x02\x10\x01R\x05model\x12#\n\x08language\x18\x03 \x01(\tB\x07\xbaH\x04r\x02\x10\x01R\x08language\x12\"\n\x08voice_id\x18\x04 \x01(\tB\x07\xbaH\x04r\x02\x10\x01R\x07voiceId\x12I\n\x08provider\x18\x05 \x01(\tB(\xbaH%r#R\x08\x63\x61rtesiaR\nelevenlabsR\x06sonioxR\x03xaiH\x00R\x08provider\x88\x01\x01\x42\x0b\n\t_provider2j\n\x13VoiceRuntimeService\x12S\n\x0cResolveLease\x12 .port.api.v1.ResolveLeaseRequest\x1a!.port.api.v1.ResolveLeaseResponseB?Z=github.com/kyh0703/port-contracts/v4/gen/go/port/api/v1;apiv1b\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x1fport/api/v1/voice_runtime.proto\x12\x0bport.api.v1\x1a\x1b\x62uf/validate/validate.proto\"\x93\x01\n\x13ResolveLeaseRequest\x12\"\n\x08lease_id\x18\x01 \x01(\tB\x07\xbaH\x04r\x02\x10\x01R\x07leaseId\x12\x30\n\x0f\x63onversation_id\x18\x02 \x01(\tB\x07\xbaH\x04r\x02\x10\x01R\x0e\x63onversationId\x12&\n\nsession_id\x18\x03 \x01(\tB\x07\xbaH\x04r\x02\x10\x01R\tsessionId\"\xaf\x01\n\x14ResolveLeaseResponse\x12\x31\n\x03stt\x18\x01 \x01(\x0b\x32\x17.port.api.v1.SttRuntimeB\x06\xbaH\x03\xc8\x01\x01R\x03stt\x12\x31\n\x03llm\x18\x02 \x01(\x0b\x32\x17.port.api.v1.LlmRuntimeB\x06\xbaH\x03\xc8\x01\x01R\x03llm\x12\x31\n\x03tts\x18\x03 \x01(\x0b\x32\x17.port.api.v1.TtsRuntimeB\x06\xbaH\x03\xc8\x01\x01R\x03tts\"\xa2\x02\n\nSttRuntime\x12 \n\x07\x61pi_key\x18\x01 \x01(\tB\x07\xbaH\x04r\x02\x10\x01R\x06\x61piKey\x12\x1d\n\x05model\x18\x02 \x01(\tB\x07\xbaH\x04r\x02\x10\x01R\x05model\x12#\n\x08language\x18\x03 \x01(\tB\x07\xbaH\x04r\x02\x10\x01R\x08language\x12(\n\x08keyterms\x18\x04 \x03(\tB\x0c\xbaH\t\x92\x01\x06\"\x04r\x02\x10\x01R\x08keyterms\x12=\n\x08provider\x18\x05 \x01(\tB\x1c\xbaH\x19r\x17R\x08\x64\x65\x65pgramR\x06sonioxR\x03xaiH\x00R\x08provider\x88\x01\x01\x12\'\n\x0cmultilingual\x18\x06 \x01(\x08H\x01R\x0cmultilingual\x88\x01\x01\x42\x0b\n\t_providerB\x0f\n\r_multilingual\"\x96\x01\n\nLlmRuntime\x12 \n\x07\x61pi_key\x18\x01 \x01(\tB\x07\xbaH\x04r\x02\x10\x01R\x06\x61piKey\x12\x1d\n\x05model\x18\x02 \x01(\tB\x07\xbaH\x04r\x02\x10\x01R\x05model\x12:\n\x08provider\x18\x03 \x01(\tB\x19\xbaH\x16r\x14R\x06openaiR\nopenrouterH\x00R\x08provider\x88\x01\x01\x42\x0b\n\t_provider\"\xee\x01\n\nTtsRuntime\x12 \n\x07\x61pi_key\x18\x01 \x01(\tB\x07\xbaH\x04r\x02\x10\x01R\x06\x61piKey\x12\x1d\n\x05model\x18\x02 \x01(\tB\x07\xbaH\x04r\x02\x10\x01R\x05model\x12#\n\x08language\x18\x03 \x01(\tB\x07\xbaH\x04r\x02\x10\x01R\x08language\x12\"\n\x08voice_id\x18\x04 \x01(\tB\x07\xbaH\x04r\x02\x10\x01R\x07voiceId\x12I\n\x08provider\x18\x05 \x01(\tB(\xbaH%r#R\x08\x63\x61rtesiaR\nelevenlabsR\x06sonioxR\x03xaiH\x00R\x08provider\x88\x01\x01\x42\x0b\n\t_provider2j\n\x13VoiceRuntimeService\x12S\n\x0cResolveLease\x12 .port.api.v1.ResolveLeaseRequest\x1a!.port.api.v1.ResolveLeaseResponseB?Z=github.com/kyh0703/port-contracts/v4/gen/go/port/api/v1;apiv1b\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -59,6 +59,8 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_LLMRUNTIME'].fields_by_name['api_key']._serialized_options = b'\272H\004r\002\020\001'
   _globals['_LLMRUNTIME'].fields_by_name['model']._loaded_options = None
   _globals['_LLMRUNTIME'].fields_by_name['model']._serialized_options = b'\272H\004r\002\020\001'
+  _globals['_LLMRUNTIME'].fields_by_name['provider']._loaded_options = None
+  _globals['_LLMRUNTIME'].fields_by_name['provider']._serialized_options = b'\272H\026r\024R\006openaiR\nopenrouter'
   _globals['_TTSRUNTIME'].fields_by_name['api_key']._loaded_options = None
   _globals['_TTSRUNTIME'].fields_by_name['api_key']._serialized_options = b'\272H\004r\002\020\001'
   _globals['_TTSRUNTIME'].fields_by_name['model']._loaded_options = None
@@ -75,10 +77,10 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_RESOLVELEASERESPONSE']._serialized_end=403
   _globals['_STTRUNTIME']._serialized_start=406
   _globals['_STTRUNTIME']._serialized_end=696
-  _globals['_LLMRUNTIME']._serialized_start=698
-  _globals['_LLMRUNTIME']._serialized_end=775
-  _globals['_TTSRUNTIME']._serialized_start=778
-  _globals['_TTSRUNTIME']._serialized_end=1016
-  _globals['_VOICERUNTIMESERVICE']._serialized_start=1018
-  _globals['_VOICERUNTIMESERVICE']._serialized_end=1124
+  _globals['_LLMRUNTIME']._serialized_start=699
+  _globals['_LLMRUNTIME']._serialized_end=849
+  _globals['_TTSRUNTIME']._serialized_start=852
+  _globals['_TTSRUNTIME']._serialized_end=1090
+  _globals['_VOICERUNTIMESERVICE']._serialized_start=1092
+  _globals['_VOICERUNTIMESERVICE']._serialized_end=1198
 # @@protoc_insertion_point(module_scope)

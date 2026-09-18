@@ -387,6 +387,8 @@ export interface LlmAuditRequestContext {
   taskRunId?: string | undefined;
   role: string;
   requestedModel: string;
+  /** Kept separate from the model so historical costs cannot change after rerouting. */
+  provider?: string | undefined;
 }
 
 export interface RecordLlmRequestStartedRequest {
@@ -1654,6 +1656,7 @@ function createBaseLlmAuditRequestContext(): LlmAuditRequestContext {
     taskRunId: undefined,
     role: "",
     requestedModel: "",
+    provider: undefined,
   };
 }
 
@@ -1685,6 +1688,9 @@ export const LlmAuditRequestContext: MessageFns<LlmAuditRequestContext> = {
     }
     if (message.requestedModel !== "") {
       writer.uint32(74).string(message.requestedModel);
+    }
+    if (message.provider !== undefined) {
+      writer.uint32(82).string(message.provider);
     }
     return writer;
   },
@@ -1768,6 +1774,14 @@ export const LlmAuditRequestContext: MessageFns<LlmAuditRequestContext> = {
           message.requestedModel = reader.string();
           continue;
         }
+        case 10: {
+          if (tag !== 82) {
+            break;
+          }
+
+          message.provider = reader.string();
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -1816,6 +1830,7 @@ export const LlmAuditRequestContext: MessageFns<LlmAuditRequestContext> = {
         : isSet(object.requested_model)
         ? globalThis.String(object.requested_model)
         : "",
+      provider: isSet(object.provider) ? globalThis.String(object.provider) : undefined,
     };
   },
 
@@ -1848,6 +1863,9 @@ export const LlmAuditRequestContext: MessageFns<LlmAuditRequestContext> = {
     if (message.requestedModel !== "") {
       obj.requestedModel = message.requestedModel;
     }
+    if (message.provider !== undefined) {
+      obj.provider = message.provider;
+    }
     return obj;
   },
 
@@ -1865,6 +1883,7 @@ export const LlmAuditRequestContext: MessageFns<LlmAuditRequestContext> = {
     message.taskRunId = object.taskRunId ?? undefined;
     message.role = object.role ?? "";
     message.requestedModel = object.requestedModel ?? "";
+    message.provider = object.provider ?? undefined;
     return message;
   },
 };

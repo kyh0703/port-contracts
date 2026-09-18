@@ -103,6 +103,8 @@ message LlmAuditRequestContext {
   optional string task_run_id = 7 [(buf.validate.field).string = {min_len: 1 max_len: 256}];
   string role = 8 [(buf.validate.field).string = {in: ["master", "worker", "handoff", "agent"]}];
   string requested_model = 9 [(buf.validate.field).string = {min_len: 1 max_len: 512}];
+  // Kept separate from the model so historical costs cannot change after rerouting.
+  optional string provider = 10 [(buf.validate.field).string = {in: ["openai", "openrouter"]}];
 }
 
 message RecordLlmRequestStartedRequest {
