@@ -538,6 +538,7 @@ export interface PublishedHandoffRoute {
   requestStart: string;
   systemPrompt?: string | undefined;
   maxMessages?: number | undefined;
+  toolMessages?: ToolMessages | undefined;
 }
 
 export interface HandoffParameter {
@@ -654,6 +655,7 @@ export interface NodeToolMetadata {
   api?: ApiToolMetadata | undefined;
   a2a?: A2aToolMetadata | undefined;
   knowledge?: KnowledgeToolMetadata | undefined;
+  messages?: ToolMessages | undefined;
 }
 
 export interface McpToolMetadata {
@@ -668,6 +670,11 @@ export interface ApiToolMetadata {
   requestSchemaJson: string;
   responseSchemaJson: string;
   messages: ApiToolMessage[];
+}
+
+/** Shared by all tool types; ApiToolMessage retains its original wire identity. */
+export interface ToolMessages {
+  items: ApiToolMessage[];
 }
 
 export interface ApiToolMessage {
@@ -712,6 +719,7 @@ export interface KnowledgeToolRuntime {
 }
 
 export interface BuiltInTool {
+  messages?: ToolMessages | undefined;
   endCall?: EndCallTool | undefined;
   transferToHuman?: TransferToHumanTool | undefined;
   dtmf?: DtmfTool | undefined;
@@ -4026,6 +4034,7 @@ function createBasePublishedHandoffRoute(): PublishedHandoffRoute {
     requestStart: "",
     systemPrompt: undefined,
     maxMessages: undefined,
+    toolMessages: undefined,
   };
 }
 
@@ -4060,6 +4069,9 @@ export const PublishedHandoffRoute: MessageFns<PublishedHandoffRoute> = {
     }
     if (message.maxMessages !== undefined) {
       writer.uint32(80).uint32(message.maxMessages);
+    }
+    if (message.toolMessages !== undefined) {
+      ToolMessages.encode(message.toolMessages, writer.uint32(90).fork()).join();
     }
     return writer;
   },
@@ -4151,6 +4163,14 @@ export const PublishedHandoffRoute: MessageFns<PublishedHandoffRoute> = {
           message.maxMessages = reader.uint32();
           continue;
         }
+        case 11: {
+          if (tag !== 90) {
+            break;
+          }
+
+          message.toolMessages = ToolMessages.decode(reader, reader.uint32());
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -4206,6 +4226,11 @@ export const PublishedHandoffRoute: MessageFns<PublishedHandoffRoute> = {
         : isSet(object.max_messages)
         ? globalThis.Number(object.max_messages)
         : undefined,
+      toolMessages: isSet(object.toolMessages)
+        ? ToolMessages.fromJSON(object.toolMessages)
+        : isSet(object.tool_messages)
+        ? ToolMessages.fromJSON(object.tool_messages)
+        : undefined,
     };
   },
 
@@ -4241,6 +4266,9 @@ export const PublishedHandoffRoute: MessageFns<PublishedHandoffRoute> = {
     if (message.maxMessages !== undefined) {
       obj.maxMessages = Math.round(message.maxMessages);
     }
+    if (message.toolMessages !== undefined) {
+      obj.toolMessages = ToolMessages.toJSON(message.toolMessages);
+    }
     return obj;
   },
 
@@ -4259,6 +4287,9 @@ export const PublishedHandoffRoute: MessageFns<PublishedHandoffRoute> = {
     message.requestStart = object.requestStart ?? "";
     message.systemPrompt = object.systemPrompt ?? undefined;
     message.maxMessages = object.maxMessages ?? undefined;
+    message.toolMessages = (object.toolMessages !== undefined && object.toolMessages !== null)
+      ? ToolMessages.fromPartial(object.toolMessages)
+      : undefined;
     return message;
   },
 };
@@ -6004,6 +6035,7 @@ function createBaseNodeToolMetadata(): NodeToolMetadata {
     api: undefined,
     a2a: undefined,
     knowledge: undefined,
+    messages: undefined,
   };
 }
 
@@ -6032,6 +6064,9 @@ export const NodeToolMetadata: MessageFns<NodeToolMetadata> = {
     }
     if (message.knowledge !== undefined) {
       KnowledgeToolMetadata.encode(message.knowledge, writer.uint32(66).fork()).join();
+    }
+    if (message.messages !== undefined) {
+      ToolMessages.encode(message.messages, writer.uint32(74).fork()).join();
     }
     return writer;
   },
@@ -6107,6 +6142,14 @@ export const NodeToolMetadata: MessageFns<NodeToolMetadata> = {
           message.knowledge = KnowledgeToolMetadata.decode(reader, reader.uint32());
           continue;
         }
+        case 9: {
+          if (tag !== 74) {
+            break;
+          }
+
+          message.messages = ToolMessages.decode(reader, reader.uint32());
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -6130,6 +6173,7 @@ export const NodeToolMetadata: MessageFns<NodeToolMetadata> = {
       api: isSet(object.api) ? ApiToolMetadata.fromJSON(object.api) : undefined,
       a2a: isSet(object.a2a) ? A2aToolMetadata.fromJSON(object.a2a) : undefined,
       knowledge: isSet(object.knowledge) ? KnowledgeToolMetadata.fromJSON(object.knowledge) : undefined,
+      messages: isSet(object.messages) ? ToolMessages.fromJSON(object.messages) : undefined,
     };
   },
 
@@ -6159,6 +6203,9 @@ export const NodeToolMetadata: MessageFns<NodeToolMetadata> = {
     if (message.knowledge !== undefined) {
       obj.knowledge = KnowledgeToolMetadata.toJSON(message.knowledge);
     }
+    if (message.messages !== undefined) {
+      obj.messages = ToolMessages.toJSON(message.messages);
+    }
     return obj;
   },
 
@@ -6182,6 +6229,9 @@ export const NodeToolMetadata: MessageFns<NodeToolMetadata> = {
       : undefined;
     message.knowledge = (object.knowledge !== undefined && object.knowledge !== null)
       ? KnowledgeToolMetadata.fromPartial(object.knowledge)
+      : undefined;
+    message.messages = (object.messages !== undefined && object.messages !== null)
+      ? ToolMessages.fromPartial(object.messages)
       : undefined;
     return message;
   },
@@ -6413,6 +6463,66 @@ export const ApiToolMetadata: MessageFns<ApiToolMetadata> = {
     message.requestSchemaJson = object.requestSchemaJson ?? "";
     message.responseSchemaJson = object.responseSchemaJson ?? "";
     message.messages = object.messages?.map((e) => ApiToolMessage.fromPartial(e)) || [];
+    return message;
+  },
+};
+
+function createBaseToolMessages(): ToolMessages {
+  return { items: [] };
+}
+
+export const ToolMessages: MessageFns<ToolMessages> = {
+  encode(message: ToolMessages, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    for (const v of message.items) {
+      ApiToolMessage.encode(v!, writer.uint32(10).fork()).join();
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): ToolMessages {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseToolMessages();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.items.push(ApiToolMessage.decode(reader, reader.uint32()));
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): ToolMessages {
+    return {
+      items: globalThis.Array.isArray(object?.items) ? object.items.map((e: any) => ApiToolMessage.fromJSON(e)) : [],
+    };
+  },
+
+  toJSON(message: ToolMessages): unknown {
+    const obj: any = {};
+    if (message.items?.length) {
+      obj.items = message.items.map((e) => ApiToolMessage.toJSON(e));
+    }
+    return obj;
+  },
+
+  create(base?: DeepPartial<ToolMessages>): ToolMessages {
+    return ToolMessages.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<ToolMessages>): ToolMessages {
+    const message = createBaseToolMessages();
+    message.items = object.items?.map((e) => ApiToolMessage.fromPartial(e)) || [];
     return message;
   },
 };
@@ -7108,11 +7218,21 @@ export const KnowledgeToolRuntime: MessageFns<KnowledgeToolRuntime> = {
 };
 
 function createBaseBuiltInTool(): BuiltInTool {
-  return { endCall: undefined, transferToHuman: undefined, dtmf: undefined, sendSms: undefined, speaker: undefined };
+  return {
+    messages: undefined,
+    endCall: undefined,
+    transferToHuman: undefined,
+    dtmf: undefined,
+    sendSms: undefined,
+    speaker: undefined,
+  };
 }
 
 export const BuiltInTool: MessageFns<BuiltInTool> = {
   encode(message: BuiltInTool, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.messages !== undefined) {
+      ToolMessages.encode(message.messages, writer.uint32(50).fork()).join();
+    }
     if (message.endCall !== undefined) {
       EndCallTool.encode(message.endCall, writer.uint32(10).fork()).join();
     }
@@ -7138,6 +7258,14 @@ export const BuiltInTool: MessageFns<BuiltInTool> = {
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
+        case 6: {
+          if (tag !== 50) {
+            break;
+          }
+
+          message.messages = ToolMessages.decode(reader, reader.uint32());
+          continue;
+        }
         case 1: {
           if (tag !== 10) {
             break;
@@ -7189,6 +7317,7 @@ export const BuiltInTool: MessageFns<BuiltInTool> = {
 
   fromJSON(object: any): BuiltInTool {
     return {
+      messages: isSet(object.messages) ? ToolMessages.fromJSON(object.messages) : undefined,
       endCall: isSet(object.endCall)
         ? EndCallTool.fromJSON(object.endCall)
         : isSet(object.end_call)
@@ -7211,6 +7340,9 @@ export const BuiltInTool: MessageFns<BuiltInTool> = {
 
   toJSON(message: BuiltInTool): unknown {
     const obj: any = {};
+    if (message.messages !== undefined) {
+      obj.messages = ToolMessages.toJSON(message.messages);
+    }
     if (message.endCall !== undefined) {
       obj.endCall = EndCallTool.toJSON(message.endCall);
     }
@@ -7234,6 +7366,9 @@ export const BuiltInTool: MessageFns<BuiltInTool> = {
   },
   fromPartial(object: DeepPartial<BuiltInTool>): BuiltInTool {
     const message = createBaseBuiltInTool();
+    message.messages = (object.messages !== undefined && object.messages !== null)
+      ? ToolMessages.fromPartial(object.messages)
+      : undefined;
     message.endCall = (object.endCall !== undefined && object.endCall !== null)
       ? EndCallTool.fromPartial(object.endCall)
       : undefined;

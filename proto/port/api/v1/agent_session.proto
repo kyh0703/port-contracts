@@ -301,6 +301,7 @@ message PublishedHandoffRoute {
   string request_start = 8;
   optional string system_prompt = 9 [(buf.validate.field).string = {min_len: 1 pattern: "\\S"}];
   optional uint32 max_messages = 10 [(buf.validate.field).uint32 = {gte: 1 lte: 100}];
+  ToolMessages tool_messages = 11;
 }
 
 enum HandoffParameterType {
@@ -491,6 +492,7 @@ message NodeToolMetadata {
     A2aToolMetadata a2a = 7;
     KnowledgeToolMetadata knowledge = 8;
   }
+  ToolMessages messages = 9;
 }
 
 enum ContextPolicy {
@@ -518,6 +520,16 @@ message ApiToolMetadata {
   string request_schema_json = 3;
   string response_schema_json = 4;
   repeated ApiToolMessage messages = 5 [(buf.validate.field).repeated.max_items = 4];
+}
+
+// Shared by all tool types; ApiToolMessage retains its original wire identity.
+message ToolMessages {
+  option (buf.validate.message).cel = {
+    id: "tool_messages.unique_stages"
+    message: "tool message stages must be unique"
+    expression: "this.items.map(item, item.type).unique()"
+  };
+  repeated ApiToolMessage items = 1 [(buf.validate.field).repeated.max_items = 4];
 }
 
 message ApiToolMessage {
@@ -558,6 +570,7 @@ message KnowledgeToolRuntime {
 }
 
 message BuiltInTool {
+  ToolMessages messages = 6;
   oneof config {
     option (buf.validate.oneof).required = true;
     EndCallTool end_call = 1;

@@ -396,7 +396,7 @@ class PublishedHandoffSnapshot(_message.Message):
     def __init__(self, entry_node_id: _Optional[str] = ..., max_handoff_depth: _Optional[int] = ..., routes: _Optional[_Iterable[_Union[PublishedHandoffRoute, _Mapping]]] = ...) -> None: ...
 
 class PublishedHandoffRoute(_message.Message):
-    __slots__ = ("transition_id", "source_node_id", "target_node_id", "routing_description", "context_policy", "announcement", "parameters", "request_start", "system_prompt", "max_messages")
+    __slots__ = ("transition_id", "source_node_id", "target_node_id", "routing_description", "context_policy", "announcement", "parameters", "request_start", "system_prompt", "max_messages", "tool_messages")
     TRANSITION_ID_FIELD_NUMBER: _ClassVar[int]
     SOURCE_NODE_ID_FIELD_NUMBER: _ClassVar[int]
     TARGET_NODE_ID_FIELD_NUMBER: _ClassVar[int]
@@ -407,6 +407,7 @@ class PublishedHandoffRoute(_message.Message):
     REQUEST_START_FIELD_NUMBER: _ClassVar[int]
     SYSTEM_PROMPT_FIELD_NUMBER: _ClassVar[int]
     MAX_MESSAGES_FIELD_NUMBER: _ClassVar[int]
+    TOOL_MESSAGES_FIELD_NUMBER: _ClassVar[int]
     transition_id: str
     source_node_id: str
     target_node_id: str
@@ -417,7 +418,8 @@ class PublishedHandoffRoute(_message.Message):
     request_start: str
     system_prompt: str
     max_messages: int
-    def __init__(self, transition_id: _Optional[str] = ..., source_node_id: _Optional[str] = ..., target_node_id: _Optional[str] = ..., routing_description: _Optional[str] = ..., context_policy: _Optional[_Union[ContextPolicy, str]] = ..., announcement: _Optional[str] = ..., parameters: _Optional[_Iterable[_Union[HandoffParameter, _Mapping]]] = ..., request_start: _Optional[str] = ..., system_prompt: _Optional[str] = ..., max_messages: _Optional[int] = ...) -> None: ...
+    tool_messages: ToolMessages
+    def __init__(self, transition_id: _Optional[str] = ..., source_node_id: _Optional[str] = ..., target_node_id: _Optional[str] = ..., routing_description: _Optional[str] = ..., context_policy: _Optional[_Union[ContextPolicy, str]] = ..., announcement: _Optional[str] = ..., parameters: _Optional[_Iterable[_Union[HandoffParameter, _Mapping]]] = ..., request_start: _Optional[str] = ..., system_prompt: _Optional[str] = ..., max_messages: _Optional[int] = ..., tool_messages: _Optional[_Union[ToolMessages, _Mapping]] = ...) -> None: ...
 
 class HandoffParameter(_message.Message):
     __slots__ = ("name", "type", "description", "required", "string_enum", "number_enum", "boolean_enum", "collection")
@@ -590,7 +592,7 @@ class AgentInstructions(_message.Message):
     def __init__(self, system_prompt: _Optional[str] = ...) -> None: ...
 
 class NodeToolMetadata(_message.Message):
-    __slots__ = ("tool_id", "kind", "name", "description", "mcp", "api", "a2a", "knowledge")
+    __slots__ = ("tool_id", "kind", "name", "description", "mcp", "api", "a2a", "knowledge", "messages")
     TOOL_ID_FIELD_NUMBER: _ClassVar[int]
     KIND_FIELD_NUMBER: _ClassVar[int]
     NAME_FIELD_NUMBER: _ClassVar[int]
@@ -599,6 +601,7 @@ class NodeToolMetadata(_message.Message):
     API_FIELD_NUMBER: _ClassVar[int]
     A2A_FIELD_NUMBER: _ClassVar[int]
     KNOWLEDGE_FIELD_NUMBER: _ClassVar[int]
+    MESSAGES_FIELD_NUMBER: _ClassVar[int]
     tool_id: str
     kind: str
     name: str
@@ -607,7 +610,8 @@ class NodeToolMetadata(_message.Message):
     api: ApiToolMetadata
     a2a: A2aToolMetadata
     knowledge: KnowledgeToolMetadata
-    def __init__(self, tool_id: _Optional[str] = ..., kind: _Optional[str] = ..., name: _Optional[str] = ..., description: _Optional[str] = ..., mcp: _Optional[_Union[McpToolMetadata, _Mapping]] = ..., api: _Optional[_Union[ApiToolMetadata, _Mapping]] = ..., a2a: _Optional[_Union[A2aToolMetadata, _Mapping]] = ..., knowledge: _Optional[_Union[KnowledgeToolMetadata, _Mapping]] = ...) -> None: ...
+    messages: ToolMessages
+    def __init__(self, tool_id: _Optional[str] = ..., kind: _Optional[str] = ..., name: _Optional[str] = ..., description: _Optional[str] = ..., mcp: _Optional[_Union[McpToolMetadata, _Mapping]] = ..., api: _Optional[_Union[ApiToolMetadata, _Mapping]] = ..., a2a: _Optional[_Union[A2aToolMetadata, _Mapping]] = ..., knowledge: _Optional[_Union[KnowledgeToolMetadata, _Mapping]] = ..., messages: _Optional[_Union[ToolMessages, _Mapping]] = ...) -> None: ...
 
 class McpToolMetadata(_message.Message):
     __slots__ = ("server_name", "transport", "url")
@@ -632,6 +636,12 @@ class ApiToolMetadata(_message.Message):
     response_schema_json: str
     messages: _containers.RepeatedCompositeFieldContainer[ApiToolMessage]
     def __init__(self, method: _Optional[str] = ..., url: _Optional[str] = ..., request_schema_json: _Optional[str] = ..., response_schema_json: _Optional[str] = ..., messages: _Optional[_Iterable[_Union[ApiToolMessage, _Mapping]]] = ...) -> None: ...
+
+class ToolMessages(_message.Message):
+    __slots__ = ("items",)
+    ITEMS_FIELD_NUMBER: _ClassVar[int]
+    items: _containers.RepeatedCompositeFieldContainer[ApiToolMessage]
+    def __init__(self, items: _Optional[_Iterable[_Union[ApiToolMessage, _Mapping]]] = ...) -> None: ...
 
 class ApiToolMessage(_message.Message):
     __slots__ = ("type", "content", "timing_milliseconds")
@@ -696,18 +706,20 @@ class KnowledgeToolRuntime(_message.Message):
     def __init__(self, tool_id: _Optional[str] = ..., retrieval_capability: _Optional[str] = ...) -> None: ...
 
 class BuiltInTool(_message.Message):
-    __slots__ = ("end_call", "transfer_to_human", "dtmf", "send_sms", "speaker")
+    __slots__ = ("messages", "end_call", "transfer_to_human", "dtmf", "send_sms", "speaker")
+    MESSAGES_FIELD_NUMBER: _ClassVar[int]
     END_CALL_FIELD_NUMBER: _ClassVar[int]
     TRANSFER_TO_HUMAN_FIELD_NUMBER: _ClassVar[int]
     DTMF_FIELD_NUMBER: _ClassVar[int]
     SEND_SMS_FIELD_NUMBER: _ClassVar[int]
     SPEAKER_FIELD_NUMBER: _ClassVar[int]
+    messages: ToolMessages
     end_call: EndCallTool
     transfer_to_human: TransferToHumanTool
     dtmf: DtmfTool
     send_sms: SendSmsTool
     speaker: SpeakerTool
-    def __init__(self, end_call: _Optional[_Union[EndCallTool, _Mapping]] = ..., transfer_to_human: _Optional[_Union[TransferToHumanTool, _Mapping]] = ..., dtmf: _Optional[_Union[DtmfTool, _Mapping]] = ..., send_sms: _Optional[_Union[SendSmsTool, _Mapping]] = ..., speaker: _Optional[_Union[SpeakerTool, _Mapping]] = ...) -> None: ...
+    def __init__(self, messages: _Optional[_Union[ToolMessages, _Mapping]] = ..., end_call: _Optional[_Union[EndCallTool, _Mapping]] = ..., transfer_to_human: _Optional[_Union[TransferToHumanTool, _Mapping]] = ..., dtmf: _Optional[_Union[DtmfTool, _Mapping]] = ..., send_sms: _Optional[_Union[SendSmsTool, _Mapping]] = ..., speaker: _Optional[_Union[SpeakerTool, _Mapping]] = ...) -> None: ...
 
 class EndCallTool(_message.Message):
     __slots__ = ("closing_phrase", "confirm", "condition")
