@@ -3590,8 +3590,9 @@ func (x *ApiToolMetadata) GetMessages() []*ApiToolMessage {
 
 // Shared by all tool types; ApiToolMessage retains its original wire identity.
 type ToolMessages struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Items         []*ApiToolMessage      `protobuf:"bytes,1,rep,name=items,proto3" json:"items,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Same-stage entries are alternatives; execution selects one per invocation.
+	Items         []*ApiToolMessage `protobuf:"bytes,1,rep,name=items,proto3" json:"items,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -5172,16 +5173,17 @@ const file_port_api_v1_agent_session_proto_rawDesc = "" +
 	"\vserver_name\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\n" +
 	"serverName\x129\n" +
 	"\ttransport\x18\x02 \x01(\tB\x1b\xbaH\x18r\x16R\x03sseR\x0fstreamable-httpR\ttransport\x12\x19\n" +
-	"\x03url\x18\x03 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x03url\"\xf2\x01\n" +
+	"\x03url\x18\x03 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x03url\"\xb8\x03\n" +
 	"\x0fApiToolMetadata\x12\x1f\n" +
 	"\x06method\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x06method\x12\x19\n" +
 	"\x03url\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x03url\x12.\n" +
 	"\x13request_schema_json\x18\x03 \x01(\tR\x11requestSchemaJson\x120\n" +
 	"\x14response_schema_json\x18\x04 \x01(\tR\x12responseSchemaJson\x12A\n" +
-	"\bmessages\x18\x05 \x03(\v2\x1b.port.api.v1.ApiToolMessageB\b\xbaH\x05\x92\x01\x02\x10\x04R\bmessages\"\xbd\x01\n" +
+	"\bmessages\x18\x05 \x03(\v2\x1b.port.api.v1.ApiToolMessageB\b\xbaH\x05\x92\x01\x02\x10(R\bmessages:\xc3\x01\xbaH\xbf\x01\x1a\xbc\x01\n" +
+	"\"api_tool_metadata.message_variants\x122at most ten message variants are allowed per stage\x1abthis.messages.all(item, this.messages.filter(candidate, candidate.type == item.type).size() <= 10)\"\x87\x02\n" +
 	"\fToolMessages\x12;\n" +
-	"\x05items\x18\x01 \x03(\v2\x1b.port.api.v1.ApiToolMessageB\b\xbaH\x05\x92\x01\x02\x10\x04R\x05items:p\xbaHm\x1ak\n" +
-	"\x1btool_messages.unique_stages\x12\"tool message stages must be unique\x1a(this.items.map(item, item.type).unique()\"\x96\x04\n" +
+	"\x05items\x18\x01 \x03(\v2\x1b.port.api.v1.ApiToolMessageB\b\xbaH\x05\x92\x01\x02\x10(R\x05items:\xb9\x01\xbaH\xb5\x01\x1a\xb2\x01\n" +
+	"\x1etool_messages.message_variants\x122at most ten message variants are allowed per stage\x1a\\this.items.all(item, this.items.filter(candidate, candidate.type == item.type).size() <= 10)\"\x96\x04\n" +
 	"\x0eApiToolMessage\x12d\n" +
 	"\x04type\x18\x01 \x01(\tBP\xbaHMrKR\rrequest-startR\x10request-completeR\x0erequest-failedR\x18request-response-delayedR\x04type\x12(\n" +
 	"\acontent\x18\x02 \x01(\tB\x0e\xbaH\vr\t\x10\x01\x18\xe8\a2\x02\\SR\acontent\x12B\n" +

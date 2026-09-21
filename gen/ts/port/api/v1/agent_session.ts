@@ -676,6 +676,7 @@ export interface ApiToolMetadata {
 
 /** Shared by all tool types; ApiToolMessage retains its original wire identity. */
 export interface ToolMessages {
+  /** Same-stage entries are alternatives; execution selects one per invocation. */
   items: ApiToolMessage[];
 }
 

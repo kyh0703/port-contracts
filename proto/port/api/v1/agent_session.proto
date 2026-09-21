@@ -517,21 +517,27 @@ message McpToolMetadata {
 }
 
 message ApiToolMetadata {
+  option (buf.validate.message).cel = {
+    id: "api_tool_metadata.message_variants"
+    message: "at most ten message variants are allowed per stage"
+    expression: "this.messages.all(item, this.messages.filter(candidate, candidate.type == item.type).size() <= 10)"
+  };
   string method = 1 [(buf.validate.field).string.min_len = 1];
   string url = 2 [(buf.validate.field).string.min_len = 1];
   string request_schema_json = 3;
   string response_schema_json = 4;
-  repeated ApiToolMessage messages = 5 [(buf.validate.field).repeated.max_items = 4];
+  repeated ApiToolMessage messages = 5 [(buf.validate.field).repeated.max_items = 40];
 }
 
 // Shared by all tool types; ApiToolMessage retains its original wire identity.
 message ToolMessages {
   option (buf.validate.message).cel = {
-    id: "tool_messages.unique_stages"
-    message: "tool message stages must be unique"
-    expression: "this.items.map(item, item.type).unique()"
+    id: "tool_messages.message_variants"
+    message: "at most ten message variants are allowed per stage"
+    expression: "this.items.all(item, this.items.filter(candidate, candidate.type == item.type).size() <= 10)"
   };
-  repeated ApiToolMessage items = 1 [(buf.validate.field).repeated.max_items = 4];
+  // Same-stage entries are alternatives; execution selects one per invocation.
+  repeated ApiToolMessage items = 1 [(buf.validate.field).repeated.max_items = 40];
 }
 
 message ApiToolMessage {

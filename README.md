@@ -53,6 +53,15 @@ confirms briefing playout, and `accept` carries the exact consultant identity
 and voice or DTMF consent source before the API can connect the calls. Missing policy fields retain the API's consultative defaults.
 The existing publication revision and field numbers remain unchanged.
 
+Tool announcement arrays accept up to ten candidates for each of the four
+stages (40 entries total). Entries with the same `type` are alternatives;
+the worker selects one uniformly at random for each stage on every tool
+invocation. A selected delayed message keeps its own `timingMilliseconds`.
+All candidates remain in the publication and wire payload. A single candidate
+keeps the previous behavior, and repeated calls may select the same candidate.
+Transfer start/failure announcements share the selection with the transfer
+coordinator so its fallback and the common wrapper do not speak twice.
+
 ```ts
 import { ExecutionSessionServiceClient } from '@overthinker1127/port-contracts/gen/ts/port/api/v1/agent_session'
 ```

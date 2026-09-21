@@ -5,8 +5,10 @@ const { NodeToolMetadata, BuiltInTool, PublishedHandoffRoute } = require('../dis
 test('common tool messages round-trip for remote tools, built-ins and handoff routes', () => {
   const messages = { items: [
     { type: 'request-start', content: ' 확인하겠습니다.\n' },
+    { type: 'request-start', content: '다른 시작 안내' },
     { type: 'request-response-delayed', content: '기다려 주세요.', timingMilliseconds: 3000 },
     { type: 'request-complete', content: '완료했습니다.' },
+    { type: 'request-complete', content: '다른 완료 안내' },
     { type: 'request-failed', content: '처리하지 못했습니다.' },
   ] };
   for (const [codec, value, field] of [
