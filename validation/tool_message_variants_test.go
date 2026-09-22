@@ -39,3 +39,23 @@ func TestToolMessageVariantsAllStages(t *testing.T) {
 		t.Fatalf("Validate(ten candidates for each of four stages) = %v", err)
 	}
 }
+
+func TestToolMessageBehavior(t *testing.T) {
+	for _, tc := range []struct {
+		name    string
+		message *apiv1.ApiToolMessage
+		valid   bool
+	}{
+		{"silent start", &apiv1.ApiToolMessage{Type: "request-start", Blocking: proto.Bool(true)}, true},
+		{"generated response", &apiv1.ApiToolMessage{Type: "request-complete", Content: "Explain outcome", Role: proto.String("system")}, true},
+		{"empty prompt", &apiv1.ApiToolMessage{Type: "request-complete", Role: proto.String("system")}, false},
+		{"invalid start role", &apiv1.ApiToolMessage{Type: "request-start", Content: "x", Role: proto.String("system")}, false},
+		{"long delay", &apiv1.ApiToolMessage{Type: "request-response-delayed", Content: "wait", TimingMilliseconds: proto.Uint32(120000)}, true},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			if err := Validate(tc.message); (err == nil) != tc.valid {
+				t.Fatalf("Validate = %v, valid = %v", err, tc.valid)
+			}
+		})
+	}
+}

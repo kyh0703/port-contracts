@@ -676,14 +676,28 @@ export interface ApiToolMetadata {
 
 /** Shared by all tool types; ApiToolMessage retains its original wire identity. */
 export interface ToolMessages {
-  /** Same-stage entries are alternatives; execution selects one per invocation. */
+  /** Start entries are alternatives; delayed entries are grouped by timing. */
   items: ApiToolMessage[];
 }
 
 export interface ApiToolMessage {
   type: string;
+  /** An explicitly empty content suppresses the stage (None); omission of the stage uses its default. */
   content: string;
   timingMilliseconds?: number | undefined;
+  blocking?: boolean | undefined;
+  role?: string | undefined;
+  conditions?: ToolMessageConditions | undefined;
+}
+
+export interface ToolMessageConditions {
+  items: ToolMessageCondition[];
+}
+
+export interface ToolMessageCondition {
+  param: string;
+  operator: string;
+  value: string;
 }
 
 export interface A2aToolMetadata {
@@ -6548,7 +6562,14 @@ export const ToolMessages: MessageFns<ToolMessages> = {
 };
 
 function createBaseApiToolMessage(): ApiToolMessage {
-  return { type: "", content: "", timingMilliseconds: undefined };
+  return {
+    type: "",
+    content: "",
+    timingMilliseconds: undefined,
+    blocking: undefined,
+    role: undefined,
+    conditions: undefined,
+  };
 }
 
 export const ApiToolMessage: MessageFns<ApiToolMessage> = {
@@ -6561,6 +6582,15 @@ export const ApiToolMessage: MessageFns<ApiToolMessage> = {
     }
     if (message.timingMilliseconds !== undefined) {
       writer.uint32(24).uint32(message.timingMilliseconds);
+    }
+    if (message.blocking !== undefined) {
+      writer.uint32(32).bool(message.blocking);
+    }
+    if (message.role !== undefined) {
+      writer.uint32(42).string(message.role);
+    }
+    if (message.conditions !== undefined) {
+      ToolMessageConditions.encode(message.conditions, writer.uint32(50).fork()).join();
     }
     return writer;
   },
@@ -6596,6 +6626,30 @@ export const ApiToolMessage: MessageFns<ApiToolMessage> = {
           message.timingMilliseconds = reader.uint32();
           continue;
         }
+        case 4: {
+          if (tag !== 32) {
+            break;
+          }
+
+          message.blocking = reader.bool();
+          continue;
+        }
+        case 5: {
+          if (tag !== 42) {
+            break;
+          }
+
+          message.role = reader.string();
+          continue;
+        }
+        case 6: {
+          if (tag !== 50) {
+            break;
+          }
+
+          message.conditions = ToolMessageConditions.decode(reader, reader.uint32());
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -6614,6 +6668,9 @@ export const ApiToolMessage: MessageFns<ApiToolMessage> = {
         : isSet(object.timing_milliseconds)
         ? globalThis.Number(object.timing_milliseconds)
         : undefined,
+      blocking: isSet(object.blocking) ? globalThis.Boolean(object.blocking) : undefined,
+      role: isSet(object.role) ? globalThis.String(object.role) : undefined,
+      conditions: isSet(object.conditions) ? ToolMessageConditions.fromJSON(object.conditions) : undefined,
     };
   },
 
@@ -6628,6 +6685,15 @@ export const ApiToolMessage: MessageFns<ApiToolMessage> = {
     if (message.timingMilliseconds !== undefined) {
       obj.timingMilliseconds = Math.round(message.timingMilliseconds);
     }
+    if (message.blocking !== undefined) {
+      obj.blocking = message.blocking;
+    }
+    if (message.role !== undefined) {
+      obj.role = message.role;
+    }
+    if (message.conditions !== undefined) {
+      obj.conditions = ToolMessageConditions.toJSON(message.conditions);
+    }
     return obj;
   },
 
@@ -6639,6 +6705,165 @@ export const ApiToolMessage: MessageFns<ApiToolMessage> = {
     message.type = object.type ?? "";
     message.content = object.content ?? "";
     message.timingMilliseconds = object.timingMilliseconds ?? undefined;
+    message.blocking = object.blocking ?? undefined;
+    message.role = object.role ?? undefined;
+    message.conditions = (object.conditions !== undefined && object.conditions !== null)
+      ? ToolMessageConditions.fromPartial(object.conditions)
+      : undefined;
+    return message;
+  },
+};
+
+function createBaseToolMessageConditions(): ToolMessageConditions {
+  return { items: [] };
+}
+
+export const ToolMessageConditions: MessageFns<ToolMessageConditions> = {
+  encode(message: ToolMessageConditions, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    for (const v of message.items) {
+      ToolMessageCondition.encode(v!, writer.uint32(10).fork()).join();
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): ToolMessageConditions {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseToolMessageConditions();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.items.push(ToolMessageCondition.decode(reader, reader.uint32()));
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): ToolMessageConditions {
+    return {
+      items: globalThis.Array.isArray(object?.items)
+        ? object.items.map((e: any) => ToolMessageCondition.fromJSON(e))
+        : [],
+    };
+  },
+
+  toJSON(message: ToolMessageConditions): unknown {
+    const obj: any = {};
+    if (message.items?.length) {
+      obj.items = message.items.map((e) => ToolMessageCondition.toJSON(e));
+    }
+    return obj;
+  },
+
+  create(base?: DeepPartial<ToolMessageConditions>): ToolMessageConditions {
+    return ToolMessageConditions.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<ToolMessageConditions>): ToolMessageConditions {
+    const message = createBaseToolMessageConditions();
+    message.items = object.items?.map((e) => ToolMessageCondition.fromPartial(e)) || [];
+    return message;
+  },
+};
+
+function createBaseToolMessageCondition(): ToolMessageCondition {
+  return { param: "", operator: "", value: "" };
+}
+
+export const ToolMessageCondition: MessageFns<ToolMessageCondition> = {
+  encode(message: ToolMessageCondition, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.param !== "") {
+      writer.uint32(10).string(message.param);
+    }
+    if (message.operator !== "") {
+      writer.uint32(18).string(message.operator);
+    }
+    if (message.value !== "") {
+      writer.uint32(26).string(message.value);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): ToolMessageCondition {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseToolMessageCondition();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.param = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.operator = reader.string();
+          continue;
+        }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.value = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): ToolMessageCondition {
+    return {
+      param: isSet(object.param) ? globalThis.String(object.param) : "",
+      operator: isSet(object.operator) ? globalThis.String(object.operator) : "",
+      value: isSet(object.value) ? globalThis.String(object.value) : "",
+    };
+  },
+
+  toJSON(message: ToolMessageCondition): unknown {
+    const obj: any = {};
+    if (message.param !== "") {
+      obj.param = message.param;
+    }
+    if (message.operator !== "") {
+      obj.operator = message.operator;
+    }
+    if (message.value !== "") {
+      obj.value = message.value;
+    }
+    return obj;
+  },
+
+  create(base?: DeepPartial<ToolMessageCondition>): ToolMessageCondition {
+    return ToolMessageCondition.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<ToolMessageCondition>): ToolMessageCondition {
+    const message = createBaseToolMessageCondition();
+    message.param = object.param ?? "";
+    message.operator = object.operator ?? "";
+    message.value = object.value ?? "";
     return message;
   },
 };

@@ -520,7 +520,7 @@ message ApiToolMetadata {
   option (buf.validate.message).cel = {
     id: "api_tool_metadata.message_variants"
     message: "at most ten message variants are allowed per stage"
-    expression: "this.messages.all(item, this.messages.filter(candidate, candidate.type == item.type).size() <= 10)"
+    expression: "this.messages.all(item, this.messages.filter(candidate, candidate.type == item.type && (item.type != 'request-response-delayed' || candidate.timing_milliseconds == item.timing_milliseconds)).size() <= 10)"
   };
   string method = 1 [(buf.validate.field).string.min_len = 1];
   string url = 2 [(buf.validate.field).string.min_len = 1];
@@ -534,9 +534,9 @@ message ToolMessages {
   option (buf.validate.message).cel = {
     id: "tool_messages.message_variants"
     message: "at most ten message variants are allowed per stage"
-    expression: "this.items.all(item, this.items.filter(candidate, candidate.type == item.type).size() <= 10)"
+    expression: "this.items.all(item, this.items.filter(candidate, candidate.type == item.type && (item.type != 'request-response-delayed' || candidate.timing_milliseconds == item.timing_milliseconds)).size() <= 10)"
   };
-  // Same-stage entries are alternatives; execution selects one per invocation.
+  // Start entries are alternatives; delayed entries are grouped by timing.
   repeated ApiToolMessage items = 1 [(buf.validate.field).repeated.max_items = 40];
 }
 
@@ -544,12 +544,31 @@ message ApiToolMessage {
   option (buf.validate.message).cel = {
     id: "api_tool_message.timing_scope"
     message: "timing_milliseconds is only valid for delayed responses"
-    expression: "this.type == 'request-response-delayed' ? (!has(this.timing_milliseconds) || (this.timing_milliseconds >= 500 && this.timing_milliseconds <= 30000)) : !has(this.timing_milliseconds)"
+    expression: "this.type == 'request-response-delayed' ? (!has(this.timing_milliseconds) || (this.timing_milliseconds >= 100 && this.timing_milliseconds <= 120000)) : !has(this.timing_milliseconds)"
+  };
+  option (buf.validate.message).cel = {
+    id: "api_tool_message.behavior_scope"
+    message: "blocking belongs to start; response roles belong to complete or failed"
+    expression: "(!has(this.blocking) || this.type == 'request-start') && (!has(this.role) || this.type in ['request-complete', 'request-failed']) && (!has(this.role) || this.role != 'system' || this.content.matches('\\\\S'))"
   };
 
   string type = 1 [(buf.validate.field).string = {in: ["request-start", "request-complete", "request-failed", "request-response-delayed"]}];
-  string content = 2 [(buf.validate.field).string = {min_len: 1 max_len: 1000 pattern: "\\S"}];
-  optional uint32 timing_milliseconds = 3 [(buf.validate.field).uint32 = {gte: 500 lte: 30000}];
+  // An explicitly empty content suppresses the stage (None); omission of the stage uses its default.
+  string content = 2 [(buf.validate.field).string.max_len = 1000];
+  optional uint32 timing_milliseconds = 3 [(buf.validate.field).uint32 = {gte: 100 lte: 120000}];
+  optional bool blocking = 4;
+  optional string role = 5 [(buf.validate.field).string = {in: ["assistant", "system"]}];
+  ToolMessageConditions conditions = 6;
+}
+
+message ToolMessageConditions {
+  repeated ToolMessageCondition items = 1 [(buf.validate.field).repeated.max_items = 10];
+}
+
+message ToolMessageCondition {
+  string param = 1 [(buf.validate.field).string = {min_len: 1 max_len: 128 pattern: "^[a-zA-Z0-9_][a-zA-Z0-9_.-]*$"}];
+  string operator = 2 [(buf.validate.field).string = {in: ["eq", "neq", "gt", "gte", "lt", "lte"]}];
+  string value = 3 [(buf.validate.field).string.max_len = 1000];
 }
 
 message A2aToolMetadata {

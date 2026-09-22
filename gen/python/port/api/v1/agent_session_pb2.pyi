@@ -646,14 +646,36 @@ class ToolMessages(_message.Message):
     def __init__(self, items: _Optional[_Iterable[_Union[ApiToolMessage, _Mapping]]] = ...) -> None: ...
 
 class ApiToolMessage(_message.Message):
-    __slots__ = ("type", "content", "timing_milliseconds")
+    __slots__ = ("type", "content", "timing_milliseconds", "blocking", "role", "conditions")
     TYPE_FIELD_NUMBER: _ClassVar[int]
     CONTENT_FIELD_NUMBER: _ClassVar[int]
     TIMING_MILLISECONDS_FIELD_NUMBER: _ClassVar[int]
+    BLOCKING_FIELD_NUMBER: _ClassVar[int]
+    ROLE_FIELD_NUMBER: _ClassVar[int]
+    CONDITIONS_FIELD_NUMBER: _ClassVar[int]
     type: str
     content: str
     timing_milliseconds: int
-    def __init__(self, type: _Optional[str] = ..., content: _Optional[str] = ..., timing_milliseconds: _Optional[int] = ...) -> None: ...
+    blocking: bool
+    role: str
+    conditions: ToolMessageConditions
+    def __init__(self, type: _Optional[str] = ..., content: _Optional[str] = ..., timing_milliseconds: _Optional[int] = ..., blocking: _Optional[bool] = ..., role: _Optional[str] = ..., conditions: _Optional[_Union[ToolMessageConditions, _Mapping]] = ...) -> None: ...
+
+class ToolMessageConditions(_message.Message):
+    __slots__ = ("items",)
+    ITEMS_FIELD_NUMBER: _ClassVar[int]
+    items: _containers.RepeatedCompositeFieldContainer[ToolMessageCondition]
+    def __init__(self, items: _Optional[_Iterable[_Union[ToolMessageCondition, _Mapping]]] = ...) -> None: ...
+
+class ToolMessageCondition(_message.Message):
+    __slots__ = ("param", "operator", "value")
+    PARAM_FIELD_NUMBER: _ClassVar[int]
+    OPERATOR_FIELD_NUMBER: _ClassVar[int]
+    VALUE_FIELD_NUMBER: _ClassVar[int]
+    param: str
+    operator: str
+    value: str
+    def __init__(self, param: _Optional[str] = ..., operator: _Optional[str] = ..., value: _Optional[str] = ...) -> None: ...
 
 class A2aToolMetadata(_message.Message):
     __slots__ = ("agent_card_url",)
