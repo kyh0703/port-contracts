@@ -316,6 +316,35 @@ export function contextPolicyToJSON(object: ContextPolicy): string {
   }
 }
 
+/**
+ * Worker-only commands; the API derives fields and recipient from the pinned
+ * publication and verifies the live conversation/session on every operation.
+ */
+export interface CommandFormCollectionRequest {
+  action: string;
+  conversationId: string;
+  sessionId: string;
+  publishedId: string;
+  transitionId: string;
+  /** Generated before create, reused for retries, cancellation and acknowledgement. */
+  requestId: string;
+}
+
+export interface CommandFormCollectionResponse {
+  requestId: string;
+  status: string;
+  delivery: string;
+  expiresAt: string;
+  /** Sensitive: worker only. Never include in model messages or lifecycle events. */
+  values: { [key: string]: string };
+  failureCode: string;
+}
+
+export interface CommandFormCollectionResponse_ValuesEntry {
+  key: string;
+  value: string;
+}
+
 export interface BootstrapRequest {
   webrtcTicket?: string | undefined;
   sip?: SipBootstrapContext | undefined;
@@ -555,7 +584,7 @@ export interface HandoffParameter {
   collection?: HandoffParameterCollection | undefined;
 }
 
-/** The runtime collects these digits before activating the edge target. */
+/** The runtime collects these values before activating the edge target. */
 export interface HandoffParameterCollection {
   input: string;
   digits: number;
@@ -563,6 +592,7 @@ export interface HandoffParameterCollection {
   /** Overall deadline, including retries and optional confirmation. */
   timeoutSeconds: number;
   confirm: boolean;
+  format?: string | undefined;
 }
 
 export interface TextRuntimeSnapshot {
@@ -834,6 +864,421 @@ export interface SipTransferConsultation {
   livekitUrl: string;
   participantToken: string;
 }
+
+function createBaseCommandFormCollectionRequest(): CommandFormCollectionRequest {
+  return { action: "", conversationId: "", sessionId: "", publishedId: "", transitionId: "", requestId: "" };
+}
+
+export const CommandFormCollectionRequest: MessageFns<CommandFormCollectionRequest> = {
+  encode(message: CommandFormCollectionRequest, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.action !== "") {
+      writer.uint32(10).string(message.action);
+    }
+    if (message.conversationId !== "") {
+      writer.uint32(18).string(message.conversationId);
+    }
+    if (message.sessionId !== "") {
+      writer.uint32(26).string(message.sessionId);
+    }
+    if (message.publishedId !== "") {
+      writer.uint32(34).string(message.publishedId);
+    }
+    if (message.transitionId !== "") {
+      writer.uint32(42).string(message.transitionId);
+    }
+    if (message.requestId !== "") {
+      writer.uint32(50).string(message.requestId);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): CommandFormCollectionRequest {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseCommandFormCollectionRequest();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.action = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.conversationId = reader.string();
+          continue;
+        }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.sessionId = reader.string();
+          continue;
+        }
+        case 4: {
+          if (tag !== 34) {
+            break;
+          }
+
+          message.publishedId = reader.string();
+          continue;
+        }
+        case 5: {
+          if (tag !== 42) {
+            break;
+          }
+
+          message.transitionId = reader.string();
+          continue;
+        }
+        case 6: {
+          if (tag !== 50) {
+            break;
+          }
+
+          message.requestId = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): CommandFormCollectionRequest {
+    return {
+      action: isSet(object.action) ? globalThis.String(object.action) : "",
+      conversationId: isSet(object.conversationId)
+        ? globalThis.String(object.conversationId)
+        : isSet(object.conversation_id)
+        ? globalThis.String(object.conversation_id)
+        : "",
+      sessionId: isSet(object.sessionId)
+        ? globalThis.String(object.sessionId)
+        : isSet(object.session_id)
+        ? globalThis.String(object.session_id)
+        : "",
+      publishedId: isSet(object.publishedId)
+        ? globalThis.String(object.publishedId)
+        : isSet(object.published_id)
+        ? globalThis.String(object.published_id)
+        : "",
+      transitionId: isSet(object.transitionId)
+        ? globalThis.String(object.transitionId)
+        : isSet(object.transition_id)
+        ? globalThis.String(object.transition_id)
+        : "",
+      requestId: isSet(object.requestId)
+        ? globalThis.String(object.requestId)
+        : isSet(object.request_id)
+        ? globalThis.String(object.request_id)
+        : "",
+    };
+  },
+
+  toJSON(message: CommandFormCollectionRequest): unknown {
+    const obj: any = {};
+    if (message.action !== "") {
+      obj.action = message.action;
+    }
+    if (message.conversationId !== "") {
+      obj.conversationId = message.conversationId;
+    }
+    if (message.sessionId !== "") {
+      obj.sessionId = message.sessionId;
+    }
+    if (message.publishedId !== "") {
+      obj.publishedId = message.publishedId;
+    }
+    if (message.transitionId !== "") {
+      obj.transitionId = message.transitionId;
+    }
+    if (message.requestId !== "") {
+      obj.requestId = message.requestId;
+    }
+    return obj;
+  },
+
+  create(base?: DeepPartial<CommandFormCollectionRequest>): CommandFormCollectionRequest {
+    return CommandFormCollectionRequest.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<CommandFormCollectionRequest>): CommandFormCollectionRequest {
+    const message = createBaseCommandFormCollectionRequest();
+    message.action = object.action ?? "";
+    message.conversationId = object.conversationId ?? "";
+    message.sessionId = object.sessionId ?? "";
+    message.publishedId = object.publishedId ?? "";
+    message.transitionId = object.transitionId ?? "";
+    message.requestId = object.requestId ?? "";
+    return message;
+  },
+};
+
+function createBaseCommandFormCollectionResponse(): CommandFormCollectionResponse {
+  return { requestId: "", status: "", delivery: "", expiresAt: "", values: {}, failureCode: "" };
+}
+
+export const CommandFormCollectionResponse: MessageFns<CommandFormCollectionResponse> = {
+  encode(message: CommandFormCollectionResponse, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.requestId !== "") {
+      writer.uint32(10).string(message.requestId);
+    }
+    if (message.status !== "") {
+      writer.uint32(18).string(message.status);
+    }
+    if (message.delivery !== "") {
+      writer.uint32(26).string(message.delivery);
+    }
+    if (message.expiresAt !== "") {
+      writer.uint32(34).string(message.expiresAt);
+    }
+    globalThis.Object.entries(message.values).forEach(([key, value]: [string, string]) => {
+      CommandFormCollectionResponse_ValuesEntry.encode({ key: key as any, value }, writer.uint32(42).fork()).join();
+    });
+    if (message.failureCode !== "") {
+      writer.uint32(50).string(message.failureCode);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): CommandFormCollectionResponse {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseCommandFormCollectionResponse();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.requestId = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.status = reader.string();
+          continue;
+        }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.delivery = reader.string();
+          continue;
+        }
+        case 4: {
+          if (tag !== 34) {
+            break;
+          }
+
+          message.expiresAt = reader.string();
+          continue;
+        }
+        case 5: {
+          if (tag !== 42) {
+            break;
+          }
+
+          const entry5 = CommandFormCollectionResponse_ValuesEntry.decode(reader, reader.uint32());
+          if (entry5.value !== undefined) {
+            message.values[entry5.key] = entry5.value;
+          }
+          continue;
+        }
+        case 6: {
+          if (tag !== 50) {
+            break;
+          }
+
+          message.failureCode = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): CommandFormCollectionResponse {
+    return {
+      requestId: isSet(object.requestId)
+        ? globalThis.String(object.requestId)
+        : isSet(object.request_id)
+        ? globalThis.String(object.request_id)
+        : "",
+      status: isSet(object.status) ? globalThis.String(object.status) : "",
+      delivery: isSet(object.delivery) ? globalThis.String(object.delivery) : "",
+      expiresAt: isSet(object.expiresAt)
+        ? globalThis.String(object.expiresAt)
+        : isSet(object.expires_at)
+        ? globalThis.String(object.expires_at)
+        : "",
+      values: isObject(object.values)
+        ? (globalThis.Object.entries(object.values) as [string, any][]).reduce(
+          (acc: { [key: string]: string }, [key, value]: [string, any]) => {
+            acc[key] = globalThis.String(value);
+            return acc;
+          },
+          {},
+        )
+        : {},
+      failureCode: isSet(object.failureCode)
+        ? globalThis.String(object.failureCode)
+        : isSet(object.failure_code)
+        ? globalThis.String(object.failure_code)
+        : "",
+    };
+  },
+
+  toJSON(message: CommandFormCollectionResponse): unknown {
+    const obj: any = {};
+    if (message.requestId !== "") {
+      obj.requestId = message.requestId;
+    }
+    if (message.status !== "") {
+      obj.status = message.status;
+    }
+    if (message.delivery !== "") {
+      obj.delivery = message.delivery;
+    }
+    if (message.expiresAt !== "") {
+      obj.expiresAt = message.expiresAt;
+    }
+    if (message.values) {
+      const entries = globalThis.Object.entries(message.values) as [string, string][];
+      if (entries.length > 0) {
+        obj.values = {};
+        entries.forEach(([k, v]) => {
+          obj.values[k] = v;
+        });
+      }
+    }
+    if (message.failureCode !== "") {
+      obj.failureCode = message.failureCode;
+    }
+    return obj;
+  },
+
+  create(base?: DeepPartial<CommandFormCollectionResponse>): CommandFormCollectionResponse {
+    return CommandFormCollectionResponse.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<CommandFormCollectionResponse>): CommandFormCollectionResponse {
+    const message = createBaseCommandFormCollectionResponse();
+    message.requestId = object.requestId ?? "";
+    message.status = object.status ?? "";
+    message.delivery = object.delivery ?? "";
+    message.expiresAt = object.expiresAt ?? "";
+    message.values = (globalThis.Object.entries(object.values ?? {}) as [string, string][]).reduce(
+      (acc: { [key: string]: string }, [key, value]: [string, string]) => {
+        if (value !== undefined) {
+          acc[key] = globalThis.String(value);
+        }
+        return acc;
+      },
+      {},
+    );
+    message.failureCode = object.failureCode ?? "";
+    return message;
+  },
+};
+
+function createBaseCommandFormCollectionResponse_ValuesEntry(): CommandFormCollectionResponse_ValuesEntry {
+  return { key: "", value: "" };
+}
+
+export const CommandFormCollectionResponse_ValuesEntry: MessageFns<CommandFormCollectionResponse_ValuesEntry> = {
+  encode(message: CommandFormCollectionResponse_ValuesEntry, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.key !== "") {
+      writer.uint32(10).string(message.key);
+    }
+    if (message.value !== "") {
+      writer.uint32(18).string(message.value);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): CommandFormCollectionResponse_ValuesEntry {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseCommandFormCollectionResponse_ValuesEntry();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.key = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.value = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): CommandFormCollectionResponse_ValuesEntry {
+    return {
+      key: isSet(object.key) ? globalThis.String(object.key) : "",
+      value: isSet(object.value) ? globalThis.String(object.value) : "",
+    };
+  },
+
+  toJSON(message: CommandFormCollectionResponse_ValuesEntry): unknown {
+    const obj: any = {};
+    if (message.key !== "") {
+      obj.key = message.key;
+    }
+    if (message.value !== "") {
+      obj.value = message.value;
+    }
+    return obj;
+  },
+
+  create(base?: DeepPartial<CommandFormCollectionResponse_ValuesEntry>): CommandFormCollectionResponse_ValuesEntry {
+    return CommandFormCollectionResponse_ValuesEntry.fromPartial(base ?? {});
+  },
+  fromPartial(
+    object: DeepPartial<CommandFormCollectionResponse_ValuesEntry>,
+  ): CommandFormCollectionResponse_ValuesEntry {
+    const message = createBaseCommandFormCollectionResponse_ValuesEntry();
+    message.key = object.key ?? "";
+    message.value = object.value ?? "";
+    return message;
+  },
+};
 
 function createBaseBootstrapRequest(): BootstrapRequest {
   return { webrtcTicket: undefined, sip: undefined };
@@ -4544,7 +4989,7 @@ export const HandoffParameter: MessageFns<HandoffParameter> = {
 };
 
 function createBaseHandoffParameterCollection(): HandoffParameterCollection {
-  return { input: "", digits: 0, prompt: "", timeoutSeconds: 0, confirm: false };
+  return { input: "", digits: 0, prompt: "", timeoutSeconds: 0, confirm: false, format: undefined };
 }
 
 export const HandoffParameterCollection: MessageFns<HandoffParameterCollection> = {
@@ -4563,6 +5008,9 @@ export const HandoffParameterCollection: MessageFns<HandoffParameterCollection> 
     }
     if (message.confirm !== false) {
       writer.uint32(40).bool(message.confirm);
+    }
+    if (message.format !== undefined) {
+      writer.uint32(50).string(message.format);
     }
     return writer;
   },
@@ -4614,6 +5062,14 @@ export const HandoffParameterCollection: MessageFns<HandoffParameterCollection> 
           message.confirm = reader.bool();
           continue;
         }
+        case 6: {
+          if (tag !== 50) {
+            break;
+          }
+
+          message.format = reader.string();
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -4634,6 +5090,7 @@ export const HandoffParameterCollection: MessageFns<HandoffParameterCollection> 
         ? globalThis.Number(object.timeout_seconds)
         : 0,
       confirm: isSet(object.confirm) ? globalThis.Boolean(object.confirm) : false,
+      format: isSet(object.format) ? globalThis.String(object.format) : undefined,
     };
   },
 
@@ -4654,6 +5111,9 @@ export const HandoffParameterCollection: MessageFns<HandoffParameterCollection> 
     if (message.confirm !== false) {
       obj.confirm = message.confirm;
     }
+    if (message.format !== undefined) {
+      obj.format = message.format;
+    }
     return obj;
   },
 
@@ -4667,6 +5127,7 @@ export const HandoffParameterCollection: MessageFns<HandoffParameterCollection> 
     message.prompt = object.prompt ?? "";
     message.timeoutSeconds = object.timeoutSeconds ?? 0;
     message.confirm = object.confirm ?? false;
+    message.format = object.format ?? undefined;
     return message;
   },
 };
@@ -9032,6 +9493,17 @@ export const ExecutionSessionServiceService = {
     responseDeserialize: (value: Buffer): RecordLlmRequestTerminalResponse =>
       RecordLlmRequestTerminalResponse.decode(value),
   },
+  commandFormCollection: {
+    path: "/port.api.v1.ExecutionSessionService/CommandFormCollection" as const,
+    requestStream: false as const,
+    responseStream: false as const,
+    requestSerialize: (value: CommandFormCollectionRequest): Buffer =>
+      Buffer.from(CommandFormCollectionRequest.encode(value).finish()),
+    requestDeserialize: (value: Buffer): CommandFormCollectionRequest => CommandFormCollectionRequest.decode(value),
+    responseSerialize: (value: CommandFormCollectionResponse): Buffer =>
+      Buffer.from(CommandFormCollectionResponse.encode(value).finish()),
+    responseDeserialize: (value: Buffer): CommandFormCollectionResponse => CommandFormCollectionResponse.decode(value),
+  },
 } as const;
 
 export interface ExecutionSessionServiceServer extends UntypedServiceImplementation {
@@ -9039,6 +9511,7 @@ export interface ExecutionSessionServiceServer extends UntypedServiceImplementat
   commandSipTransfer: handleUnaryCall<CommandSipTransferRequest, CommandSipTransferResponse>;
   recordLlmRequestStarted: handleUnaryCall<RecordLlmRequestStartedRequest, RecordLlmRequestStartedResponse>;
   recordLlmRequestTerminal: handleUnaryCall<RecordLlmRequestTerminalRequest, RecordLlmRequestTerminalResponse>;
+  commandFormCollection: handleUnaryCall<CommandFormCollectionRequest, CommandFormCollectionResponse>;
 }
 
 export interface ExecutionSessionServiceClient extends Client {
@@ -9101,6 +9574,21 @@ export interface ExecutionSessionServiceClient extends Client {
     metadata: Metadata,
     options: Partial<CallOptions>,
     callback: (error: ServiceError | null, response: RecordLlmRequestTerminalResponse) => void,
+  ): ClientUnaryCall;
+  commandFormCollection(
+    request: CommandFormCollectionRequest,
+    callback: (error: ServiceError | null, response: CommandFormCollectionResponse) => void,
+  ): ClientUnaryCall;
+  commandFormCollection(
+    request: CommandFormCollectionRequest,
+    metadata: Metadata,
+    callback: (error: ServiceError | null, response: CommandFormCollectionResponse) => void,
+  ): ClientUnaryCall;
+  commandFormCollection(
+    request: CommandFormCollectionRequest,
+    metadata: Metadata,
+    options: Partial<CallOptions>,
+    callback: (error: ServiceError | null, response: CommandFormCollectionResponse) => void,
   ): ClientUnaryCall;
 }
 

@@ -53,6 +53,15 @@ confirms briefing playout, and `accept` carries the exact consultant identity
 and voice or DTMF consent source before the API can connect the calls. Missing policy fields retain the API's consultative defaults.
 The existing publication revision and field numbers remain unchanged.
 
+`7.16.0` adds worker-only `ExecutionSessionService.CommandFormCollection`
+(`create | poll | cancel | ack`) and `HandoffParameterCollection.input = web_form`
+with optional `format = digits | phone | birthdate`. Existing DTMF field numbers and
+encoding are unchanged. API and worker must deploy together with this contract;
+the new RPC is required for form routes. Values are returned only for completed
+requests and are erased from the form store on acknowledgement. Form links are
+not part of the worker response; only authenticated owners of browser-test
+conversations can retrieve preview links.
+
 Tool announcement arrays accept up to ten candidates for each of the four
 stages (40 entries total). Entries with the same `type` are alternatives;
 the worker selects one uniformly at random for each stage on every tool

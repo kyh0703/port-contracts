@@ -83,6 +83,45 @@ CONTEXT_POLICY_ALL: ContextPolicy
 CONTEXT_POLICY_USER_AND_ASSISTANT_MESSAGES: ContextPolicy
 CONTEXT_POLICY_PREVIOUS_ASSISTANT_MESSAGES: ContextPolicy
 
+class CommandFormCollectionRequest(_message.Message):
+    __slots__ = ("action", "conversation_id", "session_id", "published_id", "transition_id", "request_id")
+    ACTION_FIELD_NUMBER: _ClassVar[int]
+    CONVERSATION_ID_FIELD_NUMBER: _ClassVar[int]
+    SESSION_ID_FIELD_NUMBER: _ClassVar[int]
+    PUBLISHED_ID_FIELD_NUMBER: _ClassVar[int]
+    TRANSITION_ID_FIELD_NUMBER: _ClassVar[int]
+    REQUEST_ID_FIELD_NUMBER: _ClassVar[int]
+    action: str
+    conversation_id: str
+    session_id: str
+    published_id: str
+    transition_id: str
+    request_id: str
+    def __init__(self, action: _Optional[str] = ..., conversation_id: _Optional[str] = ..., session_id: _Optional[str] = ..., published_id: _Optional[str] = ..., transition_id: _Optional[str] = ..., request_id: _Optional[str] = ...) -> None: ...
+
+class CommandFormCollectionResponse(_message.Message):
+    __slots__ = ("request_id", "status", "delivery", "expires_at", "values", "failure_code")
+    class ValuesEntry(_message.Message):
+        __slots__ = ("key", "value")
+        KEY_FIELD_NUMBER: _ClassVar[int]
+        VALUE_FIELD_NUMBER: _ClassVar[int]
+        key: str
+        value: str
+        def __init__(self, key: _Optional[str] = ..., value: _Optional[str] = ...) -> None: ...
+    REQUEST_ID_FIELD_NUMBER: _ClassVar[int]
+    STATUS_FIELD_NUMBER: _ClassVar[int]
+    DELIVERY_FIELD_NUMBER: _ClassVar[int]
+    EXPIRES_AT_FIELD_NUMBER: _ClassVar[int]
+    VALUES_FIELD_NUMBER: _ClassVar[int]
+    FAILURE_CODE_FIELD_NUMBER: _ClassVar[int]
+    request_id: str
+    status: str
+    delivery: str
+    expires_at: str
+    values: _containers.ScalarMap[str, str]
+    failure_code: str
+    def __init__(self, request_id: _Optional[str] = ..., status: _Optional[str] = ..., delivery: _Optional[str] = ..., expires_at: _Optional[str] = ..., values: _Optional[_Mapping[str, str]] = ..., failure_code: _Optional[str] = ...) -> None: ...
+
 class BootstrapRequest(_message.Message):
     __slots__ = ("webrtc_ticket", "sip")
     WEBRTC_TICKET_FIELD_NUMBER: _ClassVar[int]
@@ -444,18 +483,20 @@ class HandoffParameter(_message.Message):
     def __init__(self, name: _Optional[str] = ..., type: _Optional[_Union[HandoffParameterType, str]] = ..., description: _Optional[str] = ..., required: _Optional[bool] = ..., string_enum: _Optional[_Iterable[str]] = ..., number_enum: _Optional[_Iterable[float]] = ..., boolean_enum: _Optional[_Iterable[bool]] = ..., collection: _Optional[_Union[HandoffParameterCollection, _Mapping]] = ...) -> None: ...
 
 class HandoffParameterCollection(_message.Message):
-    __slots__ = ("input", "digits", "prompt", "timeout_seconds", "confirm")
+    __slots__ = ("input", "digits", "prompt", "timeout_seconds", "confirm", "format")
     INPUT_FIELD_NUMBER: _ClassVar[int]
     DIGITS_FIELD_NUMBER: _ClassVar[int]
     PROMPT_FIELD_NUMBER: _ClassVar[int]
     TIMEOUT_SECONDS_FIELD_NUMBER: _ClassVar[int]
     CONFIRM_FIELD_NUMBER: _ClassVar[int]
+    FORMAT_FIELD_NUMBER: _ClassVar[int]
     input: str
     digits: int
     prompt: str
     timeout_seconds: int
     confirm: bool
-    def __init__(self, input: _Optional[str] = ..., digits: _Optional[int] = ..., prompt: _Optional[str] = ..., timeout_seconds: _Optional[int] = ..., confirm: _Optional[bool] = ...) -> None: ...
+    format: str
+    def __init__(self, input: _Optional[str] = ..., digits: _Optional[int] = ..., prompt: _Optional[str] = ..., timeout_seconds: _Optional[int] = ..., confirm: _Optional[bool] = ..., format: _Optional[str] = ...) -> None: ...
 
 class TextRuntimeSnapshot(_message.Message):
     __slots__ = ("transport", "room_name", "participant_identity", "idle_timeout_seconds", "max_session_duration_seconds")

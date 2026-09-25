@@ -35,6 +35,11 @@ class ExecutionSessionServiceStub:
                 request_serializer=port_dot_api_dot_v1_dot_agent__session__pb2.RecordLlmRequestTerminalRequest.SerializeToString,
                 response_deserializer=port_dot_api_dot_v1_dot_agent__session__pb2.RecordLlmRequestTerminalResponse.FromString,
                 _registered_method=True)
+        self.CommandFormCollection = channel.unary_unary(
+                '/port.api.v1.ExecutionSessionService/CommandFormCollection',
+                request_serializer=port_dot_api_dot_v1_dot_agent__session__pb2.CommandFormCollectionRequest.SerializeToString,
+                response_deserializer=port_dot_api_dot_v1_dot_agent__session__pb2.CommandFormCollectionResponse.FromString,
+                _registered_method=True)
 
 
 class ExecutionSessionServiceServicer:
@@ -65,6 +70,12 @@ class ExecutionSessionServiceServicer:
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def CommandFormCollection(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_ExecutionSessionServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
@@ -87,6 +98,11 @@ def add_ExecutionSessionServiceServicer_to_server(servicer, server):
                     servicer.RecordLlmRequestTerminal,
                     request_deserializer=port_dot_api_dot_v1_dot_agent__session__pb2.RecordLlmRequestTerminalRequest.FromString,
                     response_serializer=port_dot_api_dot_v1_dot_agent__session__pb2.RecordLlmRequestTerminalResponse.SerializeToString,
+            ),
+            'CommandFormCollection': grpc.unary_unary_rpc_method_handler(
+                    servicer.CommandFormCollection,
+                    request_deserializer=port_dot_api_dot_v1_dot_agent__session__pb2.CommandFormCollectionRequest.FromString,
+                    response_serializer=port_dot_api_dot_v1_dot_agent__session__pb2.CommandFormCollectionResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -198,6 +214,33 @@ class ExecutionSessionService:
             '/port.api.v1.ExecutionSessionService/RecordLlmRequestTerminal',
             port_dot_api_dot_v1_dot_agent__session__pb2.RecordLlmRequestTerminalRequest.SerializeToString,
             port_dot_api_dot_v1_dot_agent__session__pb2.RecordLlmRequestTerminalResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def CommandFormCollection(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/port.api.v1.ExecutionSessionService/CommandFormCollection',
+            port_dot_api_dot_v1_dot_agent__session__pb2.CommandFormCollectionRequest.SerializeToString,
+            port_dot_api_dot_v1_dot_agent__session__pb2.CommandFormCollectionResponse.FromString,
             options,
             channel_credentials,
             insecure,

@@ -55,6 +55,34 @@ func TestHandoffCollectionValidation(t *testing.T) {
 	}
 }
 
+func TestWebFormCollectionFormatConstraints(t *testing.T) {
+	format := "birthdate"
+	collection := &apiv1.HandoffParameterCollection{
+		Input: "web_form", Digits: 8, Prompt: "생년월일", TimeoutSeconds: 60, Format: &format,
+	}
+	if err := Validate(collection); err != nil {
+		t.Fatalf("valid birthdate form rejected: %v", err)
+	}
+	collection.Digits = 6
+	if Validate(collection) == nil {
+		t.Fatal("ambiguous six-digit birthdate accepted")
+	}
+	format = "phone"
+	collection.Digits = 11
+	if err := Validate(collection); err != nil {
+		t.Fatalf("valid phone form rejected: %v", err)
+	}
+	collection.Confirm = true
+	if Validate(collection) == nil {
+		t.Fatal("keypad confirmation accepted for a web form")
+	}
+	collection.Confirm = false
+	collection.Input = "dtmf"
+	if Validate(collection) == nil {
+		t.Fatal("web form validation format accepted for DTMF")
+	}
+}
+
 func TestCollectionRevisionR2OnBootstrap(t *testing.T) {
 	request := validPublishedRequest()
 	request.ContractRevision = "execution-publication-2026-09-15-r2"

@@ -13,6 +13,29 @@ service ExecutionSessionService {
   rpc CommandSipTransfer(CommandSipTransferRequest) returns (CommandSipTransferResponse);
   rpc RecordLlmRequestStarted(RecordLlmRequestStartedRequest) returns (RecordLlmRequestStartedResponse);
   rpc RecordLlmRequestTerminal(RecordLlmRequestTerminalRequest) returns (RecordLlmRequestTerminalResponse);
+  rpc CommandFormCollection(CommandFormCollectionRequest) returns (CommandFormCollectionResponse);
+}
+
+// Worker-only commands; the API derives fields and recipient from the pinned
+// publication and verifies the live conversation/session on every operation.
+message CommandFormCollectionRequest {
+  string action = 1 [(buf.validate.field).string = {in: ["create", "poll", "cancel", "ack"]}];
+  string conversation_id = 2 [(buf.validate.field).string = {min_len: 1 max_len: 128}];
+  string session_id = 3 [(buf.validate.field).string = {min_len: 1 max_len: 128}];
+  string published_id = 4 [(buf.validate.field).string = {min_len: 1 max_len: 128}];
+  string transition_id = 5 [(buf.validate.field).string = {min_len: 1 max_len: 256}];
+  // Generated before create, reused for retries, cancellation and acknowledgement.
+  string request_id = 6 [(buf.validate.field).string.uuid = true];
+}
+
+message CommandFormCollectionResponse {
+  string request_id = 1 [(buf.validate.field).string.uuid = true];
+  string status = 2 [(buf.validate.field).string = {in: ["waiting", "completed", "applied", "expired", "cancelled", "failed"]}];
+  string delivery = 3 [(buf.validate.field).string = {in: ["preview", "alimtalk"]}];
+  string expires_at = 4 [(buf.validate.field).string = {min_len: 1 max_len: 64}];
+  // Sensitive: worker only. Never include in model messages or lifecycle events.
+  map<string, string> values = 5;
+  string failure_code = 6 [(buf.validate.field).string.max_len = 64];
 }
 
 message BootstrapRequest {
@@ -339,14 +362,20 @@ message HandoffParameter {
   HandoffParameterCollection collection = 8;
 }
 
-// The runtime collects these digits before activating the edge target.
+// The runtime collects these values before activating the edge target.
 message HandoffParameterCollection {
-  string input = 1 [(buf.validate.field).string.const = "dtmf"];
+  option (buf.validate.message).cel = {
+    id: "handoff_collection.format_scope"
+    message: "DTMF has no form format; web forms have no keypad confirmation"
+    expression: "(this.input == 'dtmf' && !has(this.format)) || (this.input == 'web_form' && !this.confirm && (!has(this.format) || this.format == 'digits' || (this.format == 'phone' && this.digits == 11u) || (this.format == 'birthdate' && this.digits == 8u)))"
+  };
+  string input = 1 [(buf.validate.field).string = {in: ["dtmf", "web_form"]}];
   uint32 digits = 2 [(buf.validate.field).uint32 = {gte: 1 lte: 32}];
   string prompt = 3 [(buf.validate.field).string = {min_len: 1 max_len: 1000 pattern: "\\S"}];
   // Overall deadline, including retries and optional confirmation.
   uint32 timeout_seconds = 4 [(buf.validate.field).uint32 = {gte: 5 lte: 120}];
   bool confirm = 5;
+  optional string format = 6 [(buf.validate.field).string = {in: ["digits", "phone", "birthdate"]}];
 }
 
 message TextRuntimeSnapshot {

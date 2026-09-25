@@ -23,6 +23,7 @@ const (
 	ExecutionSessionService_CommandSipTransfer_FullMethodName       = "/port.api.v1.ExecutionSessionService/CommandSipTransfer"
 	ExecutionSessionService_RecordLlmRequestStarted_FullMethodName  = "/port.api.v1.ExecutionSessionService/RecordLlmRequestStarted"
 	ExecutionSessionService_RecordLlmRequestTerminal_FullMethodName = "/port.api.v1.ExecutionSessionService/RecordLlmRequestTerminal"
+	ExecutionSessionService_CommandFormCollection_FullMethodName    = "/port.api.v1.ExecutionSessionService/CommandFormCollection"
 )
 
 // ExecutionSessionServiceClient is the client API for ExecutionSessionService service.
@@ -35,6 +36,7 @@ type ExecutionSessionServiceClient interface {
 	CommandSipTransfer(ctx context.Context, in *CommandSipTransferRequest, opts ...grpc.CallOption) (*CommandSipTransferResponse, error)
 	RecordLlmRequestStarted(ctx context.Context, in *RecordLlmRequestStartedRequest, opts ...grpc.CallOption) (*RecordLlmRequestStartedResponse, error)
 	RecordLlmRequestTerminal(ctx context.Context, in *RecordLlmRequestTerminalRequest, opts ...grpc.CallOption) (*RecordLlmRequestTerminalResponse, error)
+	CommandFormCollection(ctx context.Context, in *CommandFormCollectionRequest, opts ...grpc.CallOption) (*CommandFormCollectionResponse, error)
 }
 
 type executionSessionServiceClient struct {
@@ -85,6 +87,16 @@ func (c *executionSessionServiceClient) RecordLlmRequestTerminal(ctx context.Con
 	return out, nil
 }
 
+func (c *executionSessionServiceClient) CommandFormCollection(ctx context.Context, in *CommandFormCollectionRequest, opts ...grpc.CallOption) (*CommandFormCollectionResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(CommandFormCollectionResponse)
+	err := c.cc.Invoke(ctx, ExecutionSessionService_CommandFormCollection_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // ExecutionSessionServiceServer is the server API for ExecutionSessionService service.
 // All implementations must embed UnimplementedExecutionSessionServiceServer
 // for forward compatibility.
@@ -95,6 +107,7 @@ type ExecutionSessionServiceServer interface {
 	CommandSipTransfer(context.Context, *CommandSipTransferRequest) (*CommandSipTransferResponse, error)
 	RecordLlmRequestStarted(context.Context, *RecordLlmRequestStartedRequest) (*RecordLlmRequestStartedResponse, error)
 	RecordLlmRequestTerminal(context.Context, *RecordLlmRequestTerminalRequest) (*RecordLlmRequestTerminalResponse, error)
+	CommandFormCollection(context.Context, *CommandFormCollectionRequest) (*CommandFormCollectionResponse, error)
 	mustEmbedUnimplementedExecutionSessionServiceServer()
 }
 
@@ -116,6 +129,9 @@ func (UnimplementedExecutionSessionServiceServer) RecordLlmRequestStarted(contex
 }
 func (UnimplementedExecutionSessionServiceServer) RecordLlmRequestTerminal(context.Context, *RecordLlmRequestTerminalRequest) (*RecordLlmRequestTerminalResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method RecordLlmRequestTerminal not implemented")
+}
+func (UnimplementedExecutionSessionServiceServer) CommandFormCollection(context.Context, *CommandFormCollectionRequest) (*CommandFormCollectionResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method CommandFormCollection not implemented")
 }
 func (UnimplementedExecutionSessionServiceServer) mustEmbedUnimplementedExecutionSessionServiceServer() {
 }
@@ -211,6 +227,24 @@ func _ExecutionSessionService_RecordLlmRequestTerminal_Handler(srv interface{}, 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _ExecutionSessionService_CommandFormCollection_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CommandFormCollectionRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ExecutionSessionServiceServer).CommandFormCollection(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ExecutionSessionService_CommandFormCollection_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ExecutionSessionServiceServer).CommandFormCollection(ctx, req.(*CommandFormCollectionRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // ExecutionSessionService_ServiceDesc is the grpc.ServiceDesc for ExecutionSessionService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -233,6 +267,10 @@ var ExecutionSessionService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "RecordLlmRequestTerminal",
 			Handler:    _ExecutionSessionService_RecordLlmRequestTerminal_Handler,
+		},
+		{
+			MethodName: "CommandFormCollection",
+			Handler:    _ExecutionSessionService_CommandFormCollection_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

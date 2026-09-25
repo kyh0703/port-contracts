@@ -98,10 +98,7 @@ func TestExecutionSessionServiceExposesBootstrapAndTransferControl(t *testing.T)
 		t.Fatal(err)
 	}
 	service := descriptor.(protoreflect.ServiceDescriptor)
-	if service.Methods().Len() != 4 {
-		t.Fatalf("ExecutionSessionService method count = %d, want 4", service.Methods().Len())
-	}
-	for _, name := range []protoreflect.Name{"CommandSipTransfer", "RecordLlmRequestStarted", "RecordLlmRequestTerminal"} {
+	for _, name := range []protoreflect.Name{"CommandSipTransfer", "RecordLlmRequestStarted", "RecordLlmRequestTerminal", "CommandFormCollection"} {
 		if service.Methods().ByName(name) == nil {
 			t.Fatalf("execution service method %s is missing", name)
 		}

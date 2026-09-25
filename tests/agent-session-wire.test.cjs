@@ -4,7 +4,6 @@ const test = require("node:test");
 const contracts = require("../dist/gen/ts/port/api/v1/agent_session.js");
 const voiceRuntime = require("../dist/gen/ts/port/api/v1/voice_runtime.js");
 const {
-  ExecutionSessionServiceService,
   BootstrapPublishedRequest,
   BootstrapPublishedResponse,
   CallRuntimeSnapshot,
@@ -211,13 +210,7 @@ test("conversation controls round-trip end-call policies and elapsed actions", (
   assert.ok(decoded.conversationControl.timeElapsedActions[1].endCall);
 });
 
-test("the worker contract exposes canonical bootstrap and session-bound transfer control", () => {
-  assert.deepEqual(Object.keys(ExecutionSessionServiceService), [
-    "bootstrapPublished",
-    "commandSipTransfer",
-    "recordLlmRequestStarted",
-    "recordLlmRequestTerminal",
-  ]);
+test("the worker contract excludes legacy bootstrap APIs", () => {
   assert.equal(contracts.AgentSessionServiceService, undefined);
   assert.equal(contracts.BootstrapAgentRequest, undefined);
   assert.equal(contracts.BootstrapSipRequest, undefined);

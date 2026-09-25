@@ -346,6 +346,178 @@ func (ContextPolicy) EnumDescriptor() ([]byte, []int) {
 	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{5}
 }
 
+// Worker-only commands; the API derives fields and recipient from the pinned
+// publication and verifies the live conversation/session on every operation.
+type CommandFormCollectionRequest struct {
+	state          protoimpl.MessageState `protogen:"open.v1"`
+	Action         string                 `protobuf:"bytes,1,opt,name=action,proto3" json:"action,omitempty"`
+	ConversationId string                 `protobuf:"bytes,2,opt,name=conversation_id,json=conversationId,proto3" json:"conversation_id,omitempty"`
+	SessionId      string                 `protobuf:"bytes,3,opt,name=session_id,json=sessionId,proto3" json:"session_id,omitempty"`
+	PublishedId    string                 `protobuf:"bytes,4,opt,name=published_id,json=publishedId,proto3" json:"published_id,omitempty"`
+	TransitionId   string                 `protobuf:"bytes,5,opt,name=transition_id,json=transitionId,proto3" json:"transition_id,omitempty"`
+	// Generated before create, reused for retries, cancellation and acknowledgement.
+	RequestId     string `protobuf:"bytes,6,opt,name=request_id,json=requestId,proto3" json:"request_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CommandFormCollectionRequest) Reset() {
+	*x = CommandFormCollectionRequest{}
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[0]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CommandFormCollectionRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CommandFormCollectionRequest) ProtoMessage() {}
+
+func (x *CommandFormCollectionRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[0]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CommandFormCollectionRequest.ProtoReflect.Descriptor instead.
+func (*CommandFormCollectionRequest) Descriptor() ([]byte, []int) {
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{0}
+}
+
+func (x *CommandFormCollectionRequest) GetAction() string {
+	if x != nil {
+		return x.Action
+	}
+	return ""
+}
+
+func (x *CommandFormCollectionRequest) GetConversationId() string {
+	if x != nil {
+		return x.ConversationId
+	}
+	return ""
+}
+
+func (x *CommandFormCollectionRequest) GetSessionId() string {
+	if x != nil {
+		return x.SessionId
+	}
+	return ""
+}
+
+func (x *CommandFormCollectionRequest) GetPublishedId() string {
+	if x != nil {
+		return x.PublishedId
+	}
+	return ""
+}
+
+func (x *CommandFormCollectionRequest) GetTransitionId() string {
+	if x != nil {
+		return x.TransitionId
+	}
+	return ""
+}
+
+func (x *CommandFormCollectionRequest) GetRequestId() string {
+	if x != nil {
+		return x.RequestId
+	}
+	return ""
+}
+
+type CommandFormCollectionResponse struct {
+	state     protoimpl.MessageState `protogen:"open.v1"`
+	RequestId string                 `protobuf:"bytes,1,opt,name=request_id,json=requestId,proto3" json:"request_id,omitempty"`
+	Status    string                 `protobuf:"bytes,2,opt,name=status,proto3" json:"status,omitempty"`
+	Delivery  string                 `protobuf:"bytes,3,opt,name=delivery,proto3" json:"delivery,omitempty"`
+	ExpiresAt string                 `protobuf:"bytes,4,opt,name=expires_at,json=expiresAt,proto3" json:"expires_at,omitempty"`
+	// Sensitive: worker only. Never include in model messages or lifecycle events.
+	Values        map[string]string `protobuf:"bytes,5,rep,name=values,proto3" json:"values,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
+	FailureCode   string            `protobuf:"bytes,6,opt,name=failure_code,json=failureCode,proto3" json:"failure_code,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CommandFormCollectionResponse) Reset() {
+	*x = CommandFormCollectionResponse{}
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[1]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CommandFormCollectionResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CommandFormCollectionResponse) ProtoMessage() {}
+
+func (x *CommandFormCollectionResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[1]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CommandFormCollectionResponse.ProtoReflect.Descriptor instead.
+func (*CommandFormCollectionResponse) Descriptor() ([]byte, []int) {
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{1}
+}
+
+func (x *CommandFormCollectionResponse) GetRequestId() string {
+	if x != nil {
+		return x.RequestId
+	}
+	return ""
+}
+
+func (x *CommandFormCollectionResponse) GetStatus() string {
+	if x != nil {
+		return x.Status
+	}
+	return ""
+}
+
+func (x *CommandFormCollectionResponse) GetDelivery() string {
+	if x != nil {
+		return x.Delivery
+	}
+	return ""
+}
+
+func (x *CommandFormCollectionResponse) GetExpiresAt() string {
+	if x != nil {
+		return x.ExpiresAt
+	}
+	return ""
+}
+
+func (x *CommandFormCollectionResponse) GetValues() map[string]string {
+	if x != nil {
+		return x.Values
+	}
+	return nil
+}
+
+func (x *CommandFormCollectionResponse) GetFailureCode() string {
+	if x != nil {
+		return x.FailureCode
+	}
+	return ""
+}
+
 type BootstrapRequest struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// Types that are valid to be assigned to Admission:
@@ -359,7 +531,7 @@ type BootstrapRequest struct {
 
 func (x *BootstrapRequest) Reset() {
 	*x = BootstrapRequest{}
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[0]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -371,7 +543,7 @@ func (x *BootstrapRequest) String() string {
 func (*BootstrapRequest) ProtoMessage() {}
 
 func (x *BootstrapRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[0]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -384,7 +556,7 @@ func (x *BootstrapRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use BootstrapRequest.ProtoReflect.Descriptor instead.
 func (*BootstrapRequest) Descriptor() ([]byte, []int) {
-	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{0}
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *BootstrapRequest) GetAdmission() isBootstrapRequest_Admission {
@@ -444,7 +616,7 @@ type SipBootstrapContext struct {
 
 func (x *SipBootstrapContext) Reset() {
 	*x = SipBootstrapContext{}
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[1]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -456,7 +628,7 @@ func (x *SipBootstrapContext) String() string {
 func (*SipBootstrapContext) ProtoMessage() {}
 
 func (x *SipBootstrapContext) ProtoReflect() protoreflect.Message {
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[1]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -469,7 +641,7 @@ func (x *SipBootstrapContext) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SipBootstrapContext.ProtoReflect.Descriptor instead.
 func (*SipBootstrapContext) Descriptor() ([]byte, []int) {
-	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{1}
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *SipBootstrapContext) GetJobId() string {
@@ -545,7 +717,7 @@ type BootstrapPublishedRequest struct {
 
 func (x *BootstrapPublishedRequest) Reset() {
 	*x = BootstrapPublishedRequest{}
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[2]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -557,7 +729,7 @@ func (x *BootstrapPublishedRequest) String() string {
 func (*BootstrapPublishedRequest) ProtoMessage() {}
 
 func (x *BootstrapPublishedRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[2]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -570,7 +742,7 @@ func (x *BootstrapPublishedRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use BootstrapPublishedRequest.ProtoReflect.Descriptor instead.
 func (*BootstrapPublishedRequest) Descriptor() ([]byte, []int) {
-	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{2}
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *BootstrapPublishedRequest) GetAdmission() *BootstrapRequest {
@@ -639,7 +811,7 @@ type BootstrapPublishedResponse struct {
 
 func (x *BootstrapPublishedResponse) Reset() {
 	*x = BootstrapPublishedResponse{}
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[3]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -651,7 +823,7 @@ func (x *BootstrapPublishedResponse) String() string {
 func (*BootstrapPublishedResponse) ProtoMessage() {}
 
 func (x *BootstrapPublishedResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[3]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -664,7 +836,7 @@ func (x *BootstrapPublishedResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use BootstrapPublishedResponse.ProtoReflect.Descriptor instead.
 func (*BootstrapPublishedResponse) Descriptor() ([]byte, []int) {
-	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{3}
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *BootstrapPublishedResponse) GetContractRevision() string {
@@ -775,7 +947,7 @@ type LlmAuditCapability struct {
 
 func (x *LlmAuditCapability) Reset() {
 	*x = LlmAuditCapability{}
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[4]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -787,7 +959,7 @@ func (x *LlmAuditCapability) String() string {
 func (*LlmAuditCapability) ProtoMessage() {}
 
 func (x *LlmAuditCapability) ProtoReflect() protoreflect.Message {
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[4]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -800,7 +972,7 @@ func (x *LlmAuditCapability) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use LlmAuditCapability.ProtoReflect.Descriptor instead.
 func (*LlmAuditCapability) Descriptor() ([]byte, []int) {
-	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{4}
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *LlmAuditCapability) GetExecutionId() string {
@@ -846,7 +1018,7 @@ type LlmAuditRequestContext struct {
 
 func (x *LlmAuditRequestContext) Reset() {
 	*x = LlmAuditRequestContext{}
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[5]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -858,7 +1030,7 @@ func (x *LlmAuditRequestContext) String() string {
 func (*LlmAuditRequestContext) ProtoMessage() {}
 
 func (x *LlmAuditRequestContext) ProtoReflect() protoreflect.Message {
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[5]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -871,7 +1043,7 @@ func (x *LlmAuditRequestContext) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use LlmAuditRequestContext.ProtoReflect.Descriptor instead.
 func (*LlmAuditRequestContext) Descriptor() ([]byte, []int) {
-	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{5}
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *LlmAuditRequestContext) GetCapability() string {
@@ -953,7 +1125,7 @@ type RecordLlmRequestStartedRequest struct {
 
 func (x *RecordLlmRequestStartedRequest) Reset() {
 	*x = RecordLlmRequestStartedRequest{}
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[6]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -965,7 +1137,7 @@ func (x *RecordLlmRequestStartedRequest) String() string {
 func (*RecordLlmRequestStartedRequest) ProtoMessage() {}
 
 func (x *RecordLlmRequestStartedRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[6]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -978,7 +1150,7 @@ func (x *RecordLlmRequestStartedRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RecordLlmRequestStartedRequest.ProtoReflect.Descriptor instead.
 func (*RecordLlmRequestStartedRequest) Descriptor() ([]byte, []int) {
-	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{6}
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *RecordLlmRequestStartedRequest) GetRequest() *LlmAuditRequestContext {
@@ -998,7 +1170,7 @@ type RecordLlmRequestStartedResponse struct {
 
 func (x *RecordLlmRequestStartedResponse) Reset() {
 	*x = RecordLlmRequestStartedResponse{}
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[7]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1010,7 +1182,7 @@ func (x *RecordLlmRequestStartedResponse) String() string {
 func (*RecordLlmRequestStartedResponse) ProtoMessage() {}
 
 func (x *RecordLlmRequestStartedResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[7]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1023,7 +1195,7 @@ func (x *RecordLlmRequestStartedResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RecordLlmRequestStartedResponse.ProtoReflect.Descriptor instead.
 func (*RecordLlmRequestStartedResponse) Descriptor() ([]byte, []int) {
-	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{7}
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *RecordLlmRequestStartedResponse) GetRequestAttemptId() string {
@@ -1058,7 +1230,7 @@ type LlmAuditUsage struct {
 
 func (x *LlmAuditUsage) Reset() {
 	*x = LlmAuditUsage{}
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[8]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1070,7 +1242,7 @@ func (x *LlmAuditUsage) String() string {
 func (*LlmAuditUsage) ProtoMessage() {}
 
 func (x *LlmAuditUsage) ProtoReflect() protoreflect.Message {
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[8]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1083,7 +1255,7 @@ func (x *LlmAuditUsage) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use LlmAuditUsage.ProtoReflect.Descriptor instead.
 func (*LlmAuditUsage) Descriptor() ([]byte, []int) {
-	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{8}
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *LlmAuditUsage) GetInputTokens() uint64 {
@@ -1150,7 +1322,7 @@ type RecordLlmRequestTerminalRequest struct {
 
 func (x *RecordLlmRequestTerminalRequest) Reset() {
 	*x = RecordLlmRequestTerminalRequest{}
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[9]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1162,7 +1334,7 @@ func (x *RecordLlmRequestTerminalRequest) String() string {
 func (*RecordLlmRequestTerminalRequest) ProtoMessage() {}
 
 func (x *RecordLlmRequestTerminalRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[9]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1175,7 +1347,7 @@ func (x *RecordLlmRequestTerminalRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RecordLlmRequestTerminalRequest.ProtoReflect.Descriptor instead.
 func (*RecordLlmRequestTerminalRequest) Descriptor() ([]byte, []int) {
-	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{9}
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{11}
 }
 
 func (x *RecordLlmRequestTerminalRequest) GetRequest() *LlmAuditRequestContext {
@@ -1238,7 +1410,7 @@ type RecordLlmRequestTerminalResponse struct {
 
 func (x *RecordLlmRequestTerminalResponse) Reset() {
 	*x = RecordLlmRequestTerminalResponse{}
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[10]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1250,7 +1422,7 @@ func (x *RecordLlmRequestTerminalResponse) String() string {
 func (*RecordLlmRequestTerminalResponse) ProtoMessage() {}
 
 func (x *RecordLlmRequestTerminalResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[10]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1263,7 +1435,7 @@ func (x *RecordLlmRequestTerminalResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RecordLlmRequestTerminalResponse.ProtoReflect.Descriptor instead.
 func (*RecordLlmRequestTerminalResponse) Descriptor() ([]byte, []int) {
-	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{10}
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{12}
 }
 
 func (x *RecordLlmRequestTerminalResponse) GetRequestAttemptId() string {
@@ -1298,7 +1470,7 @@ type SessionPromptVariableBag struct {
 
 func (x *SessionPromptVariableBag) Reset() {
 	*x = SessionPromptVariableBag{}
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[11]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[13]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1310,7 +1482,7 @@ func (x *SessionPromptVariableBag) String() string {
 func (*SessionPromptVariableBag) ProtoMessage() {}
 
 func (x *SessionPromptVariableBag) ProtoReflect() protoreflect.Message {
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[11]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[13]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1323,7 +1495,7 @@ func (x *SessionPromptVariableBag) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SessionPromptVariableBag.ProtoReflect.Descriptor instead.
 func (*SessionPromptVariableBag) Descriptor() ([]byte, []int) {
-	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{11}
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{13}
 }
 
 func (x *SessionPromptVariableBag) GetSystem() []*SessionPromptVariable {
@@ -1355,7 +1527,7 @@ type SessionPromptVariable struct {
 
 func (x *SessionPromptVariable) Reset() {
 	*x = SessionPromptVariable{}
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[12]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[14]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1367,7 +1539,7 @@ func (x *SessionPromptVariable) String() string {
 func (*SessionPromptVariable) ProtoMessage() {}
 
 func (x *SessionPromptVariable) ProtoReflect() protoreflect.Message {
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[12]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[14]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1380,7 +1552,7 @@ func (x *SessionPromptVariable) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SessionPromptVariable.ProtoReflect.Descriptor instead.
 func (*SessionPromptVariable) Descriptor() ([]byte, []int) {
-	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{12}
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{14}
 }
 
 func (x *SessionPromptVariable) GetName() string {
@@ -1459,7 +1631,7 @@ type PublishedAgentExecution struct {
 
 func (x *PublishedAgentExecution) Reset() {
 	*x = PublishedAgentExecution{}
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[13]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[15]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1471,7 +1643,7 @@ func (x *PublishedAgentExecution) String() string {
 func (*PublishedAgentExecution) ProtoMessage() {}
 
 func (x *PublishedAgentExecution) ProtoReflect() protoreflect.Message {
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[13]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[15]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1484,7 +1656,7 @@ func (x *PublishedAgentExecution) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PublishedAgentExecution.ProtoReflect.Descriptor instead.
 func (*PublishedAgentExecution) Descriptor() ([]byte, []int) {
-	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{13}
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{15}
 }
 
 func (x *PublishedAgentExecution) GetMode() AgentMode {
@@ -1538,7 +1710,7 @@ type AgentPromptConfigSnapshot struct {
 
 func (x *AgentPromptConfigSnapshot) Reset() {
 	*x = AgentPromptConfigSnapshot{}
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[14]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[16]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1550,7 +1722,7 @@ func (x *AgentPromptConfigSnapshot) String() string {
 func (*AgentPromptConfigSnapshot) ProtoMessage() {}
 
 func (x *AgentPromptConfigSnapshot) ProtoReflect() protoreflect.Message {
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[14]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[16]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1563,7 +1735,7 @@ func (x *AgentPromptConfigSnapshot) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AgentPromptConfigSnapshot.ProtoReflect.Descriptor instead.
 func (*AgentPromptConfigSnapshot) Descriptor() ([]byte, []int) {
-	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{14}
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{16}
 }
 
 func (x *AgentPromptConfigSnapshot) GetRevision() uint32 {
@@ -1649,7 +1821,7 @@ type PublishedAgentNodeRuntime struct {
 
 func (x *PublishedAgentNodeRuntime) Reset() {
 	*x = PublishedAgentNodeRuntime{}
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[15]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[17]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1661,7 +1833,7 @@ func (x *PublishedAgentNodeRuntime) String() string {
 func (*PublishedAgentNodeRuntime) ProtoMessage() {}
 
 func (x *PublishedAgentNodeRuntime) ProtoReflect() protoreflect.Message {
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[15]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[17]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1674,7 +1846,7 @@ func (x *PublishedAgentNodeRuntime) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PublishedAgentNodeRuntime.ProtoReflect.Descriptor instead.
 func (*PublishedAgentNodeRuntime) Descriptor() ([]byte, []int) {
-	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{15}
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{17}
 }
 
 func (x *PublishedAgentNodeRuntime) GetNodeId() string {
@@ -1807,7 +1979,7 @@ type InlineAuthoringOptions struct {
 
 func (x *InlineAuthoringOptions) Reset() {
 	*x = InlineAuthoringOptions{}
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[16]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[18]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1819,7 +1991,7 @@ func (x *InlineAuthoringOptions) String() string {
 func (*InlineAuthoringOptions) ProtoMessage() {}
 
 func (x *InlineAuthoringOptions) ProtoReflect() protoreflect.Message {
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[16]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[18]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1832,7 +2004,7 @@ func (x *InlineAuthoringOptions) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use InlineAuthoringOptions.ProtoReflect.Descriptor instead.
 func (*InlineAuthoringOptions) Descriptor() ([]byte, []int) {
-	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{16}
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{18}
 }
 
 func (x *InlineAuthoringOptions) GetModel() *NodeModelSettings {
@@ -1860,7 +2032,7 @@ type NodeModelSettings struct {
 
 func (x *NodeModelSettings) Reset() {
 	*x = NodeModelSettings{}
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[17]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[19]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1872,7 +2044,7 @@ func (x *NodeModelSettings) String() string {
 func (*NodeModelSettings) ProtoMessage() {}
 
 func (x *NodeModelSettings) ProtoReflect() protoreflect.Message {
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[17]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[19]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1885,7 +2057,7 @@ func (x *NodeModelSettings) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use NodeModelSettings.ProtoReflect.Descriptor instead.
 func (*NodeModelSettings) Descriptor() ([]byte, []int) {
-	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{17}
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{19}
 }
 
 func (x *NodeModelSettings) GetTemperature() float64 {
@@ -1921,7 +2093,7 @@ type NodeToolBinding struct {
 
 func (x *NodeToolBinding) Reset() {
 	*x = NodeToolBinding{}
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[18]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[20]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1933,7 +2105,7 @@ func (x *NodeToolBinding) String() string {
 func (*NodeToolBinding) ProtoMessage() {}
 
 func (x *NodeToolBinding) ProtoReflect() protoreflect.Message {
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[18]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[20]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1946,7 +2118,7 @@ func (x *NodeToolBinding) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use NodeToolBinding.ProtoReflect.Descriptor instead.
 func (*NodeToolBinding) Descriptor() ([]byte, []int) {
-	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{18}
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{20}
 }
 
 func (x *NodeToolBinding) GetToolId() string {
@@ -1987,7 +2159,7 @@ type PublishedSupervisorSnapshot struct {
 
 func (x *PublishedSupervisorSnapshot) Reset() {
 	*x = PublishedSupervisorSnapshot{}
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[19]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[21]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1999,7 +2171,7 @@ func (x *PublishedSupervisorSnapshot) String() string {
 func (*PublishedSupervisorSnapshot) ProtoMessage() {}
 
 func (x *PublishedSupervisorSnapshot) ProtoReflect() protoreflect.Message {
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[19]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[21]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2012,7 +2184,7 @@ func (x *PublishedSupervisorSnapshot) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PublishedSupervisorSnapshot.ProtoReflect.Descriptor instead.
 func (*PublishedSupervisorSnapshot) Descriptor() ([]byte, []int) {
-	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{19}
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{21}
 }
 
 func (x *PublishedSupervisorSnapshot) GetSupervisorNodeId() string {
@@ -2041,7 +2213,7 @@ type PublishedSupervisorSpecialist struct {
 
 func (x *PublishedSupervisorSpecialist) Reset() {
 	*x = PublishedSupervisorSpecialist{}
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[20]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[22]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2053,7 +2225,7 @@ func (x *PublishedSupervisorSpecialist) String() string {
 func (*PublishedSupervisorSpecialist) ProtoMessage() {}
 
 func (x *PublishedSupervisorSpecialist) ProtoReflect() protoreflect.Message {
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[20]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[22]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2066,7 +2238,7 @@ func (x *PublishedSupervisorSpecialist) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PublishedSupervisorSpecialist.ProtoReflect.Descriptor instead.
 func (*PublishedSupervisorSpecialist) Descriptor() ([]byte, []int) {
-	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{20}
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{22}
 }
 
 func (x *PublishedSupervisorSpecialist) GetRelationId() string {
@@ -2108,7 +2280,7 @@ type PublishedHandoffSnapshot struct {
 
 func (x *PublishedHandoffSnapshot) Reset() {
 	*x = PublishedHandoffSnapshot{}
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[21]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[23]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2120,7 +2292,7 @@ func (x *PublishedHandoffSnapshot) String() string {
 func (*PublishedHandoffSnapshot) ProtoMessage() {}
 
 func (x *PublishedHandoffSnapshot) ProtoReflect() protoreflect.Message {
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[21]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[23]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2133,7 +2305,7 @@ func (x *PublishedHandoffSnapshot) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PublishedHandoffSnapshot.ProtoReflect.Descriptor instead.
 func (*PublishedHandoffSnapshot) Descriptor() ([]byte, []int) {
-	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{21}
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{23}
 }
 
 func (x *PublishedHandoffSnapshot) GetEntryNodeId() string {
@@ -2177,7 +2349,7 @@ type PublishedHandoffRoute struct {
 
 func (x *PublishedHandoffRoute) Reset() {
 	*x = PublishedHandoffRoute{}
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[22]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[24]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2189,7 +2361,7 @@ func (x *PublishedHandoffRoute) String() string {
 func (*PublishedHandoffRoute) ProtoMessage() {}
 
 func (x *PublishedHandoffRoute) ProtoReflect() protoreflect.Message {
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[22]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[24]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2202,7 +2374,7 @@ func (x *PublishedHandoffRoute) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PublishedHandoffRoute.ProtoReflect.Descriptor instead.
 func (*PublishedHandoffRoute) Descriptor() ([]byte, []int) {
-	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{22}
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{24}
 }
 
 func (x *PublishedHandoffRoute) GetTransitionId() string {
@@ -2300,7 +2472,7 @@ type HandoffParameter struct {
 
 func (x *HandoffParameter) Reset() {
 	*x = HandoffParameter{}
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[23]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[25]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2312,7 +2484,7 @@ func (x *HandoffParameter) String() string {
 func (*HandoffParameter) ProtoMessage() {}
 
 func (x *HandoffParameter) ProtoReflect() protoreflect.Message {
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[23]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[25]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2325,7 +2497,7 @@ func (x *HandoffParameter) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use HandoffParameter.ProtoReflect.Descriptor instead.
 func (*HandoffParameter) Descriptor() ([]byte, []int) {
-	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{23}
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{25}
 }
 
 func (x *HandoffParameter) GetName() string {
@@ -2384,22 +2556,23 @@ func (x *HandoffParameter) GetCollection() *HandoffParameterCollection {
 	return nil
 }
 
-// The runtime collects these digits before activating the edge target.
+// The runtime collects these values before activating the edge target.
 type HandoffParameterCollection struct {
 	state  protoimpl.MessageState `protogen:"open.v1"`
 	Input  string                 `protobuf:"bytes,1,opt,name=input,proto3" json:"input,omitempty"`
 	Digits uint32                 `protobuf:"varint,2,opt,name=digits,proto3" json:"digits,omitempty"`
 	Prompt string                 `protobuf:"bytes,3,opt,name=prompt,proto3" json:"prompt,omitempty"`
 	// Overall deadline, including retries and optional confirmation.
-	TimeoutSeconds uint32 `protobuf:"varint,4,opt,name=timeout_seconds,json=timeoutSeconds,proto3" json:"timeout_seconds,omitempty"`
-	Confirm        bool   `protobuf:"varint,5,opt,name=confirm,proto3" json:"confirm,omitempty"`
+	TimeoutSeconds uint32  `protobuf:"varint,4,opt,name=timeout_seconds,json=timeoutSeconds,proto3" json:"timeout_seconds,omitempty"`
+	Confirm        bool    `protobuf:"varint,5,opt,name=confirm,proto3" json:"confirm,omitempty"`
+	Format         *string `protobuf:"bytes,6,opt,name=format,proto3,oneof" json:"format,omitempty"`
 	unknownFields  protoimpl.UnknownFields
 	sizeCache      protoimpl.SizeCache
 }
 
 func (x *HandoffParameterCollection) Reset() {
 	*x = HandoffParameterCollection{}
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[24]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[26]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2411,7 +2584,7 @@ func (x *HandoffParameterCollection) String() string {
 func (*HandoffParameterCollection) ProtoMessage() {}
 
 func (x *HandoffParameterCollection) ProtoReflect() protoreflect.Message {
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[24]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[26]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2424,7 +2597,7 @@ func (x *HandoffParameterCollection) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use HandoffParameterCollection.ProtoReflect.Descriptor instead.
 func (*HandoffParameterCollection) Descriptor() ([]byte, []int) {
-	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{24}
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{26}
 }
 
 func (x *HandoffParameterCollection) GetInput() string {
@@ -2462,6 +2635,13 @@ func (x *HandoffParameterCollection) GetConfirm() bool {
 	return false
 }
 
+func (x *HandoffParameterCollection) GetFormat() string {
+	if x != nil && x.Format != nil {
+		return *x.Format
+	}
+	return ""
+}
+
 type TextRuntimeSnapshot struct {
 	state                     protoimpl.MessageState `protogen:"open.v1"`
 	Transport                 string                 `protobuf:"bytes,1,opt,name=transport,proto3" json:"transport,omitempty"`
@@ -2475,7 +2655,7 @@ type TextRuntimeSnapshot struct {
 
 func (x *TextRuntimeSnapshot) Reset() {
 	*x = TextRuntimeSnapshot{}
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[25]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[27]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2487,7 +2667,7 @@ func (x *TextRuntimeSnapshot) String() string {
 func (*TextRuntimeSnapshot) ProtoMessage() {}
 
 func (x *TextRuntimeSnapshot) ProtoReflect() protoreflect.Message {
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[25]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[27]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2500,7 +2680,7 @@ func (x *TextRuntimeSnapshot) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TextRuntimeSnapshot.ProtoReflect.Descriptor instead.
 func (*TextRuntimeSnapshot) Descriptor() ([]byte, []int) {
-	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{25}
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{27}
 }
 
 func (x *TextRuntimeSnapshot) GetTransport() string {
@@ -2556,7 +2736,7 @@ type CallRuntimeSnapshot struct {
 
 func (x *CallRuntimeSnapshot) Reset() {
 	*x = CallRuntimeSnapshot{}
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[26]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[28]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2568,7 +2748,7 @@ func (x *CallRuntimeSnapshot) String() string {
 func (*CallRuntimeSnapshot) ProtoMessage() {}
 
 func (x *CallRuntimeSnapshot) ProtoReflect() protoreflect.Message {
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[26]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[28]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2581,7 +2761,7 @@ func (x *CallRuntimeSnapshot) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CallRuntimeSnapshot.ProtoReflect.Descriptor instead.
 func (*CallRuntimeSnapshot) Descriptor() ([]byte, []int) {
-	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{26}
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{28}
 }
 
 func (x *CallRuntimeSnapshot) GetStt() *SttRuntime {
@@ -2667,7 +2847,7 @@ type ConversationControlRuntime struct {
 
 func (x *ConversationControlRuntime) Reset() {
 	*x = ConversationControlRuntime{}
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[27]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[29]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2679,7 +2859,7 @@ func (x *ConversationControlRuntime) String() string {
 func (*ConversationControlRuntime) ProtoMessage() {}
 
 func (x *ConversationControlRuntime) ProtoReflect() protoreflect.Message {
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[27]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[29]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2692,7 +2872,7 @@ func (x *ConversationControlRuntime) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ConversationControlRuntime.ProtoReflect.Descriptor instead.
 func (*ConversationControlRuntime) Descriptor() ([]byte, []int) {
-	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{27}
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{29}
 }
 
 func (x *ConversationControlRuntime) GetEndCallMessage() string {
@@ -2737,7 +2917,7 @@ type IdleMessageRuntime struct {
 
 func (x *IdleMessageRuntime) Reset() {
 	*x = IdleMessageRuntime{}
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[28]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[30]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2749,7 +2929,7 @@ func (x *IdleMessageRuntime) String() string {
 func (*IdleMessageRuntime) ProtoMessage() {}
 
 func (x *IdleMessageRuntime) ProtoReflect() protoreflect.Message {
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[28]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[30]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2762,7 +2942,7 @@ func (x *IdleMessageRuntime) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use IdleMessageRuntime.ProtoReflect.Descriptor instead.
 func (*IdleMessageRuntime) Descriptor() ([]byte, []int) {
-	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{28}
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{30}
 }
 
 func (x *IdleMessageRuntime) GetMode() string {
@@ -2814,7 +2994,7 @@ type TimeElapsedActionRuntime struct {
 
 func (x *TimeElapsedActionRuntime) Reset() {
 	*x = TimeElapsedActionRuntime{}
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[29]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[31]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2826,7 +3006,7 @@ func (x *TimeElapsedActionRuntime) String() string {
 func (*TimeElapsedActionRuntime) ProtoMessage() {}
 
 func (x *TimeElapsedActionRuntime) ProtoReflect() protoreflect.Message {
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[29]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[31]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2839,7 +3019,7 @@ func (x *TimeElapsedActionRuntime) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TimeElapsedActionRuntime.ProtoReflect.Descriptor instead.
 func (*TimeElapsedActionRuntime) Descriptor() ([]byte, []int) {
-	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{29}
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{31}
 }
 
 func (x *TimeElapsedActionRuntime) GetAtSeconds() uint32 {
@@ -2898,7 +3078,7 @@ type EndCallActionRuntime struct {
 
 func (x *EndCallActionRuntime) Reset() {
 	*x = EndCallActionRuntime{}
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[30]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[32]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2910,7 +3090,7 @@ func (x *EndCallActionRuntime) String() string {
 func (*EndCallActionRuntime) ProtoMessage() {}
 
 func (x *EndCallActionRuntime) ProtoReflect() protoreflect.Message {
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[30]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[32]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2923,7 +3103,7 @@ func (x *EndCallActionRuntime) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use EndCallActionRuntime.ProtoReflect.Descriptor instead.
 func (*EndCallActionRuntime) Descriptor() ([]byte, []int) {
-	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{30}
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{32}
 }
 
 type TransportRuntime struct {
@@ -2937,7 +3117,7 @@ type TransportRuntime struct {
 
 func (x *TransportRuntime) Reset() {
 	*x = TransportRuntime{}
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[31]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[33]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2949,7 +3129,7 @@ func (x *TransportRuntime) String() string {
 func (*TransportRuntime) ProtoMessage() {}
 
 func (x *TransportRuntime) ProtoReflect() protoreflect.Message {
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[31]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[33]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2962,7 +3142,7 @@ func (x *TransportRuntime) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TransportRuntime.ProtoReflect.Descriptor instead.
 func (*TransportRuntime) Descriptor() ([]byte, []int) {
-	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{31}
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{33}
 }
 
 func (x *TransportRuntime) GetSource() CallTransportSource {
@@ -2996,7 +3176,7 @@ type VadRuntime struct {
 
 func (x *VadRuntime) Reset() {
 	*x = VadRuntime{}
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[32]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[34]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3008,7 +3188,7 @@ func (x *VadRuntime) String() string {
 func (*VadRuntime) ProtoMessage() {}
 
 func (x *VadRuntime) ProtoReflect() protoreflect.Message {
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[32]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[34]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3021,7 +3201,7 @@ func (x *VadRuntime) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use VadRuntime.ProtoReflect.Descriptor instead.
 func (*VadRuntime) Descriptor() ([]byte, []int) {
-	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{32}
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{34}
 }
 
 func (x *VadRuntime) GetNoiseCancellation() NoiseCancellationMode {
@@ -3048,7 +3228,7 @@ type SpeechPolicyRuntime struct {
 
 func (x *SpeechPolicyRuntime) Reset() {
 	*x = SpeechPolicyRuntime{}
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[33]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[35]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3060,7 +3240,7 @@ func (x *SpeechPolicyRuntime) String() string {
 func (*SpeechPolicyRuntime) ProtoMessage() {}
 
 func (x *SpeechPolicyRuntime) ProtoReflect() protoreflect.Message {
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[33]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[35]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3073,7 +3253,7 @@ func (x *SpeechPolicyRuntime) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SpeechPolicyRuntime.ProtoReflect.Descriptor instead.
 func (*SpeechPolicyRuntime) Descriptor() ([]byte, []int) {
-	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{33}
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{35}
 }
 
 func (x *SpeechPolicyRuntime) GetResponseSpeed() float64 {
@@ -3101,7 +3281,7 @@ type CallLimitsRuntime struct {
 
 func (x *CallLimitsRuntime) Reset() {
 	*x = CallLimitsRuntime{}
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[34]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[36]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3113,7 +3293,7 @@ func (x *CallLimitsRuntime) String() string {
 func (*CallLimitsRuntime) ProtoMessage() {}
 
 func (x *CallLimitsRuntime) ProtoReflect() protoreflect.Message {
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[34]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[36]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3126,7 +3306,7 @@ func (x *CallLimitsRuntime) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CallLimitsRuntime.ProtoReflect.Descriptor instead.
 func (*CallLimitsRuntime) Descriptor() ([]byte, []int) {
-	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{34}
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{36}
 }
 
 func (x *CallLimitsRuntime) GetDialWaitTimeSeconds() uint32 {
@@ -3160,7 +3340,7 @@ type BackgroundAudioRuntime struct {
 
 func (x *BackgroundAudioRuntime) Reset() {
 	*x = BackgroundAudioRuntime{}
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[35]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[37]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3172,7 +3352,7 @@ func (x *BackgroundAudioRuntime) String() string {
 func (*BackgroundAudioRuntime) ProtoMessage() {}
 
 func (x *BackgroundAudioRuntime) ProtoReflect() protoreflect.Message {
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[35]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[37]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3185,7 +3365,7 @@ func (x *BackgroundAudioRuntime) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use BackgroundAudioRuntime.ProtoReflect.Descriptor instead.
 func (*BackgroundAudioRuntime) Descriptor() ([]byte, []int) {
-	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{35}
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{37}
 }
 
 func (x *BackgroundAudioRuntime) GetPreset() BackgroundAudioPreset {
@@ -3212,7 +3392,7 @@ type DtmfInputRuntime struct {
 
 func (x *DtmfInputRuntime) Reset() {
 	*x = DtmfInputRuntime{}
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[36]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[38]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3224,7 +3404,7 @@ func (x *DtmfInputRuntime) String() string {
 func (*DtmfInputRuntime) ProtoMessage() {}
 
 func (x *DtmfInputRuntime) ProtoReflect() protoreflect.Message {
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[36]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[38]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3237,7 +3417,7 @@ func (x *DtmfInputRuntime) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DtmfInputRuntime.ProtoReflect.Descriptor instead.
 func (*DtmfInputRuntime) Descriptor() ([]byte, []int) {
-	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{36}
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{38}
 }
 
 func (x *DtmfInputRuntime) GetTimeoutSeconds() uint32 {
@@ -3263,7 +3443,7 @@ type AgentInstructions struct {
 
 func (x *AgentInstructions) Reset() {
 	*x = AgentInstructions{}
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[37]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[39]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3275,7 +3455,7 @@ func (x *AgentInstructions) String() string {
 func (*AgentInstructions) ProtoMessage() {}
 
 func (x *AgentInstructions) ProtoReflect() protoreflect.Message {
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[37]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[39]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3288,7 +3468,7 @@ func (x *AgentInstructions) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AgentInstructions.ProtoReflect.Descriptor instead.
 func (*AgentInstructions) Descriptor() ([]byte, []int) {
-	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{37}
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{39}
 }
 
 func (x *AgentInstructions) GetSystemPrompt() string {
@@ -3318,7 +3498,7 @@ type NodeToolMetadata struct {
 
 func (x *NodeToolMetadata) Reset() {
 	*x = NodeToolMetadata{}
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[38]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[40]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3330,7 +3510,7 @@ func (x *NodeToolMetadata) String() string {
 func (*NodeToolMetadata) ProtoMessage() {}
 
 func (x *NodeToolMetadata) ProtoReflect() protoreflect.Message {
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[38]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[40]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3343,7 +3523,7 @@ func (x *NodeToolMetadata) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use NodeToolMetadata.ProtoReflect.Descriptor instead.
 func (*NodeToolMetadata) Descriptor() ([]byte, []int) {
-	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{38}
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{40}
 }
 
 func (x *NodeToolMetadata) GetToolId() string {
@@ -3463,7 +3643,7 @@ type McpToolMetadata struct {
 
 func (x *McpToolMetadata) Reset() {
 	*x = McpToolMetadata{}
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[39]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[41]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3475,7 +3655,7 @@ func (x *McpToolMetadata) String() string {
 func (*McpToolMetadata) ProtoMessage() {}
 
 func (x *McpToolMetadata) ProtoReflect() protoreflect.Message {
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[39]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[41]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3488,7 +3668,7 @@ func (x *McpToolMetadata) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use McpToolMetadata.ProtoReflect.Descriptor instead.
 func (*McpToolMetadata) Descriptor() ([]byte, []int) {
-	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{39}
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{41}
 }
 
 func (x *McpToolMetadata) GetServerName() string {
@@ -3525,7 +3705,7 @@ type ApiToolMetadata struct {
 
 func (x *ApiToolMetadata) Reset() {
 	*x = ApiToolMetadata{}
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[40]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[42]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3537,7 +3717,7 @@ func (x *ApiToolMetadata) String() string {
 func (*ApiToolMetadata) ProtoMessage() {}
 
 func (x *ApiToolMetadata) ProtoReflect() protoreflect.Message {
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[40]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[42]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3550,7 +3730,7 @@ func (x *ApiToolMetadata) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ApiToolMetadata.ProtoReflect.Descriptor instead.
 func (*ApiToolMetadata) Descriptor() ([]byte, []int) {
-	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{40}
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{42}
 }
 
 func (x *ApiToolMetadata) GetMethod() string {
@@ -3599,7 +3779,7 @@ type ToolMessages struct {
 
 func (x *ToolMessages) Reset() {
 	*x = ToolMessages{}
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[41]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[43]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3611,7 +3791,7 @@ func (x *ToolMessages) String() string {
 func (*ToolMessages) ProtoMessage() {}
 
 func (x *ToolMessages) ProtoReflect() protoreflect.Message {
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[41]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[43]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3624,7 +3804,7 @@ func (x *ToolMessages) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ToolMessages.ProtoReflect.Descriptor instead.
 func (*ToolMessages) Descriptor() ([]byte, []int) {
-	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{41}
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{43}
 }
 
 func (x *ToolMessages) GetItems() []*ApiToolMessage {
@@ -3649,7 +3829,7 @@ type ApiToolMessage struct {
 
 func (x *ApiToolMessage) Reset() {
 	*x = ApiToolMessage{}
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[42]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[44]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3661,7 +3841,7 @@ func (x *ApiToolMessage) String() string {
 func (*ApiToolMessage) ProtoMessage() {}
 
 func (x *ApiToolMessage) ProtoReflect() protoreflect.Message {
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[42]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[44]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3674,7 +3854,7 @@ func (x *ApiToolMessage) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ApiToolMessage.ProtoReflect.Descriptor instead.
 func (*ApiToolMessage) Descriptor() ([]byte, []int) {
-	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{42}
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{44}
 }
 
 func (x *ApiToolMessage) GetType() string {
@@ -3728,7 +3908,7 @@ type ToolMessageConditions struct {
 
 func (x *ToolMessageConditions) Reset() {
 	*x = ToolMessageConditions{}
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[43]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[45]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3740,7 +3920,7 @@ func (x *ToolMessageConditions) String() string {
 func (*ToolMessageConditions) ProtoMessage() {}
 
 func (x *ToolMessageConditions) ProtoReflect() protoreflect.Message {
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[43]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[45]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3753,7 +3933,7 @@ func (x *ToolMessageConditions) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ToolMessageConditions.ProtoReflect.Descriptor instead.
 func (*ToolMessageConditions) Descriptor() ([]byte, []int) {
-	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{43}
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{45}
 }
 
 func (x *ToolMessageConditions) GetItems() []*ToolMessageCondition {
@@ -3774,7 +3954,7 @@ type ToolMessageCondition struct {
 
 func (x *ToolMessageCondition) Reset() {
 	*x = ToolMessageCondition{}
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[44]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[46]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3786,7 +3966,7 @@ func (x *ToolMessageCondition) String() string {
 func (*ToolMessageCondition) ProtoMessage() {}
 
 func (x *ToolMessageCondition) ProtoReflect() protoreflect.Message {
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[44]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[46]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3799,7 +3979,7 @@ func (x *ToolMessageCondition) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ToolMessageCondition.ProtoReflect.Descriptor instead.
 func (*ToolMessageCondition) Descriptor() ([]byte, []int) {
-	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{44}
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{46}
 }
 
 func (x *ToolMessageCondition) GetParam() string {
@@ -3832,7 +4012,7 @@ type A2AToolMetadata struct {
 
 func (x *A2AToolMetadata) Reset() {
 	*x = A2AToolMetadata{}
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[45]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[47]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3844,7 +4024,7 @@ func (x *A2AToolMetadata) String() string {
 func (*A2AToolMetadata) ProtoMessage() {}
 
 func (x *A2AToolMetadata) ProtoReflect() protoreflect.Message {
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[45]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[47]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3857,7 +4037,7 @@ func (x *A2AToolMetadata) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use A2AToolMetadata.ProtoReflect.Descriptor instead.
 func (*A2AToolMetadata) Descriptor() ([]byte, []int) {
-	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{45}
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{47}
 }
 
 func (x *A2AToolMetadata) GetAgentCardUrl() string {
@@ -3876,7 +4056,7 @@ type KnowledgeToolMetadata struct {
 
 func (x *KnowledgeToolMetadata) Reset() {
 	*x = KnowledgeToolMetadata{}
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[46]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[48]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3888,7 +4068,7 @@ func (x *KnowledgeToolMetadata) String() string {
 func (*KnowledgeToolMetadata) ProtoMessage() {}
 
 func (x *KnowledgeToolMetadata) ProtoReflect() protoreflect.Message {
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[46]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[48]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3901,7 +4081,7 @@ func (x *KnowledgeToolMetadata) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use KnowledgeToolMetadata.ProtoReflect.Descriptor instead.
 func (*KnowledgeToolMetadata) Descriptor() ([]byte, []int) {
-	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{46}
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{48}
 }
 
 func (x *KnowledgeToolMetadata) GetKnowledgeRevisionId() string {
@@ -3922,7 +4102,7 @@ type ApiToolRuntime struct {
 
 func (x *ApiToolRuntime) Reset() {
 	*x = ApiToolRuntime{}
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[47]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[49]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3934,7 +4114,7 @@ func (x *ApiToolRuntime) String() string {
 func (*ApiToolRuntime) ProtoMessage() {}
 
 func (x *ApiToolRuntime) ProtoReflect() protoreflect.Message {
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[47]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[49]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3947,7 +4127,7 @@ func (x *ApiToolRuntime) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ApiToolRuntime.ProtoReflect.Descriptor instead.
 func (*ApiToolRuntime) Descriptor() ([]byte, []int) {
-	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{47}
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{49}
 }
 
 func (x *ApiToolRuntime) GetToolId() string {
@@ -3975,7 +4155,7 @@ type A2AToolRuntime struct {
 
 func (x *A2AToolRuntime) Reset() {
 	*x = A2AToolRuntime{}
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[48]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[50]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3987,7 +4167,7 @@ func (x *A2AToolRuntime) String() string {
 func (*A2AToolRuntime) ProtoMessage() {}
 
 func (x *A2AToolRuntime) ProtoReflect() protoreflect.Message {
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[48]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[50]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4000,7 +4180,7 @@ func (x *A2AToolRuntime) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use A2AToolRuntime.ProtoReflect.Descriptor instead.
 func (*A2AToolRuntime) Descriptor() ([]byte, []int) {
-	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{48}
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{50}
 }
 
 func (x *A2AToolRuntime) GetToolId() string {
@@ -4034,7 +4214,7 @@ type KnowledgeToolRuntime struct {
 
 func (x *KnowledgeToolRuntime) Reset() {
 	*x = KnowledgeToolRuntime{}
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[49]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[51]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4046,7 +4226,7 @@ func (x *KnowledgeToolRuntime) String() string {
 func (*KnowledgeToolRuntime) ProtoMessage() {}
 
 func (x *KnowledgeToolRuntime) ProtoReflect() protoreflect.Message {
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[49]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[51]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4059,7 +4239,7 @@ func (x *KnowledgeToolRuntime) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use KnowledgeToolRuntime.ProtoReflect.Descriptor instead.
 func (*KnowledgeToolRuntime) Descriptor() ([]byte, []int) {
-	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{49}
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{51}
 }
 
 func (x *KnowledgeToolRuntime) GetToolId() string {
@@ -4093,7 +4273,7 @@ type BuiltInTool struct {
 
 func (x *BuiltInTool) Reset() {
 	*x = BuiltInTool{}
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[50]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[52]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4105,7 +4285,7 @@ func (x *BuiltInTool) String() string {
 func (*BuiltInTool) ProtoMessage() {}
 
 func (x *BuiltInTool) ProtoReflect() protoreflect.Message {
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[50]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[52]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4118,7 +4298,7 @@ func (x *BuiltInTool) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use BuiltInTool.ProtoReflect.Descriptor instead.
 func (*BuiltInTool) Descriptor() ([]byte, []int) {
-	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{50}
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{52}
 }
 
 func (x *BuiltInTool) GetMessages() *ToolMessages {
@@ -4226,7 +4406,7 @@ type EndCallTool struct {
 
 func (x *EndCallTool) Reset() {
 	*x = EndCallTool{}
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[51]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[53]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4238,7 +4418,7 @@ func (x *EndCallTool) String() string {
 func (*EndCallTool) ProtoMessage() {}
 
 func (x *EndCallTool) ProtoReflect() protoreflect.Message {
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[51]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[53]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4251,7 +4431,7 @@ func (x *EndCallTool) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use EndCallTool.ProtoReflect.Descriptor instead.
 func (*EndCallTool) Descriptor() ([]byte, []int) {
-	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{51}
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{53}
 }
 
 func (x *EndCallTool) GetClosingPhrase() string {
@@ -4291,7 +4471,7 @@ type TransferToHumanTool struct {
 
 func (x *TransferToHumanTool) Reset() {
 	*x = TransferToHumanTool{}
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[52]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[54]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4303,7 +4483,7 @@ func (x *TransferToHumanTool) String() string {
 func (*TransferToHumanTool) ProtoMessage() {}
 
 func (x *TransferToHumanTool) ProtoReflect() protoreflect.Message {
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[52]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[54]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4316,7 +4496,7 @@ func (x *TransferToHumanTool) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TransferToHumanTool.ProtoReflect.Descriptor instead.
 func (*TransferToHumanTool) Descriptor() ([]byte, []int) {
-	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{52}
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{54}
 }
 
 func (x *TransferToHumanTool) GetSipCallTo() string {
@@ -4369,7 +4549,7 @@ type DtmfTool struct {
 
 func (x *DtmfTool) Reset() {
 	*x = DtmfTool{}
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[53]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[55]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4381,7 +4561,7 @@ func (x *DtmfTool) String() string {
 func (*DtmfTool) ProtoMessage() {}
 
 func (x *DtmfTool) ProtoReflect() protoreflect.Message {
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[53]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[55]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4394,7 +4574,7 @@ func (x *DtmfTool) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DtmfTool.ProtoReflect.Descriptor instead.
 func (*DtmfTool) Descriptor() ([]byte, []int) {
-	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{53}
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{55}
 }
 
 type SendSmsTool struct {
@@ -4410,7 +4590,7 @@ type SendSmsTool struct {
 
 func (x *SendSmsTool) Reset() {
 	*x = SendSmsTool{}
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[54]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[56]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4422,7 +4602,7 @@ func (x *SendSmsTool) String() string {
 func (*SendSmsTool) ProtoMessage() {}
 
 func (x *SendSmsTool) ProtoReflect() protoreflect.Message {
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[54]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[56]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4435,7 +4615,7 @@ func (x *SendSmsTool) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SendSmsTool.ProtoReflect.Descriptor instead.
 func (*SendSmsTool) Descriptor() ([]byte, []int) {
-	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{54}
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{56}
 }
 
 func (x *SendSmsTool) GetRecipient() string {
@@ -4480,7 +4660,7 @@ type SpeakerTool struct {
 
 func (x *SpeakerTool) Reset() {
 	*x = SpeakerTool{}
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[55]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[57]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4492,7 +4672,7 @@ func (x *SpeakerTool) String() string {
 func (*SpeakerTool) ProtoMessage() {}
 
 func (x *SpeakerTool) ProtoReflect() protoreflect.Message {
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[55]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[57]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4505,7 +4685,7 @@ func (x *SpeakerTool) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SpeakerTool.ProtoReflect.Descriptor instead.
 func (*SpeakerTool) Descriptor() ([]byte, []int) {
-	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{55}
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{57}
 }
 
 func (x *SpeakerTool) GetCondition() string {
@@ -4548,7 +4728,7 @@ type McpServerRuntime struct {
 
 func (x *McpServerRuntime) Reset() {
 	*x = McpServerRuntime{}
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[56]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[58]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4560,7 +4740,7 @@ func (x *McpServerRuntime) String() string {
 func (*McpServerRuntime) ProtoMessage() {}
 
 func (x *McpServerRuntime) ProtoReflect() protoreflect.Message {
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[56]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[58]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4573,7 +4753,7 @@ func (x *McpServerRuntime) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use McpServerRuntime.ProtoReflect.Descriptor instead.
 func (*McpServerRuntime) Descriptor() ([]byte, []int) {
-	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{56}
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{58}
 }
 
 func (x *McpServerRuntime) GetName() string {
@@ -4613,7 +4793,7 @@ type ConversationFillerRuntime struct {
 
 func (x *ConversationFillerRuntime) Reset() {
 	*x = ConversationFillerRuntime{}
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[57]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[59]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4625,7 +4805,7 @@ func (x *ConversationFillerRuntime) String() string {
 func (*ConversationFillerRuntime) ProtoMessage() {}
 
 func (x *ConversationFillerRuntime) ProtoReflect() protoreflect.Message {
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[57]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[59]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4638,7 +4818,7 @@ func (x *ConversationFillerRuntime) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ConversationFillerRuntime.ProtoReflect.Descriptor instead.
 func (*ConversationFillerRuntime) Descriptor() ([]byte, []int) {
-	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{57}
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{59}
 }
 
 func (x *ConversationFillerRuntime) GetPhrase() string {
@@ -4671,7 +4851,7 @@ type CommandSipTransferRequest struct {
 
 func (x *CommandSipTransferRequest) Reset() {
 	*x = CommandSipTransferRequest{}
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[58]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[60]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4683,7 +4863,7 @@ func (x *CommandSipTransferRequest) String() string {
 func (*CommandSipTransferRequest) ProtoMessage() {}
 
 func (x *CommandSipTransferRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[58]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[60]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4696,7 +4876,7 @@ func (x *CommandSipTransferRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CommandSipTransferRequest.ProtoReflect.Descriptor instead.
 func (*CommandSipTransferRequest) Descriptor() ([]byte, []int) {
-	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{58}
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{60}
 }
 
 func (x *CommandSipTransferRequest) GetCapability() string {
@@ -4790,7 +4970,7 @@ type CommandSipTransferResponse struct {
 
 func (x *CommandSipTransferResponse) Reset() {
 	*x = CommandSipTransferResponse{}
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[59]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[61]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4802,7 +4982,7 @@ func (x *CommandSipTransferResponse) String() string {
 func (*CommandSipTransferResponse) ProtoMessage() {}
 
 func (x *CommandSipTransferResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[59]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[61]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4815,7 +4995,7 @@ func (x *CommandSipTransferResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CommandSipTransferResponse.ProtoReflect.Descriptor instead.
 func (*CommandSipTransferResponse) Descriptor() ([]byte, []int) {
-	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{59}
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{61}
 }
 
 func (x *CommandSipTransferResponse) GetAttemptId() string {
@@ -4873,7 +5053,7 @@ type SipTransferConsultation struct {
 
 func (x *SipTransferConsultation) Reset() {
 	*x = SipTransferConsultation{}
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[60]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[62]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4885,7 +5065,7 @@ func (x *SipTransferConsultation) String() string {
 func (*SipTransferConsultation) ProtoMessage() {}
 
 func (x *SipTransferConsultation) ProtoReflect() protoreflect.Message {
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[60]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[62]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4898,7 +5078,7 @@ func (x *SipTransferConsultation) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SipTransferConsultation.ProtoReflect.Descriptor instead.
 func (*SipTransferConsultation) Descriptor() ([]byte, []int) {
-	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{60}
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{62}
 }
 
 func (x *SipTransferConsultation) GetRoomName() string {
@@ -4940,7 +5120,32 @@ var File_port_api_v1_agent_session_proto protoreflect.FileDescriptor
 
 const file_port_api_v1_agent_session_proto_rawDesc = "" +
 	"\n" +
-	"\x1fport/api/v1/agent_session.proto\x12\vport.api.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1fport/api/v1/voice_runtime.proto\"\x8c\x01\n" +
+	"\x1fport/api/v1/agent_session.proto\x12\vport.api.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1fport/api/v1/voice_runtime.proto\"\xc1\x02\n" +
+	"\x1cCommandFormCollectionRequest\x128\n" +
+	"\x06action\x18\x01 \x01(\tB \xbaH\x1dr\x1bR\x06createR\x04pollR\x06cancelR\x03ackR\x06action\x123\n" +
+	"\x0fconversation_id\x18\x02 \x01(\tB\n" +
+	"\xbaH\ar\x05\x10\x01\x18\x80\x01R\x0econversationId\x12)\n" +
+	"\n" +
+	"session_id\x18\x03 \x01(\tB\n" +
+	"\xbaH\ar\x05\x10\x01\x18\x80\x01R\tsessionId\x12-\n" +
+	"\fpublished_id\x18\x04 \x01(\tB\n" +
+	"\xbaH\ar\x05\x10\x01\x18\x80\x01R\vpublishedId\x12/\n" +
+	"\rtransition_id\x18\x05 \x01(\tB\n" +
+	"\xbaH\ar\x05\x10\x01\x18\x80\x02R\ftransitionId\x12'\n" +
+	"\n" +
+	"request_id\x18\x06 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\trequestId\"\xb7\x03\n" +
+	"\x1dCommandFormCollectionResponse\x12'\n" +
+	"\n" +
+	"request_id\x18\x01 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\trequestId\x12V\n" +
+	"\x06status\x18\x02 \x01(\tB>\xbaH;r9R\awaitingR\tcompletedR\aappliedR\aexpiredR\tcancelledR\x06failedR\x06status\x124\n" +
+	"\bdelivery\x18\x03 \x01(\tB\x18\xbaH\x15r\x13R\apreviewR\balimtalkR\bdelivery\x12(\n" +
+	"\n" +
+	"expires_at\x18\x04 \x01(\tB\t\xbaH\x06r\x04\x10\x01\x18@R\texpiresAt\x12N\n" +
+	"\x06values\x18\x05 \x03(\v26.port.api.v1.CommandFormCollectionResponse.ValuesEntryR\x06values\x12*\n" +
+	"\ffailure_code\x18\x06 \x01(\tB\a\xbaH\x04r\x02\x18@R\vfailureCode\x1a9\n" +
+	"\vValuesEntry\x12\x10\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
+	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"\x8c\x01\n" +
 	"\x10BootstrapRequest\x12.\n" +
 	"\rwebrtc_ticket\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01H\x00R\fwebrtcTicket\x124\n" +
 	"\x03sip\x18\x02 \x01(\v2 .port.api.v1.SipBootstrapContextH\x00R\x03sipB\x12\n" +
@@ -5198,14 +5403,16 @@ const file_port_api_v1_agent_session_proto_rawDesc = "" +
 	"collection\x18\b \x01(\v2'.port.api.v1.HandoffParameterCollectionR\n" +
 	"collection:\xdf\x04\xbaH\xdb\x04\x1a\x84\x02\n" +
 	"\"handoff_parameter.collection_scope\x12Ccollection requires a required string parameter without enum values\x1a\x98\x01!has(this.collection) || (this.type == 1 && this.required && size(this.string_enum) == 0 && size(this.number_enum) == 0 && size(this.boolean_enum) == 0)\x1a\xd1\x02\n" +
-	"#handoff_parameter.enum_matches_type\x123only the enum values matching type may be populated\x1a\xf4\x01(this.type == 1 && size(this.number_enum) == 0 && size(this.boolean_enum) == 0) || (this.type == 2 && size(this.string_enum) == 0 && size(this.boolean_enum) == 0) || (this.type == 3 && size(this.string_enum) == 0 && size(this.number_enum) == 0)\"\xd8\x01\n" +
-	"\x1aHandoffParameterCollection\x12!\n" +
-	"\x05input\x18\x01 \x01(\tB\v\xbaH\br\x06\n" +
-	"\x04dtmfR\x05input\x12!\n" +
+	"#handoff_parameter.enum_matches_type\x123only the enum values matching type may be populated\x1a\xf4\x01(this.type == 1 && size(this.number_enum) == 0 && size(this.boolean_enum) == 0) || (this.type == 2 && size(this.string_enum) == 0 && size(this.boolean_enum) == 0) || (this.type == 3 && size(this.string_enum) == 0 && size(this.number_enum) == 0)\"\x8c\x05\n" +
+	"\x1aHandoffParameterCollection\x12+\n" +
+	"\x05input\x18\x01 \x01(\tB\x15\xbaH\x12r\x10R\x04dtmfR\bweb_formR\x05input\x12!\n" +
 	"\x06digits\x18\x02 \x01(\rB\t\xbaH\x06*\x04\x18 (\x01R\x06digits\x12&\n" +
 	"\x06prompt\x18\x03 \x01(\tB\x0e\xbaH\vr\t\x10\x01\x18\xe8\a2\x02\\SR\x06prompt\x122\n" +
 	"\x0ftimeout_seconds\x18\x04 \x01(\rB\t\xbaH\x06*\x04\x18x(\x05R\x0etimeoutSeconds\x12\x18\n" +
-	"\aconfirm\x18\x05 \x01(\bR\aconfirm\"\xae\x02\n" +
+	"\aconfirm\x18\x05 \x01(\bR\aconfirm\x12<\n" +
+	"\x06format\x18\x06 \x01(\tB\x1f\xbaH\x1cr\x1aR\x06digitsR\x05phoneR\tbirthdateH\x00R\x06format\x88\x01\x01:\xde\x02\xbaH\xda\x02\x1a\xd7\x02\n" +
+	"\x1fhandoff_collection.format_scope\x12>DTMF has no form format; web forms have no keypad confirmation\x1a\xf3\x01(this.input == 'dtmf' && !has(this.format)) || (this.input == 'web_form' && !this.confirm && (!has(this.format) || this.format == 'digits' || (this.format == 'phone' && this.digits == 11u) || (this.format == 'birthdate' && this.digits == 8u)))B\t\n" +
+	"\a_format\"\xae\x02\n" +
 	"\x13TextRuntimeSnapshot\x120\n" +
 	"\ttransport\x18\x01 \x01(\tB\x12\xbaH\x0fr\r\n" +
 	"\vtext_streamR\ttransport\x12$\n" +
@@ -5476,12 +5683,13 @@ const file_port_api_v1_agent_session_proto_rawDesc = "" +
 	"\x15CONTEXT_POLICY_RECENT\x10\x03\x12\x16\n" +
 	"\x12CONTEXT_POLICY_ALL\x10\x04\x12.\n" +
 	"*CONTEXT_POLICY_USER_AND_ASSISTANT_MESSAGES\x10\x05\x12.\n" +
-	"*CONTEXT_POLICY_PREVIOUS_ASSISTANT_MESSAGES\x10\x062\xd6\x03\n" +
+	"*CONTEXT_POLICY_PREVIOUS_ASSISTANT_MESSAGES\x10\x062\xc6\x04\n" +
 	"\x17ExecutionSessionService\x12e\n" +
 	"\x12BootstrapPublished\x12&.port.api.v1.BootstrapPublishedRequest\x1a'.port.api.v1.BootstrapPublishedResponse\x12e\n" +
 	"\x12CommandSipTransfer\x12&.port.api.v1.CommandSipTransferRequest\x1a'.port.api.v1.CommandSipTransferResponse\x12t\n" +
 	"\x17RecordLlmRequestStarted\x12+.port.api.v1.RecordLlmRequestStartedRequest\x1a,.port.api.v1.RecordLlmRequestStartedResponse\x12w\n" +
-	"\x18RecordLlmRequestTerminal\x12,.port.api.v1.RecordLlmRequestTerminalRequest\x1a-.port.api.v1.RecordLlmRequestTerminalResponseB?Z=github.com/kyh0703/port-contracts/v4/gen/go/port/api/v1;apiv1b\x06proto3"
+	"\x18RecordLlmRequestTerminal\x12,.port.api.v1.RecordLlmRequestTerminalRequest\x1a-.port.api.v1.RecordLlmRequestTerminalResponse\x12n\n" +
+	"\x15CommandFormCollection\x12).port.api.v1.CommandFormCollectionRequest\x1a*.port.api.v1.CommandFormCollectionResponseB?Z=github.com/kyh0703/port-contracts/v4/gen/go/port/api/v1;apiv1b\x06proto3"
 
 var (
 	file_port_api_v1_agent_session_proto_rawDescOnce sync.Once
@@ -5496,7 +5704,7 @@ func file_port_api_v1_agent_session_proto_rawDescGZIP() []byte {
 }
 
 var file_port_api_v1_agent_session_proto_enumTypes = make([]protoimpl.EnumInfo, 6)
-var file_port_api_v1_agent_session_proto_msgTypes = make([]protoimpl.MessageInfo, 64)
+var file_port_api_v1_agent_session_proto_msgTypes = make([]protoimpl.MessageInfo, 67)
 var file_port_api_v1_agent_session_proto_goTypes = []any{
 	(HandoffParameterType)(0),                // 0: port.api.v1.HandoffParameterType
 	(CallTransportSource)(0),                 // 1: port.api.v1.CallTransportSource
@@ -5504,160 +5712,166 @@ var file_port_api_v1_agent_session_proto_goTypes = []any{
 	(BackgroundAudioPreset)(0),               // 3: port.api.v1.BackgroundAudioPreset
 	(AgentMode)(0),                           // 4: port.api.v1.AgentMode
 	(ContextPolicy)(0),                       // 5: port.api.v1.ContextPolicy
-	(*BootstrapRequest)(nil),                 // 6: port.api.v1.BootstrapRequest
-	(*SipBootstrapContext)(nil),              // 7: port.api.v1.SipBootstrapContext
-	(*BootstrapPublishedRequest)(nil),        // 8: port.api.v1.BootstrapPublishedRequest
-	(*BootstrapPublishedResponse)(nil),       // 9: port.api.v1.BootstrapPublishedResponse
-	(*LlmAuditCapability)(nil),               // 10: port.api.v1.LlmAuditCapability
-	(*LlmAuditRequestContext)(nil),           // 11: port.api.v1.LlmAuditRequestContext
-	(*RecordLlmRequestStartedRequest)(nil),   // 12: port.api.v1.RecordLlmRequestStartedRequest
-	(*RecordLlmRequestStartedResponse)(nil),  // 13: port.api.v1.RecordLlmRequestStartedResponse
-	(*LlmAuditUsage)(nil),                    // 14: port.api.v1.LlmAuditUsage
-	(*RecordLlmRequestTerminalRequest)(nil),  // 15: port.api.v1.RecordLlmRequestTerminalRequest
-	(*RecordLlmRequestTerminalResponse)(nil), // 16: port.api.v1.RecordLlmRequestTerminalResponse
-	(*SessionPromptVariableBag)(nil),         // 17: port.api.v1.SessionPromptVariableBag
-	(*SessionPromptVariable)(nil),            // 18: port.api.v1.SessionPromptVariable
-	(*PublishedAgentExecution)(nil),          // 19: port.api.v1.PublishedAgentExecution
-	(*AgentPromptConfigSnapshot)(nil),        // 20: port.api.v1.AgentPromptConfigSnapshot
-	(*PublishedAgentNodeRuntime)(nil),        // 21: port.api.v1.PublishedAgentNodeRuntime
-	(*InlineAuthoringOptions)(nil),           // 22: port.api.v1.InlineAuthoringOptions
-	(*NodeModelSettings)(nil),                // 23: port.api.v1.NodeModelSettings
-	(*NodeToolBinding)(nil),                  // 24: port.api.v1.NodeToolBinding
-	(*PublishedSupervisorSnapshot)(nil),      // 25: port.api.v1.PublishedSupervisorSnapshot
-	(*PublishedSupervisorSpecialist)(nil),    // 26: port.api.v1.PublishedSupervisorSpecialist
-	(*PublishedHandoffSnapshot)(nil),         // 27: port.api.v1.PublishedHandoffSnapshot
-	(*PublishedHandoffRoute)(nil),            // 28: port.api.v1.PublishedHandoffRoute
-	(*HandoffParameter)(nil),                 // 29: port.api.v1.HandoffParameter
-	(*HandoffParameterCollection)(nil),       // 30: port.api.v1.HandoffParameterCollection
-	(*TextRuntimeSnapshot)(nil),              // 31: port.api.v1.TextRuntimeSnapshot
-	(*CallRuntimeSnapshot)(nil),              // 32: port.api.v1.CallRuntimeSnapshot
-	(*ConversationControlRuntime)(nil),       // 33: port.api.v1.ConversationControlRuntime
-	(*IdleMessageRuntime)(nil),               // 34: port.api.v1.IdleMessageRuntime
-	(*TimeElapsedActionRuntime)(nil),         // 35: port.api.v1.TimeElapsedActionRuntime
-	(*EndCallActionRuntime)(nil),             // 36: port.api.v1.EndCallActionRuntime
-	(*TransportRuntime)(nil),                 // 37: port.api.v1.TransportRuntime
-	(*VadRuntime)(nil),                       // 38: port.api.v1.VadRuntime
-	(*SpeechPolicyRuntime)(nil),              // 39: port.api.v1.SpeechPolicyRuntime
-	(*CallLimitsRuntime)(nil),                // 40: port.api.v1.CallLimitsRuntime
-	(*BackgroundAudioRuntime)(nil),           // 41: port.api.v1.BackgroundAudioRuntime
-	(*DtmfInputRuntime)(nil),                 // 42: port.api.v1.DtmfInputRuntime
-	(*AgentInstructions)(nil),                // 43: port.api.v1.AgentInstructions
-	(*NodeToolMetadata)(nil),                 // 44: port.api.v1.NodeToolMetadata
-	(*McpToolMetadata)(nil),                  // 45: port.api.v1.McpToolMetadata
-	(*ApiToolMetadata)(nil),                  // 46: port.api.v1.ApiToolMetadata
-	(*ToolMessages)(nil),                     // 47: port.api.v1.ToolMessages
-	(*ApiToolMessage)(nil),                   // 48: port.api.v1.ApiToolMessage
-	(*ToolMessageConditions)(nil),            // 49: port.api.v1.ToolMessageConditions
-	(*ToolMessageCondition)(nil),             // 50: port.api.v1.ToolMessageCondition
-	(*A2AToolMetadata)(nil),                  // 51: port.api.v1.A2aToolMetadata
-	(*KnowledgeToolMetadata)(nil),            // 52: port.api.v1.KnowledgeToolMetadata
-	(*ApiToolRuntime)(nil),                   // 53: port.api.v1.ApiToolRuntime
-	(*A2AToolRuntime)(nil),                   // 54: port.api.v1.A2aToolRuntime
-	(*KnowledgeToolRuntime)(nil),             // 55: port.api.v1.KnowledgeToolRuntime
-	(*BuiltInTool)(nil),                      // 56: port.api.v1.BuiltInTool
-	(*EndCallTool)(nil),                      // 57: port.api.v1.EndCallTool
-	(*TransferToHumanTool)(nil),              // 58: port.api.v1.TransferToHumanTool
-	(*DtmfTool)(nil),                         // 59: port.api.v1.DtmfTool
-	(*SendSmsTool)(nil),                      // 60: port.api.v1.SendSmsTool
-	(*SpeakerTool)(nil),                      // 61: port.api.v1.SpeakerTool
-	(*McpServerRuntime)(nil),                 // 62: port.api.v1.McpServerRuntime
-	(*ConversationFillerRuntime)(nil),        // 63: port.api.v1.ConversationFillerRuntime
-	(*CommandSipTransferRequest)(nil),        // 64: port.api.v1.CommandSipTransferRequest
-	(*CommandSipTransferResponse)(nil),       // 65: port.api.v1.CommandSipTransferResponse
-	(*SipTransferConsultation)(nil),          // 66: port.api.v1.SipTransferConsultation
-	nil,                                      // 67: port.api.v1.ApiToolRuntime.HeadersEntry
-	nil,                                      // 68: port.api.v1.A2aToolRuntime.HeadersEntry
-	nil,                                      // 69: port.api.v1.McpServerRuntime.HeadersEntry
-	(*LlmRuntime)(nil),                       // 70: port.api.v1.LlmRuntime
-	(*SttRuntime)(nil),                       // 71: port.api.v1.SttRuntime
-	(*TtsRuntime)(nil),                       // 72: port.api.v1.TtsRuntime
+	(*CommandFormCollectionRequest)(nil),     // 6: port.api.v1.CommandFormCollectionRequest
+	(*CommandFormCollectionResponse)(nil),    // 7: port.api.v1.CommandFormCollectionResponse
+	(*BootstrapRequest)(nil),                 // 8: port.api.v1.BootstrapRequest
+	(*SipBootstrapContext)(nil),              // 9: port.api.v1.SipBootstrapContext
+	(*BootstrapPublishedRequest)(nil),        // 10: port.api.v1.BootstrapPublishedRequest
+	(*BootstrapPublishedResponse)(nil),       // 11: port.api.v1.BootstrapPublishedResponse
+	(*LlmAuditCapability)(nil),               // 12: port.api.v1.LlmAuditCapability
+	(*LlmAuditRequestContext)(nil),           // 13: port.api.v1.LlmAuditRequestContext
+	(*RecordLlmRequestStartedRequest)(nil),   // 14: port.api.v1.RecordLlmRequestStartedRequest
+	(*RecordLlmRequestStartedResponse)(nil),  // 15: port.api.v1.RecordLlmRequestStartedResponse
+	(*LlmAuditUsage)(nil),                    // 16: port.api.v1.LlmAuditUsage
+	(*RecordLlmRequestTerminalRequest)(nil),  // 17: port.api.v1.RecordLlmRequestTerminalRequest
+	(*RecordLlmRequestTerminalResponse)(nil), // 18: port.api.v1.RecordLlmRequestTerminalResponse
+	(*SessionPromptVariableBag)(nil),         // 19: port.api.v1.SessionPromptVariableBag
+	(*SessionPromptVariable)(nil),            // 20: port.api.v1.SessionPromptVariable
+	(*PublishedAgentExecution)(nil),          // 21: port.api.v1.PublishedAgentExecution
+	(*AgentPromptConfigSnapshot)(nil),        // 22: port.api.v1.AgentPromptConfigSnapshot
+	(*PublishedAgentNodeRuntime)(nil),        // 23: port.api.v1.PublishedAgentNodeRuntime
+	(*InlineAuthoringOptions)(nil),           // 24: port.api.v1.InlineAuthoringOptions
+	(*NodeModelSettings)(nil),                // 25: port.api.v1.NodeModelSettings
+	(*NodeToolBinding)(nil),                  // 26: port.api.v1.NodeToolBinding
+	(*PublishedSupervisorSnapshot)(nil),      // 27: port.api.v1.PublishedSupervisorSnapshot
+	(*PublishedSupervisorSpecialist)(nil),    // 28: port.api.v1.PublishedSupervisorSpecialist
+	(*PublishedHandoffSnapshot)(nil),         // 29: port.api.v1.PublishedHandoffSnapshot
+	(*PublishedHandoffRoute)(nil),            // 30: port.api.v1.PublishedHandoffRoute
+	(*HandoffParameter)(nil),                 // 31: port.api.v1.HandoffParameter
+	(*HandoffParameterCollection)(nil),       // 32: port.api.v1.HandoffParameterCollection
+	(*TextRuntimeSnapshot)(nil),              // 33: port.api.v1.TextRuntimeSnapshot
+	(*CallRuntimeSnapshot)(nil),              // 34: port.api.v1.CallRuntimeSnapshot
+	(*ConversationControlRuntime)(nil),       // 35: port.api.v1.ConversationControlRuntime
+	(*IdleMessageRuntime)(nil),               // 36: port.api.v1.IdleMessageRuntime
+	(*TimeElapsedActionRuntime)(nil),         // 37: port.api.v1.TimeElapsedActionRuntime
+	(*EndCallActionRuntime)(nil),             // 38: port.api.v1.EndCallActionRuntime
+	(*TransportRuntime)(nil),                 // 39: port.api.v1.TransportRuntime
+	(*VadRuntime)(nil),                       // 40: port.api.v1.VadRuntime
+	(*SpeechPolicyRuntime)(nil),              // 41: port.api.v1.SpeechPolicyRuntime
+	(*CallLimitsRuntime)(nil),                // 42: port.api.v1.CallLimitsRuntime
+	(*BackgroundAudioRuntime)(nil),           // 43: port.api.v1.BackgroundAudioRuntime
+	(*DtmfInputRuntime)(nil),                 // 44: port.api.v1.DtmfInputRuntime
+	(*AgentInstructions)(nil),                // 45: port.api.v1.AgentInstructions
+	(*NodeToolMetadata)(nil),                 // 46: port.api.v1.NodeToolMetadata
+	(*McpToolMetadata)(nil),                  // 47: port.api.v1.McpToolMetadata
+	(*ApiToolMetadata)(nil),                  // 48: port.api.v1.ApiToolMetadata
+	(*ToolMessages)(nil),                     // 49: port.api.v1.ToolMessages
+	(*ApiToolMessage)(nil),                   // 50: port.api.v1.ApiToolMessage
+	(*ToolMessageConditions)(nil),            // 51: port.api.v1.ToolMessageConditions
+	(*ToolMessageCondition)(nil),             // 52: port.api.v1.ToolMessageCondition
+	(*A2AToolMetadata)(nil),                  // 53: port.api.v1.A2aToolMetadata
+	(*KnowledgeToolMetadata)(nil),            // 54: port.api.v1.KnowledgeToolMetadata
+	(*ApiToolRuntime)(nil),                   // 55: port.api.v1.ApiToolRuntime
+	(*A2AToolRuntime)(nil),                   // 56: port.api.v1.A2aToolRuntime
+	(*KnowledgeToolRuntime)(nil),             // 57: port.api.v1.KnowledgeToolRuntime
+	(*BuiltInTool)(nil),                      // 58: port.api.v1.BuiltInTool
+	(*EndCallTool)(nil),                      // 59: port.api.v1.EndCallTool
+	(*TransferToHumanTool)(nil),              // 60: port.api.v1.TransferToHumanTool
+	(*DtmfTool)(nil),                         // 61: port.api.v1.DtmfTool
+	(*SendSmsTool)(nil),                      // 62: port.api.v1.SendSmsTool
+	(*SpeakerTool)(nil),                      // 63: port.api.v1.SpeakerTool
+	(*McpServerRuntime)(nil),                 // 64: port.api.v1.McpServerRuntime
+	(*ConversationFillerRuntime)(nil),        // 65: port.api.v1.ConversationFillerRuntime
+	(*CommandSipTransferRequest)(nil),        // 66: port.api.v1.CommandSipTransferRequest
+	(*CommandSipTransferResponse)(nil),       // 67: port.api.v1.CommandSipTransferResponse
+	(*SipTransferConsultation)(nil),          // 68: port.api.v1.SipTransferConsultation
+	nil,                                      // 69: port.api.v1.CommandFormCollectionResponse.ValuesEntry
+	nil,                                      // 70: port.api.v1.ApiToolRuntime.HeadersEntry
+	nil,                                      // 71: port.api.v1.A2aToolRuntime.HeadersEntry
+	nil,                                      // 72: port.api.v1.McpServerRuntime.HeadersEntry
+	(*LlmRuntime)(nil),                       // 73: port.api.v1.LlmRuntime
+	(*SttRuntime)(nil),                       // 74: port.api.v1.SttRuntime
+	(*TtsRuntime)(nil),                       // 75: port.api.v1.TtsRuntime
 }
 var file_port_api_v1_agent_session_proto_depIdxs = []int32{
-	7,  // 0: port.api.v1.BootstrapRequest.sip:type_name -> port.api.v1.SipBootstrapContext
-	6,  // 1: port.api.v1.BootstrapPublishedRequest.admission:type_name -> port.api.v1.BootstrapRequest
-	17, // 2: port.api.v1.BootstrapPublishedResponse.prompt_variables:type_name -> port.api.v1.SessionPromptVariableBag
-	19, // 3: port.api.v1.BootstrapPublishedResponse.agent:type_name -> port.api.v1.PublishedAgentExecution
-	32, // 4: port.api.v1.BootstrapPublishedResponse.voice_runtime:type_name -> port.api.v1.CallRuntimeSnapshot
-	31, // 5: port.api.v1.BootstrapPublishedResponse.text_runtime:type_name -> port.api.v1.TextRuntimeSnapshot
-	10, // 6: port.api.v1.BootstrapPublishedResponse.llm_audit_capability:type_name -> port.api.v1.LlmAuditCapability
-	11, // 7: port.api.v1.RecordLlmRequestStartedRequest.request:type_name -> port.api.v1.LlmAuditRequestContext
-	11, // 8: port.api.v1.RecordLlmRequestTerminalRequest.request:type_name -> port.api.v1.LlmAuditRequestContext
-	14, // 9: port.api.v1.RecordLlmRequestTerminalRequest.usage:type_name -> port.api.v1.LlmAuditUsage
-	18, // 10: port.api.v1.SessionPromptVariableBag.system:type_name -> port.api.v1.SessionPromptVariable
-	18, // 11: port.api.v1.SessionPromptVariableBag.user:type_name -> port.api.v1.SessionPromptVariable
-	4,  // 12: port.api.v1.PublishedAgentExecution.mode:type_name -> port.api.v1.AgentMode
-	21, // 13: port.api.v1.PublishedAgentExecution.node_runtimes:type_name -> port.api.v1.PublishedAgentNodeRuntime
-	25, // 14: port.api.v1.PublishedAgentExecution.supervisor:type_name -> port.api.v1.PublishedSupervisorSnapshot
-	27, // 15: port.api.v1.PublishedAgentExecution.handoff:type_name -> port.api.v1.PublishedHandoffSnapshot
-	20, // 16: port.api.v1.PublishedAgentExecution.prompt_config:type_name -> port.api.v1.AgentPromptConfigSnapshot
-	70, // 17: port.api.v1.PublishedAgentNodeRuntime.llm_worker:type_name -> port.api.v1.LlmRuntime
-	43, // 18: port.api.v1.PublishedAgentNodeRuntime.instructions:type_name -> port.api.v1.AgentInstructions
-	5,  // 19: port.api.v1.PublishedAgentNodeRuntime.context_policy:type_name -> port.api.v1.ContextPolicy
-	44, // 20: port.api.v1.PublishedAgentNodeRuntime.tools:type_name -> port.api.v1.NodeToolMetadata
-	62, // 21: port.api.v1.PublishedAgentNodeRuntime.mcp_servers:type_name -> port.api.v1.McpServerRuntime
-	53, // 22: port.api.v1.PublishedAgentNodeRuntime.api_tool_runtimes:type_name -> port.api.v1.ApiToolRuntime
-	54, // 23: port.api.v1.PublishedAgentNodeRuntime.a2a_tool_runtimes:type_name -> port.api.v1.A2aToolRuntime
-	56, // 24: port.api.v1.PublishedAgentNodeRuntime.built_in_tools:type_name -> port.api.v1.BuiltInTool
-	55, // 25: port.api.v1.PublishedAgentNodeRuntime.knowledge_tool_runtimes:type_name -> port.api.v1.KnowledgeToolRuntime
-	22, // 26: port.api.v1.PublishedAgentNodeRuntime.authoring:type_name -> port.api.v1.InlineAuthoringOptions
-	23, // 27: port.api.v1.InlineAuthoringOptions.model:type_name -> port.api.v1.NodeModelSettings
-	24, // 28: port.api.v1.InlineAuthoringOptions.tool_bindings:type_name -> port.api.v1.NodeToolBinding
-	26, // 29: port.api.v1.PublishedSupervisorSnapshot.specialists:type_name -> port.api.v1.PublishedSupervisorSpecialist
-	5,  // 30: port.api.v1.PublishedSupervisorSpecialist.context_policy:type_name -> port.api.v1.ContextPolicy
-	28, // 31: port.api.v1.PublishedHandoffSnapshot.routes:type_name -> port.api.v1.PublishedHandoffRoute
-	5,  // 32: port.api.v1.PublishedHandoffRoute.context_policy:type_name -> port.api.v1.ContextPolicy
-	29, // 33: port.api.v1.PublishedHandoffRoute.parameters:type_name -> port.api.v1.HandoffParameter
-	47, // 34: port.api.v1.PublishedHandoffRoute.tool_messages:type_name -> port.api.v1.ToolMessages
-	0,  // 35: port.api.v1.HandoffParameter.type:type_name -> port.api.v1.HandoffParameterType
-	30, // 36: port.api.v1.HandoffParameter.collection:type_name -> port.api.v1.HandoffParameterCollection
-	71, // 37: port.api.v1.CallRuntimeSnapshot.stt:type_name -> port.api.v1.SttRuntime
-	72, // 38: port.api.v1.CallRuntimeSnapshot.tts:type_name -> port.api.v1.TtsRuntime
-	41, // 39: port.api.v1.CallRuntimeSnapshot.background_audio:type_name -> port.api.v1.BackgroundAudioRuntime
-	42, // 40: port.api.v1.CallRuntimeSnapshot.dtmf:type_name -> port.api.v1.DtmfInputRuntime
-	37, // 41: port.api.v1.CallRuntimeSnapshot.transport:type_name -> port.api.v1.TransportRuntime
-	38, // 42: port.api.v1.CallRuntimeSnapshot.vad:type_name -> port.api.v1.VadRuntime
-	39, // 43: port.api.v1.CallRuntimeSnapshot.speech_policy:type_name -> port.api.v1.SpeechPolicyRuntime
-	40, // 44: port.api.v1.CallRuntimeSnapshot.limits:type_name -> port.api.v1.CallLimitsRuntime
-	63, // 45: port.api.v1.CallRuntimeSnapshot.conversation_filler:type_name -> port.api.v1.ConversationFillerRuntime
-	33, // 46: port.api.v1.CallRuntimeSnapshot.conversation_control:type_name -> port.api.v1.ConversationControlRuntime
-	35, // 47: port.api.v1.ConversationControlRuntime.time_elapsed_actions:type_name -> port.api.v1.TimeElapsedActionRuntime
-	34, // 48: port.api.v1.ConversationControlRuntime.idle_message:type_name -> port.api.v1.IdleMessageRuntime
-	36, // 49: port.api.v1.TimeElapsedActionRuntime.end_call:type_name -> port.api.v1.EndCallActionRuntime
-	1,  // 50: port.api.v1.TransportRuntime.source:type_name -> port.api.v1.CallTransportSource
-	2,  // 51: port.api.v1.VadRuntime.noise_cancellation:type_name -> port.api.v1.NoiseCancellationMode
-	3,  // 52: port.api.v1.BackgroundAudioRuntime.preset:type_name -> port.api.v1.BackgroundAudioPreset
-	45, // 53: port.api.v1.NodeToolMetadata.mcp:type_name -> port.api.v1.McpToolMetadata
-	46, // 54: port.api.v1.NodeToolMetadata.api:type_name -> port.api.v1.ApiToolMetadata
-	51, // 55: port.api.v1.NodeToolMetadata.a2a:type_name -> port.api.v1.A2aToolMetadata
-	52, // 56: port.api.v1.NodeToolMetadata.knowledge:type_name -> port.api.v1.KnowledgeToolMetadata
-	47, // 57: port.api.v1.NodeToolMetadata.messages:type_name -> port.api.v1.ToolMessages
-	48, // 58: port.api.v1.ApiToolMetadata.messages:type_name -> port.api.v1.ApiToolMessage
-	48, // 59: port.api.v1.ToolMessages.items:type_name -> port.api.v1.ApiToolMessage
-	49, // 60: port.api.v1.ApiToolMessage.conditions:type_name -> port.api.v1.ToolMessageConditions
-	50, // 61: port.api.v1.ToolMessageConditions.items:type_name -> port.api.v1.ToolMessageCondition
-	67, // 62: port.api.v1.ApiToolRuntime.headers:type_name -> port.api.v1.ApiToolRuntime.HeadersEntry
-	68, // 63: port.api.v1.A2aToolRuntime.headers:type_name -> port.api.v1.A2aToolRuntime.HeadersEntry
-	47, // 64: port.api.v1.BuiltInTool.messages:type_name -> port.api.v1.ToolMessages
-	57, // 65: port.api.v1.BuiltInTool.end_call:type_name -> port.api.v1.EndCallTool
-	58, // 66: port.api.v1.BuiltInTool.transfer_to_human:type_name -> port.api.v1.TransferToHumanTool
-	59, // 67: port.api.v1.BuiltInTool.dtmf:type_name -> port.api.v1.DtmfTool
-	60, // 68: port.api.v1.BuiltInTool.send_sms:type_name -> port.api.v1.SendSmsTool
-	61, // 69: port.api.v1.BuiltInTool.speaker:type_name -> port.api.v1.SpeakerTool
-	69, // 70: port.api.v1.McpServerRuntime.headers:type_name -> port.api.v1.McpServerRuntime.HeadersEntry
-	66, // 71: port.api.v1.CommandSipTransferResponse.consultation:type_name -> port.api.v1.SipTransferConsultation
-	8,  // 72: port.api.v1.ExecutionSessionService.BootstrapPublished:input_type -> port.api.v1.BootstrapPublishedRequest
-	64, // 73: port.api.v1.ExecutionSessionService.CommandSipTransfer:input_type -> port.api.v1.CommandSipTransferRequest
-	12, // 74: port.api.v1.ExecutionSessionService.RecordLlmRequestStarted:input_type -> port.api.v1.RecordLlmRequestStartedRequest
-	15, // 75: port.api.v1.ExecutionSessionService.RecordLlmRequestTerminal:input_type -> port.api.v1.RecordLlmRequestTerminalRequest
-	9,  // 76: port.api.v1.ExecutionSessionService.BootstrapPublished:output_type -> port.api.v1.BootstrapPublishedResponse
-	65, // 77: port.api.v1.ExecutionSessionService.CommandSipTransfer:output_type -> port.api.v1.CommandSipTransferResponse
-	13, // 78: port.api.v1.ExecutionSessionService.RecordLlmRequestStarted:output_type -> port.api.v1.RecordLlmRequestStartedResponse
-	16, // 79: port.api.v1.ExecutionSessionService.RecordLlmRequestTerminal:output_type -> port.api.v1.RecordLlmRequestTerminalResponse
-	76, // [76:80] is the sub-list for method output_type
-	72, // [72:76] is the sub-list for method input_type
-	72, // [72:72] is the sub-list for extension type_name
-	72, // [72:72] is the sub-list for extension extendee
-	0,  // [0:72] is the sub-list for field type_name
+	69, // 0: port.api.v1.CommandFormCollectionResponse.values:type_name -> port.api.v1.CommandFormCollectionResponse.ValuesEntry
+	9,  // 1: port.api.v1.BootstrapRequest.sip:type_name -> port.api.v1.SipBootstrapContext
+	8,  // 2: port.api.v1.BootstrapPublishedRequest.admission:type_name -> port.api.v1.BootstrapRequest
+	19, // 3: port.api.v1.BootstrapPublishedResponse.prompt_variables:type_name -> port.api.v1.SessionPromptVariableBag
+	21, // 4: port.api.v1.BootstrapPublishedResponse.agent:type_name -> port.api.v1.PublishedAgentExecution
+	34, // 5: port.api.v1.BootstrapPublishedResponse.voice_runtime:type_name -> port.api.v1.CallRuntimeSnapshot
+	33, // 6: port.api.v1.BootstrapPublishedResponse.text_runtime:type_name -> port.api.v1.TextRuntimeSnapshot
+	12, // 7: port.api.v1.BootstrapPublishedResponse.llm_audit_capability:type_name -> port.api.v1.LlmAuditCapability
+	13, // 8: port.api.v1.RecordLlmRequestStartedRequest.request:type_name -> port.api.v1.LlmAuditRequestContext
+	13, // 9: port.api.v1.RecordLlmRequestTerminalRequest.request:type_name -> port.api.v1.LlmAuditRequestContext
+	16, // 10: port.api.v1.RecordLlmRequestTerminalRequest.usage:type_name -> port.api.v1.LlmAuditUsage
+	20, // 11: port.api.v1.SessionPromptVariableBag.system:type_name -> port.api.v1.SessionPromptVariable
+	20, // 12: port.api.v1.SessionPromptVariableBag.user:type_name -> port.api.v1.SessionPromptVariable
+	4,  // 13: port.api.v1.PublishedAgentExecution.mode:type_name -> port.api.v1.AgentMode
+	23, // 14: port.api.v1.PublishedAgentExecution.node_runtimes:type_name -> port.api.v1.PublishedAgentNodeRuntime
+	27, // 15: port.api.v1.PublishedAgentExecution.supervisor:type_name -> port.api.v1.PublishedSupervisorSnapshot
+	29, // 16: port.api.v1.PublishedAgentExecution.handoff:type_name -> port.api.v1.PublishedHandoffSnapshot
+	22, // 17: port.api.v1.PublishedAgentExecution.prompt_config:type_name -> port.api.v1.AgentPromptConfigSnapshot
+	73, // 18: port.api.v1.PublishedAgentNodeRuntime.llm_worker:type_name -> port.api.v1.LlmRuntime
+	45, // 19: port.api.v1.PublishedAgentNodeRuntime.instructions:type_name -> port.api.v1.AgentInstructions
+	5,  // 20: port.api.v1.PublishedAgentNodeRuntime.context_policy:type_name -> port.api.v1.ContextPolicy
+	46, // 21: port.api.v1.PublishedAgentNodeRuntime.tools:type_name -> port.api.v1.NodeToolMetadata
+	64, // 22: port.api.v1.PublishedAgentNodeRuntime.mcp_servers:type_name -> port.api.v1.McpServerRuntime
+	55, // 23: port.api.v1.PublishedAgentNodeRuntime.api_tool_runtimes:type_name -> port.api.v1.ApiToolRuntime
+	56, // 24: port.api.v1.PublishedAgentNodeRuntime.a2a_tool_runtimes:type_name -> port.api.v1.A2aToolRuntime
+	58, // 25: port.api.v1.PublishedAgentNodeRuntime.built_in_tools:type_name -> port.api.v1.BuiltInTool
+	57, // 26: port.api.v1.PublishedAgentNodeRuntime.knowledge_tool_runtimes:type_name -> port.api.v1.KnowledgeToolRuntime
+	24, // 27: port.api.v1.PublishedAgentNodeRuntime.authoring:type_name -> port.api.v1.InlineAuthoringOptions
+	25, // 28: port.api.v1.InlineAuthoringOptions.model:type_name -> port.api.v1.NodeModelSettings
+	26, // 29: port.api.v1.InlineAuthoringOptions.tool_bindings:type_name -> port.api.v1.NodeToolBinding
+	28, // 30: port.api.v1.PublishedSupervisorSnapshot.specialists:type_name -> port.api.v1.PublishedSupervisorSpecialist
+	5,  // 31: port.api.v1.PublishedSupervisorSpecialist.context_policy:type_name -> port.api.v1.ContextPolicy
+	30, // 32: port.api.v1.PublishedHandoffSnapshot.routes:type_name -> port.api.v1.PublishedHandoffRoute
+	5,  // 33: port.api.v1.PublishedHandoffRoute.context_policy:type_name -> port.api.v1.ContextPolicy
+	31, // 34: port.api.v1.PublishedHandoffRoute.parameters:type_name -> port.api.v1.HandoffParameter
+	49, // 35: port.api.v1.PublishedHandoffRoute.tool_messages:type_name -> port.api.v1.ToolMessages
+	0,  // 36: port.api.v1.HandoffParameter.type:type_name -> port.api.v1.HandoffParameterType
+	32, // 37: port.api.v1.HandoffParameter.collection:type_name -> port.api.v1.HandoffParameterCollection
+	74, // 38: port.api.v1.CallRuntimeSnapshot.stt:type_name -> port.api.v1.SttRuntime
+	75, // 39: port.api.v1.CallRuntimeSnapshot.tts:type_name -> port.api.v1.TtsRuntime
+	43, // 40: port.api.v1.CallRuntimeSnapshot.background_audio:type_name -> port.api.v1.BackgroundAudioRuntime
+	44, // 41: port.api.v1.CallRuntimeSnapshot.dtmf:type_name -> port.api.v1.DtmfInputRuntime
+	39, // 42: port.api.v1.CallRuntimeSnapshot.transport:type_name -> port.api.v1.TransportRuntime
+	40, // 43: port.api.v1.CallRuntimeSnapshot.vad:type_name -> port.api.v1.VadRuntime
+	41, // 44: port.api.v1.CallRuntimeSnapshot.speech_policy:type_name -> port.api.v1.SpeechPolicyRuntime
+	42, // 45: port.api.v1.CallRuntimeSnapshot.limits:type_name -> port.api.v1.CallLimitsRuntime
+	65, // 46: port.api.v1.CallRuntimeSnapshot.conversation_filler:type_name -> port.api.v1.ConversationFillerRuntime
+	35, // 47: port.api.v1.CallRuntimeSnapshot.conversation_control:type_name -> port.api.v1.ConversationControlRuntime
+	37, // 48: port.api.v1.ConversationControlRuntime.time_elapsed_actions:type_name -> port.api.v1.TimeElapsedActionRuntime
+	36, // 49: port.api.v1.ConversationControlRuntime.idle_message:type_name -> port.api.v1.IdleMessageRuntime
+	38, // 50: port.api.v1.TimeElapsedActionRuntime.end_call:type_name -> port.api.v1.EndCallActionRuntime
+	1,  // 51: port.api.v1.TransportRuntime.source:type_name -> port.api.v1.CallTransportSource
+	2,  // 52: port.api.v1.VadRuntime.noise_cancellation:type_name -> port.api.v1.NoiseCancellationMode
+	3,  // 53: port.api.v1.BackgroundAudioRuntime.preset:type_name -> port.api.v1.BackgroundAudioPreset
+	47, // 54: port.api.v1.NodeToolMetadata.mcp:type_name -> port.api.v1.McpToolMetadata
+	48, // 55: port.api.v1.NodeToolMetadata.api:type_name -> port.api.v1.ApiToolMetadata
+	53, // 56: port.api.v1.NodeToolMetadata.a2a:type_name -> port.api.v1.A2aToolMetadata
+	54, // 57: port.api.v1.NodeToolMetadata.knowledge:type_name -> port.api.v1.KnowledgeToolMetadata
+	49, // 58: port.api.v1.NodeToolMetadata.messages:type_name -> port.api.v1.ToolMessages
+	50, // 59: port.api.v1.ApiToolMetadata.messages:type_name -> port.api.v1.ApiToolMessage
+	50, // 60: port.api.v1.ToolMessages.items:type_name -> port.api.v1.ApiToolMessage
+	51, // 61: port.api.v1.ApiToolMessage.conditions:type_name -> port.api.v1.ToolMessageConditions
+	52, // 62: port.api.v1.ToolMessageConditions.items:type_name -> port.api.v1.ToolMessageCondition
+	70, // 63: port.api.v1.ApiToolRuntime.headers:type_name -> port.api.v1.ApiToolRuntime.HeadersEntry
+	71, // 64: port.api.v1.A2aToolRuntime.headers:type_name -> port.api.v1.A2aToolRuntime.HeadersEntry
+	49, // 65: port.api.v1.BuiltInTool.messages:type_name -> port.api.v1.ToolMessages
+	59, // 66: port.api.v1.BuiltInTool.end_call:type_name -> port.api.v1.EndCallTool
+	60, // 67: port.api.v1.BuiltInTool.transfer_to_human:type_name -> port.api.v1.TransferToHumanTool
+	61, // 68: port.api.v1.BuiltInTool.dtmf:type_name -> port.api.v1.DtmfTool
+	62, // 69: port.api.v1.BuiltInTool.send_sms:type_name -> port.api.v1.SendSmsTool
+	63, // 70: port.api.v1.BuiltInTool.speaker:type_name -> port.api.v1.SpeakerTool
+	72, // 71: port.api.v1.McpServerRuntime.headers:type_name -> port.api.v1.McpServerRuntime.HeadersEntry
+	68, // 72: port.api.v1.CommandSipTransferResponse.consultation:type_name -> port.api.v1.SipTransferConsultation
+	10, // 73: port.api.v1.ExecutionSessionService.BootstrapPublished:input_type -> port.api.v1.BootstrapPublishedRequest
+	66, // 74: port.api.v1.ExecutionSessionService.CommandSipTransfer:input_type -> port.api.v1.CommandSipTransferRequest
+	14, // 75: port.api.v1.ExecutionSessionService.RecordLlmRequestStarted:input_type -> port.api.v1.RecordLlmRequestStartedRequest
+	17, // 76: port.api.v1.ExecutionSessionService.RecordLlmRequestTerminal:input_type -> port.api.v1.RecordLlmRequestTerminalRequest
+	6,  // 77: port.api.v1.ExecutionSessionService.CommandFormCollection:input_type -> port.api.v1.CommandFormCollectionRequest
+	11, // 78: port.api.v1.ExecutionSessionService.BootstrapPublished:output_type -> port.api.v1.BootstrapPublishedResponse
+	67, // 79: port.api.v1.ExecutionSessionService.CommandSipTransfer:output_type -> port.api.v1.CommandSipTransferResponse
+	15, // 80: port.api.v1.ExecutionSessionService.RecordLlmRequestStarted:output_type -> port.api.v1.RecordLlmRequestStartedResponse
+	18, // 81: port.api.v1.ExecutionSessionService.RecordLlmRequestTerminal:output_type -> port.api.v1.RecordLlmRequestTerminalResponse
+	7,  // 82: port.api.v1.ExecutionSessionService.CommandFormCollection:output_type -> port.api.v1.CommandFormCollectionResponse
+	78, // [78:83] is the sub-list for method output_type
+	73, // [73:78] is the sub-list for method input_type
+	73, // [73:73] is the sub-list for extension type_name
+	73, // [73:73] is the sub-list for extension extendee
+	0,  // [0:73] is the sub-list for field type_name
 }
 
 func init() { file_port_api_v1_agent_session_proto_init() }
@@ -5666,60 +5880,61 @@ func file_port_api_v1_agent_session_proto_init() {
 		return
 	}
 	file_port_api_v1_voice_runtime_proto_init()
-	file_port_api_v1_agent_session_proto_msgTypes[0].OneofWrappers = []any{
+	file_port_api_v1_agent_session_proto_msgTypes[2].OneofWrappers = []any{
 		(*BootstrapRequest_WebrtcTicket)(nil),
 		(*BootstrapRequest_Sip)(nil),
 	}
-	file_port_api_v1_agent_session_proto_msgTypes[1].OneofWrappers = []any{}
-	file_port_api_v1_agent_session_proto_msgTypes[2].OneofWrappers = []any{}
-	file_port_api_v1_agent_session_proto_msgTypes[3].OneofWrappers = []any{
+	file_port_api_v1_agent_session_proto_msgTypes[3].OneofWrappers = []any{}
+	file_port_api_v1_agent_session_proto_msgTypes[4].OneofWrappers = []any{}
+	file_port_api_v1_agent_session_proto_msgTypes[5].OneofWrappers = []any{
 		(*BootstrapPublishedResponse_VoiceRuntime)(nil),
 		(*BootstrapPublishedResponse_TextRuntime)(nil),
 	}
-	file_port_api_v1_agent_session_proto_msgTypes[5].OneofWrappers = []any{}
-	file_port_api_v1_agent_session_proto_msgTypes[8].OneofWrappers = []any{}
-	file_port_api_v1_agent_session_proto_msgTypes[9].OneofWrappers = []any{}
-	file_port_api_v1_agent_session_proto_msgTypes[12].OneofWrappers = []any{
+	file_port_api_v1_agent_session_proto_msgTypes[7].OneofWrappers = []any{}
+	file_port_api_v1_agent_session_proto_msgTypes[10].OneofWrappers = []any{}
+	file_port_api_v1_agent_session_proto_msgTypes[11].OneofWrappers = []any{}
+	file_port_api_v1_agent_session_proto_msgTypes[14].OneofWrappers = []any{
 		(*SessionPromptVariable_StringValue)(nil),
 		(*SessionPromptVariable_NumberValue)(nil),
 		(*SessionPromptVariable_BooleanValue)(nil),
 	}
-	file_port_api_v1_agent_session_proto_msgTypes[15].OneofWrappers = []any{}
 	file_port_api_v1_agent_session_proto_msgTypes[17].OneofWrappers = []any{}
-	file_port_api_v1_agent_session_proto_msgTypes[22].OneofWrappers = []any{}
-	file_port_api_v1_agent_session_proto_msgTypes[27].OneofWrappers = []any{}
-	file_port_api_v1_agent_session_proto_msgTypes[29].OneofWrappers = []any{
+	file_port_api_v1_agent_session_proto_msgTypes[19].OneofWrappers = []any{}
+	file_port_api_v1_agent_session_proto_msgTypes[24].OneofWrappers = []any{}
+	file_port_api_v1_agent_session_proto_msgTypes[26].OneofWrappers = []any{}
+	file_port_api_v1_agent_session_proto_msgTypes[29].OneofWrappers = []any{}
+	file_port_api_v1_agent_session_proto_msgTypes[31].OneofWrappers = []any{
 		(*TimeElapsedActionRuntime_Say)(nil),
 		(*TimeElapsedActionRuntime_EndCall)(nil),
 	}
-	file_port_api_v1_agent_session_proto_msgTypes[32].OneofWrappers = []any{}
-	file_port_api_v1_agent_session_proto_msgTypes[33].OneofWrappers = []any{}
+	file_port_api_v1_agent_session_proto_msgTypes[34].OneofWrappers = []any{}
 	file_port_api_v1_agent_session_proto_msgTypes[35].OneofWrappers = []any{}
-	file_port_api_v1_agent_session_proto_msgTypes[36].OneofWrappers = []any{}
-	file_port_api_v1_agent_session_proto_msgTypes[38].OneofWrappers = []any{
+	file_port_api_v1_agent_session_proto_msgTypes[37].OneofWrappers = []any{}
+	file_port_api_v1_agent_session_proto_msgTypes[38].OneofWrappers = []any{}
+	file_port_api_v1_agent_session_proto_msgTypes[40].OneofWrappers = []any{
 		(*NodeToolMetadata_Mcp)(nil),
 		(*NodeToolMetadata_Api)(nil),
 		(*NodeToolMetadata_A2A)(nil),
 		(*NodeToolMetadata_Knowledge)(nil),
 	}
-	file_port_api_v1_agent_session_proto_msgTypes[42].OneofWrappers = []any{}
-	file_port_api_v1_agent_session_proto_msgTypes[50].OneofWrappers = []any{
+	file_port_api_v1_agent_session_proto_msgTypes[44].OneofWrappers = []any{}
+	file_port_api_v1_agent_session_proto_msgTypes[52].OneofWrappers = []any{
 		(*BuiltInTool_EndCall)(nil),
 		(*BuiltInTool_TransferToHuman)(nil),
 		(*BuiltInTool_Dtmf)(nil),
 		(*BuiltInTool_SendSms)(nil),
 		(*BuiltInTool_Speaker)(nil),
 	}
-	file_port_api_v1_agent_session_proto_msgTypes[51].OneofWrappers = []any{}
-	file_port_api_v1_agent_session_proto_msgTypes[52].OneofWrappers = []any{}
-	file_port_api_v1_agent_session_proto_msgTypes[58].OneofWrappers = []any{}
+	file_port_api_v1_agent_session_proto_msgTypes[53].OneofWrappers = []any{}
+	file_port_api_v1_agent_session_proto_msgTypes[54].OneofWrappers = []any{}
+	file_port_api_v1_agent_session_proto_msgTypes[60].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_port_api_v1_agent_session_proto_rawDesc), len(file_port_api_v1_agent_session_proto_rawDesc)),
 			NumEnums:      6,
-			NumMessages:   64,
+			NumMessages:   67,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

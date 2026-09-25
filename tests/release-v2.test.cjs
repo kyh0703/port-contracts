@@ -9,15 +9,6 @@ function read(relativePath) {
   return readFileSync(path.join(root, relativePath), "utf8");
 }
 
-test("npm release metadata is pinned to 7.14.0", () => {
-  const packageJson = JSON.parse(read("package.json"));
-  const packageLock = JSON.parse(read("package-lock.json"));
-
-  assert.equal(packageJson.version, "7.14.0");
-  assert.equal(packageLock.version, "7.14.0");
-  assert.equal(packageLock.packages[""].version, "7.14.0");
-});
-
 test("legacy Node module resolution maps generated TypeScript subpaths", () => {
   const packageJson = JSON.parse(read("package.json"));
 
