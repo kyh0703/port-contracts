@@ -841,7 +841,7 @@ class SpeakerTool(_message.Message):
     def __init__(self, condition: _Optional[str] = ..., script: _Optional[str] = ..., consent_question: _Optional[str] = ..., response_timeout_seconds: _Optional[int] = ...) -> None: ...
 
 class McpServerRuntime(_message.Message):
-    __slots__ = ("name", "transport", "url", "headers")
+    __slots__ = ("name", "transport", "url", "headers", "timeout_ms")
     class HeadersEntry(_message.Message):
         __slots__ = ("key", "value")
         KEY_FIELD_NUMBER: _ClassVar[int]
@@ -853,11 +853,13 @@ class McpServerRuntime(_message.Message):
     TRANSPORT_FIELD_NUMBER: _ClassVar[int]
     URL_FIELD_NUMBER: _ClassVar[int]
     HEADERS_FIELD_NUMBER: _ClassVar[int]
+    TIMEOUT_MS_FIELD_NUMBER: _ClassVar[int]
     name: str
     transport: str
     url: str
     headers: _containers.ScalarMap[str, str]
-    def __init__(self, name: _Optional[str] = ..., transport: _Optional[str] = ..., url: _Optional[str] = ..., headers: _Optional[_Mapping[str, str]] = ...) -> None: ...
+    timeout_ms: int
+    def __init__(self, name: _Optional[str] = ..., transport: _Optional[str] = ..., url: _Optional[str] = ..., headers: _Optional[_Mapping[str, str]] = ..., timeout_ms: _Optional[int] = ...) -> None: ...
 
 class ConversationFillerRuntime(_message.Message):
     __slots__ = ("phrase",)

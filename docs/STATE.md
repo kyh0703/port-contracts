@@ -1,7 +1,18 @@
 # State
 
 current_version: orchestration-contract-v1
-last_updated: 2026-08-08
+last_updated: 2026-09-29
+
+## MCP timeout extension — 7.17.0
+
+- `McpServerRuntime.timeout_ms` is optional uint32 field 5, constrained to
+  1000..600000 when present. Existing headers remain field 4.
+- Regenerated TypeScript, Go and Python bindings. API and voice runtime use
+  the locally vendored 7.17.0 package; no registry publication performed.
+- Two wire tests passed: boundary values and headers survive binary/JSON
+  roundtrips; omitted timeout remains absent and explicit zero retains presence
+  for validation. A real MCP SDK network smoke consumed this package through
+  runtime materialization and preserved configured headers and call deadlines.
 
 ## Active
 

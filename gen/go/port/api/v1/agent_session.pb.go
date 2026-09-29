@@ -4717,11 +4717,13 @@ func (x *SpeakerTool) GetResponseTimeoutSeconds() uint32 {
 }
 
 type McpServerRuntime struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Name          string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
-	Transport     string                 `protobuf:"bytes,2,opt,name=transport,proto3" json:"transport,omitempty"`
-	Url           string                 `protobuf:"bytes,3,opt,name=url,proto3" json:"url,omitempty"`
-	Headers       map[string]string      `protobuf:"bytes,4,rep,name=headers,proto3" json:"headers,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
+	state     protoimpl.MessageState `protogen:"open.v1"`
+	Name      string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	Transport string                 `protobuf:"bytes,2,opt,name=transport,proto3" json:"transport,omitempty"`
+	Url       string                 `protobuf:"bytes,3,opt,name=url,proto3" json:"url,omitempty"`
+	Headers   map[string]string      `protobuf:"bytes,4,rep,name=headers,proto3" json:"headers,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
+	// Applies only to tool invocation; omission keeps the worker's legacy deadline.
+	TimeoutMs     *uint32 `protobuf:"varint,5,opt,name=timeout_ms,json=timeoutMs,proto3,oneof" json:"timeout_ms,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -4782,6 +4784,13 @@ func (x *McpServerRuntime) GetHeaders() map[string]string {
 		return x.Headers
 	}
 	return nil
+}
+
+func (x *McpServerRuntime) GetTimeoutMs() uint32 {
+	if x != nil && x.TimeoutMs != nil {
+		return *x.TimeoutMs
+	}
+	return 0
 }
 
 type ConversationFillerRuntime struct {
@@ -5599,15 +5608,18 @@ const file_port_api_v1_agent_session_proto_rawDesc = "" +
 	"\x06script\x18\x02 \x01(\tB\x0f\xbaH\fr\n" +
 	"\x10\x01\x18\xa0\x9c\x012\x02\\SR\x06script\x129\n" +
 	"\x10consent_question\x18\x03 \x01(\tB\x0e\xbaH\vr\t\x10\x01\x18\xe8\a2\x02\\SR\x0fconsentQuestion\x12C\n" +
-	"\x18response_timeout_seconds\x18\x04 \x01(\rB\t\xbaH\x06*\x04\x18x(\x05R\x16responseTimeoutSeconds\"\x87\x02\n" +
+	"\x18response_timeout_seconds\x18\x04 \x01(\rB\t\xbaH\x06*\x04\x18x(\x05R\x16responseTimeoutSeconds\"\xc8\x02\n" +
 	"\x10McpServerRuntime\x12\x1b\n" +
 	"\x04name\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x04name\x129\n" +
 	"\ttransport\x18\x02 \x01(\tB\x1b\xbaH\x18r\x16R\x03sseR\x0fstreamable-httpR\ttransport\x12\x19\n" +
 	"\x03url\x18\x03 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x03url\x12D\n" +
-	"\aheaders\x18\x04 \x03(\v2*.port.api.v1.McpServerRuntime.HeadersEntryR\aheaders\x1a:\n" +
+	"\aheaders\x18\x04 \x03(\v2*.port.api.v1.McpServerRuntime.HeadersEntryR\aheaders\x120\n" +
+	"\n" +
+	"timeout_ms\x18\x05 \x01(\rB\f\xbaH\t*\a\x18\xc0\xcf$(\xe8\aH\x00R\ttimeoutMs\x88\x01\x01\x1a:\n" +
 	"\fHeadersEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
-	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"?\n" +
+	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01B\r\n" +
+	"\v_timeout_ms\"?\n" +
 	"\x19ConversationFillerRuntime\x12\"\n" +
 	"\x06phrase\x18\x01 \x01(\tB\n" +
 	"\xbaH\ar\x05\x10\x01\x18\xc8\x01R\x06phrase\"\x8a\a\n" +
@@ -5927,6 +5939,7 @@ func file_port_api_v1_agent_session_proto_init() {
 	}
 	file_port_api_v1_agent_session_proto_msgTypes[53].OneofWrappers = []any{}
 	file_port_api_v1_agent_session_proto_msgTypes[54].OneofWrappers = []any{}
+	file_port_api_v1_agent_session_proto_msgTypes[58].OneofWrappers = []any{}
 	file_port_api_v1_agent_session_proto_msgTypes[60].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{

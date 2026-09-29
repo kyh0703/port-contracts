@@ -679,6 +679,8 @@ message McpServerRuntime {
   string transport = 2 [(buf.validate.field).string.in = "sse", (buf.validate.field).string.in = "streamable-http"];
   string url = 3 [(buf.validate.field).string.min_len = 1];
   map<string, string> headers = 4;
+  // Applies only to tool invocation; omission keeps the worker's legacy deadline.
+  optional uint32 timeout_ms = 5 [(buf.validate.field).uint32 = {gte: 1000 lte: 600000}];
 }
 
 message ConversationFillerRuntime {

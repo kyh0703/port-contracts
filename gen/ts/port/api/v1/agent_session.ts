@@ -817,6 +817,8 @@ export interface McpServerRuntime {
   transport: string;
   url: string;
   headers: { [key: string]: string };
+  /** Applies only to tool invocation; omission keeps the worker's legacy deadline. */
+  timeoutMs?: number | undefined;
 }
 
 export interface McpServerRuntime_HeadersEntry {
@@ -8623,7 +8625,7 @@ export const SpeakerTool: MessageFns<SpeakerTool> = {
 };
 
 function createBaseMcpServerRuntime(): McpServerRuntime {
-  return { name: "", transport: "", url: "", headers: {} };
+  return { name: "", transport: "", url: "", headers: {}, timeoutMs: undefined };
 }
 
 export const McpServerRuntime: MessageFns<McpServerRuntime> = {
@@ -8640,6 +8642,9 @@ export const McpServerRuntime: MessageFns<McpServerRuntime> = {
     globalThis.Object.entries(message.headers).forEach(([key, value]: [string, string]) => {
       McpServerRuntime_HeadersEntry.encode({ key: key as any, value }, writer.uint32(34).fork()).join();
     });
+    if (message.timeoutMs !== undefined) {
+      writer.uint32(40).uint32(message.timeoutMs);
+    }
     return writer;
   },
 
@@ -8685,6 +8690,14 @@ export const McpServerRuntime: MessageFns<McpServerRuntime> = {
           }
           continue;
         }
+        case 5: {
+          if (tag !== 40) {
+            break;
+          }
+
+          message.timeoutMs = reader.uint32();
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -8708,6 +8721,11 @@ export const McpServerRuntime: MessageFns<McpServerRuntime> = {
           {},
         )
         : {},
+      timeoutMs: isSet(object.timeoutMs)
+        ? globalThis.Number(object.timeoutMs)
+        : isSet(object.timeout_ms)
+        ? globalThis.Number(object.timeout_ms)
+        : undefined,
     };
   },
 
@@ -8731,6 +8749,9 @@ export const McpServerRuntime: MessageFns<McpServerRuntime> = {
         });
       }
     }
+    if (message.timeoutMs !== undefined) {
+      obj.timeoutMs = Math.round(message.timeoutMs);
+    }
     return obj;
   },
 
@@ -8751,6 +8772,7 @@ export const McpServerRuntime: MessageFns<McpServerRuntime> = {
       },
       {},
     );
+    message.timeoutMs = object.timeoutMs ?? undefined;
     return message;
   },
 };
