@@ -418,6 +418,44 @@ func TestPublishedAgentValidation(t *testing.T) {
 	})
 }
 
+func TestPublishedSoloSupervisorValidation(t *testing.T) {
+	tests := []struct {
+		name     string
+		response func() *apiv1.BootstrapPublishedResponse
+	}{
+		{"text", validSupervisorTextResponse},
+		{"voice", validSupervisorVoiceResponse},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			response := tt.response()
+			response.GetAgent().NodeRuntimes = response.GetAgent().NodeRuntimes[:1]
+			response.GetAgent().GetSupervisor().Specialists = nil
+			if err := Validate(response); err != nil {
+				t.Fatalf("Validate(solo supervisor) = %v, want nil", err)
+			}
+
+			invalid := []struct {
+				name   string
+				mutate func(*apiv1.PublishedAgentExecution)
+			}{
+				{"empty runtimes", func(agent *apiv1.PublishedAgentExecution) { agent.NodeRuntimes = nil }},
+				{"missing topology", func(agent *apiv1.PublishedAgentExecution) { agent.Supervisor = nil }},
+				{"empty root", func(agent *apiv1.PublishedAgentExecution) { agent.Supervisor.SupervisorNodeId = "" }},
+			}
+			for _, invalid := range invalid {
+				t.Run(invalid.name, func(t *testing.T) {
+					value := proto.Clone(response).(*apiv1.BootstrapPublishedResponse)
+					invalid.mutate(value.GetAgent())
+					if err := Validate(value); err == nil {
+						t.Fatal("Validate(invalid solo supervisor) = nil, want rejection")
+					}
+				})
+			}
+		})
+	}
+}
+
 func TestPublishedAgentPromptConfigSnapshotValidation(t *testing.T) {
 	valid := validHandoffTextResponse()
 	valid.GetAgent().PromptConfig = &apiv1.AgentPromptConfigSnapshot{

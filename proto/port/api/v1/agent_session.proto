@@ -274,7 +274,7 @@ message NodeToolBinding {
 
 message PublishedSupervisorSnapshot {
   string supervisor_node_id = 1 [(buf.validate.field).string.min_len = 1];
-  repeated PublishedSupervisorSpecialist specialists = 2 [(buf.validate.field).repeated.min_items = 1];
+  repeated PublishedSupervisorSpecialist specialists = 2;
 }
 
 message PublishedSupervisorSpecialist {

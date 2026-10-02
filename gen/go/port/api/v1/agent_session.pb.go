@@ -5370,10 +5370,10 @@ const file_port_api_v1_agent_session_proto_rawDesc = "" +
 	"\atool_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x06toolId\x12%\n" +
 	"\tparameter\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\tparameter\x12#\n" +
 	"\bvariable\x18\x03 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\bvariable\x121\n" +
-	"\x06target\x18\x04 \x01(\tB\x19\xbaH\x16r\x14R\bargumentR\btemplateR\x06target\"\xac\x01\n" +
+	"\x06target\x18\x04 \x01(\tB\x19\xbaH\x16r\x14R\bargumentR\btemplateR\x06target\"\xa2\x01\n" +
 	"\x1bPublishedSupervisorSnapshot\x125\n" +
-	"\x12supervisor_node_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x10supervisorNodeId\x12V\n" +
-	"\vspecialists\x18\x02 \x03(\v2*.port.api.v1.PublishedSupervisorSpecialistB\b\xbaH\x05\x92\x01\x02\b\x01R\vspecialists\"\xad\x03\n" +
+	"\x12supervisor_node_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x10supervisorNodeId\x12L\n" +
+	"\vspecialists\x18\x02 \x03(\v2*.port.api.v1.PublishedSupervisorSpecialistR\vspecialists\"\xad\x03\n" +
 	"\x1dPublishedSupervisorSpecialist\x12(\n" +
 	"\vrelation_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\n" +
 	"relationId\x12-\n" +

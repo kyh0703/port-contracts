@@ -43,6 +43,14 @@ parameters, `none | conversation | recent` context policy, and one blocking
 `request_start` message. Older Agent bootstrap services and revision fallbacks
 are intentionally unavailable.
 
+`7.19.0` allows a Supervisor root with zero specialists. The required nonempty
+root/node identity, at most 100 execution nodes, and the existing handoff contract
+remain unchanged. API and worker accept the same canonical V4/r2 topology for
+Agent or Space publications; no fake specialist or separate wire/runtime is added.
+Field numbers and `execution-publication-2026-09-15-r2` are unchanged. Roll out
+the API and worker together before permitting root-only publications. Protobuf
+lint/generation/build, 45 wire tests, and Go validation tests passed.
+
 `7.18.0` adds required nonempty `AgentSessionBootstrapResponse.user_id`
 (field 11). The API supplies the admitted account UUID; the worker uses it for
 account-erasure admission and atomic cache/usage publication fences. Identity
