@@ -209,6 +209,7 @@ func TestPublishedAgentTextResponseValidation(t *testing.T) {
 		{"old revision", func(response *apiv1.BootstrapPublishedResponse) {
 			response.ContractRevision = "execution-publication-2026-08-27-r1"
 		}},
+		{"missing account owner", func(response *apiv1.BootstrapPublishedResponse) { response.UserId = "" }},
 		{"missing execution", func(response *apiv1.BootstrapPublishedResponse) { response.Agent = nil }},
 		{"missing runtime", func(response *apiv1.BootstrapPublishedResponse) { response.Runtime = nil }},
 		{"missing agent node runtime", func(response *apiv1.BootstrapPublishedResponse) { response.GetAgent().NodeRuntimes[0] = nil }},
@@ -588,6 +589,7 @@ func validCallRuntime() *apiv1.CallRuntimeSnapshot {
 func basePublishedResponse() *apiv1.BootstrapPublishedResponse {
 	return &apiv1.BootstrapPublishedResponse{
 		ContractRevision: publicationContractRevision,
+		UserId:           "01987a5f-2aa8-7000-8000-000000000001",
 		ConversationId:   "conversation-1",
 		SessionId:        "session-1",
 		PublishedId:      "publication-1",

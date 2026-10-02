@@ -793,6 +793,8 @@ type BootstrapPublishedResponse struct {
 	ConversationId   string                 `protobuf:"bytes,2,opt,name=conversation_id,json=conversationId,proto3" json:"conversation_id,omitempty"`
 	SessionId        string                 `protobuf:"bytes,3,opt,name=session_id,json=sessionId,proto3" json:"session_id,omitempty"`
 	PublishedId      string                 `protobuf:"bytes,4,opt,name=published_id,json=publishedId,proto3" json:"published_id,omitempty"`
+	// Authoritative admitted account owner, used to fence late worker storage writes.
+	UserId string `protobuf:"bytes,11,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
 	// Short-lived control capability bound to this admitted voice session.
 	TransferCapability *string                   `protobuf:"bytes,9,opt,name=transfer_capability,json=transferCapability,proto3,oneof" json:"transfer_capability,omitempty"`
 	PromptVariables    *SessionPromptVariableBag `protobuf:"bytes,6,opt,name=prompt_variables,json=promptVariables,proto3" json:"prompt_variables,omitempty"`
@@ -863,6 +865,13 @@ func (x *BootstrapPublishedResponse) GetSessionId() string {
 func (x *BootstrapPublishedResponse) GetPublishedId() string {
 	if x != nil {
 		return x.PublishedId
+	}
+	return ""
+}
+
+func (x *BootstrapPublishedResponse) GetUserId() string {
+	if x != nil {
+		return x.UserId
 	}
 	return ""
 }
@@ -5183,7 +5192,7 @@ const file_port_api_v1_agent_session_proto_rawDesc = "" +
 	"\x11contract_revision\x18\x05 \x01(\tBR\xbaHO\xc8\x01\x01rJR#execution-publication-2026-09-04-r1R#execution-publication-2026-09-15-r2R\x10contractRevision\x123\n" +
 	"\rworker_job_id\x18\x06 \x01(\tB\n" +
 	"\xbaH\ar\x05\x10\x01\x18\x80\x02H\x00R\vworkerJobId\x88\x01\x01B\x10\n" +
-	"\x0e_worker_job_id\"\xf7\a\n" +
+	"\x0e_worker_job_id\"\x9c\b\n" +
 	"\x1aBootstrapPublishedResponse\x12\x7f\n" +
 	"\x11contract_revision\x18\x01 \x01(\tBR\xbaHO\xc8\x01\x01rJR#execution-publication-2026-09-04-r1R#execution-publication-2026-09-15-r2R\x10contractRevision\x123\n" +
 	"\x0fconversation_id\x18\x02 \x01(\tB\n" +
@@ -5192,7 +5201,9 @@ const file_port_api_v1_agent_session_proto_rawDesc = "" +
 	"session_id\x18\x03 \x01(\tB\n" +
 	"\xbaH\a\xc8\x01\x01r\x02\x10\x01R\tsessionId\x12-\n" +
 	"\fpublished_id\x18\x04 \x01(\tB\n" +
-	"\xbaH\a\xc8\x01\x01r\x02\x10\x01R\vpublishedId\x12@\n" +
+	"\xbaH\a\xc8\x01\x01r\x02\x10\x01R\vpublishedId\x12#\n" +
+	"\auser_id\x18\v \x01(\tB\n" +
+	"\xbaH\a\xc8\x01\x01r\x02\x10\x01R\x06userId\x12@\n" +
 	"\x13transfer_capability\x18\t \x01(\tB\n" +
 	"\xbaH\ar\x05\x10\x01\x18\x80@H\x01R\x12transferCapability\x88\x01\x01\x12X\n" +
 	"\x10prompt_variables\x18\x06 \x01(\v2%.port.api.v1.SessionPromptVariableBagB\x06\xbaH\x03\xc8\x01\x01R\x0fpromptVariables\x12B\n" +

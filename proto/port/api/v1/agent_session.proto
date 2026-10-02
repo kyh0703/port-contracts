@@ -90,6 +90,8 @@ message BootstrapPublishedResponse {
   string conversation_id = 2 [(buf.validate.field).required = true, (buf.validate.field).string.min_len = 1];
   string session_id = 3 [(buf.validate.field).required = true, (buf.validate.field).string.min_len = 1];
   string published_id = 4 [(buf.validate.field).required = true, (buf.validate.field).string.min_len = 1];
+  // Authoritative admitted account owner, used to fence late worker storage writes.
+  string user_id = 11 [(buf.validate.field).required = true, (buf.validate.field).string.min_len = 1];
 
   // Short-lived control capability bound to this admitted voice session.
   optional string transfer_capability = 9 [(buf.validate.field).string = {min_len: 1 max_len: 8192}];

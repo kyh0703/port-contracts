@@ -380,6 +380,8 @@ export interface BootstrapPublishedResponse {
   conversationId: string;
   sessionId: string;
   publishedId: string;
+  /** Authoritative admitted account owner, used to fence late worker storage writes. */
+  userId: string;
   /** Short-lived control capability bound to this admitted voice session. */
   transferCapability?: string | undefined;
   promptVariables?: SessionPromptVariableBag | undefined;
@@ -1752,6 +1754,7 @@ function createBaseBootstrapPublishedResponse(): BootstrapPublishedResponse {
     conversationId: "",
     sessionId: "",
     publishedId: "",
+    userId: "",
     transferCapability: undefined,
     promptVariables: undefined,
     agent: undefined,
@@ -1774,6 +1777,9 @@ export const BootstrapPublishedResponse: MessageFns<BootstrapPublishedResponse> 
     }
     if (message.publishedId !== "") {
       writer.uint32(34).string(message.publishedId);
+    }
+    if (message.userId !== "") {
+      writer.uint32(90).string(message.userId);
     }
     if (message.transferCapability !== undefined) {
       writer.uint32(74).string(message.transferCapability);
@@ -1833,6 +1839,14 @@ export const BootstrapPublishedResponse: MessageFns<BootstrapPublishedResponse> 
           }
 
           message.publishedId = reader.string();
+          continue;
+        }
+        case 11: {
+          if (tag !== 90) {
+            break;
+          }
+
+          message.userId = reader.string();
           continue;
         }
         case 9: {
@@ -1914,6 +1928,11 @@ export const BootstrapPublishedResponse: MessageFns<BootstrapPublishedResponse> 
         : isSet(object.published_id)
         ? globalThis.String(object.published_id)
         : "",
+      userId: isSet(object.userId)
+        ? globalThis.String(object.userId)
+        : isSet(object.user_id)
+        ? globalThis.String(object.user_id)
+        : "",
       transferCapability: isSet(object.transferCapability)
         ? globalThis.String(object.transferCapability)
         : isSet(object.transfer_capability)
@@ -1957,6 +1976,9 @@ export const BootstrapPublishedResponse: MessageFns<BootstrapPublishedResponse> 
     if (message.publishedId !== "") {
       obj.publishedId = message.publishedId;
     }
+    if (message.userId !== "") {
+      obj.userId = message.userId;
+    }
     if (message.transferCapability !== undefined) {
       obj.transferCapability = message.transferCapability;
     }
@@ -1987,6 +2009,7 @@ export const BootstrapPublishedResponse: MessageFns<BootstrapPublishedResponse> 
     message.conversationId = object.conversationId ?? "";
     message.sessionId = object.sessionId ?? "";
     message.publishedId = object.publishedId ?? "";
+    message.userId = object.userId ?? "";
     message.transferCapability = object.transferCapability ?? undefined;
     message.promptVariables = (object.promptVariables !== undefined && object.promptVariables !== null)
       ? SessionPromptVariableBag.fromPartial(object.promptVariables)

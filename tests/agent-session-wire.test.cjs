@@ -163,6 +163,7 @@ test("session prompt variables round-trip dotted system names and primitive valu
   };
   const response = BootstrapPublishedResponse.create({
     contractRevision: publicationRevision,
+    userId: "01987a5f-2aa8-7000-8000-000000000001",
     conversationId: "conversation-variables",
     sessionId: "session-variables",
     publishedId: "publication-variables",
@@ -282,6 +283,7 @@ test("LLM audit capability and attempt lifecycle preserve nullable usage and dec
   });
   const response = BootstrapPublishedResponse.create({
     contractRevision: publicationRevision,
+    userId: "01987a5f-2aa8-7000-8000-000000000001",
     conversationId: "conversation-audit",
     sessionId: "session-audit",
     publishedId: "publication-audit",
@@ -325,6 +327,7 @@ test("published runtimes round-trip configurable knowledge function metadata", (
 
   const response = BootstrapPublishedResponse.create({
     contractRevision: publicationRevision,
+    userId: "01987a5f-2aa8-7000-8000-000000000001",
     conversationId: "conversation-knowledge-function",
     sessionId: "session-knowledge-function",
     publishedId: "publication-knowledge-function",
@@ -360,6 +363,7 @@ test("published runtimes round-trip configurable knowledge function metadata", (
 test("published agent topology references only inline node IDs", () => {
   const response = BootstrapPublishedResponse.create({
     contractRevision: publicationRevision,
+    userId: "01987a5f-2aa8-7000-8000-000000000001",
     conversationId: "conversation-2",
     sessionId: "session-2",
     publishedId: "agent-publication-1",
@@ -407,6 +411,7 @@ test("published agent topology references only inline node IDs", () => {
 test("mode prompt config snapshots and optional node display names round-trip", () => {
   const response = BootstrapPublishedResponse.create({
     contractRevision: publicationRevision,
+    userId: "01987a5f-2aa8-7000-8000-000000000001",
     conversationId: "conversation-mode-prompt",
     sessionId: "session-mode-prompt",
     publishedId: "agent-mode-prompt",
@@ -452,6 +457,7 @@ test("published node greeting round-trips with raw whitespace and legacy absence
   const greeting = "  안녕하세요 {{고객명}}님.\n  무엇을 도와드릴까요?  ";
   const response = BootstrapPublishedResponse.create({
     contractRevision: publicationRevision,
+    userId: "01987a5f-2aa8-7000-8000-000000000001",
     conversationId: "conversation-greeting",
     sessionId: "session-greeting",
     publishedId: "agent-greeting",

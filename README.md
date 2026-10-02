@@ -43,6 +43,13 @@ parameters, `none | conversation | recent` context policy, and one blocking
 `request_start` message. Older Agent bootstrap services and revision fallbacks
 are intentionally unavailable.
 
+`7.18.0` adds required nonempty `AgentSessionBootstrapResponse.user_id`
+(field 11). The API supplies the admitted account UUID; the worker uses it for
+account-erasure admission and atomic cache/usage publication fences. Identity
+must not be inferred from dispatch metadata. Deploy the API and worker together
+and drain old workers before permitting withdrawal approval; missing owner
+identity fails closed rather than invoking a compatibility fallback.
+
 `7.2.0` adds `ExecutionSessionService.CommandSipTransfer` and optional
 `transfer_capability`, `TransferToHumanTool.mode` (`single | consultative`), and
 `consultation_timeout_ms`. The API authenticates each command against the

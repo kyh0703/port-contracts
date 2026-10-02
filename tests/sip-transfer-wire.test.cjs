@@ -12,7 +12,7 @@ test('transfer policy is additive and preserves absent legacy configuration', ()
 });
 
 test('admitted worker capability survives bootstrap serialization', () => {
-  const response = c.BootstrapPublishedResponse.create({transferCapability: 'session-bound-capability'});
+  const response = c.BootstrapPublishedResponse.create({userId: '01987a5f-2aa8-7000-8000-000000000001', transferCapability: 'session-bound-capability'});
   assert.equal(c.BootstrapPublishedResponse.decode(c.BootstrapPublishedResponse.encode(response).finish()).transferCapability, 'session-bound-capability');
 });
 
