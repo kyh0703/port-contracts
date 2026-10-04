@@ -3284,6 +3284,9 @@ type CallLimitsRuntime struct {
 	DialWaitTimeSeconds    uint32                 `protobuf:"varint,1,opt,name=dial_wait_time_seconds,json=dialWaitTimeSeconds,proto3" json:"dial_wait_time_seconds,omitempty"`
 	MaxCallDurationSeconds uint32                 `protobuf:"varint,2,opt,name=max_call_duration_seconds,json=maxCallDurationSeconds,proto3" json:"max_call_duration_seconds,omitempty"`
 	NoAnswerTimeoutSeconds uint32                 `protobuf:"varint,3,opt,name=no_answer_timeout_seconds,json=noAnswerTimeoutSeconds,proto3" json:"no_answer_timeout_seconds,omitempty"`
+	// Explicit opt-in; absence keeps silence termination disabled.
+	// The positive timeout above remains stored even when this policy is disabled.
+	NoAnswerTimeoutEnabled bool `protobuf:"varint,4,opt,name=no_answer_timeout_enabled,json=noAnswerTimeoutEnabled,proto3" json:"no_answer_timeout_enabled,omitempty"`
 	unknownFields          protoimpl.UnknownFields
 	sizeCache              protoimpl.SizeCache
 }
@@ -3337,6 +3340,13 @@ func (x *CallLimitsRuntime) GetNoAnswerTimeoutSeconds() uint32 {
 		return x.NoAnswerTimeoutSeconds
 	}
 	return 0
+}
+
+func (x *CallLimitsRuntime) GetNoAnswerTimeoutEnabled() bool {
+	if x != nil {
+		return x.NoAnswerTimeoutEnabled
+	}
+	return false
 }
 
 type BackgroundAudioRuntime struct {
@@ -5491,14 +5501,15 @@ const file_port_api_v1_agent_session_proto_rawDesc = "" +
 	"\x0eresponse_speed\x18\x01 \x01(\x01B\x1a\xbaH\x17\xc8\x01\x01\x12\x12\x19\x00\x00\x00\x00\x00\x00\xf0?)\x00\x00\x00\x00\x00\x00\x00\x00H\x00R\rresponseSpeed\x88\x01\x01\x12<\n" +
 	"\x13allow_interruptions\x18\x02 \x01(\bB\x06\xbaH\x03\xc8\x01\x01H\x01R\x12allowInterruptions\x88\x01\x01B\x11\n" +
 	"\x0f_response_speedB\x16\n" +
-	"\x14_allow_interruptions\"\xe2\x01\n" +
+	"\x14_allow_interruptions\"\x9d\x02\n" +
 	"\x11CallLimitsRuntime\x12>\n" +
 	"\x16dial_wait_time_seconds\x18\x01 \x01(\rB\t\xbaH\x06*\x04\x18Z(\n" +
 	"R\x13dialWaitTimeSeconds\x12F\n" +
 	"\x19max_call_duration_seconds\x18\x02 \x01(\rB\v\xbaH\b*\x06\x18\xc0\xd1\x02(\n" +
 	"R\x16maxCallDurationSeconds\x12E\n" +
 	"\x19no_answer_timeout_seconds\x18\x03 \x01(\rB\n" +
-	"\xbaH\a*\x05\x18\x90\x1c(\x05R\x16noAnswerTimeoutSeconds\"\xa4\x01\n" +
+	"\xbaH\a*\x05\x18\x90\x1c(\x05R\x16noAnswerTimeoutSeconds\x129\n" +
+	"\x19no_answer_timeout_enabled\x18\x04 \x01(\bR\x16noAnswerTimeoutEnabled\"\xa4\x01\n" +
 	"\x16BackgroundAudioRuntime\x12F\n" +
 	"\x06preset\x18\x01 \x01(\x0e2\".port.api.v1.BackgroundAudioPresetB\n" +
 	"\xbaH\a\x82\x01\x04\x10\x01 \x00R\x06preset\x127\n" +

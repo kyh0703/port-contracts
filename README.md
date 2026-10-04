@@ -43,6 +43,18 @@ parameters, `none | conversation | recent` context policy, and one blocking
 `request_start` message. Older Agent bootstrap services and revision fallbacks
 are intentionally unavailable.
 
+`7.20.0` adds `CallLimitsRuntime.no_answer_timeout_enabled` (field 4).
+Only explicit `true` opts a voice session into silence termination; absent/false
+does not. The positive `no_answer_timeout_seconds` value remains available while
+disabled. Idle reminders are independent: their exhaustion does not end an
+opted-out call. VAD, interruptions, explicit termination and hard duration/credit
+limits remain separate. API snapshots the setting at admission.
+The field is additive, but old workers ignore it and can still terminate an
+opted-out call: migrate settings, roll out API and worker together, drain old
+workers, then expose the Web toggle. This release does not imply deployment.
+Wire validation passed 47 tests, including legacy positive-timeout decoding and
+explicit ON/OFF serialization; the two new cases failed before generation.
+
 `7.19.0` allows a Supervisor root with zero specialists. The required nonempty
 root/node identity, at most 100 execution nodes, and the existing handoff contract
 remain unchanged. API and worker accept the same canonical V4/r2 topology for

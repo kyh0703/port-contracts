@@ -605,14 +605,16 @@ class SpeechPolicyRuntime(_message.Message):
     def __init__(self, response_speed: _Optional[float] = ..., allow_interruptions: _Optional[bool] = ...) -> None: ...
 
 class CallLimitsRuntime(_message.Message):
-    __slots__ = ("dial_wait_time_seconds", "max_call_duration_seconds", "no_answer_timeout_seconds")
+    __slots__ = ("dial_wait_time_seconds", "max_call_duration_seconds", "no_answer_timeout_seconds", "no_answer_timeout_enabled")
     DIAL_WAIT_TIME_SECONDS_FIELD_NUMBER: _ClassVar[int]
     MAX_CALL_DURATION_SECONDS_FIELD_NUMBER: _ClassVar[int]
     NO_ANSWER_TIMEOUT_SECONDS_FIELD_NUMBER: _ClassVar[int]
+    NO_ANSWER_TIMEOUT_ENABLED_FIELD_NUMBER: _ClassVar[int]
     dial_wait_time_seconds: int
     max_call_duration_seconds: int
     no_answer_timeout_seconds: int
-    def __init__(self, dial_wait_time_seconds: _Optional[int] = ..., max_call_duration_seconds: _Optional[int] = ..., no_answer_timeout_seconds: _Optional[int] = ...) -> None: ...
+    no_answer_timeout_enabled: bool
+    def __init__(self, dial_wait_time_seconds: _Optional[int] = ..., max_call_duration_seconds: _Optional[int] = ..., no_answer_timeout_seconds: _Optional[int] = ..., no_answer_timeout_enabled: _Optional[bool] = ...) -> None: ...
 
 class BackgroundAudioRuntime(_message.Message):
     __slots__ = ("preset", "volume")

@@ -469,6 +469,9 @@ message CallLimitsRuntime {
   uint32 dial_wait_time_seconds = 1 [(buf.validate.field).uint32 = {gte: 10 lte: 90}];
   uint32 max_call_duration_seconds = 2 [(buf.validate.field).uint32 = {gte: 10 lte: 43200}];
   uint32 no_answer_timeout_seconds = 3 [(buf.validate.field).uint32 = {gte: 5 lte: 3600}];
+  // Explicit opt-in; absence keeps silence termination disabled.
+  // The positive timeout above remains stored even when this policy is disabled.
+  bool no_answer_timeout_enabled = 4;
 }
 
 enum BackgroundAudioPreset {

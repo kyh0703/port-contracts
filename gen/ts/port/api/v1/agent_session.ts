@@ -664,6 +664,11 @@ export interface CallLimitsRuntime {
   dialWaitTimeSeconds: number;
   maxCallDurationSeconds: number;
   noAnswerTimeoutSeconds: number;
+  /**
+   * Explicit opt-in; absence keeps silence termination disabled.
+   * The positive timeout above remains stored even when this policy is disabled.
+   */
+  noAnswerTimeoutEnabled: boolean;
 }
 
 export interface BackgroundAudioRuntime {
@@ -6218,7 +6223,12 @@ export const SpeechPolicyRuntime: MessageFns<SpeechPolicyRuntime> = {
 };
 
 function createBaseCallLimitsRuntime(): CallLimitsRuntime {
-  return { dialWaitTimeSeconds: 0, maxCallDurationSeconds: 0, noAnswerTimeoutSeconds: 0 };
+  return {
+    dialWaitTimeSeconds: 0,
+    maxCallDurationSeconds: 0,
+    noAnswerTimeoutSeconds: 0,
+    noAnswerTimeoutEnabled: false,
+  };
 }
 
 export const CallLimitsRuntime: MessageFns<CallLimitsRuntime> = {
@@ -6231,6 +6241,9 @@ export const CallLimitsRuntime: MessageFns<CallLimitsRuntime> = {
     }
     if (message.noAnswerTimeoutSeconds !== 0) {
       writer.uint32(24).uint32(message.noAnswerTimeoutSeconds);
+    }
+    if (message.noAnswerTimeoutEnabled !== false) {
+      writer.uint32(32).bool(message.noAnswerTimeoutEnabled);
     }
     return writer;
   },
@@ -6266,6 +6279,14 @@ export const CallLimitsRuntime: MessageFns<CallLimitsRuntime> = {
           message.noAnswerTimeoutSeconds = reader.uint32();
           continue;
         }
+        case 4: {
+          if (tag !== 32) {
+            break;
+          }
+
+          message.noAnswerTimeoutEnabled = reader.bool();
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -6292,6 +6313,11 @@ export const CallLimitsRuntime: MessageFns<CallLimitsRuntime> = {
         : isSet(object.no_answer_timeout_seconds)
         ? globalThis.Number(object.no_answer_timeout_seconds)
         : 0,
+      noAnswerTimeoutEnabled: isSet(object.noAnswerTimeoutEnabled)
+        ? globalThis.Boolean(object.noAnswerTimeoutEnabled)
+        : isSet(object.no_answer_timeout_enabled)
+        ? globalThis.Boolean(object.no_answer_timeout_enabled)
+        : false,
     };
   },
 
@@ -6306,6 +6332,9 @@ export const CallLimitsRuntime: MessageFns<CallLimitsRuntime> = {
     if (message.noAnswerTimeoutSeconds !== 0) {
       obj.noAnswerTimeoutSeconds = Math.round(message.noAnswerTimeoutSeconds);
     }
+    if (message.noAnswerTimeoutEnabled !== false) {
+      obj.noAnswerTimeoutEnabled = message.noAnswerTimeoutEnabled;
+    }
     return obj;
   },
 
@@ -6317,6 +6346,7 @@ export const CallLimitsRuntime: MessageFns<CallLimitsRuntime> = {
     message.dialWaitTimeSeconds = object.dialWaitTimeSeconds ?? 0;
     message.maxCallDurationSeconds = object.maxCallDurationSeconds ?? 0;
     message.noAnswerTimeoutSeconds = object.noAnswerTimeoutSeconds ?? 0;
+    message.noAnswerTimeoutEnabled = object.noAnswerTimeoutEnabled ?? false;
     return message;
   },
 };
