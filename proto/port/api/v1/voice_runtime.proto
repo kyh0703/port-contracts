@@ -3,6 +3,7 @@ syntax = "proto3";
 package port.api.v1;
 
 import "buf/validate/validate.proto";
+import "port/api/v1/runtime_identity.proto";
 
 option go_package = "github.com/kyh0703/port-contracts/v4/gen/go/port/api/v1;apiv1";
 
@@ -14,16 +15,39 @@ message ResolveLeaseRequest {
   string lease_id = 1 [(buf.validate.field).string.min_len = 1];
   string conversation_id = 2 [(buf.validate.field).string.min_len = 1];
   string session_id = 3 [(buf.validate.field).string.min_len = 1];
+  oneof authority {
+    option (buf.validate.oneof).required = true;
+    RuntimeAuthorization owner = 4;
+    RuntimeHelperAuthorization helper_authorization = 5;
+  }
 }
 
 message ResolveLeaseResponse {
-  SttRuntime stt = 1 [(buf.validate.field).required = true];
-  LlmRuntime llm = 2 [(buf.validate.field).required = true];
-  TtsRuntime tts = 3 [(buf.validate.field).required = true];
+  option (buf.validate.message).cel = {
+    id: "resolved_runtime.nonempty"
+    message: "a resolved grant must contain at least one authorized original runtime"
+    expression: "has(this.stt) || has(this.llm) || has(this.tts)"
+  };
+  option (buf.validate.message).cel = {
+    id: "resolved_runtime.credentials"
+    message: "resolved runtimes must contain actual credentials rather than lease references"
+    expression: "(!has(this.stt) || has(this.stt.api_key)) && (!has(this.llm) || has(this.llm.api_key)) && (!has(this.tts) || has(this.tts.api_key))"
+  };
+  // The immutable registered lease and current authority determine the exact
+  // purpose-specific leaves. Text and neutral relay grants need not contain
+  // every speech/model runtime, and missing leaves never use fake credentials.
+  SttRuntime stt = 1;
+  LlmRuntime llm = 2;
+  TtsRuntime tts = 3;
 }
 
 message SttRuntime {
-  string api_key = 1 [(buf.validate.field).string.min_len = 1];
+  oneof credential {
+    option (buf.validate.oneof).required = true;
+    string api_key = 1 [(buf.validate.field).string.min_len = 1];
+    // API-generated original pin reference; resolved only under current authority.
+    string lease_id = 7 [(buf.validate.field).string.min_len = 1];
+  }
   string model = 2 [(buf.validate.field).string.min_len = 1];
   string language = 3 [(buf.validate.field).string.min_len = 1];
   repeated string keyterms = 4 [(buf.validate.field).repeated.items.string.min_len = 1];
@@ -32,14 +56,24 @@ message SttRuntime {
 }
 
 message LlmRuntime {
-  string api_key = 1 [(buf.validate.field).string.min_len = 1];
+  oneof credential {
+    option (buf.validate.oneof).required = true;
+    string api_key = 1 [(buf.validate.field).string.min_len = 1];
+    // API-generated original node pin reference, never a current-model fallback.
+    string lease_id = 4 [(buf.validate.field).string.min_len = 1];
+  }
   string model = 2 [(buf.validate.field).string.min_len = 1];
   // API-pinned connection identity. Absence preserves legacy OpenRouter routing.
   optional string provider = 3 [(buf.validate.field).string = {in: ["openai", "openrouter"]}];
 }
 
 message TtsRuntime {
-  string api_key = 1 [(buf.validate.field).string.min_len = 1];
+  oneof credential {
+    option (buf.validate.oneof).required = true;
+    string api_key = 1 [(buf.validate.field).string.min_len = 1];
+    // API-generated original pin reference; resolved only under current authority.
+    string lease_id = 6 [(buf.validate.field).string.min_len = 1];
+  }
   string model = 2 [(buf.validate.field).string.min_len = 1];
   string language = 3 [(buf.validate.field).string.min_len = 1];
   string voice_id = 4 [(buf.validate.field).string.min_len = 1];

@@ -14,7 +14,6 @@ const {
   ContextPolicy,
   HandoffParameterType,
   PublishedAgentNodeRuntime,
-  KnowledgeToolRuntime,
   EndCallTool,
   TransferToHumanTool,
   BuiltInTool,
@@ -22,9 +21,7 @@ const {
   SendSmsTool,
   ApiToolMetadata,
   PublishedHandoffRoute,
-  LlmAuditCapability,
   LlmAuditRequestContext,
-  RecordLlmRequestStartedRequest,
   RecordLlmRequestTerminalRequest,
   LlmAuditUsage,
 } = contracts;
@@ -250,9 +247,8 @@ test("handoff context policies preserve legacy recent and optional last-N max me
   assert.equal(PublishedHandoffRoute.decode(PublishedHandoffRoute.encode(previous).finish()).contextPolicy, ContextPolicy.CONTEXT_POLICY_PREVIOUS_ASSISTANT_MESSAGES);
 });
 
-test("LLM audit capability and attempt lifecycle preserve nullable usage and decimal cost", () => {
+test("LLM terminal usage preserves absent counters, explicit zero and exact decimal cost", () => {
   const context = LlmAuditRequestContext.create({
-    capability: "a".repeat(48),
     requestAttemptId: "attempt-1",
     logicalRequestId: "logical-1",
     attemptSequence: 2,
@@ -262,9 +258,12 @@ test("LLM audit capability and attempt lifecycle preserve nullable usage and dec
     role: "master",
     requestedModel: "openrouter/openai/gpt-4o-mini",
   });
-  const started = RecordLlmRequestStartedRequest.create({ request: context });
   const terminal = RecordLlmRequestTerminalRequest.create({
     request: context,
+    receiptAuthorization: {
+      executionId: "01987a5f-2aa8-7000-8000-000000000001",
+      capability: "b".repeat(48),
+    },
     status: "completed",
     httpStatus: 200,
     actualModel: "openai/gpt-4o-mini",
@@ -276,34 +275,13 @@ test("LLM audit capability and attempt lifecycle preserve nullable usage and dec
       providerUsageJson: '{"input_audio_tokens":0,"output_audio_tokens":12}',
     }),
   });
-  const capability = LlmAuditCapability.create({
-    executionId: "execution-1",
-    token: "b".repeat(48),
-    expiresAt: "2026-09-14T12:00:00.000Z",
-  });
-  const response = BootstrapPublishedResponse.create({
-    contractRevision: publicationRevision,
-    userId: "01987a5f-2aa8-7000-8000-000000000001",
-    conversationId: "conversation-audit",
-    sessionId: "session-audit",
-    publishedId: "publication-audit",
-    llmAuditCapability: capability,
-  });
-
-  assert.deepEqual(
-    RecordLlmRequestStartedRequest.decode(RecordLlmRequestStartedRequest.encode(started).finish()),
-    started,
-  );
   const decodedTerminal = RecordLlmRequestTerminalRequest.decode(
     RecordLlmRequestTerminalRequest.encode(terminal).finish(),
   );
-  assert.deepEqual(decodedTerminal, terminal);
   assert.equal(decodedTerminal.usage.inputTokens, 0);
   assert.equal(decodedTerminal.usage.reportedCostUsd, "0.0000012300");
-  assert.deepEqual(
-    BootstrapPublishedResponse.decode(BootstrapPublishedResponse.encode(response).finish()).llmAuditCapability,
-    capability,
-  );
+  assert.equal(decodedTerminal.usage.cachedInputTokens, undefined);
+  assert.equal(decodedTerminal.usage.reasoningTokens, undefined);
 });
 
 test("published runtimes round-trip configurable knowledge function metadata", () => {
@@ -334,7 +312,7 @@ test("published runtimes round-trip configurable knowledge function metadata", (
     agent: {
       mode: AgentMode.AGENT_MODE_HANDOFF,
       nodeRuntimes: [
-        inlineRuntime("node-1", "Start.", undefined, undefined, "search_catalog", "Search the product catalog."),
+        inlineRuntime("node-1", "Start.", "search_catalog", "Search the product catalog."),
         inlineRuntime("node-2", "Finish."),
       ],
       handoff: {
@@ -402,10 +380,6 @@ test("published agent topology references only inline node IDs", () => {
     decoded.agent.nodeRuntimes.map((entry) => entry.nodeId),
     ["node-1", "node-2"],
   );
-  assert.equal(decoded.agent.nodeRuntimes[0].greeting, undefined);
-  assert.equal(decoded.agent.nodeRuntimes[0].guardrails, undefined);
-  assert.equal(decoded.agent.nodeRuntimes[0].knowledgeRevisionId, "");
-  assert.equal(decoded.agent.nodeRuntimes[0].knowledgeRetrievalCapability, "");
 });
 
 test("mode prompt config snapshots and optional node display names round-trip", () => {
@@ -486,49 +460,6 @@ test("published node greeting round-trips with raw whitespace and legacy absence
     })).finish(),
   );
   assert.equal(legacy.agent.nodeRuntimes[0].greeting, undefined);
-});
-
-test("inline runtimes round-trip Knowledge fields and default them for legacy payloads", () => {
-  const response = BootstrapPublishedResponse.create({
-    contractRevision: publicationRevision,
-    conversationId: "conversation-3",
-    sessionId: "session-3",
-    publishedId: "agent-publication-2",
-    agent: {
-      mode: AgentMode.AGENT_MODE_HANDOFF,
-      nodeRuntimes: [
-        inlineRuntime("node-1", "Start.", "knowledge-revision-1", "signed-capability"),
-        inlineRuntime("node-2", "Finish."),
-      ],
-      handoff: {
-        entryNodeId: "node-1",
-        maxHandoffDepth: 2,
-        routes: [{
-          transitionId: "route-1",
-          sourceNodeId: "node-1",
-          targetNodeId: "node-2",
-          routingDescription: "Escalate",
-          contextPolicy: ContextPolicy.CONTEXT_POLICY_NONE,
-        }],
-      },
-    },
-    textRuntime: {
-      transport: "text_stream",
-      roomName: "room-3",
-      participantIdentity: "participant-3",
-      idleTimeoutSeconds: 300,
-      maxSessionDurationSeconds: 3600,
-    },
-  });
-
-  const decoded = BootstrapPublishedResponse.decode(
-    BootstrapPublishedResponse.encode(response).finish(),
-  );
-  assert.deepEqual(decoded, response);
-  assert.equal(decoded.agent.nodeRuntimes[0].knowledgeRevisionId, "knowledge-revision-1");
-  assert.equal(decoded.agent.nodeRuntimes[0].knowledgeRetrievalCapability, "signed-capability");
-  assert.equal(decoded.agent.nodeRuntimes[1].knowledgeRevisionId, "");
-  assert.equal(decoded.agent.nodeRuntimes[1].knowledgeRetrievalCapability, "");
 });
 
 test("handoff routes round-trip typed parameters, recent context, and request-start", () => {
@@ -654,70 +585,9 @@ test("handoff route system prompt is optional and round-trips on field 9", () =>
   assert.equal(decoded.systemPrompt, route.systemPrompt);
 });
 
-test("knowledge tools support multiple metadata entries and runtime correlation IDs", () => {
-  const promptRuntime = PublishedAgentNodeRuntime.create({
-    tools: [
-      { toolId: "knowledge-search", kind: "knowledge", name: "Search", knowledge: { knowledgeRevisionId: "rev-1" } },
-      { toolId: "knowledge-faq", kind: "knowledge", name: "FAQ", knowledge: { knowledgeRevisionId: "rev-2" } },
-    ],
-    knowledgeToolRuntimes: [
-      { toolId: "knowledge-search", retrievalCapability: "cap-search" },
-      { toolId: "knowledge-faq", retrievalCapability: "cap-faq" },
-    ],
-  });
-  const decoded = PublishedAgentNodeRuntime.decode(PublishedAgentNodeRuntime.encode(promptRuntime).finish());
-  const encoded = [...PublishedAgentNodeRuntime.encode(promptRuntime).finish()];
-  assert.deepEqual(encoded.slice(-58), [
-    0x72, 0x1e, 0x0a, 0x10, ...Buffer.from("knowledge-search"),
-    0x12, 0x0a, ...Buffer.from("cap-search"),
-    0x72, 0x18, 0x0a, 0x0d, ...Buffer.from("knowledge-faq"),
-    0x12, 0x07, ...Buffer.from("cap-faq"),
-  ]);
-  assert.deepEqual(decoded.tools.map((tool) => [tool.toolId, tool.kind, tool.knowledge.knowledgeRevisionId]), [
-    ["knowledge-search", "knowledge", "rev-1"],
-    ["knowledge-faq", "knowledge", "rev-2"],
-  ]);
-  assert.deepEqual(decoded.knowledgeToolRuntimes, [
-    KnowledgeToolRuntime.create({ toolId: "knowledge-search", retrievalCapability: "cap-search" }),
-    KnowledgeToolRuntime.create({ toolId: "knowledge-faq", retrievalCapability: "cap-faq" }),
-  ]);
-
-  const inlineRuntimeValue = PublishedAgentNodeRuntime.create({
-    knowledgeToolRuntimes: [
-      { toolId: "knowledge-search", retrievalCapability: "cap-search" },
-      { toolId: "knowledge-faq", retrievalCapability: "cap-faq" },
-    ],
-  });
-  const inlineEncoded = [...PublishedAgentNodeRuntime.encode(inlineRuntimeValue).finish()];
-  assert.deepEqual(inlineEncoded, [
-    0x72, 0x1e, 0x0a, 0x10, ...Buffer.from("knowledge-search"),
-    0x12, 0x0a, ...Buffer.from("cap-search"),
-    0x72, 0x18, 0x0a, 0x0d, ...Buffer.from("knowledge-faq"),
-    0x12, 0x07, ...Buffer.from("cap-faq"),
-  ]);
-  assert.deepEqual(PublishedAgentNodeRuntime.decode(Uint8Array.from(inlineEncoded)), inlineRuntimeValue);
-});
-
-test("legacy singular knowledge fields retain their field numbers and decode unchanged", () => {
-  const inlineBytes = Uint8Array.from([
-    0x52, 0x0a, 0x6c, 0x65, 0x67, 0x61, 0x63, 0x79, 0x2d, 0x72, 0x65, 0x76,
-    0x5a, 0x0a, 0x6c, 0x65, 0x67, 0x61, 0x63, 0x79, 0x2d, 0x63, 0x61, 0x70,
-    0x62, 0x09, 0x6c, 0x65, 0x67, 0x61, 0x63, 0x79, 0x2d, 0x66, 0x6e,
-    0x6a, 0x09, 0x6c, 0x65, 0x67, 0x61, 0x63, 0x79, 0x2d, 0x64, 0x65,
-  ]);
-  const inline = PublishedAgentNodeRuntime.decode(inlineBytes);
-  assert.equal(inline.knowledgeRevisionId, "legacy-rev");
-  assert.equal(inline.knowledgeRetrievalCapability, "legacy-cap");
-  assert.equal(inline.knowledgeFunctionName, "legacy-fn");
-  assert.equal(inline.knowledgeDescription, "legacy-de");
-  assert.deepEqual([...PublishedAgentNodeRuntime.encode(inline).finish()], [...inlineBytes]);
-});
-
 function inlineRuntime(
   nodeId,
   systemPrompt,
-  knowledgeRevisionId,
-  knowledgeRetrievalCapability,
   knowledgeFunctionName,
   knowledgeDescription,
 ) {
@@ -727,8 +597,6 @@ function inlineRuntime(
     instructions: { systemPrompt },
     contextPolicy: ContextPolicy.CONTEXT_POLICY_CONVERSATION,
     builtInTools: [{ endCall: { closingPhrase: "Goodbye.", confirm: true } }],
-    knowledgeRevisionId,
-    knowledgeRetrievalCapability,
     knowledgeFunctionName,
     knowledgeDescription,
   };

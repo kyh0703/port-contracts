@@ -15,7 +15,7 @@ func TestToolMessageVariants(t *testing.T) {
 		}
 		for _, message := range []proto.Message{
 			&apiv1.ToolMessages{Items: items},
-			&apiv1.ApiToolMetadata{Method: "GET", Url: "https://example.test", Messages: items},
+			&apiv1.ApiToolMetadata{Method: "GET", Url: proto.String("https://example.test"), Messages: items},
 		} {
 			err := Validate(message)
 			if count <= 10 && err != nil {

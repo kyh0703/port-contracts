@@ -88,8 +88,16 @@ type RecordGatewayEventRequest struct {
 	RoomId         string                    `protobuf:"bytes,5,opt,name=room_id,json=roomId,proto3" json:"room_id,omitempty"`
 	OccurredAt     *timestamppb.Timestamp    `protobuf:"bytes,6,opt,name=occurred_at,json=occurredAt,proto3" json:"occurred_at,omitempty"`
 	Payload        map[string]string         `protobuf:"bytes,7,rep,name=payload,proto3" json:"payload,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
-	unknownFields  protoimpl.UnknownFields
-	sizeCache      protoimpl.SizeCache
+	// Types that are valid to be assigned to Authority:
+	//
+	//	*RecordGatewayEventRequest_Owner
+	//	*RecordGatewayEventRequest_HelperAuthorization
+	//	*RecordGatewayEventRequest_ReceiptAuthorization
+	Authority       isRecordGatewayEventRequest_Authority `protobuf_oneof:"authority"`
+	RelayGeneration *uint32                               `protobuf:"varint,10,opt,name=relay_generation,json=relayGeneration,proto3,oneof" json:"relay_generation,omitempty"`
+	InputId         *string                               `protobuf:"bytes,11,opt,name=input_id,json=inputId,proto3,oneof" json:"input_id,omitempty"`
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
 }
 
 func (x *RecordGatewayEventRequest) Reset() {
@@ -171,10 +179,83 @@ func (x *RecordGatewayEventRequest) GetPayload() map[string]string {
 	return nil
 }
 
+func (x *RecordGatewayEventRequest) GetAuthority() isRecordGatewayEventRequest_Authority {
+	if x != nil {
+		return x.Authority
+	}
+	return nil
+}
+
+func (x *RecordGatewayEventRequest) GetOwner() *RuntimeAuthorization {
+	if x != nil {
+		if x, ok := x.Authority.(*RecordGatewayEventRequest_Owner); ok {
+			return x.Owner
+		}
+	}
+	return nil
+}
+
+func (x *RecordGatewayEventRequest) GetHelperAuthorization() *RuntimeHelperAuthorization {
+	if x != nil {
+		if x, ok := x.Authority.(*RecordGatewayEventRequest_HelperAuthorization); ok {
+			return x.HelperAuthorization
+		}
+	}
+	return nil
+}
+
+func (x *RecordGatewayEventRequest) GetReceiptAuthorization() *RuntimeReceiptAuthorization {
+	if x != nil {
+		if x, ok := x.Authority.(*RecordGatewayEventRequest_ReceiptAuthorization); ok {
+			return x.ReceiptAuthorization
+		}
+	}
+	return nil
+}
+
+func (x *RecordGatewayEventRequest) GetRelayGeneration() uint32 {
+	if x != nil && x.RelayGeneration != nil {
+		return *x.RelayGeneration
+	}
+	return 0
+}
+
+func (x *RecordGatewayEventRequest) GetInputId() string {
+	if x != nil && x.InputId != nil {
+		return *x.InputId
+	}
+	return ""
+}
+
+type isRecordGatewayEventRequest_Authority interface {
+	isRecordGatewayEventRequest_Authority()
+}
+
+type RecordGatewayEventRequest_Owner struct {
+	Owner *RuntimeAuthorization `protobuf:"bytes,8,opt,name=owner,proto3,oneof"`
+}
+
+type RecordGatewayEventRequest_HelperAuthorization struct {
+	HelperAuthorization *RuntimeHelperAuthorization `protobuf:"bytes,12,opt,name=helper_authorization,json=helperAuthorization,proto3,oneof"`
+}
+
+type RecordGatewayEventRequest_ReceiptAuthorization struct {
+	ReceiptAuthorization *RuntimeReceiptAuthorization `protobuf:"bytes,9,opt,name=receipt_authorization,json=receiptAuthorization,proto3,oneof"`
+}
+
+func (*RecordGatewayEventRequest_Owner) isRecordGatewayEventRequest_Authority() {}
+
+func (*RecordGatewayEventRequest_HelperAuthorization) isRecordGatewayEventRequest_Authority() {}
+
+func (*RecordGatewayEventRequest_ReceiptAuthorization) isRecordGatewayEventRequest_Authority() {}
+
 type RecordGatewayEventResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Computed by the API; worker-provided observational payload cannot replace it.
+	RuntimeProjection *RuntimeProjection   `protobuf:"bytes,1,opt,name=runtime_projection,json=runtimeProjection,proto3" json:"runtime_projection,omitempty"`
+	InputReceipt      *RuntimeInputReceipt `protobuf:"bytes,2,opt,name=input_receipt,json=inputReceipt,proto3" json:"input_receipt,omitempty"`
+	unknownFields     protoimpl.UnknownFields
+	sizeCache         protoimpl.SizeCache
 }
 
 func (x *RecordGatewayEventResponse) Reset() {
@@ -207,11 +288,25 @@ func (*RecordGatewayEventResponse) Descriptor() ([]byte, []int) {
 	return file_port_api_v1_gateway_events_proto_rawDescGZIP(), []int{1}
 }
 
+func (x *RecordGatewayEventResponse) GetRuntimeProjection() *RuntimeProjection {
+	if x != nil {
+		return x.RuntimeProjection
+	}
+	return nil
+}
+
+func (x *RecordGatewayEventResponse) GetInputReceipt() *RuntimeInputReceipt {
+	if x != nil {
+		return x.InputReceipt
+	}
+	return nil
+}
+
 var File_port_api_v1_gateway_events_proto protoreflect.FileDescriptor
 
 const file_port_api_v1_gateway_events_proto_rawDesc = "" +
 	"\n" +
-	" port/api/v1/gateway_events.proto\x12\vport.api.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\xc3\x03\n" +
+	" port/api/v1/gateway_events.proto\x12\vport.api.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\"port/api/v1/runtime_identity.proto\"\xeb\t\n" +
 	"\x19RecordGatewayEventRequest\x12\x19\n" +
 	"\bevent_id\x18\x01 \x01(\tR\aeventId\x12Q\n" +
 	"\n" +
@@ -223,11 +318,24 @@ const file_port_api_v1_gateway_events_proto_rawDesc = "" +
 	"\aroom_id\x18\x05 \x01(\tR\x06roomId\x12C\n" +
 	"\voccurred_at\x18\x06 \x01(\v2\x1a.google.protobuf.TimestampB\x06\xbaH\x03\xc8\x01\x01R\n" +
 	"occurredAt\x12M\n" +
-	"\apayload\x18\a \x03(\v23.port.api.v1.RecordGatewayEventRequest.PayloadEntryR\apayload\x1a:\n" +
+	"\apayload\x18\a \x03(\v23.port.api.v1.RecordGatewayEventRequest.PayloadEntryR\apayload\x129\n" +
+	"\x05owner\x18\b \x01(\v2!.port.api.v1.RuntimeAuthorizationH\x00R\x05owner\x12\\\n" +
+	"\x14helper_authorization\x18\f \x01(\v2'.port.api.v1.RuntimeHelperAuthorizationH\x00R\x13helperAuthorization\x12_\n" +
+	"\x15receipt_authorization\x18\t \x01(\v2(.port.api.v1.RuntimeReceiptAuthorizationH\x00R\x14receiptAuthorization\x12.\n" +
+	"\x10relay_generation\x18\n" +
+	" \x01(\rH\x01R\x0frelayGeneration\x88\x01\x01\x12*\n" +
+	"\binput_id\x18\v \x01(\tB\n" +
+	"\xbaH\ar\x05\x10\x01\x18\x80\x02H\x02R\ainputId\x88\x01\x01\x1a:\n" +
 	"\fPayloadEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
-	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"\x1c\n" +
-	"\x1aRecordGatewayEventResponse*\x84\x02\n" +
+	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01:\xa0\x03\xbaH\x9c\x03\x1a\x99\x03\n" +
+	"\x1dgateway_event.runtime_purpose\x12qworker start requires main or helper control, worker failure requires origin receipt, SIP requires signed ingress\x1a\x84\x02(this.event_type == 1 && (has(this.owner) || has(this.helper_authorization))) || (this.event_type == 2 && has(this.receipt_authorization)) || (this.event_type in [3, 4] && !has(this.owner) && !has(this.helper_authorization) && !has(this.receipt_authorization))B\v\n" +
+	"\tauthorityB\x13\n" +
+	"\x11_relay_generationB\v\n" +
+	"\t_input_id\"\xb2\x01\n" +
+	"\x1aRecordGatewayEventResponse\x12M\n" +
+	"\x12runtime_projection\x18\x01 \x01(\v2\x1e.port.api.v1.RuntimeProjectionR\x11runtimeProjection\x12E\n" +
+	"\rinput_receipt\x18\x02 \x01(\v2 .port.api.v1.RuntimeInputReceiptR\finputReceipt*\x84\x02\n" +
 	"\x19GatewayLifecycleEventType\x12,\n" +
 	"(GATEWAY_LIFECYCLE_EVENT_TYPE_UNSPECIFIED\x10\x00\x12.\n" +
 	"*GATEWAY_LIFECYCLE_EVENT_TYPE_AGENT_STARTED\x10\x01\x12-\n" +
@@ -252,29 +360,45 @@ func file_port_api_v1_gateway_events_proto_rawDescGZIP() []byte {
 var file_port_api_v1_gateway_events_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
 var file_port_api_v1_gateway_events_proto_msgTypes = make([]protoimpl.MessageInfo, 3)
 var file_port_api_v1_gateway_events_proto_goTypes = []any{
-	(GatewayLifecycleEventType)(0),     // 0: port.api.v1.GatewayLifecycleEventType
-	(*RecordGatewayEventRequest)(nil),  // 1: port.api.v1.RecordGatewayEventRequest
-	(*RecordGatewayEventResponse)(nil), // 2: port.api.v1.RecordGatewayEventResponse
-	nil,                                // 3: port.api.v1.RecordGatewayEventRequest.PayloadEntry
-	(*timestamppb.Timestamp)(nil),      // 4: google.protobuf.Timestamp
+	(GatewayLifecycleEventType)(0),      // 0: port.api.v1.GatewayLifecycleEventType
+	(*RecordGatewayEventRequest)(nil),   // 1: port.api.v1.RecordGatewayEventRequest
+	(*RecordGatewayEventResponse)(nil),  // 2: port.api.v1.RecordGatewayEventResponse
+	nil,                                 // 3: port.api.v1.RecordGatewayEventRequest.PayloadEntry
+	(*timestamppb.Timestamp)(nil),       // 4: google.protobuf.Timestamp
+	(*RuntimeAuthorization)(nil),        // 5: port.api.v1.RuntimeAuthorization
+	(*RuntimeHelperAuthorization)(nil),  // 6: port.api.v1.RuntimeHelperAuthorization
+	(*RuntimeReceiptAuthorization)(nil), // 7: port.api.v1.RuntimeReceiptAuthorization
+	(*RuntimeProjection)(nil),           // 8: port.api.v1.RuntimeProjection
+	(*RuntimeInputReceipt)(nil),         // 9: port.api.v1.RuntimeInputReceipt
 }
 var file_port_api_v1_gateway_events_proto_depIdxs = []int32{
 	0, // 0: port.api.v1.RecordGatewayEventRequest.event_type:type_name -> port.api.v1.GatewayLifecycleEventType
 	4, // 1: port.api.v1.RecordGatewayEventRequest.occurred_at:type_name -> google.protobuf.Timestamp
 	3, // 2: port.api.v1.RecordGatewayEventRequest.payload:type_name -> port.api.v1.RecordGatewayEventRequest.PayloadEntry
-	1, // 3: port.api.v1.ApiEventService.RecordGatewayEvent:input_type -> port.api.v1.RecordGatewayEventRequest
-	2, // 4: port.api.v1.ApiEventService.RecordGatewayEvent:output_type -> port.api.v1.RecordGatewayEventResponse
-	4, // [4:5] is the sub-list for method output_type
-	3, // [3:4] is the sub-list for method input_type
-	3, // [3:3] is the sub-list for extension type_name
-	3, // [3:3] is the sub-list for extension extendee
-	0, // [0:3] is the sub-list for field type_name
+	5, // 3: port.api.v1.RecordGatewayEventRequest.owner:type_name -> port.api.v1.RuntimeAuthorization
+	6, // 4: port.api.v1.RecordGatewayEventRequest.helper_authorization:type_name -> port.api.v1.RuntimeHelperAuthorization
+	7, // 5: port.api.v1.RecordGatewayEventRequest.receipt_authorization:type_name -> port.api.v1.RuntimeReceiptAuthorization
+	8, // 6: port.api.v1.RecordGatewayEventResponse.runtime_projection:type_name -> port.api.v1.RuntimeProjection
+	9, // 7: port.api.v1.RecordGatewayEventResponse.input_receipt:type_name -> port.api.v1.RuntimeInputReceipt
+	1, // 8: port.api.v1.ApiEventService.RecordGatewayEvent:input_type -> port.api.v1.RecordGatewayEventRequest
+	2, // 9: port.api.v1.ApiEventService.RecordGatewayEvent:output_type -> port.api.v1.RecordGatewayEventResponse
+	9, // [9:10] is the sub-list for method output_type
+	8, // [8:9] is the sub-list for method input_type
+	8, // [8:8] is the sub-list for extension type_name
+	8, // [8:8] is the sub-list for extension extendee
+	0, // [0:8] is the sub-list for field type_name
 }
 
 func init() { file_port_api_v1_gateway_events_proto_init() }
 func file_port_api_v1_gateway_events_proto_init() {
 	if File_port_api_v1_gateway_events_proto != nil {
 		return
+	}
+	file_port_api_v1_runtime_identity_proto_init()
+	file_port_api_v1_gateway_events_proto_msgTypes[0].OneofWrappers = []any{
+		(*RecordGatewayEventRequest_Owner)(nil),
+		(*RecordGatewayEventRequest_HelperAuthorization)(nil),
+		(*RecordGatewayEventRequest_ReceiptAuthorization)(nil),
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{

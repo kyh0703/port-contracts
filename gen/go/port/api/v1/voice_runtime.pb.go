@@ -27,8 +27,13 @@ type ResolveLeaseRequest struct {
 	LeaseId        string                 `protobuf:"bytes,1,opt,name=lease_id,json=leaseId,proto3" json:"lease_id,omitempty"`
 	ConversationId string                 `protobuf:"bytes,2,opt,name=conversation_id,json=conversationId,proto3" json:"conversation_id,omitempty"`
 	SessionId      string                 `protobuf:"bytes,3,opt,name=session_id,json=sessionId,proto3" json:"session_id,omitempty"`
-	unknownFields  protoimpl.UnknownFields
-	sizeCache      protoimpl.SizeCache
+	// Types that are valid to be assigned to Authority:
+	//
+	//	*ResolveLeaseRequest_Owner
+	//	*ResolveLeaseRequest_HelperAuthorization
+	Authority     isResolveLeaseRequest_Authority `protobuf_oneof:"authority"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
 }
 
 func (x *ResolveLeaseRequest) Reset() {
@@ -82,11 +87,55 @@ func (x *ResolveLeaseRequest) GetSessionId() string {
 	return ""
 }
 
+func (x *ResolveLeaseRequest) GetAuthority() isResolveLeaseRequest_Authority {
+	if x != nil {
+		return x.Authority
+	}
+	return nil
+}
+
+func (x *ResolveLeaseRequest) GetOwner() *RuntimeAuthorization {
+	if x != nil {
+		if x, ok := x.Authority.(*ResolveLeaseRequest_Owner); ok {
+			return x.Owner
+		}
+	}
+	return nil
+}
+
+func (x *ResolveLeaseRequest) GetHelperAuthorization() *RuntimeHelperAuthorization {
+	if x != nil {
+		if x, ok := x.Authority.(*ResolveLeaseRequest_HelperAuthorization); ok {
+			return x.HelperAuthorization
+		}
+	}
+	return nil
+}
+
+type isResolveLeaseRequest_Authority interface {
+	isResolveLeaseRequest_Authority()
+}
+
+type ResolveLeaseRequest_Owner struct {
+	Owner *RuntimeAuthorization `protobuf:"bytes,4,opt,name=owner,proto3,oneof"`
+}
+
+type ResolveLeaseRequest_HelperAuthorization struct {
+	HelperAuthorization *RuntimeHelperAuthorization `protobuf:"bytes,5,opt,name=helper_authorization,json=helperAuthorization,proto3,oneof"`
+}
+
+func (*ResolveLeaseRequest_Owner) isResolveLeaseRequest_Authority() {}
+
+func (*ResolveLeaseRequest_HelperAuthorization) isResolveLeaseRequest_Authority() {}
+
 type ResolveLeaseResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Stt           *SttRuntime            `protobuf:"bytes,1,opt,name=stt,proto3" json:"stt,omitempty"`
-	Llm           *LlmRuntime            `protobuf:"bytes,2,opt,name=llm,proto3" json:"llm,omitempty"`
-	Tts           *TtsRuntime            `protobuf:"bytes,3,opt,name=tts,proto3" json:"tts,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// The immutable registered lease and current authority determine the exact
+	// purpose-specific leaves. Text and neutral relay grants need not contain
+	// every speech/model runtime, and missing leaves never use fake credentials.
+	Stt           *SttRuntime `protobuf:"bytes,1,opt,name=stt,proto3" json:"stt,omitempty"`
+	Llm           *LlmRuntime `protobuf:"bytes,2,opt,name=llm,proto3" json:"llm,omitempty"`
+	Tts           *TtsRuntime `protobuf:"bytes,3,opt,name=tts,proto3" json:"tts,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -143,13 +192,17 @@ func (x *ResolveLeaseResponse) GetTts() *TtsRuntime {
 }
 
 type SttRuntime struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	ApiKey        string                 `protobuf:"bytes,1,opt,name=api_key,json=apiKey,proto3" json:"api_key,omitempty"`
-	Model         string                 `protobuf:"bytes,2,opt,name=model,proto3" json:"model,omitempty"`
-	Language      string                 `protobuf:"bytes,3,opt,name=language,proto3" json:"language,omitempty"`
-	Keyterms      []string               `protobuf:"bytes,4,rep,name=keyterms,proto3" json:"keyterms,omitempty"`
-	Provider      *string                `protobuf:"bytes,5,opt,name=provider,proto3,oneof" json:"provider,omitempty"`
-	Multilingual  *bool                  `protobuf:"varint,6,opt,name=multilingual,proto3,oneof" json:"multilingual,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Types that are valid to be assigned to Credential:
+	//
+	//	*SttRuntime_ApiKey
+	//	*SttRuntime_LeaseId
+	Credential    isSttRuntime_Credential `protobuf_oneof:"credential"`
+	Model         string                  `protobuf:"bytes,2,opt,name=model,proto3" json:"model,omitempty"`
+	Language      string                  `protobuf:"bytes,3,opt,name=language,proto3" json:"language,omitempty"`
+	Keyterms      []string                `protobuf:"bytes,4,rep,name=keyterms,proto3" json:"keyterms,omitempty"`
+	Provider      *string                 `protobuf:"bytes,5,opt,name=provider,proto3,oneof" json:"provider,omitempty"`
+	Multilingual  *bool                   `protobuf:"varint,6,opt,name=multilingual,proto3,oneof" json:"multilingual,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -184,9 +237,27 @@ func (*SttRuntime) Descriptor() ([]byte, []int) {
 	return file_port_api_v1_voice_runtime_proto_rawDescGZIP(), []int{2}
 }
 
+func (x *SttRuntime) GetCredential() isSttRuntime_Credential {
+	if x != nil {
+		return x.Credential
+	}
+	return nil
+}
+
 func (x *SttRuntime) GetApiKey() string {
 	if x != nil {
-		return x.ApiKey
+		if x, ok := x.Credential.(*SttRuntime_ApiKey); ok {
+			return x.ApiKey
+		}
+	}
+	return ""
+}
+
+func (x *SttRuntime) GetLeaseId() string {
+	if x != nil {
+		if x, ok := x.Credential.(*SttRuntime_LeaseId); ok {
+			return x.LeaseId
+		}
 	}
 	return ""
 }
@@ -226,10 +297,31 @@ func (x *SttRuntime) GetMultilingual() bool {
 	return false
 }
 
+type isSttRuntime_Credential interface {
+	isSttRuntime_Credential()
+}
+
+type SttRuntime_ApiKey struct {
+	ApiKey string `protobuf:"bytes,1,opt,name=api_key,json=apiKey,proto3,oneof"`
+}
+
+type SttRuntime_LeaseId struct {
+	// API-generated original pin reference; resolved only under current authority.
+	LeaseId string `protobuf:"bytes,7,opt,name=lease_id,json=leaseId,proto3,oneof"`
+}
+
+func (*SttRuntime_ApiKey) isSttRuntime_Credential() {}
+
+func (*SttRuntime_LeaseId) isSttRuntime_Credential() {}
+
 type LlmRuntime struct {
-	state  protoimpl.MessageState `protogen:"open.v1"`
-	ApiKey string                 `protobuf:"bytes,1,opt,name=api_key,json=apiKey,proto3" json:"api_key,omitempty"`
-	Model  string                 `protobuf:"bytes,2,opt,name=model,proto3" json:"model,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Types that are valid to be assigned to Credential:
+	//
+	//	*LlmRuntime_ApiKey
+	//	*LlmRuntime_LeaseId
+	Credential isLlmRuntime_Credential `protobuf_oneof:"credential"`
+	Model      string                  `protobuf:"bytes,2,opt,name=model,proto3" json:"model,omitempty"`
 	// API-pinned connection identity. Absence preserves legacy OpenRouter routing.
 	Provider      *string `protobuf:"bytes,3,opt,name=provider,proto3,oneof" json:"provider,omitempty"`
 	unknownFields protoimpl.UnknownFields
@@ -266,9 +358,27 @@ func (*LlmRuntime) Descriptor() ([]byte, []int) {
 	return file_port_api_v1_voice_runtime_proto_rawDescGZIP(), []int{3}
 }
 
+func (x *LlmRuntime) GetCredential() isLlmRuntime_Credential {
+	if x != nil {
+		return x.Credential
+	}
+	return nil
+}
+
 func (x *LlmRuntime) GetApiKey() string {
 	if x != nil {
-		return x.ApiKey
+		if x, ok := x.Credential.(*LlmRuntime_ApiKey); ok {
+			return x.ApiKey
+		}
+	}
+	return ""
+}
+
+func (x *LlmRuntime) GetLeaseId() string {
+	if x != nil {
+		if x, ok := x.Credential.(*LlmRuntime_LeaseId); ok {
+			return x.LeaseId
+		}
 	}
 	return ""
 }
@@ -287,13 +397,34 @@ func (x *LlmRuntime) GetProvider() string {
 	return ""
 }
 
+type isLlmRuntime_Credential interface {
+	isLlmRuntime_Credential()
+}
+
+type LlmRuntime_ApiKey struct {
+	ApiKey string `protobuf:"bytes,1,opt,name=api_key,json=apiKey,proto3,oneof"`
+}
+
+type LlmRuntime_LeaseId struct {
+	// API-generated original node pin reference, never a current-model fallback.
+	LeaseId string `protobuf:"bytes,4,opt,name=lease_id,json=leaseId,proto3,oneof"`
+}
+
+func (*LlmRuntime_ApiKey) isLlmRuntime_Credential() {}
+
+func (*LlmRuntime_LeaseId) isLlmRuntime_Credential() {}
+
 type TtsRuntime struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	ApiKey        string                 `protobuf:"bytes,1,opt,name=api_key,json=apiKey,proto3" json:"api_key,omitempty"`
-	Model         string                 `protobuf:"bytes,2,opt,name=model,proto3" json:"model,omitempty"`
-	Language      string                 `protobuf:"bytes,3,opt,name=language,proto3" json:"language,omitempty"`
-	VoiceId       string                 `protobuf:"bytes,4,opt,name=voice_id,json=voiceId,proto3" json:"voice_id,omitempty"`
-	Provider      *string                `protobuf:"bytes,5,opt,name=provider,proto3,oneof" json:"provider,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Types that are valid to be assigned to Credential:
+	//
+	//	*TtsRuntime_ApiKey
+	//	*TtsRuntime_LeaseId
+	Credential    isTtsRuntime_Credential `protobuf_oneof:"credential"`
+	Model         string                  `protobuf:"bytes,2,opt,name=model,proto3" json:"model,omitempty"`
+	Language      string                  `protobuf:"bytes,3,opt,name=language,proto3" json:"language,omitempty"`
+	VoiceId       string                  `protobuf:"bytes,4,opt,name=voice_id,json=voiceId,proto3" json:"voice_id,omitempty"`
+	Provider      *string                 `protobuf:"bytes,5,opt,name=provider,proto3,oneof" json:"provider,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -328,9 +459,27 @@ func (*TtsRuntime) Descriptor() ([]byte, []int) {
 	return file_port_api_v1_voice_runtime_proto_rawDescGZIP(), []int{4}
 }
 
+func (x *TtsRuntime) GetCredential() isTtsRuntime_Credential {
+	if x != nil {
+		return x.Credential
+	}
+	return nil
+}
+
 func (x *TtsRuntime) GetApiKey() string {
 	if x != nil {
-		return x.ApiKey
+		if x, ok := x.Credential.(*TtsRuntime_ApiKey); ok {
+			return x.ApiKey
+		}
+	}
+	return ""
+}
+
+func (x *TtsRuntime) GetLeaseId() string {
+	if x != nil {
+		if x, ok := x.Credential.(*TtsRuntime_LeaseId); ok {
+			return x.LeaseId
+		}
 	}
 	return ""
 }
@@ -363,45 +512,76 @@ func (x *TtsRuntime) GetProvider() string {
 	return ""
 }
 
+type isTtsRuntime_Credential interface {
+	isTtsRuntime_Credential()
+}
+
+type TtsRuntime_ApiKey struct {
+	ApiKey string `protobuf:"bytes,1,opt,name=api_key,json=apiKey,proto3,oneof"`
+}
+
+type TtsRuntime_LeaseId struct {
+	// API-generated original pin reference; resolved only under current authority.
+	LeaseId string `protobuf:"bytes,6,opt,name=lease_id,json=leaseId,proto3,oneof"`
+}
+
+func (*TtsRuntime_ApiKey) isTtsRuntime_Credential() {}
+
+func (*TtsRuntime_LeaseId) isTtsRuntime_Credential() {}
+
 var File_port_api_v1_voice_runtime_proto protoreflect.FileDescriptor
 
 const file_port_api_v1_voice_runtime_proto_rawDesc = "" +
 	"\n" +
-	"\x1fport/api/v1/voice_runtime.proto\x12\vport.api.v1\x1a\x1bbuf/validate/validate.proto\"\x93\x01\n" +
+	"\x1fport/api/v1/voice_runtime.proto\x12\vport.api.v1\x1a\x1bbuf/validate/validate.proto\x1a\"port/api/v1/runtime_identity.proto\"\xc0\x02\n" +
 	"\x13ResolveLeaseRequest\x12\"\n" +
 	"\blease_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\aleaseId\x120\n" +
 	"\x0fconversation_id\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x0econversationId\x12&\n" +
 	"\n" +
-	"session_id\x18\x03 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\tsessionId\"\xaf\x01\n" +
-	"\x14ResolveLeaseResponse\x121\n" +
-	"\x03stt\x18\x01 \x01(\v2\x17.port.api.v1.SttRuntimeB\x06\xbaH\x03\xc8\x01\x01R\x03stt\x121\n" +
-	"\x03llm\x18\x02 \x01(\v2\x17.port.api.v1.LlmRuntimeB\x06\xbaH\x03\xc8\x01\x01R\x03llm\x121\n" +
-	"\x03tts\x18\x03 \x01(\v2\x17.port.api.v1.TtsRuntimeB\x06\xbaH\x03\xc8\x01\x01R\x03tts\"\xa2\x02\n" +
+	"session_id\x18\x03 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\tsessionId\x129\n" +
+	"\x05owner\x18\x04 \x01(\v2!.port.api.v1.RuntimeAuthorizationH\x00R\x05owner\x12\\\n" +
+	"\x14helper_authorization\x18\x05 \x01(\v2'.port.api.v1.RuntimeHelperAuthorizationH\x00R\x13helperAuthorizationB\x12\n" +
+	"\tauthority\x12\x05\xbaH\x02\b\x01\"\xac\x04\n" +
+	"\x14ResolveLeaseResponse\x12)\n" +
+	"\x03stt\x18\x01 \x01(\v2\x17.port.api.v1.SttRuntimeR\x03stt\x12)\n" +
+	"\x03llm\x18\x02 \x01(\v2\x17.port.api.v1.LlmRuntimeR\x03llm\x12)\n" +
+	"\x03tts\x18\x03 \x01(\v2\x17.port.api.v1.TtsRuntimeR\x03tts:\x92\x03\xbaH\x8e\x03\x1a\x94\x01\n" +
+	"\x19resolved_runtime.nonempty\x12Fa resolved grant must contain at least one authorized original runtime\x1a/has(this.stt) || has(this.llm) || has(this.tts)\x1a\xf4\x01\n" +
+	"\x1cresolved_runtime.credentials\x12Nresolved runtimes must contain actual credentials rather than lease references\x1a\x83\x01(!has(this.stt) || has(this.stt.api_key)) && (!has(this.llm) || has(this.llm.api_key)) && (!has(this.tts) || has(this.tts.api_key))\"\xdf\x02\n" +
 	"\n" +
-	"SttRuntime\x12 \n" +
-	"\aapi_key\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x06apiKey\x12\x1d\n" +
+	"SttRuntime\x12\"\n" +
+	"\aapi_key\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01H\x00R\x06apiKey\x12$\n" +
+	"\blease_id\x18\a \x01(\tB\a\xbaH\x04r\x02\x10\x01H\x00R\aleaseId\x12\x1d\n" +
 	"\x05model\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x05model\x12#\n" +
 	"\blanguage\x18\x03 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\blanguage\x12(\n" +
 	"\bkeyterms\x18\x04 \x03(\tB\f\xbaH\t\x92\x01\x06\"\x04r\x02\x10\x01R\bkeyterms\x12=\n" +
-	"\bprovider\x18\x05 \x01(\tB\x1c\xbaH\x19r\x17R\bdeepgramR\x06sonioxR\x03xaiH\x00R\bprovider\x88\x01\x01\x12'\n" +
-	"\fmultilingual\x18\x06 \x01(\bH\x01R\fmultilingual\x88\x01\x01B\v\n" +
-	"\t_providerB\x0f\n" +
-	"\r_multilingual\"\x96\x01\n" +
+	"\bprovider\x18\x05 \x01(\tB\x1c\xbaH\x19r\x17R\bdeepgramR\x06sonioxR\x03xaiH\x01R\bprovider\x88\x01\x01\x12'\n" +
+	"\fmultilingual\x18\x06 \x01(\bH\x02R\fmultilingual\x88\x01\x01B\x13\n" +
 	"\n" +
-	"LlmRuntime\x12 \n" +
-	"\aapi_key\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x06apiKey\x12\x1d\n" +
+	"credential\x12\x05\xbaH\x02\b\x01B\v\n" +
+	"\t_providerB\x0f\n" +
+	"\r_multilingual\"\xd3\x01\n" +
+	"\n" +
+	"LlmRuntime\x12\"\n" +
+	"\aapi_key\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01H\x00R\x06apiKey\x12$\n" +
+	"\blease_id\x18\x04 \x01(\tB\a\xbaH\x04r\x02\x10\x01H\x00R\aleaseId\x12\x1d\n" +
 	"\x05model\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x05model\x12:\n" +
 	"\bprovider\x18\x03 \x01(\tB\x19\xbaH\x16r\x14R\x06openaiR\n" +
-	"openrouterH\x00R\bprovider\x88\x01\x01B\v\n" +
-	"\t_provider\"\xee\x01\n" +
+	"openrouterH\x01R\bprovider\x88\x01\x01B\x13\n" +
 	"\n" +
-	"TtsRuntime\x12 \n" +
-	"\aapi_key\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x06apiKey\x12\x1d\n" +
+	"credential\x12\x05\xbaH\x02\b\x01B\v\n" +
+	"\t_provider\"\xab\x02\n" +
+	"\n" +
+	"TtsRuntime\x12\"\n" +
+	"\aapi_key\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01H\x00R\x06apiKey\x12$\n" +
+	"\blease_id\x18\x06 \x01(\tB\a\xbaH\x04r\x02\x10\x01H\x00R\aleaseId\x12\x1d\n" +
 	"\x05model\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x05model\x12#\n" +
 	"\blanguage\x18\x03 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\blanguage\x12\"\n" +
 	"\bvoice_id\x18\x04 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\avoiceId\x12I\n" +
 	"\bprovider\x18\x05 \x01(\tB(\xbaH%r#R\bcartesiaR\n" +
-	"elevenlabsR\x06sonioxR\x03xaiH\x00R\bprovider\x88\x01\x01B\v\n" +
+	"elevenlabsR\x06sonioxR\x03xaiH\x01R\bprovider\x88\x01\x01B\x13\n" +
+	"\n" +
+	"credential\x12\x05\xbaH\x02\b\x01B\v\n" +
 	"\t_provider2j\n" +
 	"\x13VoiceRuntimeService\x12S\n" +
 	"\fResolveLease\x12 .port.api.v1.ResolveLeaseRequest\x1a!.port.api.v1.ResolveLeaseResponseB?Z=github.com/kyh0703/port-contracts/v4/gen/go/port/api/v1;apiv1b\x06proto3"
@@ -420,23 +600,27 @@ func file_port_api_v1_voice_runtime_proto_rawDescGZIP() []byte {
 
 var file_port_api_v1_voice_runtime_proto_msgTypes = make([]protoimpl.MessageInfo, 5)
 var file_port_api_v1_voice_runtime_proto_goTypes = []any{
-	(*ResolveLeaseRequest)(nil),  // 0: port.api.v1.ResolveLeaseRequest
-	(*ResolveLeaseResponse)(nil), // 1: port.api.v1.ResolveLeaseResponse
-	(*SttRuntime)(nil),           // 2: port.api.v1.SttRuntime
-	(*LlmRuntime)(nil),           // 3: port.api.v1.LlmRuntime
-	(*TtsRuntime)(nil),           // 4: port.api.v1.TtsRuntime
+	(*ResolveLeaseRequest)(nil),        // 0: port.api.v1.ResolveLeaseRequest
+	(*ResolveLeaseResponse)(nil),       // 1: port.api.v1.ResolveLeaseResponse
+	(*SttRuntime)(nil),                 // 2: port.api.v1.SttRuntime
+	(*LlmRuntime)(nil),                 // 3: port.api.v1.LlmRuntime
+	(*TtsRuntime)(nil),                 // 4: port.api.v1.TtsRuntime
+	(*RuntimeAuthorization)(nil),       // 5: port.api.v1.RuntimeAuthorization
+	(*RuntimeHelperAuthorization)(nil), // 6: port.api.v1.RuntimeHelperAuthorization
 }
 var file_port_api_v1_voice_runtime_proto_depIdxs = []int32{
-	2, // 0: port.api.v1.ResolveLeaseResponse.stt:type_name -> port.api.v1.SttRuntime
-	3, // 1: port.api.v1.ResolveLeaseResponse.llm:type_name -> port.api.v1.LlmRuntime
-	4, // 2: port.api.v1.ResolveLeaseResponse.tts:type_name -> port.api.v1.TtsRuntime
-	0, // 3: port.api.v1.VoiceRuntimeService.ResolveLease:input_type -> port.api.v1.ResolveLeaseRequest
-	1, // 4: port.api.v1.VoiceRuntimeService.ResolveLease:output_type -> port.api.v1.ResolveLeaseResponse
-	4, // [4:5] is the sub-list for method output_type
-	3, // [3:4] is the sub-list for method input_type
-	3, // [3:3] is the sub-list for extension type_name
-	3, // [3:3] is the sub-list for extension extendee
-	0, // [0:3] is the sub-list for field type_name
+	5, // 0: port.api.v1.ResolveLeaseRequest.owner:type_name -> port.api.v1.RuntimeAuthorization
+	6, // 1: port.api.v1.ResolveLeaseRequest.helper_authorization:type_name -> port.api.v1.RuntimeHelperAuthorization
+	2, // 2: port.api.v1.ResolveLeaseResponse.stt:type_name -> port.api.v1.SttRuntime
+	3, // 3: port.api.v1.ResolveLeaseResponse.llm:type_name -> port.api.v1.LlmRuntime
+	4, // 4: port.api.v1.ResolveLeaseResponse.tts:type_name -> port.api.v1.TtsRuntime
+	0, // 5: port.api.v1.VoiceRuntimeService.ResolveLease:input_type -> port.api.v1.ResolveLeaseRequest
+	1, // 6: port.api.v1.VoiceRuntimeService.ResolveLease:output_type -> port.api.v1.ResolveLeaseResponse
+	6, // [6:7] is the sub-list for method output_type
+	5, // [5:6] is the sub-list for method input_type
+	5, // [5:5] is the sub-list for extension type_name
+	5, // [5:5] is the sub-list for extension extendee
+	0, // [0:5] is the sub-list for field type_name
 }
 
 func init() { file_port_api_v1_voice_runtime_proto_init() }
@@ -444,9 +628,23 @@ func file_port_api_v1_voice_runtime_proto_init() {
 	if File_port_api_v1_voice_runtime_proto != nil {
 		return
 	}
-	file_port_api_v1_voice_runtime_proto_msgTypes[2].OneofWrappers = []any{}
-	file_port_api_v1_voice_runtime_proto_msgTypes[3].OneofWrappers = []any{}
-	file_port_api_v1_voice_runtime_proto_msgTypes[4].OneofWrappers = []any{}
+	file_port_api_v1_runtime_identity_proto_init()
+	file_port_api_v1_voice_runtime_proto_msgTypes[0].OneofWrappers = []any{
+		(*ResolveLeaseRequest_Owner)(nil),
+		(*ResolveLeaseRequest_HelperAuthorization)(nil),
+	}
+	file_port_api_v1_voice_runtime_proto_msgTypes[2].OneofWrappers = []any{
+		(*SttRuntime_ApiKey)(nil),
+		(*SttRuntime_LeaseId)(nil),
+	}
+	file_port_api_v1_voice_runtime_proto_msgTypes[3].OneofWrappers = []any{
+		(*LlmRuntime_ApiKey)(nil),
+		(*LlmRuntime_LeaseId)(nil),
+	}
+	file_port_api_v1_voice_runtime_proto_msgTypes[4].OneofWrappers = []any{
+		(*TtsRuntime_ApiKey)(nil),
+		(*TtsRuntime_LeaseId)(nil),
+	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{

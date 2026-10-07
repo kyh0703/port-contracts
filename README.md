@@ -33,8 +33,9 @@ import { ApiEventServiceClient } from '@overthinker1127/port-contracts/gen/ts/po
 
 `port/api/v1/agent_session.proto` is the API's worker-only session bootstrap
 and transfer control contract. `ExecutionSessionService.BootstrapPublished`
-admits either a one-time browser ticket or a verified SIP LiveKit job and returns one exact Agent
-supervisor or handoff runtime. The required revision is
+requires native attempt authorization in addition to the original
+one-time browser ticket or verified SIP binding, and returns one exact Agent
+supervisor or handoff runtime with its mandatory runtime lease. The publication revision is
 `execution-publication-2026-09-15-r2` for keypad collection. The wire also recognizes
 legacy `execution-publication-2026-09-04-r1`; services enforce the negotiated
 revision so older workers cannot silently skip collection. The response carries bounded typed
@@ -42,6 +43,30 @@ system and per-call user prompt variables, and handoff routes carry typed
 parameters, `none | conversation | recent` context policy, and one blocking
 `request_start` message. Older Agent bootstrap services and revision fallbacks
 are intentionally unavailable.
+
+## Runtime HA — 8.0.0
+
+`8.0.0` is a breaking coordinated release for API, worker, Web and aggregator.
+`runtime_identity.proto` owns attempt/current/helper/receipt authority and public
+runtime projections; `agent_session.proto` imports it without a circular dependency.
+HA protocol `runtime-recovery-v1` is independent of the retained publication revisions.
+
+- Execution/epoch/purpose authorization is mandatory for bootstrap, form,
+  transfer, provider resolution and runtime/privacy/realtime operations. A shared
+  server key, room metadata or expired owner is not job authority.
+- Recovery/checkpoint RPCs preserve the original publication, session, caller,
+  intent, quota and absolute deadlines. A committed checkpoint is not an audio ACK.
+- Main and helper execution authority stay separate. HUMAN and neutral transfer/
+  text-relay recovery do not inherit a generic AI actor or helper capability.
+- Original-run receipt authority can retain late usage/provider facts without
+  reviving expired current control. Capture completeness remains explicit.
+- Actual generated TypeScript build and 36 wire tests passed. The local consumers
+  use the same `8.0.0` archive. Generation/build does not prove Cloud assignment,
+  media-token revocation, active-fleet failover or production data/key availability.
+- The API/worker/Web archives have the same SHA-256:
+  `abdb22237727cb4da36f2e3cec49a58dafbc38d95229944e43cdce5dd1713e86`.
+
+## Earlier releases
 
 `7.20.0` adds `CallLimitsRuntime.no_answer_timeout_enabled` (field 4).
 Only explicit `true` opts a voice session into silence termination; absent/false

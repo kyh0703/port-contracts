@@ -40,6 +40,61 @@ class ExecutionSessionServiceStub:
                 request_serializer=port_dot_api_dot_v1_dot_agent__session__pb2.CommandFormCollectionRequest.SerializeToString,
                 response_deserializer=port_dot_api_dot_v1_dot_agent__session__pb2.CommandFormCollectionResponse.FromString,
                 _registered_method=True)
+        self.PrepareRuntimeAttempt = channel.unary_unary(
+                '/port.api.v1.ExecutionSessionService/PrepareRuntimeAttempt',
+                request_serializer=port_dot_api_dot_v1_dot_agent__session__pb2.PrepareRuntimeAttemptRequest.SerializeToString,
+                response_deserializer=port_dot_api_dot_v1_dot_agent__session__pb2.PrepareRuntimeAttemptResponse.FromString,
+                _registered_method=True)
+        self.RecoverRuntime = channel.unary_unary(
+                '/port.api.v1.ExecutionSessionService/RecoverRuntime',
+                request_serializer=port_dot_api_dot_v1_dot_agent__session__pb2.RecoverRuntimeRequest.SerializeToString,
+                response_deserializer=port_dot_api_dot_v1_dot_agent__session__pb2.RecoverRuntimeResponse.FromString,
+                _registered_method=True)
+        self.RenewRuntimeLease = channel.unary_unary(
+                '/port.api.v1.ExecutionSessionService/RenewRuntimeLease',
+                request_serializer=port_dot_api_dot_v1_dot_agent__session__pb2.RenewRuntimeLeaseRequest.SerializeToString,
+                response_deserializer=port_dot_api_dot_v1_dot_agent__session__pb2.RenewRuntimeLeaseResponse.FromString,
+                _registered_method=True)
+        self.ActivateRuntime = channel.unary_unary(
+                '/port.api.v1.ExecutionSessionService/ActivateRuntime',
+                request_serializer=port_dot_api_dot_v1_dot_agent__session__pb2.ActivateRuntimeRequest.SerializeToString,
+                response_deserializer=port_dot_api_dot_v1_dot_agent__session__pb2.ActivateRuntimeResponse.FromString,
+                _registered_method=True)
+        self.CommitRuntimeCheckpoint = channel.unary_unary(
+                '/port.api.v1.ExecutionSessionService/CommitRuntimeCheckpoint',
+                request_serializer=port_dot_api_dot_v1_dot_agent__session__pb2.CommitRuntimeCheckpointRequest.SerializeToString,
+                response_deserializer=port_dot_api_dot_v1_dot_agent__session__pb2.CommitRuntimeCheckpointResponse.FromString,
+                _registered_method=True)
+        self.ExecuteRuntimeOperation = channel.unary_unary(
+                '/port.api.v1.ExecutionSessionService/ExecuteRuntimeOperation',
+                request_serializer=port_dot_api_dot_v1_dot_agent__session__pb2.ExecuteRuntimeOperationRequest.SerializeToString,
+                response_deserializer=port_dot_api_dot_v1_dot_agent__session__pb2.ExecuteRuntimeOperationResponse.FromString,
+                _registered_method=True)
+        self.GetRuntimeOperation = channel.unary_unary(
+                '/port.api.v1.ExecutionSessionService/GetRuntimeOperation',
+                request_serializer=port_dot_api_dot_v1_dot_agent__session__pb2.GetRuntimeOperationRequest.SerializeToString,
+                response_deserializer=port_dot_api_dot_v1_dot_agent__session__pb2.GetRuntimeOperationResponse.FromString,
+                _registered_method=True)
+        self.RecordRuntimeReceipt = channel.unary_unary(
+                '/port.api.v1.ExecutionSessionService/RecordRuntimeReceipt',
+                request_serializer=port_dot_api_dot_v1_dot_agent__session__pb2.RecordRuntimeReceiptRequest.SerializeToString,
+                response_deserializer=port_dot_api_dot_v1_dot_agent__session__pb2.RecordRuntimeReceiptResponse.FromString,
+                _registered_method=True)
+        self.EndRuntime = channel.unary_unary(
+                '/port.api.v1.ExecutionSessionService/EndRuntime',
+                request_serializer=port_dot_api_dot_v1_dot_agent__session__pb2.EndRuntimeRequest.SerializeToString,
+                response_deserializer=port_dot_api_dot_v1_dot_agent__session__pb2.EndRuntimeResponse.FromString,
+                _registered_method=True)
+        self.RecordRuntimeUsage = channel.unary_unary(
+                '/port.api.v1.ExecutionSessionService/RecordRuntimeUsage',
+                request_serializer=port_dot_api_dot_v1_dot_agent__session__pb2.RecordRuntimeUsageRequest.SerializeToString,
+                response_deserializer=port_dot_api_dot_v1_dot_agent__session__pb2.RecordRuntimeUsageResponse.FromString,
+                _registered_method=True)
+        self.ReadRuntimeKnowledge = channel.unary_unary(
+                '/port.api.v1.ExecutionSessionService/ReadRuntimeKnowledge',
+                request_serializer=port_dot_api_dot_v1_dot_agent__session__pb2.ReadRuntimeKnowledgeRequest.SerializeToString,
+                response_deserializer=port_dot_api_dot_v1_dot_agent__session__pb2.ReadRuntimeKnowledgeResponse.FromString,
+                _registered_method=True)
 
 
 class ExecutionSessionServiceServicer:
@@ -76,6 +131,72 @@ class ExecutionSessionServiceServicer:
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def PrepareRuntimeAttempt(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def RecoverRuntime(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def RenewRuntimeLease(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def ActivateRuntime(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def CommitRuntimeCheckpoint(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def ExecuteRuntimeOperation(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def GetRuntimeOperation(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def RecordRuntimeReceipt(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def EndRuntime(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def RecordRuntimeUsage(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def ReadRuntimeKnowledge(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_ExecutionSessionServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
@@ -103,6 +224,61 @@ def add_ExecutionSessionServiceServicer_to_server(servicer, server):
                     servicer.CommandFormCollection,
                     request_deserializer=port_dot_api_dot_v1_dot_agent__session__pb2.CommandFormCollectionRequest.FromString,
                     response_serializer=port_dot_api_dot_v1_dot_agent__session__pb2.CommandFormCollectionResponse.SerializeToString,
+            ),
+            'PrepareRuntimeAttempt': grpc.unary_unary_rpc_method_handler(
+                    servicer.PrepareRuntimeAttempt,
+                    request_deserializer=port_dot_api_dot_v1_dot_agent__session__pb2.PrepareRuntimeAttemptRequest.FromString,
+                    response_serializer=port_dot_api_dot_v1_dot_agent__session__pb2.PrepareRuntimeAttemptResponse.SerializeToString,
+            ),
+            'RecoverRuntime': grpc.unary_unary_rpc_method_handler(
+                    servicer.RecoverRuntime,
+                    request_deserializer=port_dot_api_dot_v1_dot_agent__session__pb2.RecoverRuntimeRequest.FromString,
+                    response_serializer=port_dot_api_dot_v1_dot_agent__session__pb2.RecoverRuntimeResponse.SerializeToString,
+            ),
+            'RenewRuntimeLease': grpc.unary_unary_rpc_method_handler(
+                    servicer.RenewRuntimeLease,
+                    request_deserializer=port_dot_api_dot_v1_dot_agent__session__pb2.RenewRuntimeLeaseRequest.FromString,
+                    response_serializer=port_dot_api_dot_v1_dot_agent__session__pb2.RenewRuntimeLeaseResponse.SerializeToString,
+            ),
+            'ActivateRuntime': grpc.unary_unary_rpc_method_handler(
+                    servicer.ActivateRuntime,
+                    request_deserializer=port_dot_api_dot_v1_dot_agent__session__pb2.ActivateRuntimeRequest.FromString,
+                    response_serializer=port_dot_api_dot_v1_dot_agent__session__pb2.ActivateRuntimeResponse.SerializeToString,
+            ),
+            'CommitRuntimeCheckpoint': grpc.unary_unary_rpc_method_handler(
+                    servicer.CommitRuntimeCheckpoint,
+                    request_deserializer=port_dot_api_dot_v1_dot_agent__session__pb2.CommitRuntimeCheckpointRequest.FromString,
+                    response_serializer=port_dot_api_dot_v1_dot_agent__session__pb2.CommitRuntimeCheckpointResponse.SerializeToString,
+            ),
+            'ExecuteRuntimeOperation': grpc.unary_unary_rpc_method_handler(
+                    servicer.ExecuteRuntimeOperation,
+                    request_deserializer=port_dot_api_dot_v1_dot_agent__session__pb2.ExecuteRuntimeOperationRequest.FromString,
+                    response_serializer=port_dot_api_dot_v1_dot_agent__session__pb2.ExecuteRuntimeOperationResponse.SerializeToString,
+            ),
+            'GetRuntimeOperation': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetRuntimeOperation,
+                    request_deserializer=port_dot_api_dot_v1_dot_agent__session__pb2.GetRuntimeOperationRequest.FromString,
+                    response_serializer=port_dot_api_dot_v1_dot_agent__session__pb2.GetRuntimeOperationResponse.SerializeToString,
+            ),
+            'RecordRuntimeReceipt': grpc.unary_unary_rpc_method_handler(
+                    servicer.RecordRuntimeReceipt,
+                    request_deserializer=port_dot_api_dot_v1_dot_agent__session__pb2.RecordRuntimeReceiptRequest.FromString,
+                    response_serializer=port_dot_api_dot_v1_dot_agent__session__pb2.RecordRuntimeReceiptResponse.SerializeToString,
+            ),
+            'EndRuntime': grpc.unary_unary_rpc_method_handler(
+                    servicer.EndRuntime,
+                    request_deserializer=port_dot_api_dot_v1_dot_agent__session__pb2.EndRuntimeRequest.FromString,
+                    response_serializer=port_dot_api_dot_v1_dot_agent__session__pb2.EndRuntimeResponse.SerializeToString,
+            ),
+            'RecordRuntimeUsage': grpc.unary_unary_rpc_method_handler(
+                    servicer.RecordRuntimeUsage,
+                    request_deserializer=port_dot_api_dot_v1_dot_agent__session__pb2.RecordRuntimeUsageRequest.FromString,
+                    response_serializer=port_dot_api_dot_v1_dot_agent__session__pb2.RecordRuntimeUsageResponse.SerializeToString,
+            ),
+            'ReadRuntimeKnowledge': grpc.unary_unary_rpc_method_handler(
+                    servicer.ReadRuntimeKnowledge,
+                    request_deserializer=port_dot_api_dot_v1_dot_agent__session__pb2.ReadRuntimeKnowledgeRequest.FromString,
+                    response_serializer=port_dot_api_dot_v1_dot_agent__session__pb2.ReadRuntimeKnowledgeResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -241,6 +417,303 @@ class ExecutionSessionService:
             '/port.api.v1.ExecutionSessionService/CommandFormCollection',
             port_dot_api_dot_v1_dot_agent__session__pb2.CommandFormCollectionRequest.SerializeToString,
             port_dot_api_dot_v1_dot_agent__session__pb2.CommandFormCollectionResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def PrepareRuntimeAttempt(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/port.api.v1.ExecutionSessionService/PrepareRuntimeAttempt',
+            port_dot_api_dot_v1_dot_agent__session__pb2.PrepareRuntimeAttemptRequest.SerializeToString,
+            port_dot_api_dot_v1_dot_agent__session__pb2.PrepareRuntimeAttemptResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def RecoverRuntime(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/port.api.v1.ExecutionSessionService/RecoverRuntime',
+            port_dot_api_dot_v1_dot_agent__session__pb2.RecoverRuntimeRequest.SerializeToString,
+            port_dot_api_dot_v1_dot_agent__session__pb2.RecoverRuntimeResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def RenewRuntimeLease(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/port.api.v1.ExecutionSessionService/RenewRuntimeLease',
+            port_dot_api_dot_v1_dot_agent__session__pb2.RenewRuntimeLeaseRequest.SerializeToString,
+            port_dot_api_dot_v1_dot_agent__session__pb2.RenewRuntimeLeaseResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def ActivateRuntime(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/port.api.v1.ExecutionSessionService/ActivateRuntime',
+            port_dot_api_dot_v1_dot_agent__session__pb2.ActivateRuntimeRequest.SerializeToString,
+            port_dot_api_dot_v1_dot_agent__session__pb2.ActivateRuntimeResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def CommitRuntimeCheckpoint(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/port.api.v1.ExecutionSessionService/CommitRuntimeCheckpoint',
+            port_dot_api_dot_v1_dot_agent__session__pb2.CommitRuntimeCheckpointRequest.SerializeToString,
+            port_dot_api_dot_v1_dot_agent__session__pb2.CommitRuntimeCheckpointResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def ExecuteRuntimeOperation(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/port.api.v1.ExecutionSessionService/ExecuteRuntimeOperation',
+            port_dot_api_dot_v1_dot_agent__session__pb2.ExecuteRuntimeOperationRequest.SerializeToString,
+            port_dot_api_dot_v1_dot_agent__session__pb2.ExecuteRuntimeOperationResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def GetRuntimeOperation(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/port.api.v1.ExecutionSessionService/GetRuntimeOperation',
+            port_dot_api_dot_v1_dot_agent__session__pb2.GetRuntimeOperationRequest.SerializeToString,
+            port_dot_api_dot_v1_dot_agent__session__pb2.GetRuntimeOperationResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def RecordRuntimeReceipt(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/port.api.v1.ExecutionSessionService/RecordRuntimeReceipt',
+            port_dot_api_dot_v1_dot_agent__session__pb2.RecordRuntimeReceiptRequest.SerializeToString,
+            port_dot_api_dot_v1_dot_agent__session__pb2.RecordRuntimeReceiptResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def EndRuntime(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/port.api.v1.ExecutionSessionService/EndRuntime',
+            port_dot_api_dot_v1_dot_agent__session__pb2.EndRuntimeRequest.SerializeToString,
+            port_dot_api_dot_v1_dot_agent__session__pb2.EndRuntimeResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def RecordRuntimeUsage(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/port.api.v1.ExecutionSessionService/RecordRuntimeUsage',
+            port_dot_api_dot_v1_dot_agent__session__pb2.RecordRuntimeUsageRequest.SerializeToString,
+            port_dot_api_dot_v1_dot_agent__session__pb2.RecordRuntimeUsageResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def ReadRuntimeKnowledge(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/port.api.v1.ExecutionSessionService/ReadRuntimeKnowledge',
+            port_dot_api_dot_v1_dot_agent__session__pb2.ReadRuntimeKnowledgeRequest.SerializeToString,
+            port_dot_api_dot_v1_dot_agent__session__pb2.ReadRuntimeKnowledgeResponse.FromString,
             options,
             channel_credentials,
             insecure,

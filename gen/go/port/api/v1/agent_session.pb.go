@@ -356,9 +356,12 @@ type CommandFormCollectionRequest struct {
 	PublishedId    string                 `protobuf:"bytes,4,opt,name=published_id,json=publishedId,proto3" json:"published_id,omitempty"`
 	TransitionId   string                 `protobuf:"bytes,5,opt,name=transition_id,json=transitionId,proto3" json:"transition_id,omitempty"`
 	// Generated before create, reused for retries, cancellation and acknowledgement.
-	RequestId     string `protobuf:"bytes,6,opt,name=request_id,json=requestId,proto3" json:"request_id,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	RequestId           string                `protobuf:"bytes,6,opt,name=request_id,json=requestId,proto3" json:"request_id,omitempty"`
+	Owner               *RuntimeAuthorization `protobuf:"bytes,7,opt,name=owner,proto3" json:"owner,omitempty"`
+	ConsumptionRevision *uint32               `protobuf:"varint,8,opt,name=consumption_revision,json=consumptionRevision,proto3,oneof" json:"consumption_revision,omitempty"`
+	ExpiresAt           *string               `protobuf:"bytes,9,opt,name=expires_at,json=expiresAt,proto3,oneof" json:"expires_at,omitempty"`
+	unknownFields       protoimpl.UnknownFields
+	sizeCache           protoimpl.SizeCache
 }
 
 func (x *CommandFormCollectionRequest) Reset() {
@@ -433,17 +436,41 @@ func (x *CommandFormCollectionRequest) GetRequestId() string {
 	return ""
 }
 
+func (x *CommandFormCollectionRequest) GetOwner() *RuntimeAuthorization {
+	if x != nil {
+		return x.Owner
+	}
+	return nil
+}
+
+func (x *CommandFormCollectionRequest) GetConsumptionRevision() uint32 {
+	if x != nil && x.ConsumptionRevision != nil {
+		return *x.ConsumptionRevision
+	}
+	return 0
+}
+
+func (x *CommandFormCollectionRequest) GetExpiresAt() string {
+	if x != nil && x.ExpiresAt != nil {
+		return *x.ExpiresAt
+	}
+	return ""
+}
+
 type CommandFormCollectionResponse struct {
 	state     protoimpl.MessageState `protogen:"open.v1"`
 	RequestId string                 `protobuf:"bytes,1,opt,name=request_id,json=requestId,proto3" json:"request_id,omitempty"`
-	Status    string                 `protobuf:"bytes,2,opt,name=status,proto3" json:"status,omitempty"`
-	Delivery  string                 `protobuf:"bytes,3,opt,name=delivery,proto3" json:"delivery,omitempty"`
-	ExpiresAt string                 `protobuf:"bytes,4,opt,name=expires_at,json=expiresAt,proto3" json:"expires_at,omitempty"`
+	// Only positive SQL absence under current authorization proves no dispatch
+	// intent exists; dependency failure, erasure and RPC 404 are not this status.
+	Status    string  `protobuf:"bytes,2,opt,name=status,proto3" json:"status,omitempty"`
+	Delivery  *string `protobuf:"bytes,3,opt,name=delivery,proto3,oneof" json:"delivery,omitempty"`
+	ExpiresAt *string `protobuf:"bytes,4,opt,name=expires_at,json=expiresAt,proto3,oneof" json:"expires_at,omitempty"`
 	// Sensitive: worker only. Never include in model messages or lifecycle events.
-	Values        map[string]string `protobuf:"bytes,5,rep,name=values,proto3" json:"values,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
-	FailureCode   string            `protobuf:"bytes,6,opt,name=failure_code,json=failureCode,proto3" json:"failure_code,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	Values             map[string]string              `protobuf:"bytes,5,rep,name=values,proto3" json:"values,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
+	FailureCode        string                         `protobuf:"bytes,6,opt,name=failure_code,json=failureCode,proto3" json:"failure_code,omitempty"`
+	ProviderAcceptance *RuntimeFormProviderAcceptance `protobuf:"bytes,7,opt,name=provider_acceptance,json=providerAcceptance,proto3" json:"provider_acceptance,omitempty"`
+	unknownFields      protoimpl.UnknownFields
+	sizeCache          protoimpl.SizeCache
 }
 
 func (x *CommandFormCollectionResponse) Reset() {
@@ -491,15 +518,15 @@ func (x *CommandFormCollectionResponse) GetStatus() string {
 }
 
 func (x *CommandFormCollectionResponse) GetDelivery() string {
-	if x != nil {
-		return x.Delivery
+	if x != nil && x.Delivery != nil {
+		return *x.Delivery
 	}
 	return ""
 }
 
 func (x *CommandFormCollectionResponse) GetExpiresAt() string {
-	if x != nil {
-		return x.ExpiresAt
+	if x != nil && x.ExpiresAt != nil {
+		return *x.ExpiresAt
 	}
 	return ""
 }
@@ -518,6 +545,73 @@ func (x *CommandFormCollectionResponse) GetFailureCode() string {
 	return ""
 }
 
+func (x *CommandFormCollectionResponse) GetProviderAcceptance() *RuntimeFormProviderAcceptance {
+	if x != nil {
+		return x.ProviderAcceptance
+	}
+	return nil
+}
+
+type RuntimeFormProviderAcceptance struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Provider      string                 `protobuf:"bytes,1,opt,name=provider,proto3" json:"provider,omitempty"`
+	SendCode      string                 `protobuf:"bytes,2,opt,name=send_code,json=sendCode,proto3" json:"send_code,omitempty"`
+	Status        string                 `protobuf:"bytes,3,opt,name=status,proto3" json:"status,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *RuntimeFormProviderAcceptance) Reset() {
+	*x = RuntimeFormProviderAcceptance{}
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[2]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RuntimeFormProviderAcceptance) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RuntimeFormProviderAcceptance) ProtoMessage() {}
+
+func (x *RuntimeFormProviderAcceptance) ProtoReflect() protoreflect.Message {
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[2]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RuntimeFormProviderAcceptance.ProtoReflect.Descriptor instead.
+func (*RuntimeFormProviderAcceptance) Descriptor() ([]byte, []int) {
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{2}
+}
+
+func (x *RuntimeFormProviderAcceptance) GetProvider() string {
+	if x != nil {
+		return x.Provider
+	}
+	return ""
+}
+
+func (x *RuntimeFormProviderAcceptance) GetSendCode() string {
+	if x != nil {
+		return x.SendCode
+	}
+	return ""
+}
+
+func (x *RuntimeFormProviderAcceptance) GetStatus() string {
+	if x != nil {
+		return x.Status
+	}
+	return ""
+}
+
 type BootstrapRequest struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// Types that are valid to be assigned to Admission:
@@ -531,7 +625,7 @@ type BootstrapRequest struct {
 
 func (x *BootstrapRequest) Reset() {
 	*x = BootstrapRequest{}
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[2]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -543,7 +637,7 @@ func (x *BootstrapRequest) String() string {
 func (*BootstrapRequest) ProtoMessage() {}
 
 func (x *BootstrapRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[2]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -556,7 +650,7 @@ func (x *BootstrapRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use BootstrapRequest.ProtoReflect.Descriptor instead.
 func (*BootstrapRequest) Descriptor() ([]byte, []int) {
-	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{2}
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *BootstrapRequest) GetAdmission() isBootstrapRequest_Admission {
@@ -616,7 +710,7 @@ type SipBootstrapContext struct {
 
 func (x *SipBootstrapContext) Reset() {
 	*x = SipBootstrapContext{}
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[3]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -628,7 +722,7 @@ func (x *SipBootstrapContext) String() string {
 func (*SipBootstrapContext) ProtoMessage() {}
 
 func (x *SipBootstrapContext) ProtoReflect() protoreflect.Message {
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[3]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -641,7 +735,7 @@ func (x *SipBootstrapContext) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SipBootstrapContext.ProtoReflect.Descriptor instead.
 func (*SipBootstrapContext) Descriptor() ([]byte, []int) {
-	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{3}
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *SipBootstrapContext) GetJobId() string {
@@ -700,24 +794,33 @@ func (x *SipBootstrapContext) GetPhoneNumber() string {
 	return ""
 }
 
-// published_id is the only execution identity accepted by a runtime session.
+// Publication pins are immutable. Main bootstrap uses a prepared initial attempt;
+// the API verifies its purpose, original admitted SQL binding and native assignment.
+// Recovery uses RecoverRuntime rather than treating bootstrap as a recovery alias.
 type BootstrapPublishedRequest struct {
-	state            protoimpl.MessageState `protogen:"open.v1"`
-	Admission        *BootstrapRequest      `protobuf:"bytes,1,opt,name=admission,proto3" json:"admission,omitempty"`
-	ConversationId   string                 `protobuf:"bytes,2,opt,name=conversation_id,json=conversationId,proto3" json:"conversation_id,omitempty"`
-	SessionId        string                 `protobuf:"bytes,3,opt,name=session_id,json=sessionId,proto3" json:"session_id,omitempty"`
-	PublishedId      string                 `protobuf:"bytes,4,opt,name=published_id,json=publishedId,proto3" json:"published_id,omitempty"`
-	ContractRevision string                 `protobuf:"bytes,5,opt,name=contract_revision,json=contractRevision,proto3" json:"contract_revision,omitempty"`
-	// Optional LiveKit worker job correlation for browser/text sessions. It is
-	// metadata only; admission remains bound to the ticket/session capability.
-	WorkerJobId   *string `protobuf:"bytes,6,opt,name=worker_job_id,json=workerJobId,proto3,oneof" json:"worker_job_id,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Optional original ticket or complete SIP transport evidence. A prepared main
+	// attempt may omit it; omission never waives API admission or the four pins.
+	Admission        *BootstrapRequest `protobuf:"bytes,1,opt,name=admission,proto3" json:"admission,omitempty"`
+	ConversationId   string            `protobuf:"bytes,2,opt,name=conversation_id,json=conversationId,proto3" json:"conversation_id,omitempty"`
+	SessionId        string            `protobuf:"bytes,3,opt,name=session_id,json=sessionId,proto3" json:"session_id,omitempty"`
+	PublishedId      string            `protobuf:"bytes,4,opt,name=published_id,json=publishedId,proto3" json:"published_id,omitempty"`
+	ContractRevision string            `protobuf:"bytes,5,opt,name=contract_revision,json=contractRevision,proto3" json:"contract_revision,omitempty"`
+	// Optional original worker job correlation; never a participant, admission or
+	// substitute for the required publication pins and private attempt authority.
+	WorkerJobId *string `protobuf:"bytes,6,opt,name=worker_job_id,json=workerJobId,proto3,oneof" json:"worker_job_id,omitempty"`
+	// Types that are valid to be assigned to Authority:
+	//
+	//	*BootstrapPublishedRequest_AttemptAuthorization
+	//	*BootstrapPublishedRequest_HelperAuthorization
+	Authority     isBootstrapPublishedRequest_Authority `protobuf_oneof:"authority"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *BootstrapPublishedRequest) Reset() {
 	*x = BootstrapPublishedRequest{}
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[4]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -729,7 +832,7 @@ func (x *BootstrapPublishedRequest) String() string {
 func (*BootstrapPublishedRequest) ProtoMessage() {}
 
 func (x *BootstrapPublishedRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[4]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -742,7 +845,7 @@ func (x *BootstrapPublishedRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use BootstrapPublishedRequest.ProtoReflect.Descriptor instead.
 func (*BootstrapPublishedRequest) Descriptor() ([]byte, []int) {
-	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{4}
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *BootstrapPublishedRequest) GetAdmission() *BootstrapRequest {
@@ -787,6 +890,47 @@ func (x *BootstrapPublishedRequest) GetWorkerJobId() string {
 	return ""
 }
 
+func (x *BootstrapPublishedRequest) GetAuthority() isBootstrapPublishedRequest_Authority {
+	if x != nil {
+		return x.Authority
+	}
+	return nil
+}
+
+func (x *BootstrapPublishedRequest) GetAttemptAuthorization() *RuntimeAttemptAuthorization {
+	if x != nil {
+		if x, ok := x.Authority.(*BootstrapPublishedRequest_AttemptAuthorization); ok {
+			return x.AttemptAuthorization
+		}
+	}
+	return nil
+}
+
+func (x *BootstrapPublishedRequest) GetHelperAuthorization() *RuntimeHelperAuthorization {
+	if x != nil {
+		if x, ok := x.Authority.(*BootstrapPublishedRequest_HelperAuthorization); ok {
+			return x.HelperAuthorization
+		}
+	}
+	return nil
+}
+
+type isBootstrapPublishedRequest_Authority interface {
+	isBootstrapPublishedRequest_Authority()
+}
+
+type BootstrapPublishedRequest_AttemptAuthorization struct {
+	AttemptAuthorization *RuntimeAttemptAuthorization `protobuf:"bytes,7,opt,name=attempt_authorization,json=attemptAuthorization,proto3,oneof"`
+}
+
+type BootstrapPublishedRequest_HelperAuthorization struct {
+	HelperAuthorization *RuntimeHelperAuthorization `protobuf:"bytes,8,opt,name=helper_authorization,json=helperAuthorization,proto3,oneof"`
+}
+
+func (*BootstrapPublishedRequest_AttemptAuthorization) isBootstrapPublishedRequest_Authority() {}
+
+func (*BootstrapPublishedRequest_HelperAuthorization) isBootstrapPublishedRequest_Authority() {}
+
 type BootstrapPublishedResponse struct {
 	state            protoimpl.MessageState `protogen:"open.v1"`
 	ContractRevision string                 `protobuf:"bytes,1,opt,name=contract_revision,json=contractRevision,proto3" json:"contract_revision,omitempty"`
@@ -794,26 +938,24 @@ type BootstrapPublishedResponse struct {
 	SessionId        string                 `protobuf:"bytes,3,opt,name=session_id,json=sessionId,proto3" json:"session_id,omitempty"`
 	PublishedId      string                 `protobuf:"bytes,4,opt,name=published_id,json=publishedId,proto3" json:"published_id,omitempty"`
 	// Authoritative admitted account owner, used to fence late worker storage writes.
-	UserId string `protobuf:"bytes,11,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
-	// Short-lived control capability bound to this admitted voice session.
-	TransferCapability *string                   `protobuf:"bytes,9,opt,name=transfer_capability,json=transferCapability,proto3,oneof" json:"transfer_capability,omitempty"`
-	PromptVariables    *SessionPromptVariableBag `protobuf:"bytes,6,opt,name=prompt_variables,json=promptVariables,proto3" json:"prompt_variables,omitempty"`
-	Agent              *PublishedAgentExecution  `protobuf:"bytes,5,opt,name=agent,proto3" json:"agent,omitempty"`
+	UserId          string                    `protobuf:"bytes,11,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	PromptVariables *SessionPromptVariableBag `protobuf:"bytes,6,opt,name=prompt_variables,json=promptVariables,proto3" json:"prompt_variables,omitempty"`
+	Agent           *PublishedAgentExecution  `protobuf:"bytes,5,opt,name=agent,proto3" json:"agent,omitempty"`
 	// Types that are valid to be assigned to Runtime:
 	//
 	//	*BootstrapPublishedResponse_VoiceRuntime
 	//	*BootstrapPublishedResponse_TextRuntime
-	Runtime isBootstrapPublishedResponse_Runtime `protobuf_oneof:"runtime"`
-	// Short-lived, opaque capability for the worker's LLM audit calls. The API
-	// binds the capability to the admitted session, account and publication.
-	LlmAuditCapability *LlmAuditCapability `protobuf:"bytes,10,opt,name=llm_audit_capability,json=llmAuditCapability,proto3,oneof" json:"llm_audit_capability,omitempty"`
-	unknownFields      protoimpl.UnknownFields
-	sizeCache          protoimpl.SizeCache
+	Runtime          isBootstrapPublishedResponse_Runtime `protobuf_oneof:"runtime"`
+	RuntimeLease     *RuntimeLease                        `protobuf:"bytes,12,opt,name=runtime_lease,json=runtimeLease,proto3" json:"runtime_lease,omitempty"`
+	HelperCheckpoint *RuntimeCheckpoint                   `protobuf:"bytes,13,opt,name=helper_checkpoint,json=helperCheckpoint,proto3" json:"helper_checkpoint,omitempty"`
+	HelperBootstrap  *RuntimeTransferHelperBootstrap      `protobuf:"bytes,14,opt,name=helper_bootstrap,json=helperBootstrap,proto3" json:"helper_bootstrap,omitempty"`
+	unknownFields    protoimpl.UnknownFields
+	sizeCache        protoimpl.SizeCache
 }
 
 func (x *BootstrapPublishedResponse) Reset() {
 	*x = BootstrapPublishedResponse{}
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[5]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -825,7 +967,7 @@ func (x *BootstrapPublishedResponse) String() string {
 func (*BootstrapPublishedResponse) ProtoMessage() {}
 
 func (x *BootstrapPublishedResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[5]
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -838,7 +980,7 @@ func (x *BootstrapPublishedResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use BootstrapPublishedResponse.ProtoReflect.Descriptor instead.
 func (*BootstrapPublishedResponse) Descriptor() ([]byte, []int) {
-	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{5}
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *BootstrapPublishedResponse) GetContractRevision() string {
@@ -872,13 +1014,6 @@ func (x *BootstrapPublishedResponse) GetPublishedId() string {
 func (x *BootstrapPublishedResponse) GetUserId() string {
 	if x != nil {
 		return x.UserId
-	}
-	return ""
-}
-
-func (x *BootstrapPublishedResponse) GetTransferCapability() string {
-	if x != nil && x.TransferCapability != nil {
-		return *x.TransferCapability
 	}
 	return ""
 }
@@ -922,9 +1057,23 @@ func (x *BootstrapPublishedResponse) GetTextRuntime() *TextRuntimeSnapshot {
 	return nil
 }
 
-func (x *BootstrapPublishedResponse) GetLlmAuditCapability() *LlmAuditCapability {
+func (x *BootstrapPublishedResponse) GetRuntimeLease() *RuntimeLease {
 	if x != nil {
-		return x.LlmAuditCapability
+		return x.RuntimeLease
+	}
+	return nil
+}
+
+func (x *BootstrapPublishedResponse) GetHelperCheckpoint() *RuntimeCheckpoint {
+	if x != nil {
+		return x.HelperCheckpoint
+	}
+	return nil
+}
+
+func (x *BootstrapPublishedResponse) GetHelperBootstrap() *RuntimeTransferHelperBootstrap {
+	if x != nil {
+		return x.HelperBootstrap
 	}
 	return nil
 }
@@ -945,72 +1094,10 @@ func (*BootstrapPublishedResponse_VoiceRuntime) isBootstrapPublishedResponse_Run
 
 func (*BootstrapPublishedResponse_TextRuntime) isBootstrapPublishedResponse_Runtime() {}
 
-type LlmAuditCapability struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	ExecutionId   string                 `protobuf:"bytes,1,opt,name=execution_id,json=executionId,proto3" json:"execution_id,omitempty"`
-	Token         string                 `protobuf:"bytes,2,opt,name=token,proto3" json:"token,omitempty"`
-	ExpiresAt     string                 `protobuf:"bytes,3,opt,name=expires_at,json=expiresAt,proto3" json:"expires_at,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *LlmAuditCapability) Reset() {
-	*x = LlmAuditCapability{}
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[6]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *LlmAuditCapability) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*LlmAuditCapability) ProtoMessage() {}
-
-func (x *LlmAuditCapability) ProtoReflect() protoreflect.Message {
-	mi := &file_port_api_v1_agent_session_proto_msgTypes[6]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use LlmAuditCapability.ProtoReflect.Descriptor instead.
-func (*LlmAuditCapability) Descriptor() ([]byte, []int) {
-	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{6}
-}
-
-func (x *LlmAuditCapability) GetExecutionId() string {
-	if x != nil {
-		return x.ExecutionId
-	}
-	return ""
-}
-
-func (x *LlmAuditCapability) GetToken() string {
-	if x != nil {
-		return x.Token
-	}
-	return ""
-}
-
-func (x *LlmAuditCapability) GetExpiresAt() string {
-	if x != nil {
-		return x.ExpiresAt
-	}
-	return ""
-}
-
-// Correlation fields are repeated on terminal records so the API can safely
-// accept an out-of-order terminal delivery without trusting its owner fields.
-// Ownership is always derived from LlmAuditCapability.token.
+// Terminal delivery preserves the original request correlation. Current control
+// and original-execution receipt authority live on their distinct RPC envelopes.
 type LlmAuditRequestContext struct {
 	state            protoimpl.MessageState `protogen:"open.v1"`
-	Capability       string                 `protobuf:"bytes,1,opt,name=capability,proto3" json:"capability,omitempty"`
 	RequestAttemptId string                 `protobuf:"bytes,2,opt,name=request_attempt_id,json=requestAttemptId,proto3" json:"request_attempt_id,omitempty"`
 	LogicalRequestId string                 `protobuf:"bytes,3,opt,name=logical_request_id,json=logicalRequestId,proto3" json:"logical_request_id,omitempty"`
 	AttemptSequence  uint32                 `protobuf:"varint,4,opt,name=attempt_sequence,json=attemptSequence,proto3" json:"attempt_sequence,omitempty"`
@@ -1053,13 +1140,6 @@ func (x *LlmAuditRequestContext) ProtoReflect() protoreflect.Message {
 // Deprecated: Use LlmAuditRequestContext.ProtoReflect.Descriptor instead.
 func (*LlmAuditRequestContext) Descriptor() ([]byte, []int) {
 	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{7}
-}
-
-func (x *LlmAuditRequestContext) GetCapability() string {
-	if x != nil {
-		return x.Capability
-	}
-	return ""
 }
 
 func (x *LlmAuditRequestContext) GetRequestAttemptId() string {
@@ -1126,8 +1206,13 @@ func (x *LlmAuditRequestContext) GetProvider() string {
 }
 
 type RecordLlmRequestStartedRequest struct {
-	state         protoimpl.MessageState  `protogen:"open.v1"`
-	Request       *LlmAuditRequestContext `protobuf:"bytes,1,opt,name=request,proto3" json:"request,omitempty"`
+	state   protoimpl.MessageState  `protogen:"open.v1"`
+	Request *LlmAuditRequestContext `protobuf:"bytes,1,opt,name=request,proto3" json:"request,omitempty"`
+	// Types that are valid to be assigned to Authority:
+	//
+	//	*RecordLlmRequestStartedRequest_Owner
+	//	*RecordLlmRequestStartedRequest_HelperAuthorization
+	Authority     isRecordLlmRequestStartedRequest_Authority `protobuf_oneof:"authority"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1167,6 +1252,48 @@ func (x *RecordLlmRequestStartedRequest) GetRequest() *LlmAuditRequestContext {
 		return x.Request
 	}
 	return nil
+}
+
+func (x *RecordLlmRequestStartedRequest) GetAuthority() isRecordLlmRequestStartedRequest_Authority {
+	if x != nil {
+		return x.Authority
+	}
+	return nil
+}
+
+func (x *RecordLlmRequestStartedRequest) GetOwner() *RuntimeAuthorization {
+	if x != nil {
+		if x, ok := x.Authority.(*RecordLlmRequestStartedRequest_Owner); ok {
+			return x.Owner
+		}
+	}
+	return nil
+}
+
+func (x *RecordLlmRequestStartedRequest) GetHelperAuthorization() *RuntimeHelperAuthorization {
+	if x != nil {
+		if x, ok := x.Authority.(*RecordLlmRequestStartedRequest_HelperAuthorization); ok {
+			return x.HelperAuthorization
+		}
+	}
+	return nil
+}
+
+type isRecordLlmRequestStartedRequest_Authority interface {
+	isRecordLlmRequestStartedRequest_Authority()
+}
+
+type RecordLlmRequestStartedRequest_Owner struct {
+	Owner *RuntimeAuthorization `protobuf:"bytes,2,opt,name=owner,proto3,oneof"`
+}
+
+type RecordLlmRequestStartedRequest_HelperAuthorization struct {
+	HelperAuthorization *RuntimeHelperAuthorization `protobuf:"bytes,3,opt,name=helper_authorization,json=helperAuthorization,proto3,oneof"`
+}
+
+func (*RecordLlmRequestStartedRequest_Owner) isRecordLlmRequestStartedRequest_Authority() {}
+
+func (*RecordLlmRequestStartedRequest_HelperAuthorization) isRecordLlmRequestStartedRequest_Authority() {
 }
 
 type RecordLlmRequestStartedResponse struct {
@@ -1317,16 +1444,17 @@ func (x *LlmAuditUsage) GetProviderUsageJson() string {
 }
 
 type RecordLlmRequestTerminalRequest struct {
-	state             protoimpl.MessageState  `protogen:"open.v1"`
-	Request           *LlmAuditRequestContext `protobuf:"bytes,1,opt,name=request,proto3" json:"request,omitempty"`
-	Status            string                  `protobuf:"bytes,2,opt,name=status,proto3" json:"status,omitempty"`
-	HttpStatus        *uint32                 `protobuf:"varint,3,opt,name=http_status,json=httpStatus,proto3,oneof" json:"http_status,omitempty"`
-	ActualModel       *string                 `protobuf:"bytes,4,opt,name=actual_model,json=actualModel,proto3,oneof" json:"actual_model,omitempty"`
-	ProviderRequestId *string                 `protobuf:"bytes,5,opt,name=provider_request_id,json=providerRequestId,proto3,oneof" json:"provider_request_id,omitempty"`
-	Usage             *LlmAuditUsage          `protobuf:"bytes,6,opt,name=usage,proto3,oneof" json:"usage,omitempty"`
-	ErrorCode         *string                 `protobuf:"bytes,7,opt,name=error_code,json=errorCode,proto3,oneof" json:"error_code,omitempty"`
-	unknownFields     protoimpl.UnknownFields
-	sizeCache         protoimpl.SizeCache
+	state                protoimpl.MessageState       `protogen:"open.v1"`
+	Request              *LlmAuditRequestContext      `protobuf:"bytes,1,opt,name=request,proto3" json:"request,omitempty"`
+	Status               string                       `protobuf:"bytes,2,opt,name=status,proto3" json:"status,omitempty"`
+	HttpStatus           *uint32                      `protobuf:"varint,3,opt,name=http_status,json=httpStatus,proto3,oneof" json:"http_status,omitempty"`
+	ActualModel          *string                      `protobuf:"bytes,4,opt,name=actual_model,json=actualModel,proto3,oneof" json:"actual_model,omitempty"`
+	ProviderRequestId    *string                      `protobuf:"bytes,5,opt,name=provider_request_id,json=providerRequestId,proto3,oneof" json:"provider_request_id,omitempty"`
+	Usage                *LlmAuditUsage               `protobuf:"bytes,6,opt,name=usage,proto3,oneof" json:"usage,omitempty"`
+	ErrorCode            *string                      `protobuf:"bytes,7,opt,name=error_code,json=errorCode,proto3,oneof" json:"error_code,omitempty"`
+	ReceiptAuthorization *RuntimeReceiptAuthorization `protobuf:"bytes,8,opt,name=receipt_authorization,json=receiptAuthorization,proto3" json:"receipt_authorization,omitempty"`
+	unknownFields        protoimpl.UnknownFields
+	sizeCache            protoimpl.SizeCache
 }
 
 func (x *RecordLlmRequestTerminalRequest) Reset() {
@@ -1406,6 +1534,13 @@ func (x *RecordLlmRequestTerminalRequest) GetErrorCode() string {
 		return *x.ErrorCode
 	}
 	return ""
+}
+
+func (x *RecordLlmRequestTerminalRequest) GetReceiptAuthorization() *RuntimeReceiptAuthorization {
+	if x != nil {
+		return x.ReceiptAuthorization
+	}
+	return nil
 }
 
 type RecordLlmRequestTerminalResponse struct {
@@ -1806,26 +1941,26 @@ func (x *AgentPromptConfigSnapshot) GetDtmfRules() string {
 // Agent nodes expose the optional start greeting alongside the raw system prompt.
 // It is only played for the publication's primary start node by the runtime.
 type PublishedAgentNodeRuntime struct {
-	state                        protoimpl.MessageState  `protogen:"open.v1"`
-	NodeId                       string                  `protobuf:"bytes,1,opt,name=node_id,json=nodeId,proto3" json:"node_id,omitempty"`
-	LlmWorker                    *LlmRuntime             `protobuf:"bytes,2,opt,name=llm_worker,json=llmWorker,proto3" json:"llm_worker,omitempty"`
-	Instructions                 *AgentInstructions      `protobuf:"bytes,3,opt,name=instructions,proto3" json:"instructions,omitempty"`
-	ContextPolicy                ContextPolicy           `protobuf:"varint,4,opt,name=context_policy,json=contextPolicy,proto3,enum=port.api.v1.ContextPolicy" json:"context_policy,omitempty"`
-	Tools                        []*NodeToolMetadata     `protobuf:"bytes,5,rep,name=tools,proto3" json:"tools,omitempty"`
-	McpServers                   []*McpServerRuntime     `protobuf:"bytes,6,rep,name=mcp_servers,json=mcpServers,proto3" json:"mcp_servers,omitempty"`
-	ApiToolRuntimes              []*ApiToolRuntime       `protobuf:"bytes,7,rep,name=api_tool_runtimes,json=apiToolRuntimes,proto3" json:"api_tool_runtimes,omitempty"`
-	A2AToolRuntimes              []*A2AToolRuntime       `protobuf:"bytes,8,rep,name=a2a_tool_runtimes,json=a2aToolRuntimes,proto3" json:"a2a_tool_runtimes,omitempty"`
-	BuiltInTools                 []*BuiltInTool          `protobuf:"bytes,9,rep,name=built_in_tools,json=builtInTools,proto3" json:"built_in_tools,omitempty"`
-	KnowledgeRevisionId          string                  `protobuf:"bytes,10,opt,name=knowledge_revision_id,json=knowledgeRevisionId,proto3" json:"knowledge_revision_id,omitempty"`
-	KnowledgeRetrievalCapability string                  `protobuf:"bytes,11,opt,name=knowledge_retrieval_capability,json=knowledgeRetrievalCapability,proto3" json:"knowledge_retrieval_capability,omitempty"`
-	KnowledgeFunctionName        string                  `protobuf:"bytes,12,opt,name=knowledge_function_name,json=knowledgeFunctionName,proto3" json:"knowledge_function_name,omitempty"`
-	KnowledgeDescription         string                  `protobuf:"bytes,13,opt,name=knowledge_description,json=knowledgeDescription,proto3" json:"knowledge_description,omitempty"`
-	KnowledgeToolRuntimes        []*KnowledgeToolRuntime `protobuf:"bytes,14,rep,name=knowledge_tool_runtimes,json=knowledgeToolRuntimes,proto3" json:"knowledge_tool_runtimes,omitempty"`
-	Authoring                    *InlineAuthoringOptions `protobuf:"bytes,15,opt,name=authoring,proto3" json:"authoring,omitempty"`
-	DisplayName                  *string                 `protobuf:"bytes,16,opt,name=display_name,json=displayName,proto3,oneof" json:"display_name,omitempty"`
-	Greeting                     *string                 `protobuf:"bytes,17,opt,name=greeting,proto3,oneof" json:"greeting,omitempty"`
-	unknownFields                protoimpl.UnknownFields
-	sizeCache                    protoimpl.SizeCache
+	state                  protoimpl.MessageState  `protogen:"open.v1"`
+	NodeId                 string                  `protobuf:"bytes,1,opt,name=node_id,json=nodeId,proto3" json:"node_id,omitempty"`
+	LlmWorker              *LlmRuntime             `protobuf:"bytes,2,opt,name=llm_worker,json=llmWorker,proto3" json:"llm_worker,omitempty"`
+	Instructions           *AgentInstructions      `protobuf:"bytes,3,opt,name=instructions,proto3" json:"instructions,omitempty"`
+	ContextPolicy          ContextPolicy           `protobuf:"varint,4,opt,name=context_policy,json=contextPolicy,proto3,enum=port.api.v1.ContextPolicy" json:"context_policy,omitempty"`
+	Tools                  []*NodeToolMetadata     `protobuf:"bytes,5,rep,name=tools,proto3" json:"tools,omitempty"`
+	McpServers             []*McpServerRuntime     `protobuf:"bytes,6,rep,name=mcp_servers,json=mcpServers,proto3" json:"mcp_servers,omitempty"`
+	ApiToolRuntimes        []*ApiToolRuntime       `protobuf:"bytes,7,rep,name=api_tool_runtimes,json=apiToolRuntimes,proto3" json:"api_tool_runtimes,omitempty"`
+	A2AToolRuntimes        []*A2AToolRuntime       `protobuf:"bytes,8,rep,name=a2a_tool_runtimes,json=a2aToolRuntimes,proto3" json:"a2a_tool_runtimes,omitempty"`
+	BuiltInTools           []*BuiltInTool          `protobuf:"bytes,9,rep,name=built_in_tools,json=builtInTools,proto3" json:"built_in_tools,omitempty"`
+	KnowledgeRevisionId    string                  `protobuf:"bytes,10,opt,name=knowledge_revision_id,json=knowledgeRevisionId,proto3" json:"knowledge_revision_id,omitempty"`
+	KnowledgeFunctionName  string                  `protobuf:"bytes,12,opt,name=knowledge_function_name,json=knowledgeFunctionName,proto3" json:"knowledge_function_name,omitempty"`
+	KnowledgeDescription   string                  `protobuf:"bytes,13,opt,name=knowledge_description,json=knowledgeDescription,proto3" json:"knowledge_description,omitempty"`
+	KnowledgeToolRuntimes  []*KnowledgeToolRuntime `protobuf:"bytes,14,rep,name=knowledge_tool_runtimes,json=knowledgeToolRuntimes,proto3" json:"knowledge_tool_runtimes,omitempty"`
+	Authoring              *InlineAuthoringOptions `protobuf:"bytes,15,opt,name=authoring,proto3" json:"authoring,omitempty"`
+	DisplayName            *string                 `protobuf:"bytes,16,opt,name=display_name,json=displayName,proto3,oneof" json:"display_name,omitempty"`
+	Greeting               *string                 `protobuf:"bytes,17,opt,name=greeting,proto3,oneof" json:"greeting,omitempty"`
+	KnowledgeToolReference *string                 `protobuf:"bytes,18,opt,name=knowledge_tool_reference,json=knowledgeToolReference,proto3,oneof" json:"knowledge_tool_reference,omitempty"`
+	unknownFields          protoimpl.UnknownFields
+	sizeCache              protoimpl.SizeCache
 }
 
 func (x *PublishedAgentNodeRuntime) Reset() {
@@ -1928,13 +2063,6 @@ func (x *PublishedAgentNodeRuntime) GetKnowledgeRevisionId() string {
 	return ""
 }
 
-func (x *PublishedAgentNodeRuntime) GetKnowledgeRetrievalCapability() string {
-	if x != nil {
-		return x.KnowledgeRetrievalCapability
-	}
-	return ""
-}
-
 func (x *PublishedAgentNodeRuntime) GetKnowledgeFunctionName() string {
 	if x != nil {
 		return x.KnowledgeFunctionName
@@ -1973,6 +2101,13 @@ func (x *PublishedAgentNodeRuntime) GetDisplayName() string {
 func (x *PublishedAgentNodeRuntime) GetGreeting() string {
 	if x != nil && x.Greeting != nil {
 		return *x.Greeting
+	}
+	return ""
+}
+
+func (x *PublishedAgentNodeRuntime) GetKnowledgeToolReference() string {
+	if x != nil && x.KnowledgeToolReference != nil {
+		return *x.KnowledgeToolReference
 	}
 	return ""
 }
@@ -3655,7 +3790,7 @@ type McpToolMetadata struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	ServerName    string                 `protobuf:"bytes,1,opt,name=server_name,json=serverName,proto3" json:"server_name,omitempty"`
 	Transport     string                 `protobuf:"bytes,2,opt,name=transport,proto3" json:"transport,omitempty"`
-	Url           string                 `protobuf:"bytes,3,opt,name=url,proto3" json:"url,omitempty"`
+	Url           *string                `protobuf:"bytes,3,opt,name=url,proto3,oneof" json:"url,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -3705,8 +3840,8 @@ func (x *McpToolMetadata) GetTransport() string {
 }
 
 func (x *McpToolMetadata) GetUrl() string {
-	if x != nil {
-		return x.Url
+	if x != nil && x.Url != nil {
+		return *x.Url
 	}
 	return ""
 }
@@ -3714,12 +3849,14 @@ func (x *McpToolMetadata) GetUrl() string {
 type ApiToolMetadata struct {
 	state              protoimpl.MessageState `protogen:"open.v1"`
 	Method             string                 `protobuf:"bytes,1,opt,name=method,proto3" json:"method,omitempty"`
-	Url                string                 `protobuf:"bytes,2,opt,name=url,proto3" json:"url,omitempty"`
+	Url                *string                `protobuf:"bytes,2,opt,name=url,proto3,oneof" json:"url,omitempty"`
 	RequestSchemaJson  string                 `protobuf:"bytes,3,opt,name=request_schema_json,json=requestSchemaJson,proto3" json:"request_schema_json,omitempty"`
 	ResponseSchemaJson string                 `protobuf:"bytes,4,opt,name=response_schema_json,json=responseSchemaJson,proto3" json:"response_schema_json,omitempty"`
 	Messages           []*ApiToolMessage      `protobuf:"bytes,5,rep,name=messages,proto3" json:"messages,omitempty"`
-	unknownFields      protoimpl.UnknownFields
-	sizeCache          protoimpl.SizeCache
+	// Original placeholder names only, including when a credential-bearing URL is omitted.
+	UrlTemplateParameters []string `protobuf:"bytes,6,rep,name=url_template_parameters,json=urlTemplateParameters,proto3" json:"url_template_parameters,omitempty"`
+	unknownFields         protoimpl.UnknownFields
+	sizeCache             protoimpl.SizeCache
 }
 
 func (x *ApiToolMetadata) Reset() {
@@ -3760,8 +3897,8 @@ func (x *ApiToolMetadata) GetMethod() string {
 }
 
 func (x *ApiToolMetadata) GetUrl() string {
-	if x != nil {
-		return x.Url
+	if x != nil && x.Url != nil {
+		return *x.Url
 	}
 	return ""
 }
@@ -3783,6 +3920,13 @@ func (x *ApiToolMetadata) GetResponseSchemaJson() string {
 func (x *ApiToolMetadata) GetMessages() []*ApiToolMessage {
 	if x != nil {
 		return x.Messages
+	}
+	return nil
+}
+
+func (x *ApiToolMetadata) GetUrlTemplateParameters() []string {
+	if x != nil {
+		return x.UrlTemplateParameters
 	}
 	return nil
 }
@@ -4024,7 +4168,7 @@ func (x *ToolMessageCondition) GetValue() string {
 
 type A2AToolMetadata struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	AgentCardUrl  string                 `protobuf:"bytes,1,opt,name=agent_card_url,json=agentCardUrl,proto3" json:"agent_card_url,omitempty"`
+	AgentCardUrl  *string                `protobuf:"bytes,1,opt,name=agent_card_url,json=agentCardUrl,proto3,oneof" json:"agent_card_url,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -4060,8 +4204,8 @@ func (*A2AToolMetadata) Descriptor() ([]byte, []int) {
 }
 
 func (x *A2AToolMetadata) GetAgentCardUrl() string {
-	if x != nil {
-		return x.AgentCardUrl
+	if x != nil && x.AgentCardUrl != nil {
+		return *x.AgentCardUrl
 	}
 	return ""
 }
@@ -4110,11 +4254,11 @@ func (x *KnowledgeToolMetadata) GetKnowledgeRevisionId() string {
 	return ""
 }
 
-// Short-lived execution credentials for API tools, scoped to the bootstrap lease.
+// References to API-owned business credentials; no raw credentials reach workers.
 type ApiToolRuntime struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	ToolId        string                 `protobuf:"bytes,1,opt,name=tool_id,json=toolId,proto3" json:"tool_id,omitempty"`
-	Headers       map[string]string      `protobuf:"bytes,2,rep,name=headers,proto3" json:"headers,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
+	ToolReference string                 `protobuf:"bytes,3,opt,name=tool_reference,json=toolReference,proto3" json:"tool_reference,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -4156,18 +4300,18 @@ func (x *ApiToolRuntime) GetToolId() string {
 	return ""
 }
 
-func (x *ApiToolRuntime) GetHeaders() map[string]string {
+func (x *ApiToolRuntime) GetToolReference() string {
 	if x != nil {
-		return x.Headers
+		return x.ToolReference
 	}
-	return nil
+	return ""
 }
 
 type A2AToolRuntime struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	ToolId        string                 `protobuf:"bytes,1,opt,name=tool_id,json=toolId,proto3" json:"tool_id,omitempty"`
-	Headers       map[string]string      `protobuf:"bytes,2,rep,name=headers,proto3" json:"headers,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
 	TimeoutMs     uint32                 `protobuf:"varint,3,opt,name=timeout_ms,json=timeoutMs,proto3" json:"timeout_ms,omitempty"`
+	ToolReference string                 `protobuf:"bytes,4,opt,name=tool_reference,json=toolReference,proto3" json:"tool_reference,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -4209,13 +4353,6 @@ func (x *A2AToolRuntime) GetToolId() string {
 	return ""
 }
 
-func (x *A2AToolRuntime) GetHeaders() map[string]string {
-	if x != nil {
-		return x.Headers
-	}
-	return nil
-}
-
 func (x *A2AToolRuntime) GetTimeoutMs() uint32 {
 	if x != nil {
 		return x.TimeoutMs
@@ -4223,12 +4360,19 @@ func (x *A2AToolRuntime) GetTimeoutMs() uint32 {
 	return 0
 }
 
+func (x *A2AToolRuntime) GetToolReference() string {
+	if x != nil {
+		return x.ToolReference
+	}
+	return ""
+}
+
 type KnowledgeToolRuntime struct {
-	state               protoimpl.MessageState `protogen:"open.v1"`
-	ToolId              string                 `protobuf:"bytes,1,opt,name=tool_id,json=toolId,proto3" json:"tool_id,omitempty"`
-	RetrievalCapability string                 `protobuf:"bytes,2,opt,name=retrieval_capability,json=retrievalCapability,proto3" json:"retrieval_capability,omitempty"`
-	unknownFields       protoimpl.UnknownFields
-	sizeCache           protoimpl.SizeCache
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	ToolId        string                 `protobuf:"bytes,1,opt,name=tool_id,json=toolId,proto3" json:"tool_id,omitempty"`
+	ToolReference string                 `protobuf:"bytes,3,opt,name=tool_reference,json=toolReference,proto3" json:"tool_reference,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
 }
 
 func (x *KnowledgeToolRuntime) Reset() {
@@ -4268,9 +4412,9 @@ func (x *KnowledgeToolRuntime) GetToolId() string {
 	return ""
 }
 
-func (x *KnowledgeToolRuntime) GetRetrievalCapability() string {
+func (x *KnowledgeToolRuntime) GetToolReference() string {
 	if x != nil {
-		return x.RetrievalCapability
+		return x.ToolReference
 	}
 	return ""
 }
@@ -4739,10 +4883,9 @@ type McpServerRuntime struct {
 	state     protoimpl.MessageState `protogen:"open.v1"`
 	Name      string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
 	Transport string                 `protobuf:"bytes,2,opt,name=transport,proto3" json:"transport,omitempty"`
-	Url       string                 `protobuf:"bytes,3,opt,name=url,proto3" json:"url,omitempty"`
-	Headers   map[string]string      `protobuf:"bytes,4,rep,name=headers,proto3" json:"headers,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
 	// Applies only to tool invocation; omission keeps the worker's legacy deadline.
 	TimeoutMs     *uint32 `protobuf:"varint,5,opt,name=timeout_ms,json=timeoutMs,proto3,oneof" json:"timeout_ms,omitempty"`
+	ToolReference string  `protobuf:"bytes,6,opt,name=tool_reference,json=toolReference,proto3" json:"tool_reference,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -4791,25 +4934,18 @@ func (x *McpServerRuntime) GetTransport() string {
 	return ""
 }
 
-func (x *McpServerRuntime) GetUrl() string {
-	if x != nil {
-		return x.Url
-	}
-	return ""
-}
-
-func (x *McpServerRuntime) GetHeaders() map[string]string {
-	if x != nil {
-		return x.Headers
-	}
-	return nil
-}
-
 func (x *McpServerRuntime) GetTimeoutMs() uint32 {
 	if x != nil && x.TimeoutMs != nil {
 		return *x.TimeoutMs
 	}
 	return 0
+}
+
+func (x *McpServerRuntime) GetToolReference() string {
+	if x != nil {
+		return x.ToolReference
+	}
+	return ""
 }
 
 type ConversationFillerRuntime struct {
@@ -4860,7 +4996,6 @@ func (x *ConversationFillerRuntime) GetPhrase() string {
 // the pinned publication; the request cannot supply a phone number or room.
 type CommandSipTransferRequest struct {
 	state              protoimpl.MessageState `protogen:"open.v1"`
-	Capability         string                 `protobuf:"bytes,1,opt,name=capability,proto3" json:"capability,omitempty"`
 	ConversationId     string                 `protobuf:"bytes,2,opt,name=conversation_id,json=conversationId,proto3" json:"conversation_id,omitempty"`
 	SessionId          string                 `protobuf:"bytes,3,opt,name=session_id,json=sessionId,proto3" json:"session_id,omitempty"`
 	RequestId          string                 `protobuf:"bytes,4,opt,name=request_id,json=requestId,proto3" json:"request_id,omitempty"`
@@ -4873,8 +5008,16 @@ type CommandSipTransferRequest struct {
 	Briefing string `protobuf:"bytes,10,opt,name=briefing,proto3" json:"briefing,omitempty"`
 	// Web consent enters through the authenticated owner HTTP API.
 	ConsentSource *string `protobuf:"bytes,11,opt,name=consent_source,json=consentSource,proto3,oneof" json:"consent_source,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	// Types that are valid to be assigned to Authority:
+	//
+	//	*CommandSipTransferRequest_Owner
+	//	*CommandSipTransferRequest_HelperAuthorization
+	Authority isCommandSipTransferRequest_Authority `protobuf_oneof:"authority"`
+	// Protected original API-owned plan; never a caller-created node, phone or
+	// legacy signed room attribute. Ordinary published tool starts omit this.
+	OwnerControlIntentId *string `protobuf:"bytes,14,opt,name=owner_control_intent_id,json=ownerControlIntentId,proto3,oneof" json:"owner_control_intent_id,omitempty"`
+	unknownFields        protoimpl.UnknownFields
+	sizeCache            protoimpl.SizeCache
 }
 
 func (x *CommandSipTransferRequest) Reset() {
@@ -4905,13 +5048,6 @@ func (x *CommandSipTransferRequest) ProtoReflect() protoreflect.Message {
 // Deprecated: Use CommandSipTransferRequest.ProtoReflect.Descriptor instead.
 func (*CommandSipTransferRequest) Descriptor() ([]byte, []int) {
 	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{60}
-}
-
-func (x *CommandSipTransferRequest) GetCapability() string {
-	if x != nil {
-		return x.Capability
-	}
-	return ""
 }
 
 func (x *CommandSipTransferRequest) GetConversationId() string {
@@ -4984,14 +5120,61 @@ func (x *CommandSipTransferRequest) GetConsentSource() string {
 	return ""
 }
 
+func (x *CommandSipTransferRequest) GetAuthority() isCommandSipTransferRequest_Authority {
+	if x != nil {
+		return x.Authority
+	}
+	return nil
+}
+
+func (x *CommandSipTransferRequest) GetOwner() *RuntimeAuthorization {
+	if x != nil {
+		if x, ok := x.Authority.(*CommandSipTransferRequest_Owner); ok {
+			return x.Owner
+		}
+	}
+	return nil
+}
+
+func (x *CommandSipTransferRequest) GetHelperAuthorization() *RuntimeHelperAuthorization {
+	if x != nil {
+		if x, ok := x.Authority.(*CommandSipTransferRequest_HelperAuthorization); ok {
+			return x.HelperAuthorization
+		}
+	}
+	return nil
+}
+
+func (x *CommandSipTransferRequest) GetOwnerControlIntentId() string {
+	if x != nil && x.OwnerControlIntentId != nil {
+		return *x.OwnerControlIntentId
+	}
+	return ""
+}
+
+type isCommandSipTransferRequest_Authority interface {
+	isCommandSipTransferRequest_Authority()
+}
+
+type CommandSipTransferRequest_Owner struct {
+	Owner *RuntimeAuthorization `protobuf:"bytes,12,opt,name=owner,proto3,oneof"`
+}
+
+type CommandSipTransferRequest_HelperAuthorization struct {
+	HelperAuthorization *RuntimeHelperAuthorization `protobuf:"bytes,13,opt,name=helper_authorization,json=helperAuthorization,proto3,oneof"`
+}
+
+func (*CommandSipTransferRequest_Owner) isCommandSipTransferRequest_Authority() {}
+
+func (*CommandSipTransferRequest_HelperAuthorization) isCommandSipTransferRequest_Authority() {}
+
 type CommandSipTransferResponse struct {
-	state         protoimpl.MessageState   `protogen:"open.v1"`
-	AttemptId     string                   `protobuf:"bytes,1,opt,name=attempt_id,json=attemptId,proto3" json:"attempt_id,omitempty"`
-	State         string                   `protobuf:"bytes,2,opt,name=state,proto3" json:"state,omitempty"`
-	Mode          string                   `protobuf:"bytes,3,opt,name=mode,proto3" json:"mode,omitempty"`
-	Consultation  *SipTransferConsultation `protobuf:"bytes,4,opt,name=consultation,proto3" json:"consultation,omitempty"`
-	ExpiresAt     string                   `protobuf:"bytes,5,opt,name=expires_at,json=expiresAt,proto3" json:"expires_at,omitempty"`
-	Reason        string                   `protobuf:"bytes,6,opt,name=reason,proto3" json:"reason,omitempty"`
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	AttemptId     string                 `protobuf:"bytes,1,opt,name=attempt_id,json=attemptId,proto3" json:"attempt_id,omitempty"`
+	State         string                 `protobuf:"bytes,2,opt,name=state,proto3" json:"state,omitempty"`
+	Mode          string                 `protobuf:"bytes,3,opt,name=mode,proto3" json:"mode,omitempty"`
+	ExpiresAt     string                 `protobuf:"bytes,5,opt,name=expires_at,json=expiresAt,proto3" json:"expires_at,omitempty"`
+	Reason        string                 `protobuf:"bytes,6,opt,name=reason,proto3" json:"reason,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -5047,13 +5230,6 @@ func (x *CommandSipTransferResponse) GetMode() string {
 	return ""
 }
 
-func (x *CommandSipTransferResponse) GetConsultation() *SipTransferConsultation {
-	if x != nil {
-		return x.Consultation
-	}
-	return nil
-}
-
 func (x *CommandSipTransferResponse) GetExpiresAt() string {
 	if x != nil {
 		return x.ExpiresAt
@@ -5068,31 +5244,45 @@ func (x *CommandSipTransferResponse) GetReason() string {
 	return ""
 }
 
-type SipTransferConsultation struct {
-	state              protoimpl.MessageState `protogen:"open.v1"`
-	RoomName           string                 `protobuf:"bytes,1,opt,name=room_name,json=roomName,proto3" json:"room_name,omitempty"`
-	ConsultantIdentity string                 `protobuf:"bytes,2,opt,name=consultant_identity,json=consultantIdentity,proto3" json:"consultant_identity,omitempty"`
-	WorkerIdentity     string                 `protobuf:"bytes,3,opt,name=worker_identity,json=workerIdentity,proto3" json:"worker_identity,omitempty"`
-	LivekitUrl         string                 `protobuf:"bytes,4,opt,name=livekit_url,json=livekitUrl,proto3" json:"livekit_url,omitempty"`
-	ParticipantToken   string                 `protobuf:"bytes,5,opt,name=participant_token,json=participantToken,proto3" json:"participant_token,omitempty"`
-	unknownFields      protoimpl.UnknownFields
-	sizeCache          protoimpl.SizeCache
+// Private helper-only bootstrap. The main job receives no helper credentials,
+// media token, lease or briefing continuation through transfer command replies.
+type RuntimeTransferHelperBootstrap struct {
+	state             protoimpl.MessageState `protogen:"open.v1"`
+	TransferAttemptId string                 `protobuf:"bytes,1,opt,name=transfer_attempt_id,json=transferAttemptId,proto3" json:"transfer_attempt_id,omitempty"`
+	// Present only when an actual original final briefing summary exists.
+	BriefingText  *string `protobuf:"bytes,2,opt,name=briefing_text,json=briefingText,proto3,oneof" json:"briefing_text,omitempty"`
+	BriefingState *string `protobuf:"bytes,3,opt,name=briefing_state,json=briefingState,proto3,oneof" json:"briefing_state,omitempty"`
+	ConsentState  *string `protobuf:"bytes,4,opt,name=consent_state,json=consentState,proto3,oneof" json:"consent_state,omitempty"`
+	// Original policy captured at initial admission, not inferred on recovery.
+	// Presence is mandatory even for false and the truthful empty separate
+	// question when the original manual briefing already contains that question.
+	Automatic       *bool       `protobuf:"varint,5,opt,name=automatic,proto3,oneof" json:"automatic,omitempty"`
+	ConsentQuestion *string     `protobuf:"bytes,6,opt,name=consent_question,json=consentQuestion,proto3,oneof" json:"consent_question,omitempty"`
+	NodeId          string      `protobuf:"bytes,7,opt,name=node_id,json=nodeId,proto3" json:"node_id,omitempty"`
+	LlmWorker       *LlmRuntime `protobuf:"bytes,8,opt,name=llm_worker,json=llmWorker,proto3" json:"llm_worker,omitempty"`
+	// Sealed original committed-frame user/assistant string messages, encoded as
+	// {"items":[{"role":"user","content":"..."}]}; positive empty is {"items":[]}.
+	// Missing original checkpoint/frame is unavailable, never an empty fallback.
+	SourceContextJson *string `protobuf:"bytes,9,opt,name=source_context_json,json=sourceContextJson,proto3,oneof" json:"source_context_json,omitempty"`
+	BriefingReason    *string `protobuf:"bytes,10,opt,name=briefing_reason,json=briefingReason,proto3,oneof" json:"briefing_reason,omitempty"`
+	unknownFields     protoimpl.UnknownFields
+	sizeCache         protoimpl.SizeCache
 }
 
-func (x *SipTransferConsultation) Reset() {
-	*x = SipTransferConsultation{}
+func (x *RuntimeTransferHelperBootstrap) Reset() {
+	*x = RuntimeTransferHelperBootstrap{}
 	mi := &file_port_api_v1_agent_session_proto_msgTypes[62]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *SipTransferConsultation) String() string {
+func (x *RuntimeTransferHelperBootstrap) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*SipTransferConsultation) ProtoMessage() {}
+func (*RuntimeTransferHelperBootstrap) ProtoMessage() {}
 
-func (x *SipTransferConsultation) ProtoReflect() protoreflect.Message {
+func (x *RuntimeTransferHelperBootstrap) ProtoReflect() protoreflect.Message {
 	mi := &file_port_api_v1_agent_session_proto_msgTypes[62]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -5104,42 +5294,2132 @@ func (x *SipTransferConsultation) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use SipTransferConsultation.ProtoReflect.Descriptor instead.
-func (*SipTransferConsultation) Descriptor() ([]byte, []int) {
+// Deprecated: Use RuntimeTransferHelperBootstrap.ProtoReflect.Descriptor instead.
+func (*RuntimeTransferHelperBootstrap) Descriptor() ([]byte, []int) {
 	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{62}
 }
 
-func (x *SipTransferConsultation) GetRoomName() string {
+func (x *RuntimeTransferHelperBootstrap) GetTransferAttemptId() string {
 	if x != nil {
-		return x.RoomName
+		return x.TransferAttemptId
 	}
 	return ""
 }
 
-func (x *SipTransferConsultation) GetConsultantIdentity() string {
-	if x != nil {
-		return x.ConsultantIdentity
+func (x *RuntimeTransferHelperBootstrap) GetBriefingText() string {
+	if x != nil && x.BriefingText != nil {
+		return *x.BriefingText
 	}
 	return ""
 }
 
-func (x *SipTransferConsultation) GetWorkerIdentity() string {
-	if x != nil {
-		return x.WorkerIdentity
+func (x *RuntimeTransferHelperBootstrap) GetBriefingState() string {
+	if x != nil && x.BriefingState != nil {
+		return *x.BriefingState
 	}
 	return ""
 }
 
-func (x *SipTransferConsultation) GetLivekitUrl() string {
-	if x != nil {
-		return x.LivekitUrl
+func (x *RuntimeTransferHelperBootstrap) GetConsentState() string {
+	if x != nil && x.ConsentState != nil {
+		return *x.ConsentState
 	}
 	return ""
 }
 
-func (x *SipTransferConsultation) GetParticipantToken() string {
+func (x *RuntimeTransferHelperBootstrap) GetAutomatic() bool {
+	if x != nil && x.Automatic != nil {
+		return *x.Automatic
+	}
+	return false
+}
+
+func (x *RuntimeTransferHelperBootstrap) GetConsentQuestion() string {
+	if x != nil && x.ConsentQuestion != nil {
+		return *x.ConsentQuestion
+	}
+	return ""
+}
+
+func (x *RuntimeTransferHelperBootstrap) GetNodeId() string {
 	if x != nil {
-		return x.ParticipantToken
+		return x.NodeId
+	}
+	return ""
+}
+
+func (x *RuntimeTransferHelperBootstrap) GetLlmWorker() *LlmRuntime {
+	if x != nil {
+		return x.LlmWorker
+	}
+	return nil
+}
+
+func (x *RuntimeTransferHelperBootstrap) GetSourceContextJson() string {
+	if x != nil && x.SourceContextJson != nil {
+		return *x.SourceContextJson
+	}
+	return ""
+}
+
+func (x *RuntimeTransferHelperBootstrap) GetBriefingReason() string {
+	if x != nil && x.BriefingReason != nil {
+		return *x.BriefingReason
+	}
+	return ""
+}
+
+// These methods use the same grpc-js ExecutionSessionService as bootstrap.
+// Launcher preparation requires launcher credentials at the transport boundary;
+// it does not grant child PII, connection or current-runtime authority.
+type PrepareRuntimeAttemptRequest struct {
+	state                    protoimpl.MessageState `protogen:"open.v1"`
+	LauncherId               string                 `protobuf:"bytes,1,opt,name=launcher_id,json=launcherId,proto3" json:"launcher_id,omitempty"`
+	LauncherIncarnation      string                 `protobuf:"bytes,2,opt,name=launcher_incarnation,json=launcherIncarnation,proto3" json:"launcher_incarnation,omitempty"`
+	Nonce                    string                 `protobuf:"bytes,3,opt,name=nonce,proto3" json:"nonce,omitempty"`
+	ProtocolRevision         string                 `protobuf:"bytes,4,opt,name=protocol_revision,json=protocolRevision,proto3" json:"protocol_revision,omitempty"`
+	CompatibilityFingerprint string                 `protobuf:"bytes,5,opt,name=compatibility_fingerprint,json=compatibilityFingerprint,proto3" json:"compatibility_fingerprint,omitempty"`
+	Purpose                  string                 `protobuf:"bytes,6,opt,name=purpose,proto3" json:"purpose,omitempty"`
+	Assignment               *RuntimeAssignment     `protobuf:"bytes,7,opt,name=assignment,proto3" json:"assignment,omitempty"`
+	SessionId                *string                `protobuf:"bytes,8,opt,name=session_id,json=sessionId,proto3,oneof" json:"session_id,omitempty"`
+	DispatchIntentId         *string                `protobuf:"bytes,9,opt,name=dispatch_intent_id,json=dispatchIntentId,proto3,oneof" json:"dispatch_intent_id,omitempty"`
+	TransferAttemptId        *string                `protobuf:"bytes,10,opt,name=transfer_attempt_id,json=transferAttemptId,proto3,oneof" json:"transfer_attempt_id,omitempty"`
+	unknownFields            protoimpl.UnknownFields
+	sizeCache                protoimpl.SizeCache
+}
+
+func (x *PrepareRuntimeAttemptRequest) Reset() {
+	*x = PrepareRuntimeAttemptRequest{}
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[63]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *PrepareRuntimeAttemptRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PrepareRuntimeAttemptRequest) ProtoMessage() {}
+
+func (x *PrepareRuntimeAttemptRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[63]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PrepareRuntimeAttemptRequest.ProtoReflect.Descriptor instead.
+func (*PrepareRuntimeAttemptRequest) Descriptor() ([]byte, []int) {
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{63}
+}
+
+func (x *PrepareRuntimeAttemptRequest) GetLauncherId() string {
+	if x != nil {
+		return x.LauncherId
+	}
+	return ""
+}
+
+func (x *PrepareRuntimeAttemptRequest) GetLauncherIncarnation() string {
+	if x != nil {
+		return x.LauncherIncarnation
+	}
+	return ""
+}
+
+func (x *PrepareRuntimeAttemptRequest) GetNonce() string {
+	if x != nil {
+		return x.Nonce
+	}
+	return ""
+}
+
+func (x *PrepareRuntimeAttemptRequest) GetProtocolRevision() string {
+	if x != nil {
+		return x.ProtocolRevision
+	}
+	return ""
+}
+
+func (x *PrepareRuntimeAttemptRequest) GetCompatibilityFingerprint() string {
+	if x != nil {
+		return x.CompatibilityFingerprint
+	}
+	return ""
+}
+
+func (x *PrepareRuntimeAttemptRequest) GetPurpose() string {
+	if x != nil {
+		return x.Purpose
+	}
+	return ""
+}
+
+func (x *PrepareRuntimeAttemptRequest) GetAssignment() *RuntimeAssignment {
+	if x != nil {
+		return x.Assignment
+	}
+	return nil
+}
+
+func (x *PrepareRuntimeAttemptRequest) GetSessionId() string {
+	if x != nil && x.SessionId != nil {
+		return *x.SessionId
+	}
+	return ""
+}
+
+func (x *PrepareRuntimeAttemptRequest) GetDispatchIntentId() string {
+	if x != nil && x.DispatchIntentId != nil {
+		return *x.DispatchIntentId
+	}
+	return ""
+}
+
+func (x *PrepareRuntimeAttemptRequest) GetTransferAttemptId() string {
+	if x != nil && x.TransferAttemptId != nil {
+		return *x.TransferAttemptId
+	}
+	return ""
+}
+
+type PrepareRuntimeAttemptResponse struct {
+	state                protoimpl.MessageState       `protogen:"open.v1"`
+	AttemptAuthorization *RuntimeAttemptAuthorization `protobuf:"bytes,1,opt,name=attempt_authorization,json=attemptAuthorization,proto3" json:"attempt_authorization,omitempty"`
+	ExpiresAt            string                       `protobuf:"bytes,2,opt,name=expires_at,json=expiresAt,proto3" json:"expires_at,omitempty"`
+	unknownFields        protoimpl.UnknownFields
+	sizeCache            protoimpl.SizeCache
+}
+
+func (x *PrepareRuntimeAttemptResponse) Reset() {
+	*x = PrepareRuntimeAttemptResponse{}
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[64]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *PrepareRuntimeAttemptResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PrepareRuntimeAttemptResponse) ProtoMessage() {}
+
+func (x *PrepareRuntimeAttemptResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[64]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PrepareRuntimeAttemptResponse.ProtoReflect.Descriptor instead.
+func (*PrepareRuntimeAttemptResponse) Descriptor() ([]byte, []int) {
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{64}
+}
+
+func (x *PrepareRuntimeAttemptResponse) GetAttemptAuthorization() *RuntimeAttemptAuthorization {
+	if x != nil {
+		return x.AttemptAuthorization
+	}
+	return nil
+}
+
+func (x *PrepareRuntimeAttemptResponse) GetExpiresAt() string {
+	if x != nil {
+		return x.ExpiresAt
+	}
+	return ""
+}
+
+type RecoverRuntimeRequest struct {
+	state                protoimpl.MessageState       `protogen:"open.v1"`
+	AttemptAuthorization *RuntimeAttemptAuthorization `protobuf:"bytes,1,opt,name=attempt_authorization,json=attemptAuthorization,proto3" json:"attempt_authorization,omitempty"`
+	Assignment           *RuntimeAssignment           `protobuf:"bytes,2,opt,name=assignment,proto3" json:"assignment,omitempty"`
+	ConversationId       string                       `protobuf:"bytes,3,opt,name=conversation_id,json=conversationId,proto3" json:"conversation_id,omitempty"`
+	SessionId            string                       `protobuf:"bytes,4,opt,name=session_id,json=sessionId,proto3" json:"session_id,omitempty"`
+	PublishedId          string                       `protobuf:"bytes,5,opt,name=published_id,json=publishedId,proto3" json:"published_id,omitempty"`
+	ContractRevision     string                       `protobuf:"bytes,6,opt,name=contract_revision,json=contractRevision,proto3" json:"contract_revision,omitempty"`
+	ProtocolRevision     string                       `protobuf:"bytes,7,opt,name=protocol_revision,json=protocolRevision,proto3" json:"protocol_revision,omitempty"`
+	CheckpointCodec      string                       `protobuf:"bytes,8,opt,name=checkpoint_codec,json=checkpointCodec,proto3" json:"checkpoint_codec,omitempty"`
+	TransferAttemptId    *string                      `protobuf:"bytes,9,opt,name=transfer_attempt_id,json=transferAttemptId,proto3,oneof" json:"transfer_attempt_id,omitempty"`
+	unknownFields        protoimpl.UnknownFields
+	sizeCache            protoimpl.SizeCache
+}
+
+func (x *RecoverRuntimeRequest) Reset() {
+	*x = RecoverRuntimeRequest{}
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[65]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RecoverRuntimeRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RecoverRuntimeRequest) ProtoMessage() {}
+
+func (x *RecoverRuntimeRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[65]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RecoverRuntimeRequest.ProtoReflect.Descriptor instead.
+func (*RecoverRuntimeRequest) Descriptor() ([]byte, []int) {
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{65}
+}
+
+func (x *RecoverRuntimeRequest) GetAttemptAuthorization() *RuntimeAttemptAuthorization {
+	if x != nil {
+		return x.AttemptAuthorization
+	}
+	return nil
+}
+
+func (x *RecoverRuntimeRequest) GetAssignment() *RuntimeAssignment {
+	if x != nil {
+		return x.Assignment
+	}
+	return nil
+}
+
+func (x *RecoverRuntimeRequest) GetConversationId() string {
+	if x != nil {
+		return x.ConversationId
+	}
+	return ""
+}
+
+func (x *RecoverRuntimeRequest) GetSessionId() string {
+	if x != nil {
+		return x.SessionId
+	}
+	return ""
+}
+
+func (x *RecoverRuntimeRequest) GetPublishedId() string {
+	if x != nil {
+		return x.PublishedId
+	}
+	return ""
+}
+
+func (x *RecoverRuntimeRequest) GetContractRevision() string {
+	if x != nil {
+		return x.ContractRevision
+	}
+	return ""
+}
+
+func (x *RecoverRuntimeRequest) GetProtocolRevision() string {
+	if x != nil {
+		return x.ProtocolRevision
+	}
+	return ""
+}
+
+func (x *RecoverRuntimeRequest) GetCheckpointCodec() string {
+	if x != nil {
+		return x.CheckpointCodec
+	}
+	return ""
+}
+
+func (x *RecoverRuntimeRequest) GetTransferAttemptId() string {
+	if x != nil && x.TransferAttemptId != nil {
+		return *x.TransferAttemptId
+	}
+	return ""
+}
+
+type RuntimeControlEffect struct {
+	state               protoimpl.MessageState `protogen:"open.v1"`
+	EffectId            string                 `protobuf:"bytes,1,opt,name=effect_id,json=effectId,proto3" json:"effect_id,omitempty"`
+	ExecutionId         string                 `protobuf:"bytes,2,opt,name=execution_id,json=executionId,proto3" json:"execution_id,omitempty"`
+	Epoch               uint32                 `protobuf:"varint,3,opt,name=epoch,proto3" json:"epoch,omitempty"`
+	Kind                string                 `protobuf:"bytes,4,opt,name=kind,proto3" json:"kind,omitempty"`
+	Status              RuntimeOperationStatus `protobuf:"varint,5,opt,name=status,proto3,enum=port.api.v1.RuntimeOperationStatus" json:"status,omitempty"`
+	ParticipantIdentity *string                `protobuf:"bytes,6,opt,name=participant_identity,json=participantIdentity,proto3,oneof" json:"participant_identity,omitempty"`
+	unknownFields       protoimpl.UnknownFields
+	sizeCache           protoimpl.SizeCache
+}
+
+func (x *RuntimeControlEffect) Reset() {
+	*x = RuntimeControlEffect{}
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[66]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RuntimeControlEffect) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RuntimeControlEffect) ProtoMessage() {}
+
+func (x *RuntimeControlEffect) ProtoReflect() protoreflect.Message {
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[66]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RuntimeControlEffect.ProtoReflect.Descriptor instead.
+func (*RuntimeControlEffect) Descriptor() ([]byte, []int) {
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{66}
+}
+
+func (x *RuntimeControlEffect) GetEffectId() string {
+	if x != nil {
+		return x.EffectId
+	}
+	return ""
+}
+
+func (x *RuntimeControlEffect) GetExecutionId() string {
+	if x != nil {
+		return x.ExecutionId
+	}
+	return ""
+}
+
+func (x *RuntimeControlEffect) GetEpoch() uint32 {
+	if x != nil {
+		return x.Epoch
+	}
+	return 0
+}
+
+func (x *RuntimeControlEffect) GetKind() string {
+	if x != nil {
+		return x.Kind
+	}
+	return ""
+}
+
+func (x *RuntimeControlEffect) GetStatus() RuntimeOperationStatus {
+	if x != nil {
+		return x.Status
+	}
+	return RuntimeOperationStatus_RUNTIME_OPERATION_STATUS_UNSPECIFIED
+}
+
+func (x *RuntimeControlEffect) GetParticipantIdentity() string {
+	if x != nil && x.ParticipantIdentity != nil {
+		return *x.ParticipantIdentity
+	}
+	return ""
+}
+
+type RecoverRuntimeResponse struct {
+	state        protoimpl.MessageState `protogen:"open.v1"`
+	RuntimeLease *RuntimeLease          `protobuf:"bytes,1,opt,name=runtime_lease,json=runtimeLease,proto3" json:"runtime_lease,omitempty"`
+	// HUMAN has no AI bootstrap. TEXT_RELAY attaches a neutral runtime, and
+	// TRANSFERRING reconciles the original transfer before any AI is resumed.
+	Bootstrap            *BootstrapPublishedResponse `protobuf:"bytes,2,opt,name=bootstrap,proto3" json:"bootstrap,omitempty"`
+	Checkpoint           *RuntimeCheckpoint          `protobuf:"bytes,3,opt,name=checkpoint,proto3" json:"checkpoint,omitempty"`
+	UnresolvedOperations []*RuntimeOperation         `protobuf:"bytes,4,rep,name=unresolved_operations,json=unresolvedOperations,proto3" json:"unresolved_operations,omitempty"`
+	MediaFences          []*RuntimeMediaFence        `protobuf:"bytes,5,rep,name=media_fences,json=mediaFences,proto3" json:"media_fences,omitempty"`
+	ControlEffects       []*RuntimeControlEffect     `protobuf:"bytes,6,rep,name=control_effects,json=controlEffects,proto3" json:"control_effects,omitempty"`
+	unknownFields        protoimpl.UnknownFields
+	sizeCache            protoimpl.SizeCache
+}
+
+func (x *RecoverRuntimeResponse) Reset() {
+	*x = RecoverRuntimeResponse{}
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[67]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RecoverRuntimeResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RecoverRuntimeResponse) ProtoMessage() {}
+
+func (x *RecoverRuntimeResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[67]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RecoverRuntimeResponse.ProtoReflect.Descriptor instead.
+func (*RecoverRuntimeResponse) Descriptor() ([]byte, []int) {
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{67}
+}
+
+func (x *RecoverRuntimeResponse) GetRuntimeLease() *RuntimeLease {
+	if x != nil {
+		return x.RuntimeLease
+	}
+	return nil
+}
+
+func (x *RecoverRuntimeResponse) GetBootstrap() *BootstrapPublishedResponse {
+	if x != nil {
+		return x.Bootstrap
+	}
+	return nil
+}
+
+func (x *RecoverRuntimeResponse) GetCheckpoint() *RuntimeCheckpoint {
+	if x != nil {
+		return x.Checkpoint
+	}
+	return nil
+}
+
+func (x *RecoverRuntimeResponse) GetUnresolvedOperations() []*RuntimeOperation {
+	if x != nil {
+		return x.UnresolvedOperations
+	}
+	return nil
+}
+
+func (x *RecoverRuntimeResponse) GetMediaFences() []*RuntimeMediaFence {
+	if x != nil {
+		return x.MediaFences
+	}
+	return nil
+}
+
+func (x *RecoverRuntimeResponse) GetControlEffects() []*RuntimeControlEffect {
+	if x != nil {
+		return x.ControlEffects
+	}
+	return nil
+}
+
+type RenewRuntimeLeaseRequest struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Types that are valid to be assigned to Authority:
+	//
+	//	*RenewRuntimeLeaseRequest_Owner
+	//	*RenewRuntimeLeaseRequest_HelperAuthorization
+	Authority     isRenewRuntimeLeaseRequest_Authority `protobuf_oneof:"authority"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *RenewRuntimeLeaseRequest) Reset() {
+	*x = RenewRuntimeLeaseRequest{}
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[68]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RenewRuntimeLeaseRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RenewRuntimeLeaseRequest) ProtoMessage() {}
+
+func (x *RenewRuntimeLeaseRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[68]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RenewRuntimeLeaseRequest.ProtoReflect.Descriptor instead.
+func (*RenewRuntimeLeaseRequest) Descriptor() ([]byte, []int) {
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{68}
+}
+
+func (x *RenewRuntimeLeaseRequest) GetAuthority() isRenewRuntimeLeaseRequest_Authority {
+	if x != nil {
+		return x.Authority
+	}
+	return nil
+}
+
+func (x *RenewRuntimeLeaseRequest) GetOwner() *RuntimeAuthorization {
+	if x != nil {
+		if x, ok := x.Authority.(*RenewRuntimeLeaseRequest_Owner); ok {
+			return x.Owner
+		}
+	}
+	return nil
+}
+
+func (x *RenewRuntimeLeaseRequest) GetHelperAuthorization() *RuntimeHelperAuthorization {
+	if x != nil {
+		if x, ok := x.Authority.(*RenewRuntimeLeaseRequest_HelperAuthorization); ok {
+			return x.HelperAuthorization
+		}
+	}
+	return nil
+}
+
+type isRenewRuntimeLeaseRequest_Authority interface {
+	isRenewRuntimeLeaseRequest_Authority()
+}
+
+type RenewRuntimeLeaseRequest_Owner struct {
+	Owner *RuntimeAuthorization `protobuf:"bytes,1,opt,name=owner,proto3,oneof"`
+}
+
+type RenewRuntimeLeaseRequest_HelperAuthorization struct {
+	HelperAuthorization *RuntimeHelperAuthorization `protobuf:"bytes,2,opt,name=helper_authorization,json=helperAuthorization,proto3,oneof"`
+}
+
+func (*RenewRuntimeLeaseRequest_Owner) isRenewRuntimeLeaseRequest_Authority() {}
+
+func (*RenewRuntimeLeaseRequest_HelperAuthorization) isRenewRuntimeLeaseRequest_Authority() {}
+
+type RenewRuntimeLeaseResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	RuntimeLease  *RuntimeLease          `protobuf:"bytes,1,opt,name=runtime_lease,json=runtimeLease,proto3" json:"runtime_lease,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *RenewRuntimeLeaseResponse) Reset() {
+	*x = RenewRuntimeLeaseResponse{}
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[69]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RenewRuntimeLeaseResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RenewRuntimeLeaseResponse) ProtoMessage() {}
+
+func (x *RenewRuntimeLeaseResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[69]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RenewRuntimeLeaseResponse.ProtoReflect.Descriptor instead.
+func (*RenewRuntimeLeaseResponse) Descriptor() ([]byte, []int) {
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{69}
+}
+
+func (x *RenewRuntimeLeaseResponse) GetRuntimeLease() *RuntimeLease {
+	if x != nil {
+		return x.RuntimeLease
+	}
+	return nil
+}
+
+type ActivateRuntimeRequest struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Types that are valid to be assigned to Authority:
+	//
+	//	*ActivateRuntimeRequest_Owner
+	//	*ActivateRuntimeRequest_HelperAuthorization
+	Authority          isActivateRuntimeRequest_Authority `protobuf_oneof:"authority"`
+	RoomSid            string                             `protobuf:"bytes,2,opt,name=room_sid,json=roomSid,proto3" json:"room_sid,omitempty"`
+	CallerIdentity     string                             `protobuf:"bytes,3,opt,name=caller_identity,json=callerIdentity,proto3" json:"caller_identity,omitempty"`
+	CallerSid          string                             `protobuf:"bytes,4,opt,name=caller_sid,json=callerSid,proto3" json:"caller_sid,omitempty"`
+	CheckpointRevision uint32                             `protobuf:"varint,5,opt,name=checkpoint_revision,json=checkpointRevision,proto3" json:"checkpoint_revision,omitempty"`
+	unknownFields      protoimpl.UnknownFields
+	sizeCache          protoimpl.SizeCache
+}
+
+func (x *ActivateRuntimeRequest) Reset() {
+	*x = ActivateRuntimeRequest{}
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[70]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ActivateRuntimeRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ActivateRuntimeRequest) ProtoMessage() {}
+
+func (x *ActivateRuntimeRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[70]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ActivateRuntimeRequest.ProtoReflect.Descriptor instead.
+func (*ActivateRuntimeRequest) Descriptor() ([]byte, []int) {
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{70}
+}
+
+func (x *ActivateRuntimeRequest) GetAuthority() isActivateRuntimeRequest_Authority {
+	if x != nil {
+		return x.Authority
+	}
+	return nil
+}
+
+func (x *ActivateRuntimeRequest) GetOwner() *RuntimeAuthorization {
+	if x != nil {
+		if x, ok := x.Authority.(*ActivateRuntimeRequest_Owner); ok {
+			return x.Owner
+		}
+	}
+	return nil
+}
+
+func (x *ActivateRuntimeRequest) GetHelperAuthorization() *RuntimeHelperAuthorization {
+	if x != nil {
+		if x, ok := x.Authority.(*ActivateRuntimeRequest_HelperAuthorization); ok {
+			return x.HelperAuthorization
+		}
+	}
+	return nil
+}
+
+func (x *ActivateRuntimeRequest) GetRoomSid() string {
+	if x != nil {
+		return x.RoomSid
+	}
+	return ""
+}
+
+func (x *ActivateRuntimeRequest) GetCallerIdentity() string {
+	if x != nil {
+		return x.CallerIdentity
+	}
+	return ""
+}
+
+func (x *ActivateRuntimeRequest) GetCallerSid() string {
+	if x != nil {
+		return x.CallerSid
+	}
+	return ""
+}
+
+func (x *ActivateRuntimeRequest) GetCheckpointRevision() uint32 {
+	if x != nil {
+		return x.CheckpointRevision
+	}
+	return 0
+}
+
+type isActivateRuntimeRequest_Authority interface {
+	isActivateRuntimeRequest_Authority()
+}
+
+type ActivateRuntimeRequest_Owner struct {
+	Owner *RuntimeAuthorization `protobuf:"bytes,1,opt,name=owner,proto3,oneof"`
+}
+
+type ActivateRuntimeRequest_HelperAuthorization struct {
+	HelperAuthorization *RuntimeHelperAuthorization `protobuf:"bytes,6,opt,name=helper_authorization,json=helperAuthorization,proto3,oneof"`
+}
+
+func (*ActivateRuntimeRequest_Owner) isActivateRuntimeRequest_Authority() {}
+
+func (*ActivateRuntimeRequest_HelperAuthorization) isActivateRuntimeRequest_Authority() {}
+
+type ActivateRuntimeResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	RuntimeLease  *RuntimeLease          `protobuf:"bytes,1,opt,name=runtime_lease,json=runtimeLease,proto3" json:"runtime_lease,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ActivateRuntimeResponse) Reset() {
+	*x = ActivateRuntimeResponse{}
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[71]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ActivateRuntimeResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ActivateRuntimeResponse) ProtoMessage() {}
+
+func (x *ActivateRuntimeResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[71]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ActivateRuntimeResponse.ProtoReflect.Descriptor instead.
+func (*ActivateRuntimeResponse) Descriptor() ([]byte, []int) {
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{71}
+}
+
+func (x *ActivateRuntimeResponse) GetRuntimeLease() *RuntimeLease {
+	if x != nil {
+		return x.RuntimeLease
+	}
+	return nil
+}
+
+type RuntimeConsumedFormRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	RequestId     string                 `protobuf:"bytes,1,opt,name=request_id,json=requestId,proto3" json:"request_id,omitempty"`
+	TransitionId  string                 `protobuf:"bytes,2,opt,name=transition_id,json=transitionId,proto3" json:"transition_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *RuntimeConsumedFormRequest) Reset() {
+	*x = RuntimeConsumedFormRequest{}
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[72]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RuntimeConsumedFormRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RuntimeConsumedFormRequest) ProtoMessage() {}
+
+func (x *RuntimeConsumedFormRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[72]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RuntimeConsumedFormRequest.ProtoReflect.Descriptor instead.
+func (*RuntimeConsumedFormRequest) Descriptor() ([]byte, []int) {
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{72}
+}
+
+func (x *RuntimeConsumedFormRequest) GetRequestId() string {
+	if x != nil {
+		return x.RequestId
+	}
+	return ""
+}
+
+func (x *RuntimeConsumedFormRequest) GetTransitionId() string {
+	if x != nil {
+		return x.TransitionId
+	}
+	return ""
+}
+
+type RuntimeAppliedOperationResult struct {
+	state                  protoimpl.MessageState `protogen:"open.v1"`
+	OperationId            string                 `protobuf:"bytes,1,opt,name=operation_id,json=operationId,proto3" json:"operation_id,omitempty"`
+	FrameId                string                 `protobuf:"bytes,2,opt,name=frame_id,json=frameId,proto3" json:"frame_id,omitempty"`
+	ActivationId           string                 `protobuf:"bytes,3,opt,name=activation_id,json=activationId,proto3" json:"activation_id,omitempty"`
+	ExpectedBindingVersion uint32                 `protobuf:"varint,4,opt,name=expected_binding_version,json=expectedBindingVersion,proto3" json:"expected_binding_version,omitempty"`
+	unknownFields          protoimpl.UnknownFields
+	sizeCache              protoimpl.SizeCache
+}
+
+func (x *RuntimeAppliedOperationResult) Reset() {
+	*x = RuntimeAppliedOperationResult{}
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[73]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RuntimeAppliedOperationResult) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RuntimeAppliedOperationResult) ProtoMessage() {}
+
+func (x *RuntimeAppliedOperationResult) ProtoReflect() protoreflect.Message {
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[73]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RuntimeAppliedOperationResult.ProtoReflect.Descriptor instead.
+func (*RuntimeAppliedOperationResult) Descriptor() ([]byte, []int) {
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{73}
+}
+
+func (x *RuntimeAppliedOperationResult) GetOperationId() string {
+	if x != nil {
+		return x.OperationId
+	}
+	return ""
+}
+
+func (x *RuntimeAppliedOperationResult) GetFrameId() string {
+	if x != nil {
+		return x.FrameId
+	}
+	return ""
+}
+
+func (x *RuntimeAppliedOperationResult) GetActivationId() string {
+	if x != nil {
+		return x.ActivationId
+	}
+	return ""
+}
+
+func (x *RuntimeAppliedOperationResult) GetExpectedBindingVersion() uint32 {
+	if x != nil {
+		return x.ExpectedBindingVersion
+	}
+	return 0
+}
+
+type CommitRuntimeCheckpointRequest struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Types that are valid to be assigned to Authority:
+	//
+	//	*CommitRuntimeCheckpointRequest_Owner
+	//	*CommitRuntimeCheckpointRequest_HelperAuthorization
+	Authority                isCommitRuntimeCheckpointRequest_Authority `protobuf_oneof:"authority"`
+	ExpectedRevision         uint32                                     `protobuf:"varint,2,opt,name=expected_revision,json=expectedRevision,proto3" json:"expected_revision,omitempty"`
+	Codec                    string                                     `protobuf:"bytes,3,opt,name=codec,proto3" json:"codec,omitempty"`
+	CompatibilityFingerprint string                                     `protobuf:"bytes,4,opt,name=compatibility_fingerprint,json=compatibilityFingerprint,proto3" json:"compatibility_fingerprint,omitempty"`
+	CheckpointPayload        []byte                                     `protobuf:"bytes,5,opt,name=checkpoint_payload,json=checkpointPayload,proto3" json:"checkpoint_payload,omitempty"`
+	ConsumedFormRequests     []*RuntimeConsumedFormRequest              `protobuf:"bytes,6,rep,name=consumed_form_requests,json=consumedFormRequests,proto3" json:"consumed_form_requests,omitempty"`
+	AppliedOperationResults  []*RuntimeAppliedOperationResult           `protobuf:"bytes,7,rep,name=applied_operation_results,json=appliedOperationResults,proto3" json:"applied_operation_results,omitempty"`
+	AcceptedInputIds         []string                                   `protobuf:"bytes,8,rep,name=accepted_input_ids,json=acceptedInputIds,proto3" json:"accepted_input_ids,omitempty"`
+	unknownFields            protoimpl.UnknownFields
+	sizeCache                protoimpl.SizeCache
+}
+
+func (x *CommitRuntimeCheckpointRequest) Reset() {
+	*x = CommitRuntimeCheckpointRequest{}
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[74]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CommitRuntimeCheckpointRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CommitRuntimeCheckpointRequest) ProtoMessage() {}
+
+func (x *CommitRuntimeCheckpointRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[74]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CommitRuntimeCheckpointRequest.ProtoReflect.Descriptor instead.
+func (*CommitRuntimeCheckpointRequest) Descriptor() ([]byte, []int) {
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{74}
+}
+
+func (x *CommitRuntimeCheckpointRequest) GetAuthority() isCommitRuntimeCheckpointRequest_Authority {
+	if x != nil {
+		return x.Authority
+	}
+	return nil
+}
+
+func (x *CommitRuntimeCheckpointRequest) GetOwner() *RuntimeAuthorization {
+	if x != nil {
+		if x, ok := x.Authority.(*CommitRuntimeCheckpointRequest_Owner); ok {
+			return x.Owner
+		}
+	}
+	return nil
+}
+
+func (x *CommitRuntimeCheckpointRequest) GetHelperAuthorization() *RuntimeHelperAuthorization {
+	if x != nil {
+		if x, ok := x.Authority.(*CommitRuntimeCheckpointRequest_HelperAuthorization); ok {
+			return x.HelperAuthorization
+		}
+	}
+	return nil
+}
+
+func (x *CommitRuntimeCheckpointRequest) GetExpectedRevision() uint32 {
+	if x != nil {
+		return x.ExpectedRevision
+	}
+	return 0
+}
+
+func (x *CommitRuntimeCheckpointRequest) GetCodec() string {
+	if x != nil {
+		return x.Codec
+	}
+	return ""
+}
+
+func (x *CommitRuntimeCheckpointRequest) GetCompatibilityFingerprint() string {
+	if x != nil {
+		return x.CompatibilityFingerprint
+	}
+	return ""
+}
+
+func (x *CommitRuntimeCheckpointRequest) GetCheckpointPayload() []byte {
+	if x != nil {
+		return x.CheckpointPayload
+	}
+	return nil
+}
+
+func (x *CommitRuntimeCheckpointRequest) GetConsumedFormRequests() []*RuntimeConsumedFormRequest {
+	if x != nil {
+		return x.ConsumedFormRequests
+	}
+	return nil
+}
+
+func (x *CommitRuntimeCheckpointRequest) GetAppliedOperationResults() []*RuntimeAppliedOperationResult {
+	if x != nil {
+		return x.AppliedOperationResults
+	}
+	return nil
+}
+
+func (x *CommitRuntimeCheckpointRequest) GetAcceptedInputIds() []string {
+	if x != nil {
+		return x.AcceptedInputIds
+	}
+	return nil
+}
+
+type isCommitRuntimeCheckpointRequest_Authority interface {
+	isCommitRuntimeCheckpointRequest_Authority()
+}
+
+type CommitRuntimeCheckpointRequest_Owner struct {
+	Owner *RuntimeAuthorization `protobuf:"bytes,1,opt,name=owner,proto3,oneof"`
+}
+
+type CommitRuntimeCheckpointRequest_HelperAuthorization struct {
+	HelperAuthorization *RuntimeHelperAuthorization `protobuf:"bytes,9,opt,name=helper_authorization,json=helperAuthorization,proto3,oneof"`
+}
+
+func (*CommitRuntimeCheckpointRequest_Owner) isCommitRuntimeCheckpointRequest_Authority() {}
+
+func (*CommitRuntimeCheckpointRequest_HelperAuthorization) isCommitRuntimeCheckpointRequest_Authority() {
+}
+
+type CommitRuntimeCheckpointResponse struct {
+	state             protoimpl.MessageState `protogen:"open.v1"`
+	CommittedRevision uint32                 `protobuf:"varint,1,opt,name=committed_revision,json=committedRevision,proto3" json:"committed_revision,omitempty"`
+	Projection        *RuntimeProjection     `protobuf:"bytes,2,opt,name=projection,proto3" json:"projection,omitempty"`
+	unknownFields     protoimpl.UnknownFields
+	sizeCache         protoimpl.SizeCache
+}
+
+func (x *CommitRuntimeCheckpointResponse) Reset() {
+	*x = CommitRuntimeCheckpointResponse{}
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[75]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CommitRuntimeCheckpointResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CommitRuntimeCheckpointResponse) ProtoMessage() {}
+
+func (x *CommitRuntimeCheckpointResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[75]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CommitRuntimeCheckpointResponse.ProtoReflect.Descriptor instead.
+func (*CommitRuntimeCheckpointResponse) Descriptor() ([]byte, []int) {
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{75}
+}
+
+func (x *CommitRuntimeCheckpointResponse) GetCommittedRevision() uint32 {
+	if x != nil {
+		return x.CommittedRevision
+	}
+	return 0
+}
+
+func (x *CommitRuntimeCheckpointResponse) GetProjection() *RuntimeProjection {
+	if x != nil {
+		return x.Projection
+	}
+	return nil
+}
+
+type ExecuteRuntimeOperationRequest struct {
+	state                  protoimpl.MessageState      `protogen:"open.v1"`
+	Owner                  *RuntimeAuthorization       `protobuf:"bytes,1,opt,name=owner,proto3" json:"owner,omitempty"`
+	OperationId            string                      `protobuf:"bytes,2,opt,name=operation_id,json=operationId,proto3" json:"operation_id,omitempty"`
+	IntentId               string                      `protobuf:"bytes,3,opt,name=intent_id,json=intentId,proto3" json:"intent_id,omitempty"`
+	NodeId                 string                      `protobuf:"bytes,4,opt,name=node_id,json=nodeId,proto3" json:"node_id,omitempty"`
+	FrameId                string                      `protobuf:"bytes,5,opt,name=frame_id,json=frameId,proto3" json:"frame_id,omitempty"`
+	ActivationId           string                      `protobuf:"bytes,6,opt,name=activation_id,json=activationId,proto3" json:"activation_id,omitempty"`
+	ToolReference          string                      `protobuf:"bytes,7,opt,name=tool_reference,json=toolReference,proto3" json:"tool_reference,omitempty"`
+	ToolName               string                      `protobuf:"bytes,8,opt,name=tool_name,json=toolName,proto3" json:"tool_name,omitempty"`
+	ResolvedArgumentsJson  string                      `protobuf:"bytes,9,opt,name=resolved_arguments_json,json=resolvedArgumentsJson,proto3" json:"resolved_arguments_json,omitempty"`
+	InputTurnId            *string                     `protobuf:"bytes,10,opt,name=input_turn_id,json=inputTurnId,proto3,oneof" json:"input_turn_id,omitempty"`
+	TransitionId           *string                     `protobuf:"bytes,11,opt,name=transition_id,json=transitionId,proto3,oneof" json:"transition_id,omitempty"`
+	ExpectedBindingVersion uint32                      `protobuf:"varint,12,opt,name=expected_binding_version,json=expectedBindingVersion,proto3" json:"expected_binding_version,omitempty"`
+	OperationKind          RuntimeOperationKind        `protobuf:"varint,13,opt,name=operation_kind,json=operationKind,proto3,enum=port.api.v1.RuntimeOperationKind" json:"operation_kind,omitempty"`
+	DeliveryTarget         *string                     `protobuf:"bytes,14,opt,name=delivery_target,json=deliveryTarget,proto3,oneof" json:"delivery_target,omitempty"`
+	ProviderCorrelation    *RuntimeProviderCorrelation `protobuf:"bytes,15,opt,name=provider_correlation,json=providerCorrelation,proto3" json:"provider_correlation,omitempty"`
+	unknownFields          protoimpl.UnknownFields
+	sizeCache              protoimpl.SizeCache
+}
+
+func (x *ExecuteRuntimeOperationRequest) Reset() {
+	*x = ExecuteRuntimeOperationRequest{}
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[76]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ExecuteRuntimeOperationRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ExecuteRuntimeOperationRequest) ProtoMessage() {}
+
+func (x *ExecuteRuntimeOperationRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[76]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ExecuteRuntimeOperationRequest.ProtoReflect.Descriptor instead.
+func (*ExecuteRuntimeOperationRequest) Descriptor() ([]byte, []int) {
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{76}
+}
+
+func (x *ExecuteRuntimeOperationRequest) GetOwner() *RuntimeAuthorization {
+	if x != nil {
+		return x.Owner
+	}
+	return nil
+}
+
+func (x *ExecuteRuntimeOperationRequest) GetOperationId() string {
+	if x != nil {
+		return x.OperationId
+	}
+	return ""
+}
+
+func (x *ExecuteRuntimeOperationRequest) GetIntentId() string {
+	if x != nil {
+		return x.IntentId
+	}
+	return ""
+}
+
+func (x *ExecuteRuntimeOperationRequest) GetNodeId() string {
+	if x != nil {
+		return x.NodeId
+	}
+	return ""
+}
+
+func (x *ExecuteRuntimeOperationRequest) GetFrameId() string {
+	if x != nil {
+		return x.FrameId
+	}
+	return ""
+}
+
+func (x *ExecuteRuntimeOperationRequest) GetActivationId() string {
+	if x != nil {
+		return x.ActivationId
+	}
+	return ""
+}
+
+func (x *ExecuteRuntimeOperationRequest) GetToolReference() string {
+	if x != nil {
+		return x.ToolReference
+	}
+	return ""
+}
+
+func (x *ExecuteRuntimeOperationRequest) GetToolName() string {
+	if x != nil {
+		return x.ToolName
+	}
+	return ""
+}
+
+func (x *ExecuteRuntimeOperationRequest) GetResolvedArgumentsJson() string {
+	if x != nil {
+		return x.ResolvedArgumentsJson
+	}
+	return ""
+}
+
+func (x *ExecuteRuntimeOperationRequest) GetInputTurnId() string {
+	if x != nil && x.InputTurnId != nil {
+		return *x.InputTurnId
+	}
+	return ""
+}
+
+func (x *ExecuteRuntimeOperationRequest) GetTransitionId() string {
+	if x != nil && x.TransitionId != nil {
+		return *x.TransitionId
+	}
+	return ""
+}
+
+func (x *ExecuteRuntimeOperationRequest) GetExpectedBindingVersion() uint32 {
+	if x != nil {
+		return x.ExpectedBindingVersion
+	}
+	return 0
+}
+
+func (x *ExecuteRuntimeOperationRequest) GetOperationKind() RuntimeOperationKind {
+	if x != nil {
+		return x.OperationKind
+	}
+	return RuntimeOperationKind_RUNTIME_OPERATION_KIND_UNSPECIFIED
+}
+
+func (x *ExecuteRuntimeOperationRequest) GetDeliveryTarget() string {
+	if x != nil && x.DeliveryTarget != nil {
+		return *x.DeliveryTarget
+	}
+	return ""
+}
+
+func (x *ExecuteRuntimeOperationRequest) GetProviderCorrelation() *RuntimeProviderCorrelation {
+	if x != nil {
+		return x.ProviderCorrelation
+	}
+	return nil
+}
+
+type ExecuteRuntimeOperationResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Operation     *RuntimeOperation      `protobuf:"bytes,1,opt,name=operation,proto3" json:"operation,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ExecuteRuntimeOperationResponse) Reset() {
+	*x = ExecuteRuntimeOperationResponse{}
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[77]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ExecuteRuntimeOperationResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ExecuteRuntimeOperationResponse) ProtoMessage() {}
+
+func (x *ExecuteRuntimeOperationResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[77]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ExecuteRuntimeOperationResponse.ProtoReflect.Descriptor instead.
+func (*ExecuteRuntimeOperationResponse) Descriptor() ([]byte, []int) {
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{77}
+}
+
+func (x *ExecuteRuntimeOperationResponse) GetOperation() *RuntimeOperation {
+	if x != nil {
+		return x.Operation
+	}
+	return nil
+}
+
+type GetRuntimeOperationRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Owner         *RuntimeAuthorization  `protobuf:"bytes,1,opt,name=owner,proto3" json:"owner,omitempty"`
+	OperationId   string                 `protobuf:"bytes,2,opt,name=operation_id,json=operationId,proto3" json:"operation_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetRuntimeOperationRequest) Reset() {
+	*x = GetRuntimeOperationRequest{}
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[78]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetRuntimeOperationRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetRuntimeOperationRequest) ProtoMessage() {}
+
+func (x *GetRuntimeOperationRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[78]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetRuntimeOperationRequest.ProtoReflect.Descriptor instead.
+func (*GetRuntimeOperationRequest) Descriptor() ([]byte, []int) {
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{78}
+}
+
+func (x *GetRuntimeOperationRequest) GetOwner() *RuntimeAuthorization {
+	if x != nil {
+		return x.Owner
+	}
+	return nil
+}
+
+func (x *GetRuntimeOperationRequest) GetOperationId() string {
+	if x != nil {
+		return x.OperationId
+	}
+	return ""
+}
+
+type GetRuntimeOperationResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Operation     *RuntimeOperation      `protobuf:"bytes,1,opt,name=operation,proto3" json:"operation,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetRuntimeOperationResponse) Reset() {
+	*x = GetRuntimeOperationResponse{}
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[79]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetRuntimeOperationResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetRuntimeOperationResponse) ProtoMessage() {}
+
+func (x *GetRuntimeOperationResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[79]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetRuntimeOperationResponse.ProtoReflect.Descriptor instead.
+func (*GetRuntimeOperationResponse) Descriptor() ([]byte, []int) {
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{79}
+}
+
+func (x *GetRuntimeOperationResponse) GetOperation() *RuntimeOperation {
+	if x != nil {
+		return x.Operation
+	}
+	return nil
+}
+
+type RecordRuntimeReceiptRequest struct {
+	state                protoimpl.MessageState       `protogen:"open.v1"`
+	ReceiptAuthorization *RuntimeReceiptAuthorization `protobuf:"bytes,1,opt,name=receipt_authorization,json=receiptAuthorization,proto3" json:"receipt_authorization,omitempty"`
+	ReceiptId            string                       `protobuf:"bytes,2,opt,name=receipt_id,json=receiptId,proto3" json:"receipt_id,omitempty"`
+	OperationId          string                       `protobuf:"bytes,3,opt,name=operation_id,json=operationId,proto3" json:"operation_id,omitempty"`
+	// Provider evidence is recorded only by the private API-owned executor.
+	Kind                string                      `protobuf:"bytes,4,opt,name=kind,proto3" json:"kind,omitempty"`
+	Status              RuntimeOperationStatus      `protobuf:"varint,5,opt,name=status,proto3,enum=port.api.v1.RuntimeOperationStatus" json:"status,omitempty"`
+	ResultJson          *string                     `protobuf:"bytes,6,opt,name=result_json,json=resultJson,proto3,oneof" json:"result_json,omitempty"`
+	ProviderRequestId   *string                     `protobuf:"bytes,7,opt,name=provider_request_id,json=providerRequestId,proto3,oneof" json:"provider_request_id,omitempty"`
+	OccurredAt          string                      `protobuf:"bytes,8,opt,name=occurred_at,json=occurredAt,proto3" json:"occurred_at,omitempty"`
+	ConfirmedNoEffect   bool                        `protobuf:"varint,9,opt,name=confirmed_no_effect,json=confirmedNoEffect,proto3" json:"confirmed_no_effect,omitempty"`
+	ProviderCorrelation *RuntimeProviderCorrelation `protobuf:"bytes,10,opt,name=provider_correlation,json=providerCorrelation,proto3" json:"provider_correlation,omitempty"`
+	unknownFields       protoimpl.UnknownFields
+	sizeCache           protoimpl.SizeCache
+}
+
+func (x *RecordRuntimeReceiptRequest) Reset() {
+	*x = RecordRuntimeReceiptRequest{}
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[80]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RecordRuntimeReceiptRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RecordRuntimeReceiptRequest) ProtoMessage() {}
+
+func (x *RecordRuntimeReceiptRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[80]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RecordRuntimeReceiptRequest.ProtoReflect.Descriptor instead.
+func (*RecordRuntimeReceiptRequest) Descriptor() ([]byte, []int) {
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{80}
+}
+
+func (x *RecordRuntimeReceiptRequest) GetReceiptAuthorization() *RuntimeReceiptAuthorization {
+	if x != nil {
+		return x.ReceiptAuthorization
+	}
+	return nil
+}
+
+func (x *RecordRuntimeReceiptRequest) GetReceiptId() string {
+	if x != nil {
+		return x.ReceiptId
+	}
+	return ""
+}
+
+func (x *RecordRuntimeReceiptRequest) GetOperationId() string {
+	if x != nil {
+		return x.OperationId
+	}
+	return ""
+}
+
+func (x *RecordRuntimeReceiptRequest) GetKind() string {
+	if x != nil {
+		return x.Kind
+	}
+	return ""
+}
+
+func (x *RecordRuntimeReceiptRequest) GetStatus() RuntimeOperationStatus {
+	if x != nil {
+		return x.Status
+	}
+	return RuntimeOperationStatus_RUNTIME_OPERATION_STATUS_UNSPECIFIED
+}
+
+func (x *RecordRuntimeReceiptRequest) GetResultJson() string {
+	if x != nil && x.ResultJson != nil {
+		return *x.ResultJson
+	}
+	return ""
+}
+
+func (x *RecordRuntimeReceiptRequest) GetProviderRequestId() string {
+	if x != nil && x.ProviderRequestId != nil {
+		return *x.ProviderRequestId
+	}
+	return ""
+}
+
+func (x *RecordRuntimeReceiptRequest) GetOccurredAt() string {
+	if x != nil {
+		return x.OccurredAt
+	}
+	return ""
+}
+
+func (x *RecordRuntimeReceiptRequest) GetConfirmedNoEffect() bool {
+	if x != nil {
+		return x.ConfirmedNoEffect
+	}
+	return false
+}
+
+func (x *RecordRuntimeReceiptRequest) GetProviderCorrelation() *RuntimeProviderCorrelation {
+	if x != nil {
+		return x.ProviderCorrelation
+	}
+	return nil
+}
+
+type RecordRuntimeReceiptResponse struct {
+	state     protoimpl.MessageState `protogen:"open.v1"`
+	ReceiptId string                 `protobuf:"bytes,1,opt,name=receipt_id,json=receiptId,proto3" json:"receipt_id,omitempty"`
+	Recorded  bool                   `protobuf:"varint,2,opt,name=recorded,proto3" json:"recorded,omitempty"`
+	Duplicate bool                   `protobuf:"varint,3,opt,name=duplicate,proto3" json:"duplicate,omitempty"`
+	// Erased data is intentionally not retained; absence is not delivery failure.
+	Disposition   string `protobuf:"bytes,4,opt,name=disposition,proto3" json:"disposition,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *RecordRuntimeReceiptResponse) Reset() {
+	*x = RecordRuntimeReceiptResponse{}
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[81]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RecordRuntimeReceiptResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RecordRuntimeReceiptResponse) ProtoMessage() {}
+
+func (x *RecordRuntimeReceiptResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[81]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RecordRuntimeReceiptResponse.ProtoReflect.Descriptor instead.
+func (*RecordRuntimeReceiptResponse) Descriptor() ([]byte, []int) {
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{81}
+}
+
+func (x *RecordRuntimeReceiptResponse) GetReceiptId() string {
+	if x != nil {
+		return x.ReceiptId
+	}
+	return ""
+}
+
+func (x *RecordRuntimeReceiptResponse) GetRecorded() bool {
+	if x != nil {
+		return x.Recorded
+	}
+	return false
+}
+
+func (x *RecordRuntimeReceiptResponse) GetDuplicate() bool {
+	if x != nil {
+		return x.Duplicate
+	}
+	return false
+}
+
+func (x *RecordRuntimeReceiptResponse) GetDisposition() string {
+	if x != nil {
+		return x.Disposition
+	}
+	return ""
+}
+
+type EndRuntimeRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Owner         *RuntimeAuthorization  `protobuf:"bytes,1,opt,name=owner,proto3" json:"owner,omitempty"`
+	IntentId      string                 `protobuf:"bytes,2,opt,name=intent_id,json=intentId,proto3" json:"intent_id,omitempty"`
+	Reason        string                 `protobuf:"bytes,3,opt,name=reason,proto3" json:"reason,omitempty"`
+	EndedBy       string                 `protobuf:"bytes,4,opt,name=ended_by,json=endedBy,proto3" json:"ended_by,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *EndRuntimeRequest) Reset() {
+	*x = EndRuntimeRequest{}
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[82]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *EndRuntimeRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*EndRuntimeRequest) ProtoMessage() {}
+
+func (x *EndRuntimeRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[82]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use EndRuntimeRequest.ProtoReflect.Descriptor instead.
+func (*EndRuntimeRequest) Descriptor() ([]byte, []int) {
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{82}
+}
+
+func (x *EndRuntimeRequest) GetOwner() *RuntimeAuthorization {
+	if x != nil {
+		return x.Owner
+	}
+	return nil
+}
+
+func (x *EndRuntimeRequest) GetIntentId() string {
+	if x != nil {
+		return x.IntentId
+	}
+	return ""
+}
+
+func (x *EndRuntimeRequest) GetReason() string {
+	if x != nil {
+		return x.Reason
+	}
+	return ""
+}
+
+func (x *EndRuntimeRequest) GetEndedBy() string {
+	if x != nil {
+		return x.EndedBy
+	}
+	return ""
+}
+
+type EndRuntimeResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Projection    *RuntimeProjection     `protobuf:"bytes,1,opt,name=projection,proto3" json:"projection,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *EndRuntimeResponse) Reset() {
+	*x = EndRuntimeResponse{}
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[83]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *EndRuntimeResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*EndRuntimeResponse) ProtoMessage() {}
+
+func (x *EndRuntimeResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[83]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use EndRuntimeResponse.ProtoReflect.Descriptor instead.
+func (*EndRuntimeResponse) Descriptor() ([]byte, []int) {
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{83}
+}
+
+func (x *EndRuntimeResponse) GetProjection() *RuntimeProjection {
+	if x != nil {
+		return x.Projection
+	}
+	return nil
+}
+
+type RecordRuntimeUsageRequest struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Types that are valid to be assigned to Authority:
+	//
+	//	*RecordRuntimeUsageRequest_Owner
+	//	*RecordRuntimeUsageRequest_Receipt
+	//	*RecordRuntimeUsageRequest_HelperAuthorization
+	Authority         isRecordRuntimeUsageRequest_Authority `protobuf_oneof:"authority"`
+	Kind              string                                `protobuf:"bytes,3,opt,name=kind,proto3" json:"kind,omitempty"`
+	FactId            string                                `protobuf:"bytes,4,opt,name=fact_id,json=factId,proto3" json:"fact_id,omitempty"`
+	PaidAttemptId     *string                               `protobuf:"bytes,5,opt,name=paid_attempt_id,json=paidAttemptId,proto3,oneof" json:"paid_attempt_id,omitempty"`
+	ProviderSegmentId *string                               `protobuf:"bytes,6,opt,name=provider_segment_id,json=providerSegmentId,proto3,oneof" json:"provider_segment_id,omitempty"`
+	DeltaId           *string                               `protobuf:"bytes,7,opt,name=delta_id,json=deltaId,proto3,oneof" json:"delta_id,omitempty"`
+	Completeness      string                                `protobuf:"bytes,8,opt,name=completeness,proto3" json:"completeness,omitempty"`
+	// Preserve the existing CloudEvent and its canonical ID. Its sessionid stays
+	// the original audit execution ID, not the recovering interaction session.
+	CloudEventJson    *string        `protobuf:"bytes,9,opt,name=cloud_event_json,json=cloudEventJson,proto3,oneof" json:"cloud_event_json,omitempty"`
+	UsageKind         *string        `protobuf:"bytes,10,opt,name=usage_kind,json=usageKind,proto3,oneof" json:"usage_kind,omitempty"`
+	Provider          *string        `protobuf:"bytes,11,opt,name=provider,proto3,oneof" json:"provider,omitempty"`
+	Model             *string        `protobuf:"bytes,12,opt,name=model,proto3,oneof" json:"model,omitempty"`
+	ExpectedMeters    []string       `protobuf:"bytes,13,rep,name=expected_meters,json=expectedMeters,proto3" json:"expected_meters,omitempty"`
+	RequestAttemptId  *string        `protobuf:"bytes,14,opt,name=request_attempt_id,json=requestAttemptId,proto3,oneof" json:"request_attempt_id,omitempty"`
+	Usage             *LlmAuditUsage `protobuf:"bytes,15,opt,name=usage,proto3" json:"usage,omitempty"`
+	ActualModel       *string        `protobuf:"bytes,16,opt,name=actual_model,json=actualModel,proto3,oneof" json:"actual_model,omitempty"`
+	ProviderRequestId *string        `protobuf:"bytes,17,opt,name=provider_request_id,json=providerRequestId,proto3,oneof" json:"provider_request_id,omitempty"`
+	unknownFields     protoimpl.UnknownFields
+	sizeCache         protoimpl.SizeCache
+}
+
+func (x *RecordRuntimeUsageRequest) Reset() {
+	*x = RecordRuntimeUsageRequest{}
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[84]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RecordRuntimeUsageRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RecordRuntimeUsageRequest) ProtoMessage() {}
+
+func (x *RecordRuntimeUsageRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[84]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RecordRuntimeUsageRequest.ProtoReflect.Descriptor instead.
+func (*RecordRuntimeUsageRequest) Descriptor() ([]byte, []int) {
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{84}
+}
+
+func (x *RecordRuntimeUsageRequest) GetAuthority() isRecordRuntimeUsageRequest_Authority {
+	if x != nil {
+		return x.Authority
+	}
+	return nil
+}
+
+func (x *RecordRuntimeUsageRequest) GetOwner() *RuntimeAuthorization {
+	if x != nil {
+		if x, ok := x.Authority.(*RecordRuntimeUsageRequest_Owner); ok {
+			return x.Owner
+		}
+	}
+	return nil
+}
+
+func (x *RecordRuntimeUsageRequest) GetReceipt() *RuntimeReceiptAuthorization {
+	if x != nil {
+		if x, ok := x.Authority.(*RecordRuntimeUsageRequest_Receipt); ok {
+			return x.Receipt
+		}
+	}
+	return nil
+}
+
+func (x *RecordRuntimeUsageRequest) GetHelperAuthorization() *RuntimeHelperAuthorization {
+	if x != nil {
+		if x, ok := x.Authority.(*RecordRuntimeUsageRequest_HelperAuthorization); ok {
+			return x.HelperAuthorization
+		}
+	}
+	return nil
+}
+
+func (x *RecordRuntimeUsageRequest) GetKind() string {
+	if x != nil {
+		return x.Kind
+	}
+	return ""
+}
+
+func (x *RecordRuntimeUsageRequest) GetFactId() string {
+	if x != nil {
+		return x.FactId
+	}
+	return ""
+}
+
+func (x *RecordRuntimeUsageRequest) GetPaidAttemptId() string {
+	if x != nil && x.PaidAttemptId != nil {
+		return *x.PaidAttemptId
+	}
+	return ""
+}
+
+func (x *RecordRuntimeUsageRequest) GetProviderSegmentId() string {
+	if x != nil && x.ProviderSegmentId != nil {
+		return *x.ProviderSegmentId
+	}
+	return ""
+}
+
+func (x *RecordRuntimeUsageRequest) GetDeltaId() string {
+	if x != nil && x.DeltaId != nil {
+		return *x.DeltaId
+	}
+	return ""
+}
+
+func (x *RecordRuntimeUsageRequest) GetCompleteness() string {
+	if x != nil {
+		return x.Completeness
+	}
+	return ""
+}
+
+func (x *RecordRuntimeUsageRequest) GetCloudEventJson() string {
+	if x != nil && x.CloudEventJson != nil {
+		return *x.CloudEventJson
+	}
+	return ""
+}
+
+func (x *RecordRuntimeUsageRequest) GetUsageKind() string {
+	if x != nil && x.UsageKind != nil {
+		return *x.UsageKind
+	}
+	return ""
+}
+
+func (x *RecordRuntimeUsageRequest) GetProvider() string {
+	if x != nil && x.Provider != nil {
+		return *x.Provider
+	}
+	return ""
+}
+
+func (x *RecordRuntimeUsageRequest) GetModel() string {
+	if x != nil && x.Model != nil {
+		return *x.Model
+	}
+	return ""
+}
+
+func (x *RecordRuntimeUsageRequest) GetExpectedMeters() []string {
+	if x != nil {
+		return x.ExpectedMeters
+	}
+	return nil
+}
+
+func (x *RecordRuntimeUsageRequest) GetRequestAttemptId() string {
+	if x != nil && x.RequestAttemptId != nil {
+		return *x.RequestAttemptId
+	}
+	return ""
+}
+
+func (x *RecordRuntimeUsageRequest) GetUsage() *LlmAuditUsage {
+	if x != nil {
+		return x.Usage
+	}
+	return nil
+}
+
+func (x *RecordRuntimeUsageRequest) GetActualModel() string {
+	if x != nil && x.ActualModel != nil {
+		return *x.ActualModel
+	}
+	return ""
+}
+
+func (x *RecordRuntimeUsageRequest) GetProviderRequestId() string {
+	if x != nil && x.ProviderRequestId != nil {
+		return *x.ProviderRequestId
+	}
+	return ""
+}
+
+type isRecordRuntimeUsageRequest_Authority interface {
+	isRecordRuntimeUsageRequest_Authority()
+}
+
+type RecordRuntimeUsageRequest_Owner struct {
+	Owner *RuntimeAuthorization `protobuf:"bytes,1,opt,name=owner,proto3,oneof"`
+}
+
+type RecordRuntimeUsageRequest_Receipt struct {
+	Receipt *RuntimeReceiptAuthorization `protobuf:"bytes,2,opt,name=receipt,proto3,oneof"`
+}
+
+type RecordRuntimeUsageRequest_HelperAuthorization struct {
+	HelperAuthorization *RuntimeHelperAuthorization `protobuf:"bytes,18,opt,name=helper_authorization,json=helperAuthorization,proto3,oneof"`
+}
+
+func (*RecordRuntimeUsageRequest_Owner) isRecordRuntimeUsageRequest_Authority() {}
+
+func (*RecordRuntimeUsageRequest_Receipt) isRecordRuntimeUsageRequest_Authority() {}
+
+func (*RecordRuntimeUsageRequest_HelperAuthorization) isRecordRuntimeUsageRequest_Authority() {}
+
+type RecordRuntimeUsageResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	FactId        string                 `protobuf:"bytes,1,opt,name=fact_id,json=factId,proto3" json:"fact_id,omitempty"`
+	Recorded      bool                   `protobuf:"varint,2,opt,name=recorded,proto3" json:"recorded,omitempty"`
+	Duplicate     bool                   `protobuf:"varint,3,opt,name=duplicate,proto3" json:"duplicate,omitempty"`
+	Completeness  string                 `protobuf:"bytes,4,opt,name=completeness,proto3" json:"completeness,omitempty"`
+	Disposition   string                 `protobuf:"bytes,5,opt,name=disposition,proto3" json:"disposition,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *RecordRuntimeUsageResponse) Reset() {
+	*x = RecordRuntimeUsageResponse{}
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[85]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RecordRuntimeUsageResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RecordRuntimeUsageResponse) ProtoMessage() {}
+
+func (x *RecordRuntimeUsageResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[85]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RecordRuntimeUsageResponse.ProtoReflect.Descriptor instead.
+func (*RecordRuntimeUsageResponse) Descriptor() ([]byte, []int) {
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{85}
+}
+
+func (x *RecordRuntimeUsageResponse) GetFactId() string {
+	if x != nil {
+		return x.FactId
+	}
+	return ""
+}
+
+func (x *RecordRuntimeUsageResponse) GetRecorded() bool {
+	if x != nil {
+		return x.Recorded
+	}
+	return false
+}
+
+func (x *RecordRuntimeUsageResponse) GetDuplicate() bool {
+	if x != nil {
+		return x.Duplicate
+	}
+	return false
+}
+
+func (x *RecordRuntimeUsageResponse) GetCompleteness() string {
+	if x != nil {
+		return x.Completeness
+	}
+	return ""
+}
+
+func (x *RecordRuntimeUsageResponse) GetDisposition() string {
+	if x != nil {
+		return x.Disposition
+	}
+	return ""
+}
+
+type ReadRuntimeKnowledgeRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Owner         *RuntimeAuthorization  `protobuf:"bytes,1,opt,name=owner,proto3" json:"owner,omitempty"`
+	NodeId        string                 `protobuf:"bytes,2,opt,name=node_id,json=nodeId,proto3" json:"node_id,omitempty"`
+	ToolReference string                 `protobuf:"bytes,3,opt,name=tool_reference,json=toolReference,proto3" json:"tool_reference,omitempty"`
+	Query         string                 `protobuf:"bytes,4,opt,name=query,proto3" json:"query,omitempty"`
+	Limit         *uint32                `protobuf:"varint,5,opt,name=limit,proto3,oneof" json:"limit,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ReadRuntimeKnowledgeRequest) Reset() {
+	*x = ReadRuntimeKnowledgeRequest{}
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[86]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ReadRuntimeKnowledgeRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ReadRuntimeKnowledgeRequest) ProtoMessage() {}
+
+func (x *ReadRuntimeKnowledgeRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[86]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ReadRuntimeKnowledgeRequest.ProtoReflect.Descriptor instead.
+func (*ReadRuntimeKnowledgeRequest) Descriptor() ([]byte, []int) {
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{86}
+}
+
+func (x *ReadRuntimeKnowledgeRequest) GetOwner() *RuntimeAuthorization {
+	if x != nil {
+		return x.Owner
+	}
+	return nil
+}
+
+func (x *ReadRuntimeKnowledgeRequest) GetNodeId() string {
+	if x != nil {
+		return x.NodeId
+	}
+	return ""
+}
+
+func (x *ReadRuntimeKnowledgeRequest) GetToolReference() string {
+	if x != nil {
+		return x.ToolReference
+	}
+	return ""
+}
+
+func (x *ReadRuntimeKnowledgeRequest) GetQuery() string {
+	if x != nil {
+		return x.Query
+	}
+	return ""
+}
+
+func (x *ReadRuntimeKnowledgeRequest) GetLimit() uint32 {
+	if x != nil && x.Limit != nil {
+		return *x.Limit
+	}
+	return 0
+}
+
+type ReadRuntimeKnowledgeResponse struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// The unchanged search result ABI after the API rechecks current ownership.
+	ResultJson    string `protobuf:"bytes,1,opt,name=result_json,json=resultJson,proto3" json:"result_json,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ReadRuntimeKnowledgeResponse) Reset() {
+	*x = ReadRuntimeKnowledgeResponse{}
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[87]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ReadRuntimeKnowledgeResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ReadRuntimeKnowledgeResponse) ProtoMessage() {}
+
+func (x *ReadRuntimeKnowledgeResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_port_api_v1_agent_session_proto_msgTypes[87]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ReadRuntimeKnowledgeResponse.ProtoReflect.Descriptor instead.
+func (*ReadRuntimeKnowledgeResponse) Descriptor() ([]byte, []int) {
+	return file_port_api_v1_agent_session_proto_rawDescGZIP(), []int{87}
+}
+
+func (x *ReadRuntimeKnowledgeResponse) GetResultJson() string {
+	if x != nil {
+		return x.ResultJson
 	}
 	return ""
 }
@@ -5148,7 +7428,7 @@ var File_port_api_v1_agent_session_proto protoreflect.FileDescriptor
 
 const file_port_api_v1_agent_session_proto_rawDesc = "" +
 	"\n" +
-	"\x1fport/api/v1/agent_session.proto\x12\vport.api.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1fport/api/v1/voice_runtime.proto\"\xc1\x02\n" +
+	"\x1fport/api/v1/agent_session.proto\x12\vport.api.v1\x1a\x1bbuf/validate/validate.proto\x1a\"port/api/v1/runtime_identity.proto\x1a\x1fport/api/v1/voice_runtime.proto\"\xb5\x05\n" +
 	"\x1cCommandFormCollectionRequest\x128\n" +
 	"\x06action\x18\x01 \x01(\tB \xbaH\x1dr\x1bR\x06createR\x04pollR\x06cancelR\x03ackR\x06action\x123\n" +
 	"\x0fconversation_id\x18\x02 \x01(\tB\n" +
@@ -5161,19 +7441,39 @@ const file_port_api_v1_agent_session_proto_rawDesc = "" +
 	"\rtransition_id\x18\x05 \x01(\tB\n" +
 	"\xbaH\ar\x05\x10\x01\x18\x80\x02R\ftransitionId\x12'\n" +
 	"\n" +
-	"request_id\x18\x06 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\trequestId\"\xb7\x03\n" +
+	"request_id\x18\x06 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\trequestId\x12?\n" +
+	"\x05owner\x18\a \x01(\v2!.port.api.v1.RuntimeAuthorizationB\x06\xbaH\x03\xc8\x01\x01R\x05owner\x12?\n" +
+	"\x14consumption_revision\x18\b \x01(\rB\a\xbaH\x04*\x02 \x00H\x00R\x13consumptionRevision\x88\x01\x01\x12-\n" +
+	"\n" +
+	"expires_at\x18\t \x01(\tB\t\xbaH\x06r\x04\x10\x01\x18@H\x01R\texpiresAt\x88\x01\x01:\x98\x01\xbaH\x94\x01\x1a\x91\x01\n" +
+	"\x1eform_command.original_deadline\x12>create must preserve the original creating-checkpoint deadline\x1a/this.action != 'create' || has(this.expires_at)B\x17\n" +
+	"\x15_consumption_revisionB\r\n" +
+	"\v_expires_at\"\x9d\a\n" +
 	"\x1dCommandFormCollectionResponse\x12'\n" +
 	"\n" +
-	"request_id\x18\x01 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\trequestId\x12V\n" +
-	"\x06status\x18\x02 \x01(\tB>\xbaH;r9R\awaitingR\tcompletedR\aappliedR\aexpiredR\tcancelledR\x06failedR\x06status\x124\n" +
-	"\bdelivery\x18\x03 \x01(\tB\x18\xbaH\x15r\x13R\apreviewR\balimtalkR\bdelivery\x12(\n" +
+	"request_id\x18\x01 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\trequestId\x12\x84\x01\n" +
+	"\x06status\x18\x02 \x01(\tBl\xbaHirgR\tnot_foundR\bpreparedR\asendingR\awaitingR\x0esend_uncertainR\tcompletedR\aappliedR\aexpiredR\tcancelledR\x06failedR\x06status\x129\n" +
+	"\bdelivery\x18\x03 \x01(\tB\x18\xbaH\x15r\x13R\apreviewR\balimtalkH\x00R\bdelivery\x88\x01\x01\x12-\n" +
 	"\n" +
-	"expires_at\x18\x04 \x01(\tB\t\xbaH\x06r\x04\x10\x01\x18@R\texpiresAt\x12N\n" +
+	"expires_at\x18\x04 \x01(\tB\t\xbaH\x06r\x04\x10\x01\x18@H\x01R\texpiresAt\x88\x01\x01\x12N\n" +
 	"\x06values\x18\x05 \x03(\v26.port.api.v1.CommandFormCollectionResponse.ValuesEntryR\x06values\x12*\n" +
-	"\ffailure_code\x18\x06 \x01(\tB\a\xbaH\x04r\x02\x18@R\vfailureCode\x1a9\n" +
+	"\ffailure_code\x18\x06 \x01(\tB\a\xbaH\x04r\x02\x18@R\vfailureCode\x12[\n" +
+	"\x13provider_acceptance\x18\a \x01(\v2*.port.api.v1.RuntimeFormProviderAcceptanceR\x12providerAcceptance\x1a9\n" +
 	"\vValuesEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
-	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"\x8c\x01\n" +
+	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01:\xb1\x02\xbaH\xad\x02\x1a\xaa\x02\n" +
+	"\x15form_response.absence\x12Wauthoritative absence has no fabricated delivery or expiry; existing requests have both\x1a\xb7\x01this.status == 'not_found' ? (!has(this.delivery) && !has(this.expires_at) && this.values.size() == 0 && !has(this.provider_acceptance)) : (has(this.delivery) && has(this.expires_at))B\v\n" +
+	"\t_deliveryB\r\n" +
+	"\v_expires_at\"\x9e\x01\n" +
+	"\x1dRuntimeFormProviderAcceptance\x12+\n" +
+	"\bprovider\x18\x01 \x01(\tB\x0f\xbaH\fr\n" +
+	"\n" +
+	"\bwideshotR\bprovider\x12'\n" +
+	"\tsend_code\x18\x02 \x01(\tB\n" +
+	"\xbaH\ar\x05\x10\x01\x18\x80\x02R\bsendCode\x12'\n" +
+	"\x06status\x18\x03 \x01(\tB\x0f\xbaH\fr\n" +
+	"\n" +
+	"\bacceptedR\x06status\"\x8c\x01\n" +
 	"\x10BootstrapRequest\x12.\n" +
 	"\rwebrtc_ticket\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01H\x00R\fwebrtcTicket\x124\n" +
 	"\x03sip\x18\x02 \x01(\v2 .port.api.v1.SipBootstrapContextH\x00R\x03sipB\x12\n" +
@@ -5189,9 +7489,9 @@ const file_port_api_v1_agent_session_proto_rawDesc = "" +
 	"\fcall_id_full\x18\a \x01(\tB\a\xbaH\x04r\x02\x10\x01R\n" +
 	"callIdFull\x12/\n" +
 	"\fphone_number\x18\b \x01(\tB\a\xbaH\x04r\x02\x10\x01H\x00R\vphoneNumber\x88\x01\x01B\x0f\n" +
-	"\r_phone_number\"\xb7\x03\n" +
-	"\x19BootstrapPublishedRequest\x12C\n" +
-	"\tadmission\x18\x01 \x01(\v2\x1d.port.api.v1.BootstrapRequestB\x06\xbaH\x03\xc8\x01\x01R\tadmission\x123\n" +
+	"\r_phone_number\"\xe0\x06\n" +
+	"\x19BootstrapPublishedRequest\x12;\n" +
+	"\tadmission\x18\x01 \x01(\v2\x1d.port.api.v1.BootstrapRequestR\tadmission\x123\n" +
 	"\x0fconversation_id\x18\x02 \x01(\tB\n" +
 	"\xbaH\a\xc8\x01\x01r\x02\x10\x01R\x0econversationId\x12)\n" +
 	"\n" +
@@ -5201,8 +7501,12 @@ const file_port_api_v1_agent_session_proto_rawDesc = "" +
 	"\xbaH\a\xc8\x01\x01r\x02\x10\x01R\vpublishedId\x12\x7f\n" +
 	"\x11contract_revision\x18\x05 \x01(\tBR\xbaHO\xc8\x01\x01rJR#execution-publication-2026-09-04-r1R#execution-publication-2026-09-15-r2R\x10contractRevision\x123\n" +
 	"\rworker_job_id\x18\x06 \x01(\tB\n" +
-	"\xbaH\ar\x05\x10\x01\x18\x80\x02H\x00R\vworkerJobId\x88\x01\x01B\x10\n" +
-	"\x0e_worker_job_id\"\x9c\b\n" +
+	"\xbaH\ar\x05\x10\x01\x18\x80\x02H\x01R\vworkerJobId\x88\x01\x01\x12_\n" +
+	"\x15attempt_authorization\x18\a \x01(\v2(.port.api.v1.RuntimeAttemptAuthorizationH\x00R\x14attemptAuthorization\x12\\\n" +
+	"\x14helper_authorization\x18\b \x01(\v2'.port.api.v1.RuntimeHelperAuthorizationH\x00R\x13helperAuthorization:\xdb\x01\xbaH\xd7\x01\x1a\xd4\x01\n" +
+	"\x1bbootstrap.runtime_authority\x12Xmain bootstrap requires its prepared attempt; private helpers forbid transport admission\x1a[has(this.attempt_authorization) || (has(this.helper_authorization) && !has(this.admission))B\x12\n" +
+	"\tauthority\x12\x05\xbaH\x02\b\x01B\x10\n" +
+	"\x0e_worker_job_id\"\xc2\f\n" +
 	"\x1aBootstrapPublishedResponse\x12\x7f\n" +
 	"\x11contract_revision\x18\x01 \x01(\tBR\xbaHO\xc8\x01\x01rJR#execution-publication-2026-09-04-r1R#execution-publication-2026-09-15-r2R\x10contractRevision\x123\n" +
 	"\x0fconversation_id\x18\x02 \x01(\tB\n" +
@@ -5213,33 +7517,21 @@ const file_port_api_v1_agent_session_proto_rawDesc = "" +
 	"\fpublished_id\x18\x04 \x01(\tB\n" +
 	"\xbaH\a\xc8\x01\x01r\x02\x10\x01R\vpublishedId\x12#\n" +
 	"\auser_id\x18\v \x01(\tB\n" +
-	"\xbaH\a\xc8\x01\x01r\x02\x10\x01R\x06userId\x12@\n" +
-	"\x13transfer_capability\x18\t \x01(\tB\n" +
-	"\xbaH\ar\x05\x10\x01\x18\x80@H\x01R\x12transferCapability\x88\x01\x01\x12X\n" +
-	"\x10prompt_variables\x18\x06 \x01(\v2%.port.api.v1.SessionPromptVariableBagB\x06\xbaH\x03\xc8\x01\x01R\x0fpromptVariables\x12B\n" +
-	"\x05agent\x18\x05 \x01(\v2$.port.api.v1.PublishedAgentExecutionB\x06\xbaH\x03\xc8\x01\x01R\x05agent\x12G\n" +
+	"\xbaH\a\xc8\x01\x01r\x02\x10\x01R\x06userId\x12P\n" +
+	"\x10prompt_variables\x18\x06 \x01(\v2%.port.api.v1.SessionPromptVariableBagR\x0fpromptVariables\x12:\n" +
+	"\x05agent\x18\x05 \x01(\v2$.port.api.v1.PublishedAgentExecutionR\x05agent\x12G\n" +
 	"\rvoice_runtime\x18\a \x01(\v2 .port.api.v1.CallRuntimeSnapshotH\x00R\fvoiceRuntime\x12E\n" +
-	"\ftext_runtime\x18\b \x01(\v2 .port.api.v1.TextRuntimeSnapshotH\x00R\vtextRuntime\x12V\n" +
-	"\x14llm_audit_capability\x18\n" +
-	" \x01(\v2\x1f.port.api.v1.LlmAuditCapabilityH\x02R\x12llmAuditCapability\x88\x01\x01:\xbd\x01\xbaH\xb9\x01\x1a\x95\x01\n" +
-	"!transfer_capability.voice_binding\x125transfer capability is only valid for a voice runtime\x1a9!has(this.transfer_capability) || has(this.voice_runtime)\"\x1f\n" +
+	"\ftext_runtime\x18\b \x01(\v2 .port.api.v1.TextRuntimeSnapshotH\x00R\vtextRuntime\x12F\n" +
+	"\rruntime_lease\x18\f \x01(\v2\x19.port.api.v1.RuntimeLeaseB\x06\xbaH\x03\xc8\x01\x01R\fruntimeLease\x12K\n" +
+	"\x11helper_checkpoint\x18\r \x01(\v2\x1e.port.api.v1.RuntimeCheckpointR\x10helperCheckpoint\x12V\n" +
+	"\x10helper_bootstrap\x18\x0e \x01(\v2+.port.api.v1.RuntimeTransferHelperBootstrapR\x0fhelperBootstrap:\x9a\x05\xbaH\x96\x05\x1a\xf2\x04\n" +
+	"%published_bootstrap.execution_purpose\x12\x87\x01main bootstrap requires its publication graph and variables; a private SIP helper requires only its original helper and speech runtimes\x1a\xbe\x03has(this.runtime_lease) && ((has(this.runtime_lease.authorization) && has(this.agent) && has(this.prompt_variables) && !has(this.helper_bootstrap) && !has(this.helper_checkpoint)) || (has(this.runtime_lease.helper_authorization) && has(this.helper_bootstrap) && has(this.voice_runtime) && !has(this.agent) && !has(this.prompt_variables) && this.helper_bootstrap.transfer_attempt_id == this.runtime_lease.helper_authorization.transfer_attempt_id))\"\x1f\n" +
 	"\rvoice_runtime\n" +
 	"\ftext_runtime\x10\x01B\x10\n" +
-	"\aruntime\x12\x05\xbaH\x02\b\x01B\x16\n" +
-	"\x14_transfer_capabilityB\x17\n" +
-	"\x15_llm_audit_capability\"\x8f\x01\n" +
-	"\x12LlmAuditCapability\x12-\n" +
-	"\fexecution_id\x18\x01 \x01(\tB\n" +
-	"\xbaH\ar\x05\x10\x01\x18\x80\x01R\vexecutionId\x12 \n" +
-	"\x05token\x18\x02 \x01(\tB\n" +
-	"\xbaH\ar\x05\x10 \x18\x80\x04R\x05token\x12(\n" +
-	"\n" +
-	"expires_at\x18\x03 \x01(\tB\t\xbaH\x06r\x04\x10\x01\x18@R\texpiresAt\"\xc3\x04\n" +
-	"\x16LlmAuditRequestContext\x12*\n" +
-	"\n" +
-	"capability\x18\x01 \x01(\tB\n" +
-	"\xbaH\ar\x05\x10 \x18\x80\x04R\n" +
-	"capability\x128\n" +
+	"\aruntime\x12\x05\xbaH\x02\b\x01J\x04\b\t\x10\n" +
+	"J\x04\b\n" +
+	"\x10\vR\x13transfer_capabilityR\x14llm_audit_capability\"\xa9\x04\n" +
+	"\x16LlmAuditRequestContext\x128\n" +
 	"\x12request_attempt_id\x18\x02 \x01(\tB\n" +
 	"\xbaH\ar\x05\x10\x01\x18\x80\x01R\x10requestAttemptId\x128\n" +
 	"\x12logical_request_id\x18\x03 \x01(\tB\n" +
@@ -5258,9 +7550,13 @@ const file_port_api_v1_agent_session_proto_rawDesc = "" +
 	" \x01(\tB\x19\xbaH\x16r\x14R\x06openaiR\n" +
 	"openrouterH\x01R\bprovider\x88\x01\x01B\x0e\n" +
 	"\f_task_run_idB\v\n" +
-	"\t_provider\"g\n" +
+	"\t_providerJ\x04\b\x01\x10\x02R\n" +
+	"capability\"\x94\x02\n" +
 	"\x1eRecordLlmRequestStartedRequest\x12E\n" +
-	"\arequest\x18\x01 \x01(\v2#.port.api.v1.LlmAuditRequestContextB\x06\xbaH\x03\xc8\x01\x01R\arequest\"w\n" +
+	"\arequest\x18\x01 \x01(\v2#.port.api.v1.LlmAuditRequestContextB\x06\xbaH\x03\xc8\x01\x01R\arequest\x129\n" +
+	"\x05owner\x18\x02 \x01(\v2!.port.api.v1.RuntimeAuthorizationH\x00R\x05owner\x12\\\n" +
+	"\x14helper_authorization\x18\x03 \x01(\v2'.port.api.v1.RuntimeHelperAuthorizationH\x00R\x13helperAuthorizationB\x12\n" +
+	"\tauthority\x12\x05\xbaH\x02\b\x01\"w\n" +
 	"\x1fRecordLlmRequestStartedResponse\x128\n" +
 	"\x12request_attempt_id\x18\x01 \x01(\tB\n" +
 	"\xbaH\ar\x05\x10\x01\x18\x80\x01R\x10requestAttemptId\x12\x1a\n" +
@@ -5279,7 +7575,7 @@ const file_port_api_v1_agent_session_proto_rawDesc = "" +
 	"\x13_cache_write_tokensB\x13\n" +
 	"\x11_reasoning_tokensB\x14\n" +
 	"\x12_reported_cost_usdB\x16\n" +
-	"\x14_provider_usage_json\"\x84\x04\n" +
+	"\x14_provider_usage_json\"\xeb\x04\n" +
 	"\x1fRecordLlmRequestTerminalRequest\x12E\n" +
 	"\arequest\x18\x01 \x01(\v2#.port.api.v1.LlmAuditRequestContextB\x06\xbaH\x03\xc8\x01\x01R\arequest\x12:\n" +
 	"\x06status\x18\x02 \x01(\tB\"\xbaH\x1fr\x1dR\tcompletedR\tcancelledR\x05errorR\x06status\x120\n" +
@@ -5293,7 +7589,8 @@ const file_port_api_v1_agent_session_proto_rawDesc = "" +
 	"\x05usage\x18\x06 \x01(\v2\x1a.port.api.v1.LlmAuditUsageH\x03R\x05usage\x88\x01\x01\x12.\n" +
 	"\n" +
 	"error_code\x18\a \x01(\tB\n" +
-	"\xbaH\ar\x05\x10\x01\x18\x80\x01H\x04R\terrorCode\x88\x01\x01B\x0e\n" +
+	"\xbaH\ar\x05\x10\x01\x18\x80\x01H\x04R\terrorCode\x88\x01\x01\x12e\n" +
+	"\x15receipt_authorization\x18\b \x01(\v2(.port.api.v1.RuntimeReceiptAuthorizationB\x06\xbaH\x03\xc8\x01\x01R\x14receiptAuthorizationB\x0e\n" +
 	"\f_http_statusB\x0f\n" +
 	"\r_actual_modelB\x16\n" +
 	"\x14_provider_request_idB\b\n" +
@@ -5339,7 +7636,7 @@ const file_port_api_v1_agent_session_proto_rawDesc = "" +
 	"\vvoice_rules\x18\a \x01(\tB\x0e\xbaH\vr\t\x10\x01\x18\x80}2\x02\\SR\n" +
 	"voiceRules\x12-\n" +
 	"\n" +
-	"dtmf_rules\x18\b \x01(\tB\x0e\xbaH\vr\t\x10\x01\x18\x80}2\x02\\SR\tdtmfRules\"\xe2\b\n" +
+	"dtmf_rules\x18\b \x01(\tB\x0e\xbaH\vr\t\x10\x01\x18\x80}2\x02\\SR\tdtmfRules\"\xaa\t\n" +
 	"\x19PublishedAgentNodeRuntime\x12 \n" +
 	"\anode_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x06nodeId\x12>\n" +
 	"\n" +
@@ -5354,16 +7651,18 @@ const file_port_api_v1_agent_session_proto_rawDesc = "" +
 	"\x11a2a_tool_runtimes\x18\b \x03(\v2\x1b.port.api.v1.A2aToolRuntimeR\x0fa2aToolRuntimes\x12>\n" +
 	"\x0ebuilt_in_tools\x18\t \x03(\v2\x18.port.api.v1.BuiltInToolR\fbuiltInTools\x122\n" +
 	"\x15knowledge_revision_id\x18\n" +
-	" \x01(\tR\x13knowledgeRevisionId\x12D\n" +
-	"\x1eknowledge_retrieval_capability\x18\v \x01(\tR\x1cknowledgeRetrievalCapability\x126\n" +
+	" \x01(\tR\x13knowledgeRevisionId\x126\n" +
 	"\x17knowledge_function_name\x18\f \x01(\tR\x15knowledgeFunctionName\x123\n" +
 	"\x15knowledge_description\x18\r \x01(\tR\x14knowledgeDescription\x12Y\n" +
 	"\x17knowledge_tool_runtimes\x18\x0e \x03(\v2!.port.api.v1.KnowledgeToolRuntimeR\x15knowledgeToolRuntimes\x12A\n" +
 	"\tauthoring\x18\x0f \x01(\v2#.port.api.v1.InlineAuthoringOptionsR\tauthoring\x123\n" +
 	"\fdisplay_name\x18\x10 \x01(\tB\v\xbaH\br\x06\x10\x012\x02\\SH\x00R\vdisplayName\x88\x01\x01\x12)\n" +
-	"\bgreeting\x18\x11 \x01(\tB\b\xbaH\x05r\x03\x18\xa0\x1fH\x01R\bgreeting\x88\x01\x01B\x0f\n" +
+	"\bgreeting\x18\x11 \x01(\tB\b\xbaH\x05r\x03\x18\xa0\x1fH\x01R\bgreeting\x88\x01\x01\x12I\n" +
+	"\x18knowledge_tool_reference\x18\x12 \x01(\tB\n" +
+	"\xbaH\ar\x05\x10\x01\x18\x80\x02H\x02R\x16knowledgeToolReference\x88\x01\x01B\x0f\n" +
 	"\r_display_nameB\v\n" +
-	"\t_greeting\"\x9b\x01\n" +
+	"\t_greetingB\x1b\n" +
+	"\x19_knowledge_tool_referenceJ\x04\b\v\x10\fR\x1eknowledge_retrieval_capability\"\x9b\x01\n" +
 	"\x16InlineAuthoringOptions\x124\n" +
 	"\x05model\x18\x01 \x01(\v2\x1e.port.api.v1.NodeModelSettingsR\x05model\x12K\n" +
 	"\rtool_bindings\x18\x02 \x03(\v2\x1c.port.api.v1.NodeToolBindingB\b\xbaH\x05\x92\x01\x02\x10\x1eR\ftoolBindings\"\x81\x02\n" +
@@ -5535,19 +7834,22 @@ const file_port_api_v1_agent_session_proto_rawDesc = "" +
 	"\bmessages\x18\t \x01(\v2\x19.port.api.v1.ToolMessagesR\bmessages:\xa1\x01\xbaH\x9d\x01\x1a\x9a\x01\n" +
 	"2node_tool_metadata.knowledge_kind_matches_metadata\x121knowledge tool kind must match knowledge metadata\x1a1(this.kind == 'knowledge') == has(this.knowledge)B\n" +
 	"\n" +
-	"\bmetadata\"\x91\x01\n" +
+	"\bmetadata\"\x9e\x01\n" +
 	"\x0fMcpToolMetadata\x12(\n" +
 	"\vserver_name\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\n" +
 	"serverName\x129\n" +
-	"\ttransport\x18\x02 \x01(\tB\x1b\xbaH\x18r\x16R\x03sseR\x0fstreamable-httpR\ttransport\x12\x19\n" +
-	"\x03url\x18\x03 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x03url\"\xa3\x04\n" +
+	"\ttransport\x18\x02 \x01(\tB\x1b\xbaH\x18r\x16R\x03sseR\x0fstreamable-httpR\ttransport\x12\x1e\n" +
+	"\x03url\x18\x03 \x01(\tB\a\xbaH\x04r\x02\x10\x01H\x00R\x03url\x88\x01\x01B\x06\n" +
+	"\x04_url\"\xfe\x04\n" +
 	"\x0fApiToolMetadata\x12\x1f\n" +
-	"\x06method\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x06method\x12\x19\n" +
-	"\x03url\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x03url\x12.\n" +
+	"\x06method\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x06method\x12\x1e\n" +
+	"\x03url\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x10\x01H\x00R\x03url\x88\x01\x01\x12.\n" +
 	"\x13request_schema_json\x18\x03 \x01(\tR\x11requestSchemaJson\x120\n" +
 	"\x14response_schema_json\x18\x04 \x01(\tR\x12responseSchemaJson\x12A\n" +
-	"\bmessages\x18\x05 \x03(\v2\x1b.port.api.v1.ApiToolMessageB\b\xbaH\x05\x92\x01\x02\x10(R\bmessages:\xae\x02\xbaH\xaa\x02\x1a\xa7\x02\n" +
-	"\"api_tool_metadata.message_variants\x122at most ten message variants are allowed per stage\x1a\xcc\x01this.messages.all(item, this.messages.filter(candidate, candidate.type == item.type && (item.type != 'request-response-delayed' || candidate.timing_milliseconds == item.timing_milliseconds)).size() <= 10)\"\xf2\x02\n" +
+	"\bmessages\x18\x05 \x03(\v2\x1b.port.api.v1.ApiToolMessageB\b\xbaH\x05\x92\x01\x02\x10(R\bmessages\x12L\n" +
+	"\x17url_template_parameters\x18\x06 \x03(\tB\x14\xbaH\x11\x92\x01\x0e\x10\xe8\a\x18\x01\"\ar\x05\x10\x01\x18\x80\x02R\x15urlTemplateParameters:\xae\x02\xbaH\xaa\x02\x1a\xa7\x02\n" +
+	"\"api_tool_metadata.message_variants\x122at most ten message variants are allowed per stage\x1a\xcc\x01this.messages.all(item, this.messages.filter(candidate, candidate.type == item.type && (item.type != 'request-response-delayed' || candidate.timing_milliseconds == item.timing_milliseconds)).size() <= 10)B\x06\n" +
+	"\x04_url\"\xf2\x02\n" +
 	"\fToolMessages\x12;\n" +
 	"\x05items\x18\x01 \x03(\v2\x1b.port.api.v1.ApiToolMessageB\b\xbaH\x05\x92\x01\x02\x10(R\x05items:\xa4\x02\xbaH\xa0\x02\x1a\x9d\x02\n" +
 	"\x1etool_messages.message_variants\x122at most ten message variants are allowed per stage\x1a\xc6\x01this.items.all(item, this.items.filter(candidate, candidate.type == item.type && (item.type != 'request-response-delayed' || candidate.timing_milliseconds == item.timing_milliseconds)).size() <= 10)\"\xfb\a\n" +
@@ -5571,28 +7873,26 @@ const file_port_api_v1_agent_session_proto_rawDesc = "" +
 	"\x14ToolMessageCondition\x12?\n" +
 	"\x05param\x18\x01 \x01(\tB)\xbaH&r$\x10\x01\x18\x80\x012\x1d^[a-zA-Z0-9_][a-zA-Z0-9_.-]*$R\x05param\x12<\n" +
 	"\boperator\x18\x02 \x01(\tB \xbaH\x1dr\x1bR\x02eqR\x03neqR\x02gtR\x03gteR\x02ltR\x03lteR\boperator\x12\x1e\n" +
-	"\x05value\x18\x03 \x01(\tB\b\xbaH\x05r\x03\x18\xe8\aR\x05value\"@\n" +
-	"\x0fA2aToolMetadata\x12-\n" +
-	"\x0eagent_card_url\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\fagentCardUrl\"X\n" +
+	"\x05value\x18\x03 \x01(\tB\b\xbaH\x05r\x03\x18\xe8\aR\x05value\"X\n" +
+	"\x0fA2aToolMetadata\x122\n" +
+	"\x0eagent_card_url\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01H\x00R\fagentCardUrl\x88\x01\x01B\x11\n" +
+	"\x0f_agent_card_url\"X\n" +
 	"\x15KnowledgeToolMetadata\x12?\n" +
-	"\x15knowledge_revision_id\x18\x01 \x01(\tB\v\xbaH\br\x06\x10\x012\x02\\SR\x13knowledgeRevisionId\"\xb2\x01\n" +
+	"\x15knowledge_revision_id\x18\x01 \x01(\tB\v\xbaH\br\x06\x10\x012\x02\\SR\x13knowledgeRevisionId\"t\n" +
 	"\x0eApiToolRuntime\x12 \n" +
-	"\atool_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x06toolId\x12B\n" +
-	"\aheaders\x18\x02 \x03(\v2(.port.api.v1.ApiToolRuntime.HeadersEntryR\aheaders\x1a:\n" +
-	"\fHeadersEntry\x12\x10\n" +
-	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
-	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"\xdf\x01\n" +
+	"\atool_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x06toolId\x121\n" +
+	"\x0etool_reference\x18\x03 \x01(\tB\n" +
+	"\xbaH\ar\x05\x10\x01\x18\x80\x02R\rtoolReferenceJ\x04\b\x02\x10\x03R\aheaders\"\xa1\x01\n" +
 	"\x0eA2aToolRuntime\x12 \n" +
-	"\atool_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x06toolId\x12B\n" +
-	"\aheaders\x18\x02 \x03(\v2(.port.api.v1.A2aToolRuntime.HeadersEntryR\aheaders\x12+\n" +
+	"\atool_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x06toolId\x12+\n" +
 	"\n" +
-	"timeout_ms\x18\x03 \x01(\rB\f\xbaH\t*\a\x18\xc0\xcf$(\xe8\aR\ttimeoutMs\x1a:\n" +
-	"\fHeadersEntry\x12\x10\n" +
-	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
-	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"|\n" +
+	"timeout_ms\x18\x03 \x01(\rB\f\xbaH\t*\a\x18\xc0\xcf$(\xe8\aR\ttimeoutMs\x121\n" +
+	"\x0etool_reference\x18\x04 \x01(\tB\n" +
+	"\xbaH\ar\x05\x10\x01\x18\x80\x02R\rtoolReferenceJ\x04\b\x02\x10\x03R\aheaders\"\x8b\x01\n" +
 	"\x14KnowledgeToolRuntime\x12$\n" +
-	"\atool_id\x18\x01 \x01(\tB\v\xbaH\br\x06\x10\x012\x02\\SR\x06toolId\x12>\n" +
-	"\x14retrieval_capability\x18\x02 \x01(\tB\v\xbaH\br\x06\x10\x012\x02\\SR\x13retrievalCapability\"\xf6\x02\n" +
+	"\atool_id\x18\x01 \x01(\tB\v\xbaH\br\x06\x10\x012\x02\\SR\x06toolId\x121\n" +
+	"\x0etool_reference\x18\x03 \x01(\tB\n" +
+	"\xbaH\ar\x05\x10\x01\x18\x80\x02R\rtoolReferenceJ\x04\b\x02\x10\x03R\x14retrieval_capability\"\xf6\x02\n" +
 	"\vBuiltInTool\x125\n" +
 	"\bmessages\x18\x06 \x01(\v2\x19.port.api.v1.ToolMessagesR\bmessages\x125\n" +
 	"\bend_call\x18\x01 \x01(\v2\x18.port.api.v1.EndCallToolH\x00R\aendCall\x12N\n" +
@@ -5630,60 +7930,328 @@ const file_port_api_v1_agent_session_proto_rawDesc = "" +
 	"\x06script\x18\x02 \x01(\tB\x0f\xbaH\fr\n" +
 	"\x10\x01\x18\xa0\x9c\x012\x02\\SR\x06script\x129\n" +
 	"\x10consent_question\x18\x03 \x01(\tB\x0e\xbaH\vr\t\x10\x01\x18\xe8\a2\x02\\SR\x0fconsentQuestion\x12C\n" +
-	"\x18response_timeout_seconds\x18\x04 \x01(\rB\t\xbaH\x06*\x04\x18x(\x05R\x16responseTimeoutSeconds\"\xc8\x02\n" +
+	"\x18response_timeout_seconds\x18\x04 \x01(\rB\t\xbaH\x06*\x04\x18x(\x05R\x16responseTimeoutSeconds\"\xf8\x01\n" +
 	"\x10McpServerRuntime\x12\x1b\n" +
 	"\x04name\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x04name\x129\n" +
-	"\ttransport\x18\x02 \x01(\tB\x1b\xbaH\x18r\x16R\x03sseR\x0fstreamable-httpR\ttransport\x12\x19\n" +
-	"\x03url\x18\x03 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x03url\x12D\n" +
-	"\aheaders\x18\x04 \x03(\v2*.port.api.v1.McpServerRuntime.HeadersEntryR\aheaders\x120\n" +
+	"\ttransport\x18\x02 \x01(\tB\x1b\xbaH\x18r\x16R\x03sseR\x0fstreamable-httpR\ttransport\x120\n" +
 	"\n" +
-	"timeout_ms\x18\x05 \x01(\rB\f\xbaH\t*\a\x18\xc0\xcf$(\xe8\aH\x00R\ttimeoutMs\x88\x01\x01\x1a:\n" +
-	"\fHeadersEntry\x12\x10\n" +
-	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
-	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01B\r\n" +
-	"\v_timeout_ms\"?\n" +
+	"timeout_ms\x18\x05 \x01(\rB\f\xbaH\t*\a\x18\xc0\xcf$(\xe8\aH\x00R\ttimeoutMs\x88\x01\x01\x121\n" +
+	"\x0etool_reference\x18\x06 \x01(\tB\n" +
+	"\xbaH\ar\x05\x10\x01\x18\x80\x02R\rtoolReferenceB\r\n" +
+	"\v_timeout_msJ\x04\b\x03\x10\x04J\x04\b\x04\x10\x05R\x03urlR\aheaders\"?\n" +
 	"\x19ConversationFillerRuntime\x12\"\n" +
 	"\x06phrase\x18\x01 \x01(\tB\n" +
-	"\xbaH\ar\x05\x10\x01\x18\xc8\x01R\x06phrase\"\x8a\a\n" +
-	"\x19CommandSipTransferRequest\x12'\n" +
-	"\n" +
-	"capability\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\n" +
-	"capability\x120\n" +
+	"\xbaH\ar\x05\x10\x01\x18\xc8\x01R\x06phrase\"\x8b\v\n" +
+	"\x19CommandSipTransferRequest\x120\n" +
 	"\x0fconversation_id\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x0econversationId\x12&\n" +
 	"\n" +
-	"session_id\x18\x03 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\tsessionId\x12&\n" +
+	"session_id\x18\x03 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\tsessionId\x12\x1d\n" +
 	"\n" +
-	"request_id\x18\x04 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\trequestId\x12\x17\n" +
+	"request_id\x18\x04 \x01(\tR\trequestId\x12\x17\n" +
 	"\anode_id\x18\x05 \x01(\tR\x06nodeId\x12\x1d\n" +
 	"\n" +
-	"attempt_id\x18\x06 \x01(\tR\tattemptId\x12M\n" +
-	"\x06action\x18\a \x01(\tB5\xbaH2r0R\x05startR\bbriefingR\x05readyR\x06acceptR\x06rejectR\x06cancelR\x06action\x12 \n" +
+	"attempt_id\x18\x06 \x01(\tR\tattemptId\x12U\n" +
+	"\x06action\x18\a \x01(\tB=\xbaH:r8R\x05startR\x06resumeR\bbriefingR\x05readyR\x06acceptR\x06rejectR\x06cancelR\x06action\x12 \n" +
 	"\x06reason\x18\b \x01(\tB\b\xbaH\x05r\x03\x18\xe8\aR\x06reason\x12/\n" +
 	"\x13consultant_identity\x18\t \x01(\tR\x12consultantIdentity\x12$\n" +
 	"\bbriefing\x18\n" +
 	" \x01(\tB\b\xbaH\x05r\x03\x18\x90NR\bbriefing\x12>\n" +
-	"\x0econsent_source\x18\v \x01(\tB\x12\xbaH\x0fr\rR\x05voiceR\x04dtmfH\x00R\rconsentSource\x88\x01\x01:\xee\x02\xbaH\xea\x02\x1a\xa8\x01\n" +
-	"\"transfer_command.operation_binding\x12=start requires a node; subsequent commands require an attempt\x1aCthis.action == 'start' ? this.node_id != '' : this.attempt_id != ''\x1a\xbc\x01\n" +
-	"!transfer_command.consent_identity\x12>accept requires consultant identity and voice or DTMF evidence\x1aWthis.action != 'accept' || (this.consultant_identity != '' && has(this.consent_source))B\x11\n" +
-	"\x0f_consent_source\"\xab\x04\n" +
+	"\x0econsent_source\x18\v \x01(\tB\x12\xbaH\x0fr\rR\x05voiceR\x04dtmfH\x01R\rconsentSource\x88\x01\x01\x129\n" +
+	"\x05owner\x18\f \x01(\v2!.port.api.v1.RuntimeAuthorizationH\x00R\x05owner\x12\\\n" +
+	"\x14helper_authorization\x18\r \x01(\v2'.port.api.v1.RuntimeHelperAuthorizationH\x00R\x13helperAuthorization\x12D\n" +
+	"\x17owner_control_intent_id\x18\x0e \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01H\x02R\x14ownerControlIntentId\x88\x01\x01:\xf8\x04\xbaH\xf4\x04\x1a\xe4\x01\n" +
+	"\"transfer_command.operation_binding\x12^start requires the original request and node; subsequent commands require the original attempt\x1a^this.action == 'start' ? (this.request_id != '' && this.node_id != '') : this.attempt_id != ''\x1a\xbc\x01\n" +
+	"!transfer_command.consent_identity\x12>accept requires consultant identity and voice or DTMF evidence\x1aWthis.action != 'accept' || (this.consultant_identity != '' && has(this.consent_source))\x1a\xcb\x01\n" +
+	"#transfer_command.owner_control_plan\x12Qa protected owner control plan may be consumed only by a main-owner start command\x1aQ!has(this.owner_control_intent_id) || (this.action == 'start' && has(this.owner))B\x12\n" +
+	"\tauthority\x12\x05\xbaH\x02\b\x01B\x11\n" +
+	"\x0f_consent_sourceB\x1a\n" +
+	"\x18_owner_control_intent_idJ\x04\b\x01\x10\x02R\n" +
+	"capability\"\xf5\x03\n" +
 	"\x1aCommandSipTransferResponse\x12&\n" +
 	"\n" +
 	"attempt_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\tattemptId\x12\x7f\n" +
 	"\x05state\x18\x02 \x01(\tBi\xbaHfrdR\adialingR\bbriefingR\x10awaiting_consentR\n" +
 	"connectingR\tcompletedR\brejectedR\tcancelledR\x06failedR\ttimed_outR\x05state\x12/\n" +
-	"\x04mode\x18\x03 \x01(\tB\x1b\xbaH\x18r\x16R\x06singleR\fconsultativeR\x04mode\x12H\n" +
-	"\fconsultation\x18\x04 \x01(\v2$.port.api.v1.SipTransferConsultationR\fconsultation\x12(\n" +
+	"\x04mode\x18\x03 \x01(\tB\x1b\xbaH\x18r\x16R\x06singleR\fconsultativeR\x04mode\x12(\n" +
 	"\n" +
 	"expires_at\x18\x05 \x01(\tB\t\xbaH\x06r\x04\x10\x01\x18@R\texpiresAt\x12\x16\n" +
 	"\x06reason\x18\x06 \x01(\tR\x06reason:\xa6\x01\xbaH\xa2\x01\x1a\x9f\x01\n" +
-	"\x1atransfer_response.deadline\x12Aexpires_at must be a valid RFC3339 timestamp after the Unix epoch\x1a>timestamp(this.expires_at) > timestamp('1970-01-01T00:00:00Z')\"\x8b\x02\n" +
-	"\x17SipTransferConsultation\x12$\n" +
-	"\troom_name\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\broomName\x128\n" +
-	"\x13consultant_identity\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x12consultantIdentity\x120\n" +
-	"\x0fworker_identity\x18\x03 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x0eworkerIdentity\x12(\n" +
-	"\vlivekit_url\x18\x04 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\n" +
-	"livekitUrl\x124\n" +
-	"\x11participant_token\x18\x05 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x10participantToken*\xa8\x01\n" +
+	"\x1atransfer_response.deadline\x12Aexpires_at must be a valid RFC3339 timestamp after the Unix epoch\x1a>timestamp(this.expires_at) > timestamp('1970-01-01T00:00:00Z')J\x04\b\x04\x10\x05R\fconsultation\"\xb0\a\n" +
+	"\x1eRuntimeTransferHelperBootstrap\x128\n" +
+	"\x13transfer_attempt_id\x18\x01 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\x11transferAttemptId\x124\n" +
+	"\rbriefing_text\x18\x02 \x01(\tB\n" +
+	"\xbaH\ar\x05\x10\x01\x18\x90NH\x00R\fbriefingText\x88\x01\x01\x12G\n" +
+	"\x0ebriefing_state\x18\x03 \x01(\tB\x1b\xbaH\x18r\x16R\apendingR\vunconfirmedH\x01R\rbriefingState\x88\x01\x01\x12P\n" +
+	"\rconsent_state\x18\x04 \x01(\tB&\xbaH#r!R\apendingR\vunconfirmedR\tcommittedH\x02R\fconsentState\x88\x01\x01\x12)\n" +
+	"\tautomatic\x18\x05 \x01(\bB\x06\xbaH\x03\xc8\x01\x01H\x03R\tautomatic\x88\x01\x01\x12;\n" +
+	"\x10consent_question\x18\x06 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\x18\xe8\aH\x04R\x0fconsentQuestion\x88\x01\x01\x12#\n" +
+	"\anode_id\x18\a \x01(\tB\n" +
+	"\xbaH\a\xc8\x01\x01r\x02\x10\x01R\x06nodeId\x12>\n" +
+	"\n" +
+	"llm_worker\x18\b \x01(\v2\x17.port.api.v1.LlmRuntimeB\x06\xbaH\x03\xc8\x01\x01R\tllmWorker\x12D\n" +
+	"\x13source_context_json\x18\t \x01(\tB\x0f\xbaH\f\xc8\x01\x01r\a\x10\x02\x18\x80\x80\x80\x02H\x05R\x11sourceContextJson\x88\x01\x01\x129\n" +
+	"\x0fbriefing_reason\x18\n" +
+	" \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\x18\xe8\aH\x06R\x0ebriefingReason\x88\x01\x01:\xae\x01\xbaH\xaa\x01\x1a\xa7\x01\n" +
+	"(transfer_helper.original_model_reference\x12Dprivate helpers require the registered original node model reference\x1a5has(this.llm_worker) && has(this.llm_worker.lease_id)B\x10\n" +
+	"\x0e_briefing_textB\x11\n" +
+	"\x0f_briefing_stateB\x10\n" +
+	"\x0e_consent_stateB\f\n" +
+	"\n" +
+	"_automaticB\x13\n" +
+	"\x11_consent_questionB\x16\n" +
+	"\x14_source_context_jsonB\x12\n" +
+	"\x10_briefing_reason\"\x8f\a\n" +
+	"\x1cPrepareRuntimeAttemptRequest\x12)\n" +
+	"\vlauncher_id\x18\x01 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\n" +
+	"launcherId\x12;\n" +
+	"\x14launcher_incarnation\x18\x02 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\x13launcherIncarnation\x12\x1e\n" +
+	"\x05nonce\x18\x03 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\x05nonce\x12G\n" +
+	"\x11protocol_revision\x18\x04 \x01(\tB\x1a\xbaH\x17r\x15\n" +
+	"\x13runtime-recovery-v1R\x10protocolRevision\x12G\n" +
+	"\x19compatibility_fingerprint\x18\x05 \x01(\tB\n" +
+	"\xbaH\ar\x05\x10\x01\x18\x80\x02R\x18compatibilityFingerprint\x12C\n" +
+	"\apurpose\x18\x06 \x01(\tB)\xbaH&r$R\ainitialR\brecoveryR\x0ftransfer_helperR\apurpose\x12>\n" +
+	"\n" +
+	"assignment\x18\a \x01(\v2\x1e.port.api.v1.RuntimeAssignmentR\n" +
+	"assignment\x12,\n" +
+	"\n" +
+	"session_id\x18\b \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01H\x00R\tsessionId\x88\x01\x01\x12;\n" +
+	"\x12dispatch_intent_id\x18\t \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01H\x01R\x10dispatchIntentId\x88\x01\x01\x12=\n" +
+	"\x13transfer_attempt_id\x18\n" +
+	" \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01H\x02R\x11transferAttemptId\x88\x01\x01:\xe7\x01\xbaH\xe3\x01\x1a\xe0\x01\n" +
+	"'runtime_attempt.helper_dispatch_binding\x12Ohelper preparation must name its durable dispatch and original transfer attempt\x1adthis.purpose != 'transfer_helper' || (has(this.dispatch_intent_id) && has(this.transfer_attempt_id))B\r\n" +
+	"\v_session_idB\x15\n" +
+	"\x13_dispatch_intent_idB\x16\n" +
+	"\x14_transfer_attempt_id\"\xb0\x01\n" +
+	"\x1dPrepareRuntimeAttemptResponse\x12e\n" +
+	"\x15attempt_authorization\x18\x01 \x01(\v2(.port.api.v1.RuntimeAttemptAuthorizationB\x06\xbaH\x03\xc8\x01\x01R\x14attemptAuthorization\x12(\n" +
+	"\n" +
+	"expires_at\x18\x02 \x01(\tB\t\xbaH\x06r\x04\x10\x01\x18@R\texpiresAt\"\xa6\x05\n" +
+	"\x15RecoverRuntimeRequest\x12e\n" +
+	"\x15attempt_authorization\x18\x01 \x01(\v2(.port.api.v1.RuntimeAttemptAuthorizationB\x06\xbaH\x03\xc8\x01\x01R\x14attemptAuthorization\x12F\n" +
+	"\n" +
+	"assignment\x18\x02 \x01(\v2\x1e.port.api.v1.RuntimeAssignmentB\x06\xbaH\x03\xc8\x01\x01R\n" +
+	"assignment\x123\n" +
+	"\x0fconversation_id\x18\x03 \x01(\tB\n" +
+	"\xbaH\ar\x05\x10\x01\x18\x80\x01R\x0econversationId\x12'\n" +
+	"\n" +
+	"session_id\x18\x04 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\tsessionId\x12+\n" +
+	"\fpublished_id\x18\x05 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\vpublishedId\x12|\n" +
+	"\x11contract_revision\x18\x06 \x01(\tBO\xbaHLrJR#execution-publication-2026-09-04-r1R#execution-publication-2026-09-15-r2R\x10contractRevision\x12G\n" +
+	"\x11protocol_revision\x18\a \x01(\tB\x1a\xbaH\x17r\x15\n" +
+	"\x13runtime-recovery-v1R\x10protocolRevision\x125\n" +
+	"\x10checkpoint_codec\x18\b \x01(\tB\n" +
+	"\xbaH\ar\x05\x10\x01\x18\x80\x01R\x0fcheckpointCodec\x12=\n" +
+	"\x13transfer_attempt_id\x18\t \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01H\x00R\x11transferAttemptId\x88\x01\x01B\x16\n" +
+	"\x14_transfer_attempt_id\"\xd5\x02\n" +
+	"\x14RuntimeControlEffect\x12%\n" +
+	"\teffect_id\x18\x01 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\beffectId\x12+\n" +
+	"\fexecution_id\x18\x02 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\vexecutionId\x12#\n" +
+	"\x05epoch\x18\x03 \x01(\rB\r\xbaH\n" +
+	"*\b\x18\xff\xff\xff\xff\a(\x01R\x05epoch\x12\x1e\n" +
+	"\x04kind\x18\x04 \x01(\tB\n" +
+	"\xbaH\ar\x05\x10\x01\x18\x80\x01R\x04kind\x12G\n" +
+	"\x06status\x18\x05 \x01(\x0e2#.port.api.v1.RuntimeOperationStatusB\n" +
+	"\xbaH\a\x82\x01\x04\x10\x01 \x00R\x06status\x12B\n" +
+	"\x14participant_identity\x18\x06 \x01(\tB\n" +
+	"\xbaH\ar\x05\x10\x01\x18\x80\x02H\x00R\x13participantIdentity\x88\x01\x01B\x17\n" +
+	"\x15_participant_identity\"\xca\x03\n" +
+	"\x16RecoverRuntimeResponse\x12F\n" +
+	"\rruntime_lease\x18\x01 \x01(\v2\x19.port.api.v1.RuntimeLeaseB\x06\xbaH\x03\xc8\x01\x01R\fruntimeLease\x12E\n" +
+	"\tbootstrap\x18\x02 \x01(\v2'.port.api.v1.BootstrapPublishedResponseR\tbootstrap\x12>\n" +
+	"\n" +
+	"checkpoint\x18\x03 \x01(\v2\x1e.port.api.v1.RuntimeCheckpointR\n" +
+	"checkpoint\x12R\n" +
+	"\x15unresolved_operations\x18\x04 \x03(\v2\x1d.port.api.v1.RuntimeOperationR\x14unresolvedOperations\x12A\n" +
+	"\fmedia_fences\x18\x05 \x03(\v2\x1e.port.api.v1.RuntimeMediaFenceR\vmediaFences\x12J\n" +
+	"\x0fcontrol_effects\x18\x06 \x03(\v2!.port.api.v1.RuntimeControlEffectR\x0econtrolEffects\"\xc7\x01\n" +
+	"\x18RenewRuntimeLeaseRequest\x129\n" +
+	"\x05owner\x18\x01 \x01(\v2!.port.api.v1.RuntimeAuthorizationH\x00R\x05owner\x12\\\n" +
+	"\x14helper_authorization\x18\x02 \x01(\v2'.port.api.v1.RuntimeHelperAuthorizationH\x00R\x13helperAuthorizationB\x12\n" +
+	"\tauthority\x12\x05\xbaH\x02\b\x01\"c\n" +
+	"\x19RenewRuntimeLeaseResponse\x12F\n" +
+	"\rruntime_lease\x18\x01 \x01(\v2\x19.port.api.v1.RuntimeLeaseB\x06\xbaH\x03\xc8\x01\x01R\fruntimeLease\"\xfd\x02\n" +
+	"\x16ActivateRuntimeRequest\x129\n" +
+	"\x05owner\x18\x01 \x01(\v2!.port.api.v1.RuntimeAuthorizationH\x00R\x05owner\x12\\\n" +
+	"\x14helper_authorization\x18\x06 \x01(\v2'.port.api.v1.RuntimeHelperAuthorizationH\x00R\x13helperAuthorization\x12%\n" +
+	"\broom_sid\x18\x02 \x01(\tB\n" +
+	"\xbaH\ar\x05\x10\x01\x18\x80\x02R\aroomSid\x123\n" +
+	"\x0fcaller_identity\x18\x03 \x01(\tB\n" +
+	"\xbaH\ar\x05\x10\x01\x18\x80\x02R\x0ecallerIdentity\x12)\n" +
+	"\n" +
+	"caller_sid\x18\x04 \x01(\tB\n" +
+	"\xbaH\ar\x05\x10\x01\x18\x80\x02R\tcallerSid\x12/\n" +
+	"\x13checkpoint_revision\x18\x05 \x01(\rR\x12checkpointRevisionB\x12\n" +
+	"\tauthority\x12\x05\xbaH\x02\b\x01\"a\n" +
+	"\x17ActivateRuntimeResponse\x12F\n" +
+	"\rruntime_lease\x18\x01 \x01(\v2\x19.port.api.v1.RuntimeLeaseB\x06\xbaH\x03\xc8\x01\x01R\fruntimeLease\"v\n" +
+	"\x1aRuntimeConsumedFormRequest\x12'\n" +
+	"\n" +
+	"request_id\x18\x01 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\trequestId\x12/\n" +
+	"\rtransition_id\x18\x02 \x01(\tB\n" +
+	"\xbaH\ar\x05\x10\x01\x18\x80\x02R\ftransitionId\"\xde\x01\n" +
+	"\x1dRuntimeAppliedOperationResult\x12+\n" +
+	"\foperation_id\x18\x01 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\voperationId\x12%\n" +
+	"\bframe_id\x18\x02 \x01(\tB\n" +
+	"\xbaH\ar\x05\x10\x01\x18\x80\x02R\aframeId\x12/\n" +
+	"\ractivation_id\x18\x03 \x01(\tB\n" +
+	"\xbaH\ar\x05\x10\x01\x18\x80\x02R\factivationId\x128\n" +
+	"\x18expected_binding_version\x18\x04 \x01(\rR\x16expectedBindingVersion\"\xc2\x05\n" +
+	"\x1eCommitRuntimeCheckpointRequest\x129\n" +
+	"\x05owner\x18\x01 \x01(\v2!.port.api.v1.RuntimeAuthorizationH\x00R\x05owner\x12\\\n" +
+	"\x14helper_authorization\x18\t \x01(\v2'.port.api.v1.RuntimeHelperAuthorizationH\x00R\x13helperAuthorization\x12+\n" +
+	"\x11expected_revision\x18\x02 \x01(\rR\x10expectedRevision\x12 \n" +
+	"\x05codec\x18\x03 \x01(\tB\n" +
+	"\xbaH\ar\x05\x10\x01\x18\x80\x01R\x05codec\x12G\n" +
+	"\x19compatibility_fingerprint\x18\x04 \x01(\tB\n" +
+	"\xbaH\ar\x05\x10\x01\x18\x80\x02R\x18compatibilityFingerprint\x12;\n" +
+	"\x12checkpoint_payload\x18\x05 \x01(\fB\f\xbaH\tz\a\x10\x01\x18\x80\x80\x80\x02R\x11checkpointPayload\x12g\n" +
+	"\x16consumed_form_requests\x18\x06 \x03(\v2'.port.api.v1.RuntimeConsumedFormRequestB\b\xbaH\x05\x92\x01\x02\x10dR\x14consumedFormRequests\x12q\n" +
+	"\x19applied_operation_results\x18\a \x03(\v2*.port.api.v1.RuntimeAppliedOperationResultB\t\xbaH\x06\x92\x01\x03\x10\xe8\aR\x17appliedOperationResults\x12B\n" +
+	"\x12accepted_input_ids\x18\b \x03(\tB\x14\xbaH\x11\x92\x01\x0e\x10\xe8\a\x18\x01\"\ar\x05\x10\x01\x18\x80\x02R\x10acceptedInputIdsB\x12\n" +
+	"\tauthority\x12\x05\xbaH\x02\b\x01\"\xa1\x01\n" +
+	"\x1fCommitRuntimeCheckpointResponse\x126\n" +
+	"\x12committed_revision\x18\x01 \x01(\rB\a\xbaH\x04*\x02 \x00R\x11committedRevision\x12F\n" +
+	"\n" +
+	"projection\x18\x02 \x01(\v2\x1e.port.api.v1.RuntimeProjectionB\x06\xbaH\x03\xc8\x01\x01R\n" +
+	"projection\"\x9e\a\n" +
+	"\x1eExecuteRuntimeOperationRequest\x12?\n" +
+	"\x05owner\x18\x01 \x01(\v2!.port.api.v1.RuntimeAuthorizationB\x06\xbaH\x03\xc8\x01\x01R\x05owner\x12+\n" +
+	"\foperation_id\x18\x02 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\voperationId\x12'\n" +
+	"\tintent_id\x18\x03 \x01(\tB\n" +
+	"\xbaH\ar\x05\x10\x01\x18\x80\x02R\bintentId\x12#\n" +
+	"\anode_id\x18\x04 \x01(\tB\n" +
+	"\xbaH\ar\x05\x10\x01\x18\x80\x02R\x06nodeId\x12%\n" +
+	"\bframe_id\x18\x05 \x01(\tB\n" +
+	"\xbaH\ar\x05\x10\x01\x18\x80\x02R\aframeId\x12/\n" +
+	"\ractivation_id\x18\x06 \x01(\tB\n" +
+	"\xbaH\ar\x05\x10\x01\x18\x80\x02R\factivationId\x121\n" +
+	"\x0etool_reference\x18\a \x01(\tB\n" +
+	"\xbaH\ar\x05\x10\x01\x18\x80\x02R\rtoolReference\x12'\n" +
+	"\ttool_name\x18\b \x01(\tB\n" +
+	"\xbaH\ar\x05\x10\x01\x18\x80\x02R\btoolName\x12C\n" +
+	"\x17resolved_arguments_json\x18\t \x01(\tB\v\xbaH\br\x06 \x01(\x80\x80@R\x15resolvedArgumentsJson\x123\n" +
+	"\rinput_turn_id\x18\n" +
+	" \x01(\tB\n" +
+	"\xbaH\ar\x05\x10\x01\x18\x80\x02H\x00R\vinputTurnId\x88\x01\x01\x124\n" +
+	"\rtransition_id\x18\v \x01(\tB\n" +
+	"\xbaH\ar\x05\x10\x01\x18\x80\x02H\x01R\ftransitionId\x88\x01\x01\x128\n" +
+	"\x18expected_binding_version\x18\f \x01(\rR\x16expectedBindingVersion\x12T\n" +
+	"\x0eoperation_kind\x18\r \x01(\x0e2!.port.api.v1.RuntimeOperationKindB\n" +
+	"\xbaH\a\x82\x01\x04\x10\x01 \x00R\roperationKind\x128\n" +
+	"\x0fdelivery_target\x18\x0e \x01(\tB\n" +
+	"\xbaH\ar\x05\x10\x01\x18\x80\x02H\x02R\x0edeliveryTarget\x88\x01\x01\x12Z\n" +
+	"\x14provider_correlation\x18\x0f \x01(\v2'.port.api.v1.RuntimeProviderCorrelationR\x13providerCorrelationB\x10\n" +
+	"\x0e_input_turn_idB\x10\n" +
+	"\x0e_transition_idB\x12\n" +
+	"\x10_delivery_target\"f\n" +
+	"\x1fExecuteRuntimeOperationResponse\x12C\n" +
+	"\toperation\x18\x01 \x01(\v2\x1d.port.api.v1.RuntimeOperationB\x06\xbaH\x03\xc8\x01\x01R\toperation\"\x8a\x01\n" +
+	"\x1aGetRuntimeOperationRequest\x12?\n" +
+	"\x05owner\x18\x01 \x01(\v2!.port.api.v1.RuntimeAuthorizationB\x06\xbaH\x03\xc8\x01\x01R\x05owner\x12+\n" +
+	"\foperation_id\x18\x02 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\voperationId\"b\n" +
+	"\x1bGetRuntimeOperationResponse\x12C\n" +
+	"\toperation\x18\x01 \x01(\v2\x1d.port.api.v1.RuntimeOperationB\x06\xbaH\x03\xc8\x01\x01R\toperation\"\x9a\x05\n" +
+	"\x1bRecordRuntimeReceiptRequest\x12e\n" +
+	"\x15receipt_authorization\x18\x01 \x01(\v2(.port.api.v1.RuntimeReceiptAuthorizationB\x06\xbaH\x03\xc8\x01\x01R\x14receiptAuthorization\x12'\n" +
+	"\n" +
+	"receipt_id\x18\x02 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\treceiptId\x12+\n" +
+	"\foperation_id\x18\x03 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\voperationId\x12#\n" +
+	"\x04kind\x18\x04 \x01(\tB\x0f\xbaH\fr\n" +
+	"\n" +
+	"\bdeliveryR\x04kind\x12G\n" +
+	"\x06status\x18\x05 \x01(\x0e2#.port.api.v1.RuntimeOperationStatusB\n" +
+	"\xbaH\a\x82\x01\x04\x10\x01 \x00R\x06status\x12/\n" +
+	"\vresult_json\x18\x06 \x01(\tB\t\xbaH\x06r\x04(\x80\x80@H\x00R\n" +
+	"resultJson\x88\x01\x01\x12?\n" +
+	"\x13provider_request_id\x18\a \x01(\tB\n" +
+	"\xbaH\ar\x05\x10\x01\x18\x80\x04H\x01R\x11providerRequestId\x88\x01\x01\x12*\n" +
+	"\voccurred_at\x18\b \x01(\tB\t\xbaH\x06r\x04\x10\x01\x18@R\n" +
+	"occurredAt\x12.\n" +
+	"\x13confirmed_no_effect\x18\t \x01(\bR\x11confirmedNoEffect\x12Z\n" +
+	"\x14provider_correlation\x18\n" +
+	" \x01(\v2'.port.api.v1.RuntimeProviderCorrelationR\x13providerCorrelationB\x0e\n" +
+	"\f_result_jsonB\x16\n" +
+	"\x14_provider_request_id\"\xc7\x01\n" +
+	"\x1cRecordRuntimeReceiptResponse\x12'\n" +
+	"\n" +
+	"receipt_id\x18\x01 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\treceiptId\x12\x1a\n" +
+	"\brecorded\x18\x02 \x01(\bR\brecorded\x12\x1c\n" +
+	"\tduplicate\x18\x03 \x01(\bR\tduplicate\x12D\n" +
+	"\vdisposition\x18\x04 \x01(\tB\"\xbaH\x1fr\x1dR\bretainedR\tduplicateR\x06erasedR\vdisposition\"\xcd\x01\n" +
+	"\x11EndRuntimeRequest\x12?\n" +
+	"\x05owner\x18\x01 \x01(\v2!.port.api.v1.RuntimeAuthorizationB\x06\xbaH\x03\xc8\x01\x01R\x05owner\x12%\n" +
+	"\tintent_id\x18\x02 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\bintentId\x12\"\n" +
+	"\x06reason\x18\x03 \x01(\tB\n" +
+	"\xbaH\ar\x05\x10\x01\x18\xf4\x03R\x06reason\x12,\n" +
+	"\bended_by\x18\x04 \x01(\tB\x11\xbaH\x0er\fR\x02aiR\x06systemR\aendedBy\"\\\n" +
+	"\x12EndRuntimeResponse\x12F\n" +
+	"\n" +
+	"projection\x18\x01 \x01(\v2\x1e.port.api.v1.RuntimeProjectionB\x06\xbaH\x03\xc8\x01\x01R\n" +
+	"projection\"\x9b\f\n" +
+	"\x19RecordRuntimeUsageRequest\x129\n" +
+	"\x05owner\x18\x01 \x01(\v2!.port.api.v1.RuntimeAuthorizationH\x00R\x05owner\x12D\n" +
+	"\areceipt\x18\x02 \x01(\v2(.port.api.v1.RuntimeReceiptAuthorizationH\x00R\areceipt\x12\\\n" +
+	"\x14helper_authorization\x18\x12 \x01(\v2'.port.api.v1.RuntimeHelperAuthorizationH\x00R\x13helperAuthorization\x12O\n" +
+	"\x04kind\x18\x03 \x01(\tB;\xbaH8r6R\x06intentR\acaptureR\x0fexecution_closeR\x12llm_reconciliationR\x04kind\x12#\n" +
+	"\afact_id\x18\x04 \x01(\tB\n" +
+	"\xbaH\ar\x05\x10\x01\x18\x80\x04R\x06factId\x127\n" +
+	"\x0fpaid_attempt_id\x18\x05 \x01(\tB\n" +
+	"\xbaH\ar\x05\x10\x01\x18\x80\x02H\x01R\rpaidAttemptId\x88\x01\x01\x12?\n" +
+	"\x13provider_segment_id\x18\x06 \x01(\tB\n" +
+	"\xbaH\ar\x05\x10\x01\x18\x80\x04H\x02R\x11providerSegmentId\x88\x01\x01\x12*\n" +
+	"\bdelta_id\x18\a \x01(\tB\n" +
+	"\xbaH\ar\x05\x10\x01\x18\x80\x02H\x03R\adeltaId\x88\x01\x01\x12N\n" +
+	"\fcompleteness\x18\b \x01(\tB*\xbaH'r%R\apendingR\bcompleteR\apartialR\aunknownR\fcompleteness\x128\n" +
+	"\x10cloud_event_json\x18\t \x01(\tB\t\xbaH\x06r\x04(\x80\x80\x04H\x04R\x0ecloudEventJson\x88\x01\x01\x128\n" +
+	"\n" +
+	"usage_kind\x18\n" +
+	" \x01(\tB\x14\xbaH\x11r\x0fR\x03llmR\x03sttR\x03ttsH\x05R\tusageKind\x88\x01\x01\x12+\n" +
+	"\bprovider\x18\v \x01(\tB\n" +
+	"\xbaH\ar\x05\x10\x01\x18\x80\x01H\x06R\bprovider\x88\x01\x01\x12%\n" +
+	"\x05model\x18\f \x01(\tB\n" +
+	"\xbaH\ar\x05\x10\x01\x18\x80\x04H\aR\x05model\x88\x01\x01\x12;\n" +
+	"\x0fexpected_meters\x18\r \x03(\tB\x12\xbaH\x0f\x92\x01\f\x10 \x18\x01\"\x06r\x04\x10\x01\x18@R\x0eexpectedMeters\x12=\n" +
+	"\x12request_attempt_id\x18\x0e \x01(\tB\n" +
+	"\xbaH\ar\x05\x10\x01\x18\x80\x01H\bR\x10requestAttemptId\x88\x01\x01\x120\n" +
+	"\x05usage\x18\x0f \x01(\v2\x1a.port.api.v1.LlmAuditUsageR\x05usage\x122\n" +
+	"\factual_model\x18\x10 \x01(\tB\n" +
+	"\xbaH\ar\x05\x10\x01\x18\x80\x04H\tR\vactualModel\x88\x01\x01\x12?\n" +
+	"\x13provider_request_id\x18\x11 \x01(\tB\n" +
+	"\xbaH\ar\x05\x10\x01\x18\x80\x04H\n" +
+	"R\x11providerRequestId\x88\x01\x01:\xff\x01\xbaH\xfb\x01\x1a\xf8\x01\n" +
+	"\x15runtime_usage.purpose\x12_intent requires main or helper control; capture and late facts require origin receipt authority\x1a~(this.kind == 'intent' && (has(this.owner) || has(this.helper_authorization))) || (this.kind != 'intent' && has(this.receipt))B\x12\n" +
+	"\tauthority\x12\x05\xbaH\x02\b\x01B\x12\n" +
+	"\x10_paid_attempt_idB\x16\n" +
+	"\x14_provider_segment_idB\v\n" +
+	"\t_delta_idB\x13\n" +
+	"\x11_cloud_event_jsonB\r\n" +
+	"\v_usage_kindB\v\n" +
+	"\t_providerB\b\n" +
+	"\x06_modelB\x15\n" +
+	"\x13_request_attempt_idB\x0f\n" +
+	"\r_actual_modelB\x16\n" +
+	"\x14_provider_request_id\"\x91\x02\n" +
+	"\x1aRecordRuntimeUsageResponse\x12#\n" +
+	"\afact_id\x18\x01 \x01(\tB\n" +
+	"\xbaH\ar\x05\x10\x01\x18\x80\x04R\x06factId\x12\x1a\n" +
+	"\brecorded\x18\x02 \x01(\bR\brecorded\x12\x1c\n" +
+	"\tduplicate\x18\x03 \x01(\bR\tduplicate\x12N\n" +
+	"\fcompleteness\x18\x04 \x01(\tB*\xbaH'r%R\apendingR\bcompleteR\apartialR\aunknownR\fcompleteness\x12D\n" +
+	"\vdisposition\x18\x05 \x01(\tB\"\xbaH\x1fr\x1dR\bretainedR\tduplicateR\x06erasedR\vdisposition\"\x88\x02\n" +
+	"\x1bReadRuntimeKnowledgeRequest\x12?\n" +
+	"\x05owner\x18\x01 \x01(\v2!.port.api.v1.RuntimeAuthorizationB\x06\xbaH\x03\xc8\x01\x01R\x05owner\x12#\n" +
+	"\anode_id\x18\x02 \x01(\tB\n" +
+	"\xbaH\ar\x05\x10\x01\x18\x80\x02R\x06nodeId\x121\n" +
+	"\x0etool_reference\x18\x03 \x01(\tB\n" +
+	"\xbaH\ar\x05\x10\x01\x18\x80\x02R\rtoolReference\x12 \n" +
+	"\x05query\x18\x04 \x01(\tB\n" +
+	"\xbaH\ar\x05\x10\x01(\x80}R\x05query\x12$\n" +
+	"\x05limit\x18\x05 \x01(\rB\t\xbaH\x06*\x04\x18d(\x01H\x00R\x05limit\x88\x01\x01B\b\n" +
+	"\x06_limit\"L\n" +
+	"\x1cReadRuntimeKnowledgeResponse\x12,\n" +
+	"\vresult_json\x18\x01 \x01(\tB\v\xbaH\br\x06 \x01(\x80\x80@R\n" +
+	"resultJson*\xa8\x01\n" +
 	"\x14HandoffParameterType\x12&\n" +
 	"\"HANDOFF_PARAMETER_TYPE_UNSPECIFIED\x10\x00\x12!\n" +
 	"\x1dHANDOFF_PARAMETER_TYPE_STRING\x10\x01\x12!\n" +
@@ -5717,13 +8285,25 @@ const file_port_api_v1_agent_session_proto_rawDesc = "" +
 	"\x15CONTEXT_POLICY_RECENT\x10\x03\x12\x16\n" +
 	"\x12CONTEXT_POLICY_ALL\x10\x04\x12.\n" +
 	"*CONTEXT_POLICY_USER_AND_ASSISTANT_MESSAGES\x10\x05\x12.\n" +
-	"*CONTEXT_POLICY_PREVIOUS_ASSISTANT_MESSAGES\x10\x062\xc6\x04\n" +
+	"*CONTEXT_POLICY_PREVIOUS_ASSISTANT_MESSAGES\x10\x062\xb9\r\n" +
 	"\x17ExecutionSessionService\x12e\n" +
 	"\x12BootstrapPublished\x12&.port.api.v1.BootstrapPublishedRequest\x1a'.port.api.v1.BootstrapPublishedResponse\x12e\n" +
 	"\x12CommandSipTransfer\x12&.port.api.v1.CommandSipTransferRequest\x1a'.port.api.v1.CommandSipTransferResponse\x12t\n" +
 	"\x17RecordLlmRequestStarted\x12+.port.api.v1.RecordLlmRequestStartedRequest\x1a,.port.api.v1.RecordLlmRequestStartedResponse\x12w\n" +
 	"\x18RecordLlmRequestTerminal\x12,.port.api.v1.RecordLlmRequestTerminalRequest\x1a-.port.api.v1.RecordLlmRequestTerminalResponse\x12n\n" +
-	"\x15CommandFormCollection\x12).port.api.v1.CommandFormCollectionRequest\x1a*.port.api.v1.CommandFormCollectionResponseB?Z=github.com/kyh0703/port-contracts/v4/gen/go/port/api/v1;apiv1b\x06proto3"
+	"\x15CommandFormCollection\x12).port.api.v1.CommandFormCollectionRequest\x1a*.port.api.v1.CommandFormCollectionResponse\x12n\n" +
+	"\x15PrepareRuntimeAttempt\x12).port.api.v1.PrepareRuntimeAttemptRequest\x1a*.port.api.v1.PrepareRuntimeAttemptResponse\x12Y\n" +
+	"\x0eRecoverRuntime\x12\".port.api.v1.RecoverRuntimeRequest\x1a#.port.api.v1.RecoverRuntimeResponse\x12b\n" +
+	"\x11RenewRuntimeLease\x12%.port.api.v1.RenewRuntimeLeaseRequest\x1a&.port.api.v1.RenewRuntimeLeaseResponse\x12\\\n" +
+	"\x0fActivateRuntime\x12#.port.api.v1.ActivateRuntimeRequest\x1a$.port.api.v1.ActivateRuntimeResponse\x12t\n" +
+	"\x17CommitRuntimeCheckpoint\x12+.port.api.v1.CommitRuntimeCheckpointRequest\x1a,.port.api.v1.CommitRuntimeCheckpointResponse\x12t\n" +
+	"\x17ExecuteRuntimeOperation\x12+.port.api.v1.ExecuteRuntimeOperationRequest\x1a,.port.api.v1.ExecuteRuntimeOperationResponse\x12h\n" +
+	"\x13GetRuntimeOperation\x12'.port.api.v1.GetRuntimeOperationRequest\x1a(.port.api.v1.GetRuntimeOperationResponse\x12k\n" +
+	"\x14RecordRuntimeReceipt\x12(.port.api.v1.RecordRuntimeReceiptRequest\x1a).port.api.v1.RecordRuntimeReceiptResponse\x12M\n" +
+	"\n" +
+	"EndRuntime\x12\x1e.port.api.v1.EndRuntimeRequest\x1a\x1f.port.api.v1.EndRuntimeResponse\x12e\n" +
+	"\x12RecordRuntimeUsage\x12&.port.api.v1.RecordRuntimeUsageRequest\x1a'.port.api.v1.RecordRuntimeUsageResponse\x12k\n" +
+	"\x14ReadRuntimeKnowledge\x12(.port.api.v1.ReadRuntimeKnowledgeRequest\x1a).port.api.v1.ReadRuntimeKnowledgeResponseB?Z=github.com/kyh0703/port-contracts/v4/gen/go/port/api/v1;apiv1b\x06proto3"
 
 var (
 	file_port_api_v1_agent_session_proto_rawDescOnce sync.Once
@@ -5738,7 +8318,7 @@ func file_port_api_v1_agent_session_proto_rawDescGZIP() []byte {
 }
 
 var file_port_api_v1_agent_session_proto_enumTypes = make([]protoimpl.EnumInfo, 6)
-var file_port_api_v1_agent_session_proto_msgTypes = make([]protoimpl.MessageInfo, 67)
+var file_port_api_v1_agent_session_proto_msgTypes = make([]protoimpl.MessageInfo, 89)
 var file_port_api_v1_agent_session_proto_goTypes = []any{
 	(HandoffParameterType)(0),                // 0: port.api.v1.HandoffParameterType
 	(CallTransportSource)(0),                 // 1: port.api.v1.CallTransportSource
@@ -5748,11 +8328,11 @@ var file_port_api_v1_agent_session_proto_goTypes = []any{
 	(ContextPolicy)(0),                       // 5: port.api.v1.ContextPolicy
 	(*CommandFormCollectionRequest)(nil),     // 6: port.api.v1.CommandFormCollectionRequest
 	(*CommandFormCollectionResponse)(nil),    // 7: port.api.v1.CommandFormCollectionResponse
-	(*BootstrapRequest)(nil),                 // 8: port.api.v1.BootstrapRequest
-	(*SipBootstrapContext)(nil),              // 9: port.api.v1.SipBootstrapContext
-	(*BootstrapPublishedRequest)(nil),        // 10: port.api.v1.BootstrapPublishedRequest
-	(*BootstrapPublishedResponse)(nil),       // 11: port.api.v1.BootstrapPublishedResponse
-	(*LlmAuditCapability)(nil),               // 12: port.api.v1.LlmAuditCapability
+	(*RuntimeFormProviderAcceptance)(nil),    // 8: port.api.v1.RuntimeFormProviderAcceptance
+	(*BootstrapRequest)(nil),                 // 9: port.api.v1.BootstrapRequest
+	(*SipBootstrapContext)(nil),              // 10: port.api.v1.SipBootstrapContext
+	(*BootstrapPublishedRequest)(nil),        // 11: port.api.v1.BootstrapPublishedRequest
+	(*BootstrapPublishedResponse)(nil),       // 12: port.api.v1.BootstrapPublishedResponse
 	(*LlmAuditRequestContext)(nil),           // 13: port.api.v1.LlmAuditRequestContext
 	(*RecordLlmRequestStartedRequest)(nil),   // 14: port.api.v1.RecordLlmRequestStartedRequest
 	(*RecordLlmRequestStartedResponse)(nil),  // 15: port.api.v1.RecordLlmRequestStartedResponse
@@ -5808,104 +8388,207 @@ var file_port_api_v1_agent_session_proto_goTypes = []any{
 	(*ConversationFillerRuntime)(nil),        // 65: port.api.v1.ConversationFillerRuntime
 	(*CommandSipTransferRequest)(nil),        // 66: port.api.v1.CommandSipTransferRequest
 	(*CommandSipTransferResponse)(nil),       // 67: port.api.v1.CommandSipTransferResponse
-	(*SipTransferConsultation)(nil),          // 68: port.api.v1.SipTransferConsultation
-	nil,                                      // 69: port.api.v1.CommandFormCollectionResponse.ValuesEntry
-	nil,                                      // 70: port.api.v1.ApiToolRuntime.HeadersEntry
-	nil,                                      // 71: port.api.v1.A2aToolRuntime.HeadersEntry
-	nil,                                      // 72: port.api.v1.McpServerRuntime.HeadersEntry
-	(*LlmRuntime)(nil),                       // 73: port.api.v1.LlmRuntime
-	(*SttRuntime)(nil),                       // 74: port.api.v1.SttRuntime
-	(*TtsRuntime)(nil),                       // 75: port.api.v1.TtsRuntime
+	(*RuntimeTransferHelperBootstrap)(nil),   // 68: port.api.v1.RuntimeTransferHelperBootstrap
+	(*PrepareRuntimeAttemptRequest)(nil),     // 69: port.api.v1.PrepareRuntimeAttemptRequest
+	(*PrepareRuntimeAttemptResponse)(nil),    // 70: port.api.v1.PrepareRuntimeAttemptResponse
+	(*RecoverRuntimeRequest)(nil),            // 71: port.api.v1.RecoverRuntimeRequest
+	(*RuntimeControlEffect)(nil),             // 72: port.api.v1.RuntimeControlEffect
+	(*RecoverRuntimeResponse)(nil),           // 73: port.api.v1.RecoverRuntimeResponse
+	(*RenewRuntimeLeaseRequest)(nil),         // 74: port.api.v1.RenewRuntimeLeaseRequest
+	(*RenewRuntimeLeaseResponse)(nil),        // 75: port.api.v1.RenewRuntimeLeaseResponse
+	(*ActivateRuntimeRequest)(nil),           // 76: port.api.v1.ActivateRuntimeRequest
+	(*ActivateRuntimeResponse)(nil),          // 77: port.api.v1.ActivateRuntimeResponse
+	(*RuntimeConsumedFormRequest)(nil),       // 78: port.api.v1.RuntimeConsumedFormRequest
+	(*RuntimeAppliedOperationResult)(nil),    // 79: port.api.v1.RuntimeAppliedOperationResult
+	(*CommitRuntimeCheckpointRequest)(nil),   // 80: port.api.v1.CommitRuntimeCheckpointRequest
+	(*CommitRuntimeCheckpointResponse)(nil),  // 81: port.api.v1.CommitRuntimeCheckpointResponse
+	(*ExecuteRuntimeOperationRequest)(nil),   // 82: port.api.v1.ExecuteRuntimeOperationRequest
+	(*ExecuteRuntimeOperationResponse)(nil),  // 83: port.api.v1.ExecuteRuntimeOperationResponse
+	(*GetRuntimeOperationRequest)(nil),       // 84: port.api.v1.GetRuntimeOperationRequest
+	(*GetRuntimeOperationResponse)(nil),      // 85: port.api.v1.GetRuntimeOperationResponse
+	(*RecordRuntimeReceiptRequest)(nil),      // 86: port.api.v1.RecordRuntimeReceiptRequest
+	(*RecordRuntimeReceiptResponse)(nil),     // 87: port.api.v1.RecordRuntimeReceiptResponse
+	(*EndRuntimeRequest)(nil),                // 88: port.api.v1.EndRuntimeRequest
+	(*EndRuntimeResponse)(nil),               // 89: port.api.v1.EndRuntimeResponse
+	(*RecordRuntimeUsageRequest)(nil),        // 90: port.api.v1.RecordRuntimeUsageRequest
+	(*RecordRuntimeUsageResponse)(nil),       // 91: port.api.v1.RecordRuntimeUsageResponse
+	(*ReadRuntimeKnowledgeRequest)(nil),      // 92: port.api.v1.ReadRuntimeKnowledgeRequest
+	(*ReadRuntimeKnowledgeResponse)(nil),     // 93: port.api.v1.ReadRuntimeKnowledgeResponse
+	nil,                                      // 94: port.api.v1.CommandFormCollectionResponse.ValuesEntry
+	(*RuntimeAuthorization)(nil),             // 95: port.api.v1.RuntimeAuthorization
+	(*RuntimeAttemptAuthorization)(nil),      // 96: port.api.v1.RuntimeAttemptAuthorization
+	(*RuntimeHelperAuthorization)(nil),       // 97: port.api.v1.RuntimeHelperAuthorization
+	(*RuntimeLease)(nil),                     // 98: port.api.v1.RuntimeLease
+	(*RuntimeCheckpoint)(nil),                // 99: port.api.v1.RuntimeCheckpoint
+	(*RuntimeReceiptAuthorization)(nil),      // 100: port.api.v1.RuntimeReceiptAuthorization
+	(*LlmRuntime)(nil),                       // 101: port.api.v1.LlmRuntime
+	(*SttRuntime)(nil),                       // 102: port.api.v1.SttRuntime
+	(*TtsRuntime)(nil),                       // 103: port.api.v1.TtsRuntime
+	(*RuntimeAssignment)(nil),                // 104: port.api.v1.RuntimeAssignment
+	(RuntimeOperationStatus)(0),              // 105: port.api.v1.RuntimeOperationStatus
+	(*RuntimeOperation)(nil),                 // 106: port.api.v1.RuntimeOperation
+	(*RuntimeMediaFence)(nil),                // 107: port.api.v1.RuntimeMediaFence
+	(*RuntimeProjection)(nil),                // 108: port.api.v1.RuntimeProjection
+	(RuntimeOperationKind)(0),                // 109: port.api.v1.RuntimeOperationKind
+	(*RuntimeProviderCorrelation)(nil),       // 110: port.api.v1.RuntimeProviderCorrelation
 }
 var file_port_api_v1_agent_session_proto_depIdxs = []int32{
-	69, // 0: port.api.v1.CommandFormCollectionResponse.values:type_name -> port.api.v1.CommandFormCollectionResponse.ValuesEntry
-	9,  // 1: port.api.v1.BootstrapRequest.sip:type_name -> port.api.v1.SipBootstrapContext
-	8,  // 2: port.api.v1.BootstrapPublishedRequest.admission:type_name -> port.api.v1.BootstrapRequest
-	19, // 3: port.api.v1.BootstrapPublishedResponse.prompt_variables:type_name -> port.api.v1.SessionPromptVariableBag
-	21, // 4: port.api.v1.BootstrapPublishedResponse.agent:type_name -> port.api.v1.PublishedAgentExecution
-	34, // 5: port.api.v1.BootstrapPublishedResponse.voice_runtime:type_name -> port.api.v1.CallRuntimeSnapshot
-	33, // 6: port.api.v1.BootstrapPublishedResponse.text_runtime:type_name -> port.api.v1.TextRuntimeSnapshot
-	12, // 7: port.api.v1.BootstrapPublishedResponse.llm_audit_capability:type_name -> port.api.v1.LlmAuditCapability
-	13, // 8: port.api.v1.RecordLlmRequestStartedRequest.request:type_name -> port.api.v1.LlmAuditRequestContext
-	13, // 9: port.api.v1.RecordLlmRequestTerminalRequest.request:type_name -> port.api.v1.LlmAuditRequestContext
-	16, // 10: port.api.v1.RecordLlmRequestTerminalRequest.usage:type_name -> port.api.v1.LlmAuditUsage
-	20, // 11: port.api.v1.SessionPromptVariableBag.system:type_name -> port.api.v1.SessionPromptVariable
-	20, // 12: port.api.v1.SessionPromptVariableBag.user:type_name -> port.api.v1.SessionPromptVariable
-	4,  // 13: port.api.v1.PublishedAgentExecution.mode:type_name -> port.api.v1.AgentMode
-	23, // 14: port.api.v1.PublishedAgentExecution.node_runtimes:type_name -> port.api.v1.PublishedAgentNodeRuntime
-	27, // 15: port.api.v1.PublishedAgentExecution.supervisor:type_name -> port.api.v1.PublishedSupervisorSnapshot
-	29, // 16: port.api.v1.PublishedAgentExecution.handoff:type_name -> port.api.v1.PublishedHandoffSnapshot
-	22, // 17: port.api.v1.PublishedAgentExecution.prompt_config:type_name -> port.api.v1.AgentPromptConfigSnapshot
-	73, // 18: port.api.v1.PublishedAgentNodeRuntime.llm_worker:type_name -> port.api.v1.LlmRuntime
-	45, // 19: port.api.v1.PublishedAgentNodeRuntime.instructions:type_name -> port.api.v1.AgentInstructions
-	5,  // 20: port.api.v1.PublishedAgentNodeRuntime.context_policy:type_name -> port.api.v1.ContextPolicy
-	46, // 21: port.api.v1.PublishedAgentNodeRuntime.tools:type_name -> port.api.v1.NodeToolMetadata
-	64, // 22: port.api.v1.PublishedAgentNodeRuntime.mcp_servers:type_name -> port.api.v1.McpServerRuntime
-	55, // 23: port.api.v1.PublishedAgentNodeRuntime.api_tool_runtimes:type_name -> port.api.v1.ApiToolRuntime
-	56, // 24: port.api.v1.PublishedAgentNodeRuntime.a2a_tool_runtimes:type_name -> port.api.v1.A2aToolRuntime
-	58, // 25: port.api.v1.PublishedAgentNodeRuntime.built_in_tools:type_name -> port.api.v1.BuiltInTool
-	57, // 26: port.api.v1.PublishedAgentNodeRuntime.knowledge_tool_runtimes:type_name -> port.api.v1.KnowledgeToolRuntime
-	24, // 27: port.api.v1.PublishedAgentNodeRuntime.authoring:type_name -> port.api.v1.InlineAuthoringOptions
-	25, // 28: port.api.v1.InlineAuthoringOptions.model:type_name -> port.api.v1.NodeModelSettings
-	26, // 29: port.api.v1.InlineAuthoringOptions.tool_bindings:type_name -> port.api.v1.NodeToolBinding
-	28, // 30: port.api.v1.PublishedSupervisorSnapshot.specialists:type_name -> port.api.v1.PublishedSupervisorSpecialist
-	5,  // 31: port.api.v1.PublishedSupervisorSpecialist.context_policy:type_name -> port.api.v1.ContextPolicy
-	30, // 32: port.api.v1.PublishedHandoffSnapshot.routes:type_name -> port.api.v1.PublishedHandoffRoute
-	5,  // 33: port.api.v1.PublishedHandoffRoute.context_policy:type_name -> port.api.v1.ContextPolicy
-	31, // 34: port.api.v1.PublishedHandoffRoute.parameters:type_name -> port.api.v1.HandoffParameter
-	49, // 35: port.api.v1.PublishedHandoffRoute.tool_messages:type_name -> port.api.v1.ToolMessages
-	0,  // 36: port.api.v1.HandoffParameter.type:type_name -> port.api.v1.HandoffParameterType
-	32, // 37: port.api.v1.HandoffParameter.collection:type_name -> port.api.v1.HandoffParameterCollection
-	74, // 38: port.api.v1.CallRuntimeSnapshot.stt:type_name -> port.api.v1.SttRuntime
-	75, // 39: port.api.v1.CallRuntimeSnapshot.tts:type_name -> port.api.v1.TtsRuntime
-	43, // 40: port.api.v1.CallRuntimeSnapshot.background_audio:type_name -> port.api.v1.BackgroundAudioRuntime
-	44, // 41: port.api.v1.CallRuntimeSnapshot.dtmf:type_name -> port.api.v1.DtmfInputRuntime
-	39, // 42: port.api.v1.CallRuntimeSnapshot.transport:type_name -> port.api.v1.TransportRuntime
-	40, // 43: port.api.v1.CallRuntimeSnapshot.vad:type_name -> port.api.v1.VadRuntime
-	41, // 44: port.api.v1.CallRuntimeSnapshot.speech_policy:type_name -> port.api.v1.SpeechPolicyRuntime
-	42, // 45: port.api.v1.CallRuntimeSnapshot.limits:type_name -> port.api.v1.CallLimitsRuntime
-	65, // 46: port.api.v1.CallRuntimeSnapshot.conversation_filler:type_name -> port.api.v1.ConversationFillerRuntime
-	35, // 47: port.api.v1.CallRuntimeSnapshot.conversation_control:type_name -> port.api.v1.ConversationControlRuntime
-	37, // 48: port.api.v1.ConversationControlRuntime.time_elapsed_actions:type_name -> port.api.v1.TimeElapsedActionRuntime
-	36, // 49: port.api.v1.ConversationControlRuntime.idle_message:type_name -> port.api.v1.IdleMessageRuntime
-	38, // 50: port.api.v1.TimeElapsedActionRuntime.end_call:type_name -> port.api.v1.EndCallActionRuntime
-	1,  // 51: port.api.v1.TransportRuntime.source:type_name -> port.api.v1.CallTransportSource
-	2,  // 52: port.api.v1.VadRuntime.noise_cancellation:type_name -> port.api.v1.NoiseCancellationMode
-	3,  // 53: port.api.v1.BackgroundAudioRuntime.preset:type_name -> port.api.v1.BackgroundAudioPreset
-	47, // 54: port.api.v1.NodeToolMetadata.mcp:type_name -> port.api.v1.McpToolMetadata
-	48, // 55: port.api.v1.NodeToolMetadata.api:type_name -> port.api.v1.ApiToolMetadata
-	53, // 56: port.api.v1.NodeToolMetadata.a2a:type_name -> port.api.v1.A2aToolMetadata
-	54, // 57: port.api.v1.NodeToolMetadata.knowledge:type_name -> port.api.v1.KnowledgeToolMetadata
-	49, // 58: port.api.v1.NodeToolMetadata.messages:type_name -> port.api.v1.ToolMessages
-	50, // 59: port.api.v1.ApiToolMetadata.messages:type_name -> port.api.v1.ApiToolMessage
-	50, // 60: port.api.v1.ToolMessages.items:type_name -> port.api.v1.ApiToolMessage
-	51, // 61: port.api.v1.ApiToolMessage.conditions:type_name -> port.api.v1.ToolMessageConditions
-	52, // 62: port.api.v1.ToolMessageConditions.items:type_name -> port.api.v1.ToolMessageCondition
-	70, // 63: port.api.v1.ApiToolRuntime.headers:type_name -> port.api.v1.ApiToolRuntime.HeadersEntry
-	71, // 64: port.api.v1.A2aToolRuntime.headers:type_name -> port.api.v1.A2aToolRuntime.HeadersEntry
-	49, // 65: port.api.v1.BuiltInTool.messages:type_name -> port.api.v1.ToolMessages
-	59, // 66: port.api.v1.BuiltInTool.end_call:type_name -> port.api.v1.EndCallTool
-	60, // 67: port.api.v1.BuiltInTool.transfer_to_human:type_name -> port.api.v1.TransferToHumanTool
-	61, // 68: port.api.v1.BuiltInTool.dtmf:type_name -> port.api.v1.DtmfTool
-	62, // 69: port.api.v1.BuiltInTool.send_sms:type_name -> port.api.v1.SendSmsTool
-	63, // 70: port.api.v1.BuiltInTool.speaker:type_name -> port.api.v1.SpeakerTool
-	72, // 71: port.api.v1.McpServerRuntime.headers:type_name -> port.api.v1.McpServerRuntime.HeadersEntry
-	68, // 72: port.api.v1.CommandSipTransferResponse.consultation:type_name -> port.api.v1.SipTransferConsultation
-	10, // 73: port.api.v1.ExecutionSessionService.BootstrapPublished:input_type -> port.api.v1.BootstrapPublishedRequest
-	66, // 74: port.api.v1.ExecutionSessionService.CommandSipTransfer:input_type -> port.api.v1.CommandSipTransferRequest
-	14, // 75: port.api.v1.ExecutionSessionService.RecordLlmRequestStarted:input_type -> port.api.v1.RecordLlmRequestStartedRequest
-	17, // 76: port.api.v1.ExecutionSessionService.RecordLlmRequestTerminal:input_type -> port.api.v1.RecordLlmRequestTerminalRequest
-	6,  // 77: port.api.v1.ExecutionSessionService.CommandFormCollection:input_type -> port.api.v1.CommandFormCollectionRequest
-	11, // 78: port.api.v1.ExecutionSessionService.BootstrapPublished:output_type -> port.api.v1.BootstrapPublishedResponse
-	67, // 79: port.api.v1.ExecutionSessionService.CommandSipTransfer:output_type -> port.api.v1.CommandSipTransferResponse
-	15, // 80: port.api.v1.ExecutionSessionService.RecordLlmRequestStarted:output_type -> port.api.v1.RecordLlmRequestStartedResponse
-	18, // 81: port.api.v1.ExecutionSessionService.RecordLlmRequestTerminal:output_type -> port.api.v1.RecordLlmRequestTerminalResponse
-	7,  // 82: port.api.v1.ExecutionSessionService.CommandFormCollection:output_type -> port.api.v1.CommandFormCollectionResponse
-	78, // [78:83] is the sub-list for method output_type
-	73, // [73:78] is the sub-list for method input_type
-	73, // [73:73] is the sub-list for extension type_name
-	73, // [73:73] is the sub-list for extension extendee
-	0,  // [0:73] is the sub-list for field type_name
+	95,  // 0: port.api.v1.CommandFormCollectionRequest.owner:type_name -> port.api.v1.RuntimeAuthorization
+	94,  // 1: port.api.v1.CommandFormCollectionResponse.values:type_name -> port.api.v1.CommandFormCollectionResponse.ValuesEntry
+	8,   // 2: port.api.v1.CommandFormCollectionResponse.provider_acceptance:type_name -> port.api.v1.RuntimeFormProviderAcceptance
+	10,  // 3: port.api.v1.BootstrapRequest.sip:type_name -> port.api.v1.SipBootstrapContext
+	9,   // 4: port.api.v1.BootstrapPublishedRequest.admission:type_name -> port.api.v1.BootstrapRequest
+	96,  // 5: port.api.v1.BootstrapPublishedRequest.attempt_authorization:type_name -> port.api.v1.RuntimeAttemptAuthorization
+	97,  // 6: port.api.v1.BootstrapPublishedRequest.helper_authorization:type_name -> port.api.v1.RuntimeHelperAuthorization
+	19,  // 7: port.api.v1.BootstrapPublishedResponse.prompt_variables:type_name -> port.api.v1.SessionPromptVariableBag
+	21,  // 8: port.api.v1.BootstrapPublishedResponse.agent:type_name -> port.api.v1.PublishedAgentExecution
+	34,  // 9: port.api.v1.BootstrapPublishedResponse.voice_runtime:type_name -> port.api.v1.CallRuntimeSnapshot
+	33,  // 10: port.api.v1.BootstrapPublishedResponse.text_runtime:type_name -> port.api.v1.TextRuntimeSnapshot
+	98,  // 11: port.api.v1.BootstrapPublishedResponse.runtime_lease:type_name -> port.api.v1.RuntimeLease
+	99,  // 12: port.api.v1.BootstrapPublishedResponse.helper_checkpoint:type_name -> port.api.v1.RuntimeCheckpoint
+	68,  // 13: port.api.v1.BootstrapPublishedResponse.helper_bootstrap:type_name -> port.api.v1.RuntimeTransferHelperBootstrap
+	13,  // 14: port.api.v1.RecordLlmRequestStartedRequest.request:type_name -> port.api.v1.LlmAuditRequestContext
+	95,  // 15: port.api.v1.RecordLlmRequestStartedRequest.owner:type_name -> port.api.v1.RuntimeAuthorization
+	97,  // 16: port.api.v1.RecordLlmRequestStartedRequest.helper_authorization:type_name -> port.api.v1.RuntimeHelperAuthorization
+	13,  // 17: port.api.v1.RecordLlmRequestTerminalRequest.request:type_name -> port.api.v1.LlmAuditRequestContext
+	16,  // 18: port.api.v1.RecordLlmRequestTerminalRequest.usage:type_name -> port.api.v1.LlmAuditUsage
+	100, // 19: port.api.v1.RecordLlmRequestTerminalRequest.receipt_authorization:type_name -> port.api.v1.RuntimeReceiptAuthorization
+	20,  // 20: port.api.v1.SessionPromptVariableBag.system:type_name -> port.api.v1.SessionPromptVariable
+	20,  // 21: port.api.v1.SessionPromptVariableBag.user:type_name -> port.api.v1.SessionPromptVariable
+	4,   // 22: port.api.v1.PublishedAgentExecution.mode:type_name -> port.api.v1.AgentMode
+	23,  // 23: port.api.v1.PublishedAgentExecution.node_runtimes:type_name -> port.api.v1.PublishedAgentNodeRuntime
+	27,  // 24: port.api.v1.PublishedAgentExecution.supervisor:type_name -> port.api.v1.PublishedSupervisorSnapshot
+	29,  // 25: port.api.v1.PublishedAgentExecution.handoff:type_name -> port.api.v1.PublishedHandoffSnapshot
+	22,  // 26: port.api.v1.PublishedAgentExecution.prompt_config:type_name -> port.api.v1.AgentPromptConfigSnapshot
+	101, // 27: port.api.v1.PublishedAgentNodeRuntime.llm_worker:type_name -> port.api.v1.LlmRuntime
+	45,  // 28: port.api.v1.PublishedAgentNodeRuntime.instructions:type_name -> port.api.v1.AgentInstructions
+	5,   // 29: port.api.v1.PublishedAgentNodeRuntime.context_policy:type_name -> port.api.v1.ContextPolicy
+	46,  // 30: port.api.v1.PublishedAgentNodeRuntime.tools:type_name -> port.api.v1.NodeToolMetadata
+	64,  // 31: port.api.v1.PublishedAgentNodeRuntime.mcp_servers:type_name -> port.api.v1.McpServerRuntime
+	55,  // 32: port.api.v1.PublishedAgentNodeRuntime.api_tool_runtimes:type_name -> port.api.v1.ApiToolRuntime
+	56,  // 33: port.api.v1.PublishedAgentNodeRuntime.a2a_tool_runtimes:type_name -> port.api.v1.A2aToolRuntime
+	58,  // 34: port.api.v1.PublishedAgentNodeRuntime.built_in_tools:type_name -> port.api.v1.BuiltInTool
+	57,  // 35: port.api.v1.PublishedAgentNodeRuntime.knowledge_tool_runtimes:type_name -> port.api.v1.KnowledgeToolRuntime
+	24,  // 36: port.api.v1.PublishedAgentNodeRuntime.authoring:type_name -> port.api.v1.InlineAuthoringOptions
+	25,  // 37: port.api.v1.InlineAuthoringOptions.model:type_name -> port.api.v1.NodeModelSettings
+	26,  // 38: port.api.v1.InlineAuthoringOptions.tool_bindings:type_name -> port.api.v1.NodeToolBinding
+	28,  // 39: port.api.v1.PublishedSupervisorSnapshot.specialists:type_name -> port.api.v1.PublishedSupervisorSpecialist
+	5,   // 40: port.api.v1.PublishedSupervisorSpecialist.context_policy:type_name -> port.api.v1.ContextPolicy
+	30,  // 41: port.api.v1.PublishedHandoffSnapshot.routes:type_name -> port.api.v1.PublishedHandoffRoute
+	5,   // 42: port.api.v1.PublishedHandoffRoute.context_policy:type_name -> port.api.v1.ContextPolicy
+	31,  // 43: port.api.v1.PublishedHandoffRoute.parameters:type_name -> port.api.v1.HandoffParameter
+	49,  // 44: port.api.v1.PublishedHandoffRoute.tool_messages:type_name -> port.api.v1.ToolMessages
+	0,   // 45: port.api.v1.HandoffParameter.type:type_name -> port.api.v1.HandoffParameterType
+	32,  // 46: port.api.v1.HandoffParameter.collection:type_name -> port.api.v1.HandoffParameterCollection
+	102, // 47: port.api.v1.CallRuntimeSnapshot.stt:type_name -> port.api.v1.SttRuntime
+	103, // 48: port.api.v1.CallRuntimeSnapshot.tts:type_name -> port.api.v1.TtsRuntime
+	43,  // 49: port.api.v1.CallRuntimeSnapshot.background_audio:type_name -> port.api.v1.BackgroundAudioRuntime
+	44,  // 50: port.api.v1.CallRuntimeSnapshot.dtmf:type_name -> port.api.v1.DtmfInputRuntime
+	39,  // 51: port.api.v1.CallRuntimeSnapshot.transport:type_name -> port.api.v1.TransportRuntime
+	40,  // 52: port.api.v1.CallRuntimeSnapshot.vad:type_name -> port.api.v1.VadRuntime
+	41,  // 53: port.api.v1.CallRuntimeSnapshot.speech_policy:type_name -> port.api.v1.SpeechPolicyRuntime
+	42,  // 54: port.api.v1.CallRuntimeSnapshot.limits:type_name -> port.api.v1.CallLimitsRuntime
+	65,  // 55: port.api.v1.CallRuntimeSnapshot.conversation_filler:type_name -> port.api.v1.ConversationFillerRuntime
+	35,  // 56: port.api.v1.CallRuntimeSnapshot.conversation_control:type_name -> port.api.v1.ConversationControlRuntime
+	37,  // 57: port.api.v1.ConversationControlRuntime.time_elapsed_actions:type_name -> port.api.v1.TimeElapsedActionRuntime
+	36,  // 58: port.api.v1.ConversationControlRuntime.idle_message:type_name -> port.api.v1.IdleMessageRuntime
+	38,  // 59: port.api.v1.TimeElapsedActionRuntime.end_call:type_name -> port.api.v1.EndCallActionRuntime
+	1,   // 60: port.api.v1.TransportRuntime.source:type_name -> port.api.v1.CallTransportSource
+	2,   // 61: port.api.v1.VadRuntime.noise_cancellation:type_name -> port.api.v1.NoiseCancellationMode
+	3,   // 62: port.api.v1.BackgroundAudioRuntime.preset:type_name -> port.api.v1.BackgroundAudioPreset
+	47,  // 63: port.api.v1.NodeToolMetadata.mcp:type_name -> port.api.v1.McpToolMetadata
+	48,  // 64: port.api.v1.NodeToolMetadata.api:type_name -> port.api.v1.ApiToolMetadata
+	53,  // 65: port.api.v1.NodeToolMetadata.a2a:type_name -> port.api.v1.A2aToolMetadata
+	54,  // 66: port.api.v1.NodeToolMetadata.knowledge:type_name -> port.api.v1.KnowledgeToolMetadata
+	49,  // 67: port.api.v1.NodeToolMetadata.messages:type_name -> port.api.v1.ToolMessages
+	50,  // 68: port.api.v1.ApiToolMetadata.messages:type_name -> port.api.v1.ApiToolMessage
+	50,  // 69: port.api.v1.ToolMessages.items:type_name -> port.api.v1.ApiToolMessage
+	51,  // 70: port.api.v1.ApiToolMessage.conditions:type_name -> port.api.v1.ToolMessageConditions
+	52,  // 71: port.api.v1.ToolMessageConditions.items:type_name -> port.api.v1.ToolMessageCondition
+	49,  // 72: port.api.v1.BuiltInTool.messages:type_name -> port.api.v1.ToolMessages
+	59,  // 73: port.api.v1.BuiltInTool.end_call:type_name -> port.api.v1.EndCallTool
+	60,  // 74: port.api.v1.BuiltInTool.transfer_to_human:type_name -> port.api.v1.TransferToHumanTool
+	61,  // 75: port.api.v1.BuiltInTool.dtmf:type_name -> port.api.v1.DtmfTool
+	62,  // 76: port.api.v1.BuiltInTool.send_sms:type_name -> port.api.v1.SendSmsTool
+	63,  // 77: port.api.v1.BuiltInTool.speaker:type_name -> port.api.v1.SpeakerTool
+	95,  // 78: port.api.v1.CommandSipTransferRequest.owner:type_name -> port.api.v1.RuntimeAuthorization
+	97,  // 79: port.api.v1.CommandSipTransferRequest.helper_authorization:type_name -> port.api.v1.RuntimeHelperAuthorization
+	101, // 80: port.api.v1.RuntimeTransferHelperBootstrap.llm_worker:type_name -> port.api.v1.LlmRuntime
+	104, // 81: port.api.v1.PrepareRuntimeAttemptRequest.assignment:type_name -> port.api.v1.RuntimeAssignment
+	96,  // 82: port.api.v1.PrepareRuntimeAttemptResponse.attempt_authorization:type_name -> port.api.v1.RuntimeAttemptAuthorization
+	96,  // 83: port.api.v1.RecoverRuntimeRequest.attempt_authorization:type_name -> port.api.v1.RuntimeAttemptAuthorization
+	104, // 84: port.api.v1.RecoverRuntimeRequest.assignment:type_name -> port.api.v1.RuntimeAssignment
+	105, // 85: port.api.v1.RuntimeControlEffect.status:type_name -> port.api.v1.RuntimeOperationStatus
+	98,  // 86: port.api.v1.RecoverRuntimeResponse.runtime_lease:type_name -> port.api.v1.RuntimeLease
+	12,  // 87: port.api.v1.RecoverRuntimeResponse.bootstrap:type_name -> port.api.v1.BootstrapPublishedResponse
+	99,  // 88: port.api.v1.RecoverRuntimeResponse.checkpoint:type_name -> port.api.v1.RuntimeCheckpoint
+	106, // 89: port.api.v1.RecoverRuntimeResponse.unresolved_operations:type_name -> port.api.v1.RuntimeOperation
+	107, // 90: port.api.v1.RecoverRuntimeResponse.media_fences:type_name -> port.api.v1.RuntimeMediaFence
+	72,  // 91: port.api.v1.RecoverRuntimeResponse.control_effects:type_name -> port.api.v1.RuntimeControlEffect
+	95,  // 92: port.api.v1.RenewRuntimeLeaseRequest.owner:type_name -> port.api.v1.RuntimeAuthorization
+	97,  // 93: port.api.v1.RenewRuntimeLeaseRequest.helper_authorization:type_name -> port.api.v1.RuntimeHelperAuthorization
+	98,  // 94: port.api.v1.RenewRuntimeLeaseResponse.runtime_lease:type_name -> port.api.v1.RuntimeLease
+	95,  // 95: port.api.v1.ActivateRuntimeRequest.owner:type_name -> port.api.v1.RuntimeAuthorization
+	97,  // 96: port.api.v1.ActivateRuntimeRequest.helper_authorization:type_name -> port.api.v1.RuntimeHelperAuthorization
+	98,  // 97: port.api.v1.ActivateRuntimeResponse.runtime_lease:type_name -> port.api.v1.RuntimeLease
+	95,  // 98: port.api.v1.CommitRuntimeCheckpointRequest.owner:type_name -> port.api.v1.RuntimeAuthorization
+	97,  // 99: port.api.v1.CommitRuntimeCheckpointRequest.helper_authorization:type_name -> port.api.v1.RuntimeHelperAuthorization
+	78,  // 100: port.api.v1.CommitRuntimeCheckpointRequest.consumed_form_requests:type_name -> port.api.v1.RuntimeConsumedFormRequest
+	79,  // 101: port.api.v1.CommitRuntimeCheckpointRequest.applied_operation_results:type_name -> port.api.v1.RuntimeAppliedOperationResult
+	108, // 102: port.api.v1.CommitRuntimeCheckpointResponse.projection:type_name -> port.api.v1.RuntimeProjection
+	95,  // 103: port.api.v1.ExecuteRuntimeOperationRequest.owner:type_name -> port.api.v1.RuntimeAuthorization
+	109, // 104: port.api.v1.ExecuteRuntimeOperationRequest.operation_kind:type_name -> port.api.v1.RuntimeOperationKind
+	110, // 105: port.api.v1.ExecuteRuntimeOperationRequest.provider_correlation:type_name -> port.api.v1.RuntimeProviderCorrelation
+	106, // 106: port.api.v1.ExecuteRuntimeOperationResponse.operation:type_name -> port.api.v1.RuntimeOperation
+	95,  // 107: port.api.v1.GetRuntimeOperationRequest.owner:type_name -> port.api.v1.RuntimeAuthorization
+	106, // 108: port.api.v1.GetRuntimeOperationResponse.operation:type_name -> port.api.v1.RuntimeOperation
+	100, // 109: port.api.v1.RecordRuntimeReceiptRequest.receipt_authorization:type_name -> port.api.v1.RuntimeReceiptAuthorization
+	105, // 110: port.api.v1.RecordRuntimeReceiptRequest.status:type_name -> port.api.v1.RuntimeOperationStatus
+	110, // 111: port.api.v1.RecordRuntimeReceiptRequest.provider_correlation:type_name -> port.api.v1.RuntimeProviderCorrelation
+	95,  // 112: port.api.v1.EndRuntimeRequest.owner:type_name -> port.api.v1.RuntimeAuthorization
+	108, // 113: port.api.v1.EndRuntimeResponse.projection:type_name -> port.api.v1.RuntimeProjection
+	95,  // 114: port.api.v1.RecordRuntimeUsageRequest.owner:type_name -> port.api.v1.RuntimeAuthorization
+	100, // 115: port.api.v1.RecordRuntimeUsageRequest.receipt:type_name -> port.api.v1.RuntimeReceiptAuthorization
+	97,  // 116: port.api.v1.RecordRuntimeUsageRequest.helper_authorization:type_name -> port.api.v1.RuntimeHelperAuthorization
+	16,  // 117: port.api.v1.RecordRuntimeUsageRequest.usage:type_name -> port.api.v1.LlmAuditUsage
+	95,  // 118: port.api.v1.ReadRuntimeKnowledgeRequest.owner:type_name -> port.api.v1.RuntimeAuthorization
+	11,  // 119: port.api.v1.ExecutionSessionService.BootstrapPublished:input_type -> port.api.v1.BootstrapPublishedRequest
+	66,  // 120: port.api.v1.ExecutionSessionService.CommandSipTransfer:input_type -> port.api.v1.CommandSipTransferRequest
+	14,  // 121: port.api.v1.ExecutionSessionService.RecordLlmRequestStarted:input_type -> port.api.v1.RecordLlmRequestStartedRequest
+	17,  // 122: port.api.v1.ExecutionSessionService.RecordLlmRequestTerminal:input_type -> port.api.v1.RecordLlmRequestTerminalRequest
+	6,   // 123: port.api.v1.ExecutionSessionService.CommandFormCollection:input_type -> port.api.v1.CommandFormCollectionRequest
+	69,  // 124: port.api.v1.ExecutionSessionService.PrepareRuntimeAttempt:input_type -> port.api.v1.PrepareRuntimeAttemptRequest
+	71,  // 125: port.api.v1.ExecutionSessionService.RecoverRuntime:input_type -> port.api.v1.RecoverRuntimeRequest
+	74,  // 126: port.api.v1.ExecutionSessionService.RenewRuntimeLease:input_type -> port.api.v1.RenewRuntimeLeaseRequest
+	76,  // 127: port.api.v1.ExecutionSessionService.ActivateRuntime:input_type -> port.api.v1.ActivateRuntimeRequest
+	80,  // 128: port.api.v1.ExecutionSessionService.CommitRuntimeCheckpoint:input_type -> port.api.v1.CommitRuntimeCheckpointRequest
+	82,  // 129: port.api.v1.ExecutionSessionService.ExecuteRuntimeOperation:input_type -> port.api.v1.ExecuteRuntimeOperationRequest
+	84,  // 130: port.api.v1.ExecutionSessionService.GetRuntimeOperation:input_type -> port.api.v1.GetRuntimeOperationRequest
+	86,  // 131: port.api.v1.ExecutionSessionService.RecordRuntimeReceipt:input_type -> port.api.v1.RecordRuntimeReceiptRequest
+	88,  // 132: port.api.v1.ExecutionSessionService.EndRuntime:input_type -> port.api.v1.EndRuntimeRequest
+	90,  // 133: port.api.v1.ExecutionSessionService.RecordRuntimeUsage:input_type -> port.api.v1.RecordRuntimeUsageRequest
+	92,  // 134: port.api.v1.ExecutionSessionService.ReadRuntimeKnowledge:input_type -> port.api.v1.ReadRuntimeKnowledgeRequest
+	12,  // 135: port.api.v1.ExecutionSessionService.BootstrapPublished:output_type -> port.api.v1.BootstrapPublishedResponse
+	67,  // 136: port.api.v1.ExecutionSessionService.CommandSipTransfer:output_type -> port.api.v1.CommandSipTransferResponse
+	15,  // 137: port.api.v1.ExecutionSessionService.RecordLlmRequestStarted:output_type -> port.api.v1.RecordLlmRequestStartedResponse
+	18,  // 138: port.api.v1.ExecutionSessionService.RecordLlmRequestTerminal:output_type -> port.api.v1.RecordLlmRequestTerminalResponse
+	7,   // 139: port.api.v1.ExecutionSessionService.CommandFormCollection:output_type -> port.api.v1.CommandFormCollectionResponse
+	70,  // 140: port.api.v1.ExecutionSessionService.PrepareRuntimeAttempt:output_type -> port.api.v1.PrepareRuntimeAttemptResponse
+	73,  // 141: port.api.v1.ExecutionSessionService.RecoverRuntime:output_type -> port.api.v1.RecoverRuntimeResponse
+	75,  // 142: port.api.v1.ExecutionSessionService.RenewRuntimeLease:output_type -> port.api.v1.RenewRuntimeLeaseResponse
+	77,  // 143: port.api.v1.ExecutionSessionService.ActivateRuntime:output_type -> port.api.v1.ActivateRuntimeResponse
+	81,  // 144: port.api.v1.ExecutionSessionService.CommitRuntimeCheckpoint:output_type -> port.api.v1.CommitRuntimeCheckpointResponse
+	83,  // 145: port.api.v1.ExecutionSessionService.ExecuteRuntimeOperation:output_type -> port.api.v1.ExecuteRuntimeOperationResponse
+	85,  // 146: port.api.v1.ExecutionSessionService.GetRuntimeOperation:output_type -> port.api.v1.GetRuntimeOperationResponse
+	87,  // 147: port.api.v1.ExecutionSessionService.RecordRuntimeReceipt:output_type -> port.api.v1.RecordRuntimeReceiptResponse
+	89,  // 148: port.api.v1.ExecutionSessionService.EndRuntime:output_type -> port.api.v1.EndRuntimeResponse
+	91,  // 149: port.api.v1.ExecutionSessionService.RecordRuntimeUsage:output_type -> port.api.v1.RecordRuntimeUsageResponse
+	93,  // 150: port.api.v1.ExecutionSessionService.ReadRuntimeKnowledge:output_type -> port.api.v1.ReadRuntimeKnowledgeResponse
+	135, // [135:151] is the sub-list for method output_type
+	119, // [119:135] is the sub-list for method input_type
+	119, // [119:119] is the sub-list for extension type_name
+	119, // [119:119] is the sub-list for extension extendee
+	0,   // [0:119] is the sub-list for field type_name
 }
 
 func init() { file_port_api_v1_agent_session_proto_init() }
@@ -5913,18 +8596,28 @@ func file_port_api_v1_agent_session_proto_init() {
 	if File_port_api_v1_agent_session_proto != nil {
 		return
 	}
+	file_port_api_v1_runtime_identity_proto_init()
 	file_port_api_v1_voice_runtime_proto_init()
-	file_port_api_v1_agent_session_proto_msgTypes[2].OneofWrappers = []any{
+	file_port_api_v1_agent_session_proto_msgTypes[0].OneofWrappers = []any{}
+	file_port_api_v1_agent_session_proto_msgTypes[1].OneofWrappers = []any{}
+	file_port_api_v1_agent_session_proto_msgTypes[3].OneofWrappers = []any{
 		(*BootstrapRequest_WebrtcTicket)(nil),
 		(*BootstrapRequest_Sip)(nil),
 	}
-	file_port_api_v1_agent_session_proto_msgTypes[3].OneofWrappers = []any{}
 	file_port_api_v1_agent_session_proto_msgTypes[4].OneofWrappers = []any{}
 	file_port_api_v1_agent_session_proto_msgTypes[5].OneofWrappers = []any{
+		(*BootstrapPublishedRequest_AttemptAuthorization)(nil),
+		(*BootstrapPublishedRequest_HelperAuthorization)(nil),
+	}
+	file_port_api_v1_agent_session_proto_msgTypes[6].OneofWrappers = []any{
 		(*BootstrapPublishedResponse_VoiceRuntime)(nil),
 		(*BootstrapPublishedResponse_TextRuntime)(nil),
 	}
 	file_port_api_v1_agent_session_proto_msgTypes[7].OneofWrappers = []any{}
+	file_port_api_v1_agent_session_proto_msgTypes[8].OneofWrappers = []any{
+		(*RecordLlmRequestStartedRequest_Owner)(nil),
+		(*RecordLlmRequestStartedRequest_HelperAuthorization)(nil),
+	}
 	file_port_api_v1_agent_session_proto_msgTypes[10].OneofWrappers = []any{}
 	file_port_api_v1_agent_session_proto_msgTypes[11].OneofWrappers = []any{}
 	file_port_api_v1_agent_session_proto_msgTypes[14].OneofWrappers = []any{
@@ -5951,7 +8644,10 @@ func file_port_api_v1_agent_session_proto_init() {
 		(*NodeToolMetadata_A2A)(nil),
 		(*NodeToolMetadata_Knowledge)(nil),
 	}
+	file_port_api_v1_agent_session_proto_msgTypes[41].OneofWrappers = []any{}
+	file_port_api_v1_agent_session_proto_msgTypes[42].OneofWrappers = []any{}
 	file_port_api_v1_agent_session_proto_msgTypes[44].OneofWrappers = []any{}
+	file_port_api_v1_agent_session_proto_msgTypes[47].OneofWrappers = []any{}
 	file_port_api_v1_agent_session_proto_msgTypes[52].OneofWrappers = []any{
 		(*BuiltInTool_EndCall)(nil),
 		(*BuiltInTool_TransferToHuman)(nil),
@@ -5962,14 +8658,41 @@ func file_port_api_v1_agent_session_proto_init() {
 	file_port_api_v1_agent_session_proto_msgTypes[53].OneofWrappers = []any{}
 	file_port_api_v1_agent_session_proto_msgTypes[54].OneofWrappers = []any{}
 	file_port_api_v1_agent_session_proto_msgTypes[58].OneofWrappers = []any{}
-	file_port_api_v1_agent_session_proto_msgTypes[60].OneofWrappers = []any{}
+	file_port_api_v1_agent_session_proto_msgTypes[60].OneofWrappers = []any{
+		(*CommandSipTransferRequest_Owner)(nil),
+		(*CommandSipTransferRequest_HelperAuthorization)(nil),
+	}
+	file_port_api_v1_agent_session_proto_msgTypes[62].OneofWrappers = []any{}
+	file_port_api_v1_agent_session_proto_msgTypes[63].OneofWrappers = []any{}
+	file_port_api_v1_agent_session_proto_msgTypes[65].OneofWrappers = []any{}
+	file_port_api_v1_agent_session_proto_msgTypes[66].OneofWrappers = []any{}
+	file_port_api_v1_agent_session_proto_msgTypes[68].OneofWrappers = []any{
+		(*RenewRuntimeLeaseRequest_Owner)(nil),
+		(*RenewRuntimeLeaseRequest_HelperAuthorization)(nil),
+	}
+	file_port_api_v1_agent_session_proto_msgTypes[70].OneofWrappers = []any{
+		(*ActivateRuntimeRequest_Owner)(nil),
+		(*ActivateRuntimeRequest_HelperAuthorization)(nil),
+	}
+	file_port_api_v1_agent_session_proto_msgTypes[74].OneofWrappers = []any{
+		(*CommitRuntimeCheckpointRequest_Owner)(nil),
+		(*CommitRuntimeCheckpointRequest_HelperAuthorization)(nil),
+	}
+	file_port_api_v1_agent_session_proto_msgTypes[76].OneofWrappers = []any{}
+	file_port_api_v1_agent_session_proto_msgTypes[80].OneofWrappers = []any{}
+	file_port_api_v1_agent_session_proto_msgTypes[84].OneofWrappers = []any{
+		(*RecordRuntimeUsageRequest_Owner)(nil),
+		(*RecordRuntimeUsageRequest_Receipt)(nil),
+		(*RecordRuntimeUsageRequest_HelperAuthorization)(nil),
+	}
+	file_port_api_v1_agent_session_proto_msgTypes[86].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_port_api_v1_agent_session_proto_rawDesc), len(file_port_api_v1_agent_session_proto_rawDesc)),
 			NumEnums:      6,
-			NumMessages:   67,
+			NumMessages:   89,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

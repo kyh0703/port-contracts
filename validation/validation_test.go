@@ -24,6 +24,7 @@ func TestValidateAcceptsValidGatewayEvent(t *testing.T) {
 		EventType:      apiv1.GatewayLifecycleEventType_GATEWAY_LIFECYCLE_EVENT_TYPE_AGENT_STARTED,
 		ConversationId: "conversation-1",
 		OccurredAt:     timestamppb.Now(),
+		Authority:      &apiv1.RecordGatewayEventRequest_Owner{Owner: validRuntimeOwner()},
 	})
 	if err != nil {
 		t.Fatalf("Validate() error = %v, want nil", err)
@@ -134,7 +135,7 @@ func TestPublishedBootstrapRequestValidation(t *testing.T) {
 		name   string
 		mutate func(*apiv1.BootstrapPublishedRequest)
 	}{
-		{"missing admission", func(request *apiv1.BootstrapPublishedRequest) { request.Admission = nil }},
+		{"missing authority", func(request *apiv1.BootstrapPublishedRequest) { request.Authority = nil }},
 		{"empty admission", func(request *apiv1.BootstrapPublishedRequest) { request.Admission = &apiv1.BootstrapRequest{} }},
 		{"missing conversation", func(request *apiv1.BootstrapPublishedRequest) { request.ConversationId = "" }},
 		{"missing session", func(request *apiv1.BootstrapPublishedRequest) { request.SessionId = "" }},
@@ -153,6 +154,79 @@ func TestPublishedBootstrapRequestValidation(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestPreparedMainBootstrapValidation(t *testing.T) {
+	for _, revision := range []string{publicationContractRevision, "execution-publication-2026-09-15-r2"} {
+		t.Run(revision, func(t *testing.T) {
+			request := validPublishedRequest()
+			request.Admission = nil
+			request.ContractRevision = revision
+			if err := Validate(request); err != nil {
+				t.Fatalf("Validate(prepared main attempt with four original pins and no admission) = %v, want nil", err)
+			}
+		})
+	}
+
+	tests := []struct {
+		name   string
+		mutate func(*apiv1.BootstrapPublishedRequest)
+	}{
+		{"all pins missing", func(request *apiv1.BootstrapPublishedRequest) {
+			request.ConversationId, request.SessionId, request.PublishedId, request.ContractRevision = "", "", "", ""
+		}},
+		{"missing conversation", func(request *apiv1.BootstrapPublishedRequest) { request.ConversationId = "" }},
+		{"missing session", func(request *apiv1.BootstrapPublishedRequest) { request.SessionId = "" }},
+		{"missing publication", func(request *apiv1.BootstrapPublishedRequest) { request.PublishedId = "" }},
+		{"missing revision", func(request *apiv1.BootstrapPublishedRequest) { request.ContractRevision = "" }},
+		{"unsupported revision", func(request *apiv1.BootstrapPublishedRequest) { request.ContractRevision = "legacy" }},
+		{"missing authority", func(request *apiv1.BootstrapPublishedRequest) { request.Authority = nil }},
+		{"empty attempt authority", func(request *apiv1.BootstrapPublishedRequest) {
+			request.Authority = &apiv1.BootstrapPublishedRequest_AttemptAuthorization{AttemptAuthorization: &apiv1.RuntimeAttemptAuthorization{}}
+		}},
+		{"missing attempt id", func(request *apiv1.BootstrapPublishedRequest) {
+			request.GetAttemptAuthorization().AttemptId = ""
+		}},
+		{"missing attempt capability", func(request *apiv1.BootstrapPublishedRequest) {
+			request.GetAttemptAuthorization().Capability = ""
+		}},
+		{"empty admission", func(request *apiv1.BootstrapPublishedRequest) { request.Admission = &apiv1.BootstrapRequest{} }},
+		{"incomplete SIP admission", func(request *apiv1.BootstrapPublishedRequest) {
+			request.Admission = &apiv1.BootstrapRequest{
+				Admission: &apiv1.BootstrapRequest_Sip{Sip: &apiv1.SipBootstrapContext{JobId: "job-1"}},
+			}
+		}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			request := validPublishedRequest()
+			request.Admission = nil
+			tt.mutate(request)
+			if err := Validate(request); err == nil {
+				t.Fatal("Validate(incomplete prepared main request) = nil, want rejection")
+			}
+		})
+	}
+
+	t.Run("helper without admission", func(t *testing.T) {
+		request := validPublishedRequest()
+		request.Admission = nil
+		request.Authority = &apiv1.BootstrapPublishedRequest_HelperAuthorization{
+			HelperAuthorization: &apiv1.RuntimeHelperAuthorization{
+				HelperExecutionId: "01987a5f-2aa8-7000-8000-000000000005",
+				Epoch:             1,
+				TransferAttemptId: "01987a5f-2aa8-7000-8000-000000000006",
+				Capability:        strings.Repeat("h", 32),
+			},
+		}
+		if err := Validate(request); err != nil {
+			t.Fatalf("Validate(private helper without admission) = %v, want nil", err)
+		}
+		request.Admission = validPublishedRequest().Admission
+		if err := Validate(request); err == nil {
+			t.Fatal("Validate(helper with admission) = nil, want rejection")
+		}
+	})
 }
 
 func TestSipCallerPhoneNumberValidation(t *testing.T) {
@@ -575,16 +649,22 @@ func validPublishedRequest() *apiv1.BootstrapPublishedRequest {
 			Admission: &apiv1.BootstrapRequest_WebrtcTicket{WebrtcTicket: "ticket-1"},
 		},
 		ConversationId:   "conversation-1",
-		SessionId:        "session-1",
-		PublishedId:      "publication-1",
+		SessionId:        "01987a5f-2aa8-7000-8000-000000000002",
+		PublishedId:      "01987a5f-2aa8-7000-8000-000000000003",
 		ContractRevision: publicationContractRevision,
+		Authority: &apiv1.BootstrapPublishedRequest_AttemptAuthorization{
+			AttemptAuthorization: &apiv1.RuntimeAttemptAuthorization{
+				AttemptId:  "01987a5f-2aa8-7000-8000-000000000004",
+				Capability: strings.Repeat("a", 32),
+			},
+		},
 	}
 }
 
 func validAgentNodeRuntime(id string) *apiv1.PublishedAgentNodeRuntime {
 	return &apiv1.PublishedAgentNodeRuntime{
 		NodeId:        id,
-		LlmWorker:     &apiv1.LlmRuntime{ApiKey: "llm-key", Model: "llm-model"},
+		LlmWorker:     &apiv1.LlmRuntime{Credential: &apiv1.LlmRuntime_ApiKey{ApiKey: "llm-key"}, Model: "llm-model"},
 		Instructions:  &apiv1.AgentInstructions{SystemPrompt: "Help."},
 		ContextPolicy: apiv1.ContextPolicy_CONTEXT_POLICY_CONVERSATION,
 	}
@@ -602,8 +682,8 @@ func validTextRuntime() *apiv1.TextRuntimeSnapshot {
 
 func validCallRuntime() *apiv1.CallRuntimeSnapshot {
 	return &apiv1.CallRuntimeSnapshot{
-		Stt: &apiv1.SttRuntime{ApiKey: "stt-key", Model: "stt-model", Language: "ko"},
-		Tts: &apiv1.TtsRuntime{ApiKey: "tts-key", Model: "tts-model", Language: "ko", VoiceId: "voice-1"},
+		Stt: &apiv1.SttRuntime{Credential: &apiv1.SttRuntime_ApiKey{ApiKey: "stt-key"}, Model: "stt-model", Language: "ko"},
+		Tts: &apiv1.TtsRuntime{Credential: &apiv1.TtsRuntime_ApiKey{ApiKey: "tts-key"}, Model: "tts-model", Language: "ko", VoiceId: "voice-1"},
 		BackgroundAudio: &apiv1.BackgroundAudioRuntime{
 			Preset: apiv1.BackgroundAudioPreset_BACKGROUND_AUDIO_PRESET_NONE,
 			Volume: proto.Float64(0.5),
@@ -629,9 +709,48 @@ func basePublishedResponse() *apiv1.BootstrapPublishedResponse {
 		ContractRevision: publicationContractRevision,
 		UserId:           "01987a5f-2aa8-7000-8000-000000000001",
 		ConversationId:   "conversation-1",
-		SessionId:        "session-1",
-		PublishedId:      "publication-1",
+		SessionId:        "01987a5f-2aa8-7000-8000-000000000002",
+		PublishedId:      "01987a5f-2aa8-7000-8000-000000000003",
 		PromptVariables:  &apiv1.SessionPromptVariableBag{},
+		RuntimeLease: &apiv1.RuntimeLease{
+			Authority:        &apiv1.RuntimeLease_Authorization{Authorization: validRuntimeOwner()},
+			ProtocolRevision: "runtime-recovery-v1",
+			LeaseExpiresAt:   "2026-10-06T12:00:30Z",
+			OriginalDeadline: "2026-10-06T12:10:00Z",
+			Projection: &apiv1.RuntimeProjection{
+				ConversationId: "conversation-1",
+				SessionId:      "01987a5f-2aa8-7000-8000-000000000002",
+				Phase:          apiv1.RuntimePhase_RUNTIME_PHASE_ACTIVE,
+				Mode:           apiv1.RuntimeMode_RUNTIME_MODE_AGENT,
+				Epoch:          1,
+				Revision:       1,
+				ExecutionId:    proto.String("01987a5f-2aa8-7000-8000-000000000004"),
+			},
+			ReceiptCapability: &apiv1.RuntimeReceiptAuthorization{
+				ExecutionId: "01987a5f-2aa8-7000-8000-000000000004",
+				Capability:  strings.Repeat("r", 32),
+			},
+			ParticipantToken: "original-participant-token",
+			ServerTime:       "2026-10-06T12:00:00Z",
+			RenewAfterMs:     1000,
+			OriginalBinding: &apiv1.RuntimeOriginalBinding{
+				PublishedId:      "01987a5f-2aa8-7000-8000-000000000003",
+				ContractRevision: publicationContractRevision,
+				RoomName:         "room-1",
+				RoomSid:          "room-sid-1",
+				CallerIdentity:   "caller-1",
+				CallerSid:        "caller-sid-1",
+				StartedAt:        "2026-10-06T12:00:00Z",
+			},
+		},
+	}
+}
+
+func validRuntimeOwner() *apiv1.RuntimeAuthorization {
+	return &apiv1.RuntimeAuthorization{
+		ExecutionId: "01987a5f-2aa8-7000-8000-000000000004",
+		Epoch:       1,
+		Capability:  strings.Repeat("o", 32),
 	}
 }
 
@@ -708,7 +827,7 @@ func TestTransferCommandRequiresOperationBinding(t *testing.T) {
 		{"unknown action", "merge", "node", "attempt", "consultant", false},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
-			err := Validate(&apiv1.CommandSipTransferRequest{Capability: "cap", ConversationId: "conversation", SessionId: "session", RequestId: "request", Action: tc.action, ConsentSource: proto.String("voice"), NodeId: tc.node, AttemptId: tc.attempt, ConsultantIdentity: tc.consultant})
+			err := Validate(&apiv1.CommandSipTransferRequest{Authority: &apiv1.CommandSipTransferRequest_Owner{Owner: validRuntimeOwner()}, ConversationId: "conversation", SessionId: "session", RequestId: "request", Action: tc.action, ConsentSource: proto.String("voice"), NodeId: tc.node, AttemptId: tc.attempt, ConsultantIdentity: tc.consultant})
 			if (err == nil) != tc.valid {
 				t.Fatalf("validation error = %v, valid = %v", err, tc.valid)
 			}
@@ -739,25 +858,35 @@ func TestTransferPolicyValidation(t *testing.T) {
 	}
 }
 
-func TestTransferCapabilityVoiceBinding(t *testing.T) {
+func TestPublishedBootstrapRequiresScopedRuntimeAuthority(t *testing.T) {
 	for _, tc := range []struct {
-		name       string
-		text       bool
-		capability *string
-		valid      bool
+		name   string
+		text   bool
+		mutate func(*apiv1.BootstrapPublishedResponse)
+		valid  bool
 	}{
-		{"legacy text", true, nil, true},
-		{"voice", false, proto.String("cap"), true},
-		{"text capability", true, proto.String("cap"), false},
-		{"empty capability", false, proto.String(""), false},
-		{"oversized capability", false, proto.String(strings.Repeat("x", 8193)), false},
+		{"voice owner", false, nil, true},
+		{"text owner", true, nil, true},
+		{"missing runtime lease", false, func(response *apiv1.BootstrapPublishedResponse) { response.RuntimeLease = nil }, false},
+		{"missing scoped authority", false, func(response *apiv1.BootstrapPublishedResponse) { response.RuntimeLease.Authority = nil }, false},
+		{"empty capability", false, func(response *apiv1.BootstrapPublishedResponse) {
+			response.RuntimeLease.GetAuthorization().Capability = ""
+		}, false},
+		{"oversized capability", false, func(response *apiv1.BootstrapPublishedResponse) {
+			response.RuntimeLease.GetAuthorization().Capability = strings.Repeat("x", 8193)
+		}, false},
+		{"receipt from another origin", false, func(response *apiv1.BootstrapPublishedResponse) {
+			response.RuntimeLease.ReceiptCapability.ExecutionId = "01987a5f-2aa8-7000-8000-000000000005"
+		}, false},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			response := validAgentVoiceResponse()
 			if tc.text {
 				response = validAgentTextResponse()
 			}
-			response.TransferCapability = tc.capability
+			if tc.mutate != nil {
+				tc.mutate(response)
+			}
 			if err := Validate(response); (err == nil) != tc.valid {
 				t.Fatalf("validation error = %v, valid = %v", err, tc.valid)
 			}
@@ -766,7 +895,7 @@ func TestTransferCapabilityVoiceBinding(t *testing.T) {
 }
 
 func TestTransferAcceptRequiresConsentSource(t *testing.T) {
-	request := &apiv1.CommandSipTransferRequest{Capability: "cap", ConversationId: "conversation", SessionId: "session", RequestId: "request", Action: "accept", AttemptId: "attempt", ConsultantIdentity: "consultant"}
+	request := &apiv1.CommandSipTransferRequest{Authority: &apiv1.CommandSipTransferRequest_Owner{Owner: validRuntimeOwner()}, ConversationId: "conversation", SessionId: "session", RequestId: "request", Action: "accept", AttemptId: "attempt", ConsultantIdentity: "consultant"}
 	if err := Validate(request); err == nil {
 		t.Fatal("accept without consent source must fail")
 	}

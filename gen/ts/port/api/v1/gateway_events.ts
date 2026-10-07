@@ -19,6 +19,13 @@ import {
   type UntypedServiceImplementation,
 } from "@grpc/grpc-js";
 import { Timestamp } from "../../../google/protobuf/timestamp";
+import {
+  RuntimeAuthorization,
+  RuntimeHelperAuthorization,
+  RuntimeInputReceipt,
+  RuntimeProjection,
+  RuntimeReceiptAuthorization,
+} from "./runtime_identity";
 
 export const protobufPackage = "port.api.v1";
 
@@ -81,6 +88,11 @@ export interface RecordGatewayEventRequest {
   roomId: string;
   occurredAt?: Date | undefined;
   payload: { [key: string]: string };
+  owner?: RuntimeAuthorization | undefined;
+  helperAuthorization?: RuntimeHelperAuthorization | undefined;
+  receiptAuthorization?: RuntimeReceiptAuthorization | undefined;
+  relayGeneration?: number | undefined;
+  inputId?: string | undefined;
 }
 
 export interface RecordGatewayEventRequest_PayloadEntry {
@@ -89,6 +101,9 @@ export interface RecordGatewayEventRequest_PayloadEntry {
 }
 
 export interface RecordGatewayEventResponse {
+  /** Computed by the API; worker-provided observational payload cannot replace it. */
+  runtimeProjection?: RuntimeProjection | undefined;
+  inputReceipt?: RuntimeInputReceipt | undefined;
 }
 
 function createBaseRecordGatewayEventRequest(): RecordGatewayEventRequest {
@@ -100,6 +115,11 @@ function createBaseRecordGatewayEventRequest(): RecordGatewayEventRequest {
     roomId: "",
     occurredAt: undefined,
     payload: {},
+    owner: undefined,
+    helperAuthorization: undefined,
+    receiptAuthorization: undefined,
+    relayGeneration: undefined,
+    inputId: undefined,
   };
 }
 
@@ -126,6 +146,21 @@ export const RecordGatewayEventRequest: MessageFns<RecordGatewayEventRequest> = 
     globalThis.Object.entries(message.payload).forEach(([key, value]: [string, string]) => {
       RecordGatewayEventRequest_PayloadEntry.encode({ key: key as any, value }, writer.uint32(58).fork()).join();
     });
+    if (message.owner !== undefined) {
+      RuntimeAuthorization.encode(message.owner, writer.uint32(66).fork()).join();
+    }
+    if (message.helperAuthorization !== undefined) {
+      RuntimeHelperAuthorization.encode(message.helperAuthorization, writer.uint32(98).fork()).join();
+    }
+    if (message.receiptAuthorization !== undefined) {
+      RuntimeReceiptAuthorization.encode(message.receiptAuthorization, writer.uint32(74).fork()).join();
+    }
+    if (message.relayGeneration !== undefined) {
+      writer.uint32(80).uint32(message.relayGeneration);
+    }
+    if (message.inputId !== undefined) {
+      writer.uint32(90).string(message.inputId);
+    }
     return writer;
   },
 
@@ -195,6 +230,46 @@ export const RecordGatewayEventRequest: MessageFns<RecordGatewayEventRequest> = 
           }
           continue;
         }
+        case 8: {
+          if (tag !== 66) {
+            break;
+          }
+
+          message.owner = RuntimeAuthorization.decode(reader, reader.uint32());
+          continue;
+        }
+        case 12: {
+          if (tag !== 98) {
+            break;
+          }
+
+          message.helperAuthorization = RuntimeHelperAuthorization.decode(reader, reader.uint32());
+          continue;
+        }
+        case 9: {
+          if (tag !== 74) {
+            break;
+          }
+
+          message.receiptAuthorization = RuntimeReceiptAuthorization.decode(reader, reader.uint32());
+          continue;
+        }
+        case 10: {
+          if (tag !== 80) {
+            break;
+          }
+
+          message.relayGeneration = reader.uint32();
+          continue;
+        }
+        case 11: {
+          if (tag !== 90) {
+            break;
+          }
+
+          message.inputId = reader.string();
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -245,6 +320,27 @@ export const RecordGatewayEventRequest: MessageFns<RecordGatewayEventRequest> = 
           {},
         )
         : {},
+      owner: isSet(object.owner) ? RuntimeAuthorization.fromJSON(object.owner) : undefined,
+      helperAuthorization: isSet(object.helperAuthorization)
+        ? RuntimeHelperAuthorization.fromJSON(object.helperAuthorization)
+        : isSet(object.helper_authorization)
+        ? RuntimeHelperAuthorization.fromJSON(object.helper_authorization)
+        : undefined,
+      receiptAuthorization: isSet(object.receiptAuthorization)
+        ? RuntimeReceiptAuthorization.fromJSON(object.receiptAuthorization)
+        : isSet(object.receipt_authorization)
+        ? RuntimeReceiptAuthorization.fromJSON(object.receipt_authorization)
+        : undefined,
+      relayGeneration: isSet(object.relayGeneration)
+        ? globalThis.Number(object.relayGeneration)
+        : isSet(object.relay_generation)
+        ? globalThis.Number(object.relay_generation)
+        : undefined,
+      inputId: isSet(object.inputId)
+        ? globalThis.String(object.inputId)
+        : isSet(object.input_id)
+        ? globalThis.String(object.input_id)
+        : undefined,
     };
   },
 
@@ -277,6 +373,21 @@ export const RecordGatewayEventRequest: MessageFns<RecordGatewayEventRequest> = 
         });
       }
     }
+    if (message.owner !== undefined) {
+      obj.owner = RuntimeAuthorization.toJSON(message.owner);
+    }
+    if (message.helperAuthorization !== undefined) {
+      obj.helperAuthorization = RuntimeHelperAuthorization.toJSON(message.helperAuthorization);
+    }
+    if (message.receiptAuthorization !== undefined) {
+      obj.receiptAuthorization = RuntimeReceiptAuthorization.toJSON(message.receiptAuthorization);
+    }
+    if (message.relayGeneration !== undefined) {
+      obj.relayGeneration = Math.round(message.relayGeneration);
+    }
+    if (message.inputId !== undefined) {
+      obj.inputId = message.inputId;
+    }
     return obj;
   },
 
@@ -300,6 +411,17 @@ export const RecordGatewayEventRequest: MessageFns<RecordGatewayEventRequest> = 
       },
       {},
     );
+    message.owner = (object.owner !== undefined && object.owner !== null)
+      ? RuntimeAuthorization.fromPartial(object.owner)
+      : undefined;
+    message.helperAuthorization = (object.helperAuthorization !== undefined && object.helperAuthorization !== null)
+      ? RuntimeHelperAuthorization.fromPartial(object.helperAuthorization)
+      : undefined;
+    message.receiptAuthorization = (object.receiptAuthorization !== undefined && object.receiptAuthorization !== null)
+      ? RuntimeReceiptAuthorization.fromPartial(object.receiptAuthorization)
+      : undefined;
+    message.relayGeneration = object.relayGeneration ?? undefined;
+    message.inputId = object.inputId ?? undefined;
     return message;
   },
 };
@@ -381,11 +503,17 @@ export const RecordGatewayEventRequest_PayloadEntry: MessageFns<RecordGatewayEve
 };
 
 function createBaseRecordGatewayEventResponse(): RecordGatewayEventResponse {
-  return {};
+  return { runtimeProjection: undefined, inputReceipt: undefined };
 }
 
 export const RecordGatewayEventResponse: MessageFns<RecordGatewayEventResponse> = {
-  encode(_: RecordGatewayEventResponse, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+  encode(message: RecordGatewayEventResponse, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.runtimeProjection !== undefined) {
+      RuntimeProjection.encode(message.runtimeProjection, writer.uint32(10).fork()).join();
+    }
+    if (message.inputReceipt !== undefined) {
+      RuntimeInputReceipt.encode(message.inputReceipt, writer.uint32(18).fork()).join();
+    }
     return writer;
   },
 
@@ -396,6 +524,22 @@ export const RecordGatewayEventResponse: MessageFns<RecordGatewayEventResponse> 
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.runtimeProjection = RuntimeProjection.decode(reader, reader.uint32());
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.inputReceipt = RuntimeInputReceipt.decode(reader, reader.uint32());
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -405,20 +549,43 @@ export const RecordGatewayEventResponse: MessageFns<RecordGatewayEventResponse> 
     return message;
   },
 
-  fromJSON(_: any): RecordGatewayEventResponse {
-    return {};
+  fromJSON(object: any): RecordGatewayEventResponse {
+    return {
+      runtimeProjection: isSet(object.runtimeProjection)
+        ? RuntimeProjection.fromJSON(object.runtimeProjection)
+        : isSet(object.runtime_projection)
+        ? RuntimeProjection.fromJSON(object.runtime_projection)
+        : undefined,
+      inputReceipt: isSet(object.inputReceipt)
+        ? RuntimeInputReceipt.fromJSON(object.inputReceipt)
+        : isSet(object.input_receipt)
+        ? RuntimeInputReceipt.fromJSON(object.input_receipt)
+        : undefined,
+    };
   },
 
-  toJSON(_: RecordGatewayEventResponse): unknown {
+  toJSON(message: RecordGatewayEventResponse): unknown {
     const obj: any = {};
+    if (message.runtimeProjection !== undefined) {
+      obj.runtimeProjection = RuntimeProjection.toJSON(message.runtimeProjection);
+    }
+    if (message.inputReceipt !== undefined) {
+      obj.inputReceipt = RuntimeInputReceipt.toJSON(message.inputReceipt);
+    }
     return obj;
   },
 
   create(base?: DeepPartial<RecordGatewayEventResponse>): RecordGatewayEventResponse {
     return RecordGatewayEventResponse.fromPartial(base ?? {});
   },
-  fromPartial(_: DeepPartial<RecordGatewayEventResponse>): RecordGatewayEventResponse {
+  fromPartial(object: DeepPartial<RecordGatewayEventResponse>): RecordGatewayEventResponse {
     const message = createBaseRecordGatewayEventResponse();
+    message.runtimeProjection = (object.runtimeProjection !== undefined && object.runtimeProjection !== null)
+      ? RuntimeProjection.fromPartial(object.runtimeProjection)
+      : undefined;
+    message.inputReceipt = (object.inputReceipt !== undefined && object.inputReceipt !== null)
+      ? RuntimeInputReceipt.fromPartial(object.inputReceipt)
+      : undefined;
     return message;
   },
 };

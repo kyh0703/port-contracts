@@ -23,9 +23,10 @@ _sym_db = _symbol_database.Default()
 
 
 from buf.validate import validate_pb2 as buf_dot_validate_dot_validate__pb2
+from port.api.v1 import runtime_identity_pb2 as port_dot_api_dot_v1_dot_runtime__identity__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x1fport/api/v1/voice_runtime.proto\x12\x0bport.api.v1\x1a\x1b\x62uf/validate/validate.proto\"\x93\x01\n\x13ResolveLeaseRequest\x12\"\n\x08lease_id\x18\x01 \x01(\tB\x07\xbaH\x04r\x02\x10\x01R\x07leaseId\x12\x30\n\x0f\x63onversation_id\x18\x02 \x01(\tB\x07\xbaH\x04r\x02\x10\x01R\x0e\x63onversationId\x12&\n\nsession_id\x18\x03 \x01(\tB\x07\xbaH\x04r\x02\x10\x01R\tsessionId\"\xaf\x01\n\x14ResolveLeaseResponse\x12\x31\n\x03stt\x18\x01 \x01(\x0b\x32\x17.port.api.v1.SttRuntimeB\x06\xbaH\x03\xc8\x01\x01R\x03stt\x12\x31\n\x03llm\x18\x02 \x01(\x0b\x32\x17.port.api.v1.LlmRuntimeB\x06\xbaH\x03\xc8\x01\x01R\x03llm\x12\x31\n\x03tts\x18\x03 \x01(\x0b\x32\x17.port.api.v1.TtsRuntimeB\x06\xbaH\x03\xc8\x01\x01R\x03tts\"\xa2\x02\n\nSttRuntime\x12 \n\x07\x61pi_key\x18\x01 \x01(\tB\x07\xbaH\x04r\x02\x10\x01R\x06\x61piKey\x12\x1d\n\x05model\x18\x02 \x01(\tB\x07\xbaH\x04r\x02\x10\x01R\x05model\x12#\n\x08language\x18\x03 \x01(\tB\x07\xbaH\x04r\x02\x10\x01R\x08language\x12(\n\x08keyterms\x18\x04 \x03(\tB\x0c\xbaH\t\x92\x01\x06\"\x04r\x02\x10\x01R\x08keyterms\x12=\n\x08provider\x18\x05 \x01(\tB\x1c\xbaH\x19r\x17R\x08\x64\x65\x65pgramR\x06sonioxR\x03xaiH\x00R\x08provider\x88\x01\x01\x12\'\n\x0cmultilingual\x18\x06 \x01(\x08H\x01R\x0cmultilingual\x88\x01\x01\x42\x0b\n\t_providerB\x0f\n\r_multilingual\"\x96\x01\n\nLlmRuntime\x12 \n\x07\x61pi_key\x18\x01 \x01(\tB\x07\xbaH\x04r\x02\x10\x01R\x06\x61piKey\x12\x1d\n\x05model\x18\x02 \x01(\tB\x07\xbaH\x04r\x02\x10\x01R\x05model\x12:\n\x08provider\x18\x03 \x01(\tB\x19\xbaH\x16r\x14R\x06openaiR\nopenrouterH\x00R\x08provider\x88\x01\x01\x42\x0b\n\t_provider\"\xee\x01\n\nTtsRuntime\x12 \n\x07\x61pi_key\x18\x01 \x01(\tB\x07\xbaH\x04r\x02\x10\x01R\x06\x61piKey\x12\x1d\n\x05model\x18\x02 \x01(\tB\x07\xbaH\x04r\x02\x10\x01R\x05model\x12#\n\x08language\x18\x03 \x01(\tB\x07\xbaH\x04r\x02\x10\x01R\x08language\x12\"\n\x08voice_id\x18\x04 \x01(\tB\x07\xbaH\x04r\x02\x10\x01R\x07voiceId\x12I\n\x08provider\x18\x05 \x01(\tB(\xbaH%r#R\x08\x63\x61rtesiaR\nelevenlabsR\x06sonioxR\x03xaiH\x00R\x08provider\x88\x01\x01\x42\x0b\n\t_provider2j\n\x13VoiceRuntimeService\x12S\n\x0cResolveLease\x12 .port.api.v1.ResolveLeaseRequest\x1a!.port.api.v1.ResolveLeaseResponseB?Z=github.com/kyh0703/port-contracts/v4/gen/go/port/api/v1;apiv1b\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x1fport/api/v1/voice_runtime.proto\x12\x0bport.api.v1\x1a\x1b\x62uf/validate/validate.proto\x1a\"port/api/v1/runtime_identity.proto\"\xc0\x02\n\x13ResolveLeaseRequest\x12\"\n\x08lease_id\x18\x01 \x01(\tB\x07\xbaH\x04r\x02\x10\x01R\x07leaseId\x12\x30\n\x0f\x63onversation_id\x18\x02 \x01(\tB\x07\xbaH\x04r\x02\x10\x01R\x0e\x63onversationId\x12&\n\nsession_id\x18\x03 \x01(\tB\x07\xbaH\x04r\x02\x10\x01R\tsessionId\x12\x39\n\x05owner\x18\x04 \x01(\x0b\x32!.port.api.v1.RuntimeAuthorizationH\x00R\x05owner\x12\\\n\x14helper_authorization\x18\x05 \x01(\x0b\x32\'.port.api.v1.RuntimeHelperAuthorizationH\x00R\x13helperAuthorizationB\x12\n\tauthority\x12\x05\xbaH\x02\x08\x01\"\xac\x04\n\x14ResolveLeaseResponse\x12)\n\x03stt\x18\x01 \x01(\x0b\x32\x17.port.api.v1.SttRuntimeR\x03stt\x12)\n\x03llm\x18\x02 \x01(\x0b\x32\x17.port.api.v1.LlmRuntimeR\x03llm\x12)\n\x03tts\x18\x03 \x01(\x0b\x32\x17.port.api.v1.TtsRuntimeR\x03tts:\x92\x03\xbaH\x8e\x03\x1a\x94\x01\n\x19resolved_runtime.nonempty\x12\x46\x61 resolved grant must contain at least one authorized original runtime\x1a/has(this.stt) || has(this.llm) || has(this.tts)\x1a\xf4\x01\n\x1cresolved_runtime.credentials\x12Nresolved runtimes must contain actual credentials rather than lease references\x1a\x83\x01(!has(this.stt) || has(this.stt.api_key)) && (!has(this.llm) || has(this.llm.api_key)) && (!has(this.tts) || has(this.tts.api_key))\"\xdf\x02\n\nSttRuntime\x12\"\n\x07\x61pi_key\x18\x01 \x01(\tB\x07\xbaH\x04r\x02\x10\x01H\x00R\x06\x61piKey\x12$\n\x08lease_id\x18\x07 \x01(\tB\x07\xbaH\x04r\x02\x10\x01H\x00R\x07leaseId\x12\x1d\n\x05model\x18\x02 \x01(\tB\x07\xbaH\x04r\x02\x10\x01R\x05model\x12#\n\x08language\x18\x03 \x01(\tB\x07\xbaH\x04r\x02\x10\x01R\x08language\x12(\n\x08keyterms\x18\x04 \x03(\tB\x0c\xbaH\t\x92\x01\x06\"\x04r\x02\x10\x01R\x08keyterms\x12=\n\x08provider\x18\x05 \x01(\tB\x1c\xbaH\x19r\x17R\x08\x64\x65\x65pgramR\x06sonioxR\x03xaiH\x01R\x08provider\x88\x01\x01\x12\'\n\x0cmultilingual\x18\x06 \x01(\x08H\x02R\x0cmultilingual\x88\x01\x01\x42\x13\n\ncredential\x12\x05\xbaH\x02\x08\x01\x42\x0b\n\t_providerB\x0f\n\r_multilingual\"\xd3\x01\n\nLlmRuntime\x12\"\n\x07\x61pi_key\x18\x01 \x01(\tB\x07\xbaH\x04r\x02\x10\x01H\x00R\x06\x61piKey\x12$\n\x08lease_id\x18\x04 \x01(\tB\x07\xbaH\x04r\x02\x10\x01H\x00R\x07leaseId\x12\x1d\n\x05model\x18\x02 \x01(\tB\x07\xbaH\x04r\x02\x10\x01R\x05model\x12:\n\x08provider\x18\x03 \x01(\tB\x19\xbaH\x16r\x14R\x06openaiR\nopenrouterH\x01R\x08provider\x88\x01\x01\x42\x13\n\ncredential\x12\x05\xbaH\x02\x08\x01\x42\x0b\n\t_provider\"\xab\x02\n\nTtsRuntime\x12\"\n\x07\x61pi_key\x18\x01 \x01(\tB\x07\xbaH\x04r\x02\x10\x01H\x00R\x06\x61piKey\x12$\n\x08lease_id\x18\x06 \x01(\tB\x07\xbaH\x04r\x02\x10\x01H\x00R\x07leaseId\x12\x1d\n\x05model\x18\x02 \x01(\tB\x07\xbaH\x04r\x02\x10\x01R\x05model\x12#\n\x08language\x18\x03 \x01(\tB\x07\xbaH\x04r\x02\x10\x01R\x08language\x12\"\n\x08voice_id\x18\x04 \x01(\tB\x07\xbaH\x04r\x02\x10\x01R\x07voiceId\x12I\n\x08provider\x18\x05 \x01(\tB(\xbaH%r#R\x08\x63\x61rtesiaR\nelevenlabsR\x06sonioxR\x03xaiH\x01R\x08provider\x88\x01\x01\x42\x13\n\ncredential\x12\x05\xbaH\x02\x08\x01\x42\x0b\n\t_provider2j\n\x13VoiceRuntimeService\x12S\n\x0cResolveLease\x12 .port.api.v1.ResolveLeaseRequest\x1a!.port.api.v1.ResolveLeaseResponseB?Z=github.com/kyh0703/port-contracts/v4/gen/go/port/api/v1;apiv1b\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -33,20 +34,22 @@ _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'port.api.v1.voice_runtime_p
 if not _descriptor._USE_C_DESCRIPTORS:
   _globals['DESCRIPTOR']._loaded_options = None
   _globals['DESCRIPTOR']._serialized_options = b'Z=github.com/kyh0703/port-contracts/v4/gen/go/port/api/v1;apiv1'
+  _globals['_RESOLVELEASEREQUEST'].oneofs_by_name['authority']._loaded_options = None
+  _globals['_RESOLVELEASEREQUEST'].oneofs_by_name['authority']._serialized_options = b'\272H\002\010\001'
   _globals['_RESOLVELEASEREQUEST'].fields_by_name['lease_id']._loaded_options = None
   _globals['_RESOLVELEASEREQUEST'].fields_by_name['lease_id']._serialized_options = b'\272H\004r\002\020\001'
   _globals['_RESOLVELEASEREQUEST'].fields_by_name['conversation_id']._loaded_options = None
   _globals['_RESOLVELEASEREQUEST'].fields_by_name['conversation_id']._serialized_options = b'\272H\004r\002\020\001'
   _globals['_RESOLVELEASEREQUEST'].fields_by_name['session_id']._loaded_options = None
   _globals['_RESOLVELEASEREQUEST'].fields_by_name['session_id']._serialized_options = b'\272H\004r\002\020\001'
-  _globals['_RESOLVELEASERESPONSE'].fields_by_name['stt']._loaded_options = None
-  _globals['_RESOLVELEASERESPONSE'].fields_by_name['stt']._serialized_options = b'\272H\003\310\001\001'
-  _globals['_RESOLVELEASERESPONSE'].fields_by_name['llm']._loaded_options = None
-  _globals['_RESOLVELEASERESPONSE'].fields_by_name['llm']._serialized_options = b'\272H\003\310\001\001'
-  _globals['_RESOLVELEASERESPONSE'].fields_by_name['tts']._loaded_options = None
-  _globals['_RESOLVELEASERESPONSE'].fields_by_name['tts']._serialized_options = b'\272H\003\310\001\001'
+  _globals['_RESOLVELEASERESPONSE']._loaded_options = None
+  _globals['_RESOLVELEASERESPONSE']._serialized_options = b'\272H\216\003\032\224\001\n\031resolved_runtime.nonempty\022Fa resolved grant must contain at least one authorized original runtime\032/has(this.stt) || has(this.llm) || has(this.tts)\032\364\001\n\034resolved_runtime.credentials\022Nresolved runtimes must contain actual credentials rather than lease references\032\203\001(!has(this.stt) || has(this.stt.api_key)) && (!has(this.llm) || has(this.llm.api_key)) && (!has(this.tts) || has(this.tts.api_key))'
+  _globals['_STTRUNTIME'].oneofs_by_name['credential']._loaded_options = None
+  _globals['_STTRUNTIME'].oneofs_by_name['credential']._serialized_options = b'\272H\002\010\001'
   _globals['_STTRUNTIME'].fields_by_name['api_key']._loaded_options = None
   _globals['_STTRUNTIME'].fields_by_name['api_key']._serialized_options = b'\272H\004r\002\020\001'
+  _globals['_STTRUNTIME'].fields_by_name['lease_id']._loaded_options = None
+  _globals['_STTRUNTIME'].fields_by_name['lease_id']._serialized_options = b'\272H\004r\002\020\001'
   _globals['_STTRUNTIME'].fields_by_name['model']._loaded_options = None
   _globals['_STTRUNTIME'].fields_by_name['model']._serialized_options = b'\272H\004r\002\020\001'
   _globals['_STTRUNTIME'].fields_by_name['language']._loaded_options = None
@@ -55,14 +58,22 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_STTRUNTIME'].fields_by_name['keyterms']._serialized_options = b'\272H\t\222\001\006\"\004r\002\020\001'
   _globals['_STTRUNTIME'].fields_by_name['provider']._loaded_options = None
   _globals['_STTRUNTIME'].fields_by_name['provider']._serialized_options = b'\272H\031r\027R\010deepgramR\006sonioxR\003xai'
+  _globals['_LLMRUNTIME'].oneofs_by_name['credential']._loaded_options = None
+  _globals['_LLMRUNTIME'].oneofs_by_name['credential']._serialized_options = b'\272H\002\010\001'
   _globals['_LLMRUNTIME'].fields_by_name['api_key']._loaded_options = None
   _globals['_LLMRUNTIME'].fields_by_name['api_key']._serialized_options = b'\272H\004r\002\020\001'
+  _globals['_LLMRUNTIME'].fields_by_name['lease_id']._loaded_options = None
+  _globals['_LLMRUNTIME'].fields_by_name['lease_id']._serialized_options = b'\272H\004r\002\020\001'
   _globals['_LLMRUNTIME'].fields_by_name['model']._loaded_options = None
   _globals['_LLMRUNTIME'].fields_by_name['model']._serialized_options = b'\272H\004r\002\020\001'
   _globals['_LLMRUNTIME'].fields_by_name['provider']._loaded_options = None
   _globals['_LLMRUNTIME'].fields_by_name['provider']._serialized_options = b'\272H\026r\024R\006openaiR\nopenrouter'
+  _globals['_TTSRUNTIME'].oneofs_by_name['credential']._loaded_options = None
+  _globals['_TTSRUNTIME'].oneofs_by_name['credential']._serialized_options = b'\272H\002\010\001'
   _globals['_TTSRUNTIME'].fields_by_name['api_key']._loaded_options = None
   _globals['_TTSRUNTIME'].fields_by_name['api_key']._serialized_options = b'\272H\004r\002\020\001'
+  _globals['_TTSRUNTIME'].fields_by_name['lease_id']._loaded_options = None
+  _globals['_TTSRUNTIME'].fields_by_name['lease_id']._serialized_options = b'\272H\004r\002\020\001'
   _globals['_TTSRUNTIME'].fields_by_name['model']._loaded_options = None
   _globals['_TTSRUNTIME'].fields_by_name['model']._serialized_options = b'\272H\004r\002\020\001'
   _globals['_TTSRUNTIME'].fields_by_name['language']._loaded_options = None
@@ -71,16 +82,16 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_TTSRUNTIME'].fields_by_name['voice_id']._serialized_options = b'\272H\004r\002\020\001'
   _globals['_TTSRUNTIME'].fields_by_name['provider']._loaded_options = None
   _globals['_TTSRUNTIME'].fields_by_name['provider']._serialized_options = b'\272H%r#R\010cartesiaR\nelevenlabsR\006sonioxR\003xai'
-  _globals['_RESOLVELEASEREQUEST']._serialized_start=78
-  _globals['_RESOLVELEASEREQUEST']._serialized_end=225
-  _globals['_RESOLVELEASERESPONSE']._serialized_start=228
-  _globals['_RESOLVELEASERESPONSE']._serialized_end=403
-  _globals['_STTRUNTIME']._serialized_start=406
-  _globals['_STTRUNTIME']._serialized_end=696
-  _globals['_LLMRUNTIME']._serialized_start=699
-  _globals['_LLMRUNTIME']._serialized_end=849
-  _globals['_TTSRUNTIME']._serialized_start=852
-  _globals['_TTSRUNTIME']._serialized_end=1090
-  _globals['_VOICERUNTIMESERVICE']._serialized_start=1092
-  _globals['_VOICERUNTIMESERVICE']._serialized_end=1198
+  _globals['_RESOLVELEASEREQUEST']._serialized_start=114
+  _globals['_RESOLVELEASEREQUEST']._serialized_end=434
+  _globals['_RESOLVELEASERESPONSE']._serialized_start=437
+  _globals['_RESOLVELEASERESPONSE']._serialized_end=993
+  _globals['_STTRUNTIME']._serialized_start=996
+  _globals['_STTRUNTIME']._serialized_end=1347
+  _globals['_LLMRUNTIME']._serialized_start=1350
+  _globals['_LLMRUNTIME']._serialized_end=1561
+  _globals['_TTSRUNTIME']._serialized_start=1564
+  _globals['_TTSRUNTIME']._serialized_end=1863
+  _globals['_VOICERUNTIMESERVICE']._serialized_start=1865
+  _globals['_VOICERUNTIMESERVICE']._serialized_end=1971
 # @@protoc_insertion_point(module_scope)

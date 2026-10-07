@@ -18,6 +18,7 @@ import {
   type ServiceError,
   type UntypedServiceImplementation,
 } from "@grpc/grpc-js";
+import { RuntimeAuthorization, RuntimeHelperAuthorization } from "./runtime_identity";
 
 export const protobufPackage = "port.api.v1";
 
@@ -25,16 +26,27 @@ export interface ResolveLeaseRequest {
   leaseId: string;
   conversationId: string;
   sessionId: string;
+  owner?: RuntimeAuthorization | undefined;
+  helperAuthorization?: RuntimeHelperAuthorization | undefined;
 }
 
 export interface ResolveLeaseResponse {
+  /**
+   * The immutable registered lease and current authority determine the exact
+   * purpose-specific leaves. Text and neutral relay grants need not contain
+   * every speech/model runtime, and missing leaves never use fake credentials.
+   */
   stt?: SttRuntime | undefined;
   llm?: LlmRuntime | undefined;
   tts?: TtsRuntime | undefined;
 }
 
 export interface SttRuntime {
-  apiKey: string;
+  apiKey?:
+    | string
+    | undefined;
+  /** API-generated original pin reference; resolved only under current authority. */
+  leaseId?: string | undefined;
   model: string;
   language: string;
   keyterms: string[];
@@ -43,14 +55,22 @@ export interface SttRuntime {
 }
 
 export interface LlmRuntime {
-  apiKey: string;
+  apiKey?:
+    | string
+    | undefined;
+  /** API-generated original node pin reference, never a current-model fallback. */
+  leaseId?: string | undefined;
   model: string;
   /** API-pinned connection identity. Absence preserves legacy OpenRouter routing. */
   provider?: string | undefined;
 }
 
 export interface TtsRuntime {
-  apiKey: string;
+  apiKey?:
+    | string
+    | undefined;
+  /** API-generated original pin reference; resolved only under current authority. */
+  leaseId?: string | undefined;
   model: string;
   language: string;
   voiceId: string;
@@ -58,7 +78,7 @@ export interface TtsRuntime {
 }
 
 function createBaseResolveLeaseRequest(): ResolveLeaseRequest {
-  return { leaseId: "", conversationId: "", sessionId: "" };
+  return { leaseId: "", conversationId: "", sessionId: "", owner: undefined, helperAuthorization: undefined };
 }
 
 export const ResolveLeaseRequest: MessageFns<ResolveLeaseRequest> = {
@@ -71,6 +91,12 @@ export const ResolveLeaseRequest: MessageFns<ResolveLeaseRequest> = {
     }
     if (message.sessionId !== "") {
       writer.uint32(26).string(message.sessionId);
+    }
+    if (message.owner !== undefined) {
+      RuntimeAuthorization.encode(message.owner, writer.uint32(34).fork()).join();
+    }
+    if (message.helperAuthorization !== undefined) {
+      RuntimeHelperAuthorization.encode(message.helperAuthorization, writer.uint32(42).fork()).join();
     }
     return writer;
   },
@@ -106,6 +132,22 @@ export const ResolveLeaseRequest: MessageFns<ResolveLeaseRequest> = {
           message.sessionId = reader.string();
           continue;
         }
+        case 4: {
+          if (tag !== 34) {
+            break;
+          }
+
+          message.owner = RuntimeAuthorization.decode(reader, reader.uint32());
+          continue;
+        }
+        case 5: {
+          if (tag !== 42) {
+            break;
+          }
+
+          message.helperAuthorization = RuntimeHelperAuthorization.decode(reader, reader.uint32());
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -132,6 +174,12 @@ export const ResolveLeaseRequest: MessageFns<ResolveLeaseRequest> = {
         : isSet(object.session_id)
         ? globalThis.String(object.session_id)
         : "",
+      owner: isSet(object.owner) ? RuntimeAuthorization.fromJSON(object.owner) : undefined,
+      helperAuthorization: isSet(object.helperAuthorization)
+        ? RuntimeHelperAuthorization.fromJSON(object.helperAuthorization)
+        : isSet(object.helper_authorization)
+        ? RuntimeHelperAuthorization.fromJSON(object.helper_authorization)
+        : undefined,
     };
   },
 
@@ -146,6 +194,12 @@ export const ResolveLeaseRequest: MessageFns<ResolveLeaseRequest> = {
     if (message.sessionId !== "") {
       obj.sessionId = message.sessionId;
     }
+    if (message.owner !== undefined) {
+      obj.owner = RuntimeAuthorization.toJSON(message.owner);
+    }
+    if (message.helperAuthorization !== undefined) {
+      obj.helperAuthorization = RuntimeHelperAuthorization.toJSON(message.helperAuthorization);
+    }
     return obj;
   },
 
@@ -157,6 +211,12 @@ export const ResolveLeaseRequest: MessageFns<ResolveLeaseRequest> = {
     message.leaseId = object.leaseId ?? "";
     message.conversationId = object.conversationId ?? "";
     message.sessionId = object.sessionId ?? "";
+    message.owner = (object.owner !== undefined && object.owner !== null)
+      ? RuntimeAuthorization.fromPartial(object.owner)
+      : undefined;
+    message.helperAuthorization = (object.helperAuthorization !== undefined && object.helperAuthorization !== null)
+      ? RuntimeHelperAuthorization.fromPartial(object.helperAuthorization)
+      : undefined;
     return message;
   },
 };
@@ -254,13 +314,24 @@ export const ResolveLeaseResponse: MessageFns<ResolveLeaseResponse> = {
 };
 
 function createBaseSttRuntime(): SttRuntime {
-  return { apiKey: "", model: "", language: "", keyterms: [], provider: undefined, multilingual: undefined };
+  return {
+    apiKey: undefined,
+    leaseId: undefined,
+    model: "",
+    language: "",
+    keyterms: [],
+    provider: undefined,
+    multilingual: undefined,
+  };
 }
 
 export const SttRuntime: MessageFns<SttRuntime> = {
   encode(message: SttRuntime, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
-    if (message.apiKey !== "") {
+    if (message.apiKey !== undefined) {
       writer.uint32(10).string(message.apiKey);
+    }
+    if (message.leaseId !== undefined) {
+      writer.uint32(58).string(message.leaseId);
     }
     if (message.model !== "") {
       writer.uint32(18).string(message.model);
@@ -293,6 +364,14 @@ export const SttRuntime: MessageFns<SttRuntime> = {
           }
 
           message.apiKey = reader.string();
+          continue;
+        }
+        case 7: {
+          if (tag !== 58) {
+            break;
+          }
+
+          message.leaseId = reader.string();
           continue;
         }
         case 2: {
@@ -350,7 +429,12 @@ export const SttRuntime: MessageFns<SttRuntime> = {
         ? globalThis.String(object.apiKey)
         : isSet(object.api_key)
         ? globalThis.String(object.api_key)
-        : "",
+        : undefined,
+      leaseId: isSet(object.leaseId)
+        ? globalThis.String(object.leaseId)
+        : isSet(object.lease_id)
+        ? globalThis.String(object.lease_id)
+        : undefined,
       model: isSet(object.model) ? globalThis.String(object.model) : "",
       language: isSet(object.language) ? globalThis.String(object.language) : "",
       keyterms: globalThis.Array.isArray(object?.keyterms) ? object.keyterms.map((e: any) => globalThis.String(e)) : [],
@@ -361,8 +445,11 @@ export const SttRuntime: MessageFns<SttRuntime> = {
 
   toJSON(message: SttRuntime): unknown {
     const obj: any = {};
-    if (message.apiKey !== "") {
+    if (message.apiKey !== undefined) {
       obj.apiKey = message.apiKey;
+    }
+    if (message.leaseId !== undefined) {
+      obj.leaseId = message.leaseId;
     }
     if (message.model !== "") {
       obj.model = message.model;
@@ -387,7 +474,8 @@ export const SttRuntime: MessageFns<SttRuntime> = {
   },
   fromPartial(object: DeepPartial<SttRuntime>): SttRuntime {
     const message = createBaseSttRuntime();
-    message.apiKey = object.apiKey ?? "";
+    message.apiKey = object.apiKey ?? undefined;
+    message.leaseId = object.leaseId ?? undefined;
     message.model = object.model ?? "";
     message.language = object.language ?? "";
     message.keyterms = object.keyterms?.map((e) => e) || [];
@@ -398,13 +486,16 @@ export const SttRuntime: MessageFns<SttRuntime> = {
 };
 
 function createBaseLlmRuntime(): LlmRuntime {
-  return { apiKey: "", model: "", provider: undefined };
+  return { apiKey: undefined, leaseId: undefined, model: "", provider: undefined };
 }
 
 export const LlmRuntime: MessageFns<LlmRuntime> = {
   encode(message: LlmRuntime, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
-    if (message.apiKey !== "") {
+    if (message.apiKey !== undefined) {
       writer.uint32(10).string(message.apiKey);
+    }
+    if (message.leaseId !== undefined) {
+      writer.uint32(34).string(message.leaseId);
     }
     if (message.model !== "") {
       writer.uint32(18).string(message.model);
@@ -428,6 +519,14 @@ export const LlmRuntime: MessageFns<LlmRuntime> = {
           }
 
           message.apiKey = reader.string();
+          continue;
+        }
+        case 4: {
+          if (tag !== 34) {
+            break;
+          }
+
+          message.leaseId = reader.string();
           continue;
         }
         case 2: {
@@ -461,7 +560,12 @@ export const LlmRuntime: MessageFns<LlmRuntime> = {
         ? globalThis.String(object.apiKey)
         : isSet(object.api_key)
         ? globalThis.String(object.api_key)
-        : "",
+        : undefined,
+      leaseId: isSet(object.leaseId)
+        ? globalThis.String(object.leaseId)
+        : isSet(object.lease_id)
+        ? globalThis.String(object.lease_id)
+        : undefined,
       model: isSet(object.model) ? globalThis.String(object.model) : "",
       provider: isSet(object.provider) ? globalThis.String(object.provider) : undefined,
     };
@@ -469,8 +573,11 @@ export const LlmRuntime: MessageFns<LlmRuntime> = {
 
   toJSON(message: LlmRuntime): unknown {
     const obj: any = {};
-    if (message.apiKey !== "") {
+    if (message.apiKey !== undefined) {
       obj.apiKey = message.apiKey;
+    }
+    if (message.leaseId !== undefined) {
+      obj.leaseId = message.leaseId;
     }
     if (message.model !== "") {
       obj.model = message.model;
@@ -486,7 +593,8 @@ export const LlmRuntime: MessageFns<LlmRuntime> = {
   },
   fromPartial(object: DeepPartial<LlmRuntime>): LlmRuntime {
     const message = createBaseLlmRuntime();
-    message.apiKey = object.apiKey ?? "";
+    message.apiKey = object.apiKey ?? undefined;
+    message.leaseId = object.leaseId ?? undefined;
     message.model = object.model ?? "";
     message.provider = object.provider ?? undefined;
     return message;
@@ -494,13 +602,16 @@ export const LlmRuntime: MessageFns<LlmRuntime> = {
 };
 
 function createBaseTtsRuntime(): TtsRuntime {
-  return { apiKey: "", model: "", language: "", voiceId: "", provider: undefined };
+  return { apiKey: undefined, leaseId: undefined, model: "", language: "", voiceId: "", provider: undefined };
 }
 
 export const TtsRuntime: MessageFns<TtsRuntime> = {
   encode(message: TtsRuntime, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
-    if (message.apiKey !== "") {
+    if (message.apiKey !== undefined) {
       writer.uint32(10).string(message.apiKey);
+    }
+    if (message.leaseId !== undefined) {
+      writer.uint32(50).string(message.leaseId);
     }
     if (message.model !== "") {
       writer.uint32(18).string(message.model);
@@ -530,6 +641,14 @@ export const TtsRuntime: MessageFns<TtsRuntime> = {
           }
 
           message.apiKey = reader.string();
+          continue;
+        }
+        case 6: {
+          if (tag !== 50) {
+            break;
+          }
+
+          message.leaseId = reader.string();
           continue;
         }
         case 2: {
@@ -579,7 +698,12 @@ export const TtsRuntime: MessageFns<TtsRuntime> = {
         ? globalThis.String(object.apiKey)
         : isSet(object.api_key)
         ? globalThis.String(object.api_key)
-        : "",
+        : undefined,
+      leaseId: isSet(object.leaseId)
+        ? globalThis.String(object.leaseId)
+        : isSet(object.lease_id)
+        ? globalThis.String(object.lease_id)
+        : undefined,
       model: isSet(object.model) ? globalThis.String(object.model) : "",
       language: isSet(object.language) ? globalThis.String(object.language) : "",
       voiceId: isSet(object.voiceId)
@@ -593,8 +717,11 @@ export const TtsRuntime: MessageFns<TtsRuntime> = {
 
   toJSON(message: TtsRuntime): unknown {
     const obj: any = {};
-    if (message.apiKey !== "") {
+    if (message.apiKey !== undefined) {
       obj.apiKey = message.apiKey;
+    }
+    if (message.leaseId !== undefined) {
+      obj.leaseId = message.leaseId;
     }
     if (message.model !== "") {
       obj.model = message.model;
@@ -616,7 +743,8 @@ export const TtsRuntime: MessageFns<TtsRuntime> = {
   },
   fromPartial(object: DeepPartial<TtsRuntime>): TtsRuntime {
     const message = createBaseTtsRuntime();
-    message.apiKey = object.apiKey ?? "";
+    message.apiKey = object.apiKey ?? undefined;
+    message.leaseId = object.leaseId ?? undefined;
     message.model = object.model ?? "";
     message.language = object.language ?? "";
     message.voiceId = object.voiceId ?? "";

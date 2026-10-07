@@ -1,0 +1,237 @@
+syntax = "proto3";
+
+package port.api.v1;
+
+import "buf/validate/validate.proto";
+
+option go_package = "github.com/kyh0703/port-contracts/v4/gen/go/port/api/v1;apiv1";
+
+// Current control authority. Never use this envelope to authorize late facts.
+message RuntimeAuthorization {
+  string execution_id = 1 [(buf.validate.field).string.uuid = true];
+  uint32 epoch = 2 [(buf.validate.field).uint32 = {gte: 1 lte: 2147483647}];
+  string capability = 3 [(buf.validate.field).string = {min_len: 32 max_len: 8192}];
+}
+
+// Private launcher-to-child authority for one server-observed assignment.
+message RuntimeAttemptAuthorization {
+  string attempt_id = 1 [(buf.validate.field).string.uuid = true];
+  string capability = 2 [(buf.validate.field).string = {min_len: 32 max_len: 8192}];
+}
+
+// Independent authority for the original private transfer consultation. A main
+// owner takeover does not revoke it; original phase, bindings and deadline do.
+message RuntimeHelperAuthorization {
+  string helper_execution_id = 1 [(buf.validate.field).string.uuid = true];
+  uint32 epoch = 2 [(buf.validate.field).uint32 = {gte: 1 lte: 2147483647}];
+  string transfer_attempt_id = 3 [(buf.validate.field).string.uuid = true];
+  string capability = 4 [(buf.validate.field).string = {min_len: 32 max_len: 8192}];
+}
+
+// Bounded, original-execution fact authority; it cannot control the current run.
+message RuntimeReceiptAuthorization {
+  string execution_id = 1 [(buf.validate.field).string.uuid = true];
+  string capability = 2 [(buf.validate.field).string = {min_len: 32 max_len: 8192}];
+}
+
+message RuntimeAssignment {
+  string launcher_id = 1 [(buf.validate.field).string.uuid = true];
+  string launcher_incarnation = 2 [(buf.validate.field).string.uuid = true];
+  string worker_id = 3 [(buf.validate.field).string = {min_len: 1 max_len: 256}];
+  string job_id = 4 [(buf.validate.field).string = {min_len: 1 max_len: 256}];
+  string dispatch_id = 5 [(buf.validate.field).string = {min_len: 1 max_len: 256}];
+  string room_name = 6 [(buf.validate.field).string = {min_len: 1 max_len: 256}];
+  string room_sid = 7 [(buf.validate.field).string = {min_len: 1 max_len: 256}];
+  string participant_identity = 8 [(buf.validate.field).string = {min_len: 1 max_len: 256}];
+  string compatibility_fingerprint = 9 [(buf.validate.field).string = {min_len: 1 max_len: 256}];
+  optional string session_id = 10 [(buf.validate.field).string.uuid = true];
+  optional string conversation_id = 11 [(buf.validate.field).string = {min_len: 1 max_len: 128}];
+}
+
+enum RuntimePhase {
+  RUNTIME_PHASE_UNSPECIFIED = 0;
+  RUNTIME_PHASE_INITIALIZING = 1;
+  RUNTIME_PHASE_ACTIVE = 2;
+  RUNTIME_PHASE_RECOVERING = 3;
+  RUNTIME_PHASE_ENDING = 4;
+  RUNTIME_PHASE_ENDED = 5;
+}
+
+enum RuntimeMode {
+  RUNTIME_MODE_UNSPECIFIED = 0;
+  RUNTIME_MODE_AGENT = 1;
+  RUNTIME_MODE_HUMAN = 2;
+  RUNTIME_MODE_TRANSFERRING = 3;
+  RUNTIME_MODE_TEXT_RELAY = 4;
+}
+
+// Safe public state. Checkpoints, arguments, tool results and capabilities never
+// belong here. The API, not worker progress events, owns this monotonic revision.
+message RuntimeProjection {
+  string conversation_id = 1 [(buf.validate.field).string = {min_len: 1 max_len: 128}];
+  string session_id = 2 [(buf.validate.field).string.uuid = true];
+  RuntimePhase phase = 3 [(buf.validate.field).enum = {defined_only: true not_in: 0}];
+  RuntimeMode mode = 4 [(buf.validate.field).enum = {defined_only: true not_in: 0}];
+  uint32 epoch = 5 [(buf.validate.field).uint32.lte = 2147483647];
+  uint32 revision = 6;
+  optional string execution_id = 7 [(buf.validate.field).string.uuid = true];
+  optional string worker_identity = 8 [(buf.validate.field).string = {min_len: 1 max_len: 256}];
+  optional string recovery_deadline = 9 [(buf.validate.field).string = {min_len: 1 max_len: 64}];
+  uint32 relay_generation = 10;
+  optional string last_committed_input_id = 11 [(buf.validate.field).string = {min_len: 1 max_len: 256}];
+  optional string last_unconfirmed_input_id = 12 [(buf.validate.field).string = {min_len: 1 max_len: 256}];
+  optional string transfer_attempt_id = 13 [(buf.validate.field).string.uuid = true];
+  optional string transfer_phase = 14 [(buf.validate.field).string = {min_len: 1 max_len: 64}];
+  optional string transfer_helper_identity = 15 [(buf.validate.field).string = {min_len: 1 max_len: 256}];
+}
+
+message RuntimeLease {
+  option (buf.validate.message).cel = {
+    id: "runtime_lease.authority_lineage"
+    message: "lease receipt and helper binding must belong to the issued authority"
+    expression: "(has(this.authorization) && this.receipt_capability.execution_id == this.authorization.execution_id && !has(this.helper_binding)) || (has(this.helper_authorization) && has(this.helper_binding) && this.receipt_capability.execution_id == this.helper_authorization.helper_execution_id && this.helper_binding.helper_execution_id == this.helper_authorization.helper_execution_id && this.helper_binding.transfer_attempt_id == this.helper_authorization.transfer_attempt_id)"
+  };
+  oneof authority {
+    option (buf.validate.oneof).required = true;
+    RuntimeAuthorization authorization = 1;
+    RuntimeHelperAuthorization helper_authorization = 12;
+  }
+  string protocol_revision = 2 [(buf.validate.field).string.const = "runtime-recovery-v1"];
+  string lease_expires_at = 3 [(buf.validate.field).string = {min_len: 1 max_len: 64}];
+  string original_deadline = 4 [(buf.validate.field).string = {min_len: 1 max_len: 64}];
+  optional string recovery_deadline = 5 [(buf.validate.field).string = {min_len: 1 max_len: 64}];
+  RuntimeProjection projection = 6 [(buf.validate.field).required = true];
+  RuntimeReceiptAuthorization receipt_capability = 7 [(buf.validate.field).required = true];
+  // Issued for a fresh identity without publishing permissions. Only successful
+  // API activation can enable publishing after every inherited fence resolves.
+  string participant_token = 8 [(buf.validate.field).string = {min_len: 1 max_len: 16384}];
+  string server_time = 9 [(buf.validate.field).string = {min_len: 1 max_len: 64}];
+  uint32 renew_after_ms = 10 [(buf.validate.field).uint32 = {gte: 1 lte: 60000}];
+  RuntimeOriginalBinding original_binding = 11 [(buf.validate.field).required = true];
+  RuntimeHelperBinding helper_binding = 13;
+}
+
+message RuntimeOriginalBinding {
+  string published_id = 1 [(buf.validate.field).string.uuid = true];
+  string contract_revision = 2 [(buf.validate.field).string = {in: ["execution-publication-2026-09-04-r1", "execution-publication-2026-09-15-r2"]}];
+  string room_name = 3 [(buf.validate.field).string = {min_len: 1 max_len: 256}];
+  string room_sid = 4 [(buf.validate.field).string = {min_len: 1 max_len: 256}];
+  string caller_identity = 5 [(buf.validate.field).string = {min_len: 1 max_len: 256}];
+  string caller_sid = 6 [(buf.validate.field).string = {min_len: 1 max_len: 256}];
+  string started_at = 7 [(buf.validate.field).string = {min_len: 1 max_len: 64}];
+}
+
+message RuntimeHelperBinding {
+  string transfer_attempt_id = 1 [(buf.validate.field).string.uuid = true];
+  string helper_execution_id = 2 [(buf.validate.field).string.uuid = true];
+  uint32 helper_generation = 3 [(buf.validate.field).uint32 = {gte: 1 lte: 2147483647}];
+  string room_name = 4 [(buf.validate.field).string = {min_len: 1 max_len: 256}];
+  string room_sid = 5 [(buf.validate.field).string = {min_len: 1 max_len: 256}];
+  string helper_identity = 6 [(buf.validate.field).string = {min_len: 1 max_len: 256}];
+  string consultant_identity = 7 [(buf.validate.field).string = {min_len: 1 max_len: 256}];
+  string consultant_sid = 8 [(buf.validate.field).string = {min_len: 1 max_len: 256}];
+  string original_deadline = 9 [(buf.validate.field).string = {min_len: 1 max_len: 64}];
+}
+
+message RuntimeCheckpointHeader {
+  uint32 revision = 1 [(buf.validate.field).uint32.gt = 0];
+  string codec = 2 [(buf.validate.field).string = {min_len: 1 max_len: 128}];
+  string compatibility_fingerprint = 3 [(buf.validate.field).string = {min_len: 1 max_len: 256}];
+  string execution_id = 4 [(buf.validate.field).string.uuid = true];
+  uint32 epoch = 5 [(buf.validate.field).uint32 = {gte: 1 lte: 2147483647}];
+  string committed_at = 6 [(buf.validate.field).string = {min_len: 1 max_len: 64}];
+  string expires_at = 7 [(buf.validate.field).string = {min_len: 1 max_len: 64}];
+  string payload_hash = 8 [(buf.validate.field).string = {pattern: "^[0-9a-f]{64}$"}];
+}
+
+message RuntimeCheckpoint {
+  RuntimeCheckpointHeader header = 1 [(buf.validate.field).required = true];
+  // Opaque versioned UTF-8 continuation bytes. The API seals them using the
+  // existing keyring at rest and opens them only for the authorized successor.
+  bytes checkpoint_payload = 2 [(buf.validate.field).bytes = {min_len: 1 max_len: 4194304}];
+}
+
+enum RuntimeFenceStatus {
+  RUNTIME_FENCE_STATUS_UNSPECIFIED = 0;
+  RUNTIME_FENCE_STATUS_PENDING = 1;
+  RUNTIME_FENCE_STATUS_RUNNING = 2;
+  RUNTIME_FENCE_STATUS_RESOLVED = 3;
+  RUNTIME_FENCE_STATUS_UNKNOWN = 4;
+}
+
+message RuntimeMediaFence {
+  string fence_id = 1 [(buf.validate.field).string.uuid = true];
+  string execution_id = 2 [(buf.validate.field).string.uuid = true];
+  uint32 epoch = 3 [(buf.validate.field).uint32 = {gte: 1 lte: 2147483647}];
+  string participant_identity = 4 [(buf.validate.field).string = {min_len: 1 max_len: 256}];
+  string room_name = 5 [(buf.validate.field).string = {min_len: 1 max_len: 256}];
+  string room_sid = 6 [(buf.validate.field).string = {min_len: 1 max_len: 256}];
+  string token_cutoff_at = 7 [(buf.validate.field).string = {min_len: 1 max_len: 64}];
+  RuntimeFenceStatus status = 8 [(buf.validate.field).enum = {defined_only: true not_in: 0}];
+}
+
+enum RuntimeOperationStatus {
+  RUNTIME_OPERATION_STATUS_UNSPECIFIED = 0;
+  RUNTIME_OPERATION_STATUS_ACCEPTED = 1;
+  RUNTIME_OPERATION_STATUS_RUNNING = 2;
+  RUNTIME_OPERATION_STATUS_COMPLETED = 3;
+  RUNTIME_OPERATION_STATUS_FAILED = 4;
+  RUNTIME_OPERATION_STATUS_UNKNOWN = 5;
+}
+
+enum RuntimeOperationKind {
+  RUNTIME_OPERATION_KIND_UNSPECIFIED = 0;
+  RUNTIME_OPERATION_KIND_INVOKE = 1;
+  RUNTIME_OPERATION_KIND_LIST = 2;
+  RUNTIME_OPERATION_KIND_CANCEL = 3;
+  RUNTIME_OPERATION_KIND_READBACK = 4;
+}
+
+message RuntimeProviderCorrelation {
+  optional string provider_request_id = 1 [(buf.validate.field).string = {min_len: 1 max_len: 512}];
+  optional string remote_session_id = 2 [(buf.validate.field).string = {min_len: 1 max_len: 512}];
+  optional uint32 remote_generation = 3;
+  optional string task_id = 4 [(buf.validate.field).string = {min_len: 1 max_len: 512}];
+  optional string context_id = 5 [(buf.validate.field).string = {min_len: 1 max_len: 512}];
+  optional string message_id = 6 [(buf.validate.field).string = {min_len: 1 max_len: 512}];
+  optional string selected_endpoint = 7 [(buf.validate.field).string = {min_len: 1 max_len: 2048}];
+  optional string selected_version = 8 [(buf.validate.field).string = {min_len: 1 max_len: 128}];
+  optional string principal_revision = 9 [(buf.validate.field).string = {min_len: 1 max_len: 256}];
+  optional string remote_generation_id = 10 [(buf.validate.field).string.uuid = true];
+}
+
+message RuntimeOperation {
+  string operation_id = 1 [(buf.validate.field).string.uuid = true];
+  string intent_id = 2 [(buf.validate.field).string = {min_len: 1 max_len: 256}];
+  RuntimeOperationStatus status = 3 [(buf.validate.field).enum = {defined_only: true not_in: 0}];
+  // The original tool result ABI, not a new adapter-specific wrapper. Presence
+  // distinguishes an unknown result from a confirmed JSON null/empty result.
+  optional string result_json = 4 [(buf.validate.field).string.max_bytes = 1048576];
+  optional string failure_code = 5 [(buf.validate.field).string = {min_len: 1 max_len: 128}];
+  bool confirmed_no_effect = 6;
+  string node_id = 7 [(buf.validate.field).string = {min_len: 1 max_len: 256}];
+  string frame_id = 8 [(buf.validate.field).string = {min_len: 1 max_len: 256}];
+  string activation_id = 9 [(buf.validate.field).string = {min_len: 1 max_len: 256}];
+  uint32 expected_binding_version = 10;
+  optional string input_turn_id = 11 [(buf.validate.field).string = {min_len: 1 max_len: 256}];
+  optional string transition_id = 12 [(buf.validate.field).string = {min_len: 1 max_len: 256}];
+  optional string delivery_target = 13 [(buf.validate.field).string = {min_len: 1 max_len: 256}];
+  RuntimeProviderCorrelation provider_correlation = 14;
+  RuntimeOperationKind operation_kind = 15 [(buf.validate.field).enum = {defined_only: true not_in: 0}];
+  string execution_id = 16 [(buf.validate.field).string.uuid = true];
+  uint32 epoch = 17 [(buf.validate.field).uint32 = {gte: 1 lte: 2147483647}];
+}
+
+enum RuntimeInputState {
+  RUNTIME_INPUT_STATE_UNSPECIFIED = 0;
+  RUNTIME_INPUT_STATE_PENDING = 1;
+  RUNTIME_INPUT_STATE_COMMITTED = 2;
+  RUNTIME_INPUT_STATE_UNCONFIRMED = 3;
+}
+
+message RuntimeInputReceipt {
+  string input_id = 1 [(buf.validate.field).string = {min_len: 1 max_len: 256}];
+  RuntimeInputState state = 2 [(buf.validate.field).enum = {defined_only: true not_in: 0}];
+  uint32 relay_generation = 3;
+  optional uint32 committed_revision = 4 [(buf.validate.field).uint32.gt = 0];
+}

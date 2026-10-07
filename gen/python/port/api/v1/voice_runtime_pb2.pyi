@@ -1,4 +1,5 @@
 from buf.validate import validate_pb2 as _validate_pb2
+from port.api.v1 import runtime_identity_pb2 as _runtime_identity_pb2
 from google.protobuf.internal import containers as _containers
 from google.protobuf import descriptor as _descriptor
 from google.protobuf import message as _message
@@ -8,14 +9,18 @@ from typing import ClassVar as _ClassVar, Optional as _Optional, Union as _Union
 DESCRIPTOR: _descriptor.FileDescriptor
 
 class ResolveLeaseRequest(_message.Message):
-    __slots__ = ("lease_id", "conversation_id", "session_id")
+    __slots__ = ("lease_id", "conversation_id", "session_id", "owner", "helper_authorization")
     LEASE_ID_FIELD_NUMBER: _ClassVar[int]
     CONVERSATION_ID_FIELD_NUMBER: _ClassVar[int]
     SESSION_ID_FIELD_NUMBER: _ClassVar[int]
+    OWNER_FIELD_NUMBER: _ClassVar[int]
+    HELPER_AUTHORIZATION_FIELD_NUMBER: _ClassVar[int]
     lease_id: str
     conversation_id: str
     session_id: str
-    def __init__(self, lease_id: _Optional[str] = ..., conversation_id: _Optional[str] = ..., session_id: _Optional[str] = ...) -> None: ...
+    owner: _runtime_identity_pb2.RuntimeAuthorization
+    helper_authorization: _runtime_identity_pb2.RuntimeHelperAuthorization
+    def __init__(self, lease_id: _Optional[str] = ..., conversation_id: _Optional[str] = ..., session_id: _Optional[str] = ..., owner: _Optional[_Union[_runtime_identity_pb2.RuntimeAuthorization, _Mapping]] = ..., helper_authorization: _Optional[_Union[_runtime_identity_pb2.RuntimeHelperAuthorization, _Mapping]] = ...) -> None: ...
 
 class ResolveLeaseResponse(_message.Message):
     __slots__ = ("stt", "llm", "tts")
@@ -28,41 +33,47 @@ class ResolveLeaseResponse(_message.Message):
     def __init__(self, stt: _Optional[_Union[SttRuntime, _Mapping]] = ..., llm: _Optional[_Union[LlmRuntime, _Mapping]] = ..., tts: _Optional[_Union[TtsRuntime, _Mapping]] = ...) -> None: ...
 
 class SttRuntime(_message.Message):
-    __slots__ = ("api_key", "model", "language", "keyterms", "provider", "multilingual")
+    __slots__ = ("api_key", "lease_id", "model", "language", "keyterms", "provider", "multilingual")
     API_KEY_FIELD_NUMBER: _ClassVar[int]
+    LEASE_ID_FIELD_NUMBER: _ClassVar[int]
     MODEL_FIELD_NUMBER: _ClassVar[int]
     LANGUAGE_FIELD_NUMBER: _ClassVar[int]
     KEYTERMS_FIELD_NUMBER: _ClassVar[int]
     PROVIDER_FIELD_NUMBER: _ClassVar[int]
     MULTILINGUAL_FIELD_NUMBER: _ClassVar[int]
     api_key: str
+    lease_id: str
     model: str
     language: str
     keyterms: _containers.RepeatedScalarFieldContainer[str]
     provider: str
     multilingual: bool
-    def __init__(self, api_key: _Optional[str] = ..., model: _Optional[str] = ..., language: _Optional[str] = ..., keyterms: _Optional[_Iterable[str]] = ..., provider: _Optional[str] = ..., multilingual: _Optional[bool] = ...) -> None: ...
+    def __init__(self, api_key: _Optional[str] = ..., lease_id: _Optional[str] = ..., model: _Optional[str] = ..., language: _Optional[str] = ..., keyterms: _Optional[_Iterable[str]] = ..., provider: _Optional[str] = ..., multilingual: _Optional[bool] = ...) -> None: ...
 
 class LlmRuntime(_message.Message):
-    __slots__ = ("api_key", "model", "provider")
+    __slots__ = ("api_key", "lease_id", "model", "provider")
     API_KEY_FIELD_NUMBER: _ClassVar[int]
+    LEASE_ID_FIELD_NUMBER: _ClassVar[int]
     MODEL_FIELD_NUMBER: _ClassVar[int]
     PROVIDER_FIELD_NUMBER: _ClassVar[int]
     api_key: str
+    lease_id: str
     model: str
     provider: str
-    def __init__(self, api_key: _Optional[str] = ..., model: _Optional[str] = ..., provider: _Optional[str] = ...) -> None: ...
+    def __init__(self, api_key: _Optional[str] = ..., lease_id: _Optional[str] = ..., model: _Optional[str] = ..., provider: _Optional[str] = ...) -> None: ...
 
 class TtsRuntime(_message.Message):
-    __slots__ = ("api_key", "model", "language", "voice_id", "provider")
+    __slots__ = ("api_key", "lease_id", "model", "language", "voice_id", "provider")
     API_KEY_FIELD_NUMBER: _ClassVar[int]
+    LEASE_ID_FIELD_NUMBER: _ClassVar[int]
     MODEL_FIELD_NUMBER: _ClassVar[int]
     LANGUAGE_FIELD_NUMBER: _ClassVar[int]
     VOICE_ID_FIELD_NUMBER: _ClassVar[int]
     PROVIDER_FIELD_NUMBER: _ClassVar[int]
     api_key: str
+    lease_id: str
     model: str
     language: str
     voice_id: str
     provider: str
-    def __init__(self, api_key: _Optional[str] = ..., model: _Optional[str] = ..., language: _Optional[str] = ..., voice_id: _Optional[str] = ..., provider: _Optional[str] = ...) -> None: ...
+    def __init__(self, api_key: _Optional[str] = ..., lease_id: _Optional[str] = ..., model: _Optional[str] = ..., language: _Optional[str] = ..., voice_id: _Optional[str] = ..., provider: _Optional[str] = ...) -> None: ...

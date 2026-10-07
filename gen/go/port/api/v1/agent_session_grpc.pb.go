@@ -24,6 +24,17 @@ const (
 	ExecutionSessionService_RecordLlmRequestStarted_FullMethodName  = "/port.api.v1.ExecutionSessionService/RecordLlmRequestStarted"
 	ExecutionSessionService_RecordLlmRequestTerminal_FullMethodName = "/port.api.v1.ExecutionSessionService/RecordLlmRequestTerminal"
 	ExecutionSessionService_CommandFormCollection_FullMethodName    = "/port.api.v1.ExecutionSessionService/CommandFormCollection"
+	ExecutionSessionService_PrepareRuntimeAttempt_FullMethodName    = "/port.api.v1.ExecutionSessionService/PrepareRuntimeAttempt"
+	ExecutionSessionService_RecoverRuntime_FullMethodName           = "/port.api.v1.ExecutionSessionService/RecoverRuntime"
+	ExecutionSessionService_RenewRuntimeLease_FullMethodName        = "/port.api.v1.ExecutionSessionService/RenewRuntimeLease"
+	ExecutionSessionService_ActivateRuntime_FullMethodName          = "/port.api.v1.ExecutionSessionService/ActivateRuntime"
+	ExecutionSessionService_CommitRuntimeCheckpoint_FullMethodName  = "/port.api.v1.ExecutionSessionService/CommitRuntimeCheckpoint"
+	ExecutionSessionService_ExecuteRuntimeOperation_FullMethodName  = "/port.api.v1.ExecutionSessionService/ExecuteRuntimeOperation"
+	ExecutionSessionService_GetRuntimeOperation_FullMethodName      = "/port.api.v1.ExecutionSessionService/GetRuntimeOperation"
+	ExecutionSessionService_RecordRuntimeReceipt_FullMethodName     = "/port.api.v1.ExecutionSessionService/RecordRuntimeReceipt"
+	ExecutionSessionService_EndRuntime_FullMethodName               = "/port.api.v1.ExecutionSessionService/EndRuntime"
+	ExecutionSessionService_RecordRuntimeUsage_FullMethodName       = "/port.api.v1.ExecutionSessionService/RecordRuntimeUsage"
+	ExecutionSessionService_ReadRuntimeKnowledge_FullMethodName     = "/port.api.v1.ExecutionSessionService/ReadRuntimeKnowledge"
 )
 
 // ExecutionSessionServiceClient is the client API for ExecutionSessionService service.
@@ -37,6 +48,17 @@ type ExecutionSessionServiceClient interface {
 	RecordLlmRequestStarted(ctx context.Context, in *RecordLlmRequestStartedRequest, opts ...grpc.CallOption) (*RecordLlmRequestStartedResponse, error)
 	RecordLlmRequestTerminal(ctx context.Context, in *RecordLlmRequestTerminalRequest, opts ...grpc.CallOption) (*RecordLlmRequestTerminalResponse, error)
 	CommandFormCollection(ctx context.Context, in *CommandFormCollectionRequest, opts ...grpc.CallOption) (*CommandFormCollectionResponse, error)
+	PrepareRuntimeAttempt(ctx context.Context, in *PrepareRuntimeAttemptRequest, opts ...grpc.CallOption) (*PrepareRuntimeAttemptResponse, error)
+	RecoverRuntime(ctx context.Context, in *RecoverRuntimeRequest, opts ...grpc.CallOption) (*RecoverRuntimeResponse, error)
+	RenewRuntimeLease(ctx context.Context, in *RenewRuntimeLeaseRequest, opts ...grpc.CallOption) (*RenewRuntimeLeaseResponse, error)
+	ActivateRuntime(ctx context.Context, in *ActivateRuntimeRequest, opts ...grpc.CallOption) (*ActivateRuntimeResponse, error)
+	CommitRuntimeCheckpoint(ctx context.Context, in *CommitRuntimeCheckpointRequest, opts ...grpc.CallOption) (*CommitRuntimeCheckpointResponse, error)
+	ExecuteRuntimeOperation(ctx context.Context, in *ExecuteRuntimeOperationRequest, opts ...grpc.CallOption) (*ExecuteRuntimeOperationResponse, error)
+	GetRuntimeOperation(ctx context.Context, in *GetRuntimeOperationRequest, opts ...grpc.CallOption) (*GetRuntimeOperationResponse, error)
+	RecordRuntimeReceipt(ctx context.Context, in *RecordRuntimeReceiptRequest, opts ...grpc.CallOption) (*RecordRuntimeReceiptResponse, error)
+	EndRuntime(ctx context.Context, in *EndRuntimeRequest, opts ...grpc.CallOption) (*EndRuntimeResponse, error)
+	RecordRuntimeUsage(ctx context.Context, in *RecordRuntimeUsageRequest, opts ...grpc.CallOption) (*RecordRuntimeUsageResponse, error)
+	ReadRuntimeKnowledge(ctx context.Context, in *ReadRuntimeKnowledgeRequest, opts ...grpc.CallOption) (*ReadRuntimeKnowledgeResponse, error)
 }
 
 type executionSessionServiceClient struct {
@@ -97,6 +119,116 @@ func (c *executionSessionServiceClient) CommandFormCollection(ctx context.Contex
 	return out, nil
 }
 
+func (c *executionSessionServiceClient) PrepareRuntimeAttempt(ctx context.Context, in *PrepareRuntimeAttemptRequest, opts ...grpc.CallOption) (*PrepareRuntimeAttemptResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(PrepareRuntimeAttemptResponse)
+	err := c.cc.Invoke(ctx, ExecutionSessionService_PrepareRuntimeAttempt_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *executionSessionServiceClient) RecoverRuntime(ctx context.Context, in *RecoverRuntimeRequest, opts ...grpc.CallOption) (*RecoverRuntimeResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(RecoverRuntimeResponse)
+	err := c.cc.Invoke(ctx, ExecutionSessionService_RecoverRuntime_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *executionSessionServiceClient) RenewRuntimeLease(ctx context.Context, in *RenewRuntimeLeaseRequest, opts ...grpc.CallOption) (*RenewRuntimeLeaseResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(RenewRuntimeLeaseResponse)
+	err := c.cc.Invoke(ctx, ExecutionSessionService_RenewRuntimeLease_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *executionSessionServiceClient) ActivateRuntime(ctx context.Context, in *ActivateRuntimeRequest, opts ...grpc.CallOption) (*ActivateRuntimeResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ActivateRuntimeResponse)
+	err := c.cc.Invoke(ctx, ExecutionSessionService_ActivateRuntime_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *executionSessionServiceClient) CommitRuntimeCheckpoint(ctx context.Context, in *CommitRuntimeCheckpointRequest, opts ...grpc.CallOption) (*CommitRuntimeCheckpointResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(CommitRuntimeCheckpointResponse)
+	err := c.cc.Invoke(ctx, ExecutionSessionService_CommitRuntimeCheckpoint_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *executionSessionServiceClient) ExecuteRuntimeOperation(ctx context.Context, in *ExecuteRuntimeOperationRequest, opts ...grpc.CallOption) (*ExecuteRuntimeOperationResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ExecuteRuntimeOperationResponse)
+	err := c.cc.Invoke(ctx, ExecutionSessionService_ExecuteRuntimeOperation_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *executionSessionServiceClient) GetRuntimeOperation(ctx context.Context, in *GetRuntimeOperationRequest, opts ...grpc.CallOption) (*GetRuntimeOperationResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetRuntimeOperationResponse)
+	err := c.cc.Invoke(ctx, ExecutionSessionService_GetRuntimeOperation_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *executionSessionServiceClient) RecordRuntimeReceipt(ctx context.Context, in *RecordRuntimeReceiptRequest, opts ...grpc.CallOption) (*RecordRuntimeReceiptResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(RecordRuntimeReceiptResponse)
+	err := c.cc.Invoke(ctx, ExecutionSessionService_RecordRuntimeReceipt_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *executionSessionServiceClient) EndRuntime(ctx context.Context, in *EndRuntimeRequest, opts ...grpc.CallOption) (*EndRuntimeResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(EndRuntimeResponse)
+	err := c.cc.Invoke(ctx, ExecutionSessionService_EndRuntime_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *executionSessionServiceClient) RecordRuntimeUsage(ctx context.Context, in *RecordRuntimeUsageRequest, opts ...grpc.CallOption) (*RecordRuntimeUsageResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(RecordRuntimeUsageResponse)
+	err := c.cc.Invoke(ctx, ExecutionSessionService_RecordRuntimeUsage_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *executionSessionServiceClient) ReadRuntimeKnowledge(ctx context.Context, in *ReadRuntimeKnowledgeRequest, opts ...grpc.CallOption) (*ReadRuntimeKnowledgeResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ReadRuntimeKnowledgeResponse)
+	err := c.cc.Invoke(ctx, ExecutionSessionService_ReadRuntimeKnowledge_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // ExecutionSessionServiceServer is the server API for ExecutionSessionService service.
 // All implementations must embed UnimplementedExecutionSessionServiceServer
 // for forward compatibility.
@@ -108,6 +240,17 @@ type ExecutionSessionServiceServer interface {
 	RecordLlmRequestStarted(context.Context, *RecordLlmRequestStartedRequest) (*RecordLlmRequestStartedResponse, error)
 	RecordLlmRequestTerminal(context.Context, *RecordLlmRequestTerminalRequest) (*RecordLlmRequestTerminalResponse, error)
 	CommandFormCollection(context.Context, *CommandFormCollectionRequest) (*CommandFormCollectionResponse, error)
+	PrepareRuntimeAttempt(context.Context, *PrepareRuntimeAttemptRequest) (*PrepareRuntimeAttemptResponse, error)
+	RecoverRuntime(context.Context, *RecoverRuntimeRequest) (*RecoverRuntimeResponse, error)
+	RenewRuntimeLease(context.Context, *RenewRuntimeLeaseRequest) (*RenewRuntimeLeaseResponse, error)
+	ActivateRuntime(context.Context, *ActivateRuntimeRequest) (*ActivateRuntimeResponse, error)
+	CommitRuntimeCheckpoint(context.Context, *CommitRuntimeCheckpointRequest) (*CommitRuntimeCheckpointResponse, error)
+	ExecuteRuntimeOperation(context.Context, *ExecuteRuntimeOperationRequest) (*ExecuteRuntimeOperationResponse, error)
+	GetRuntimeOperation(context.Context, *GetRuntimeOperationRequest) (*GetRuntimeOperationResponse, error)
+	RecordRuntimeReceipt(context.Context, *RecordRuntimeReceiptRequest) (*RecordRuntimeReceiptResponse, error)
+	EndRuntime(context.Context, *EndRuntimeRequest) (*EndRuntimeResponse, error)
+	RecordRuntimeUsage(context.Context, *RecordRuntimeUsageRequest) (*RecordRuntimeUsageResponse, error)
+	ReadRuntimeKnowledge(context.Context, *ReadRuntimeKnowledgeRequest) (*ReadRuntimeKnowledgeResponse, error)
 	mustEmbedUnimplementedExecutionSessionServiceServer()
 }
 
@@ -132,6 +275,39 @@ func (UnimplementedExecutionSessionServiceServer) RecordLlmRequestTerminal(conte
 }
 func (UnimplementedExecutionSessionServiceServer) CommandFormCollection(context.Context, *CommandFormCollectionRequest) (*CommandFormCollectionResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method CommandFormCollection not implemented")
+}
+func (UnimplementedExecutionSessionServiceServer) PrepareRuntimeAttempt(context.Context, *PrepareRuntimeAttemptRequest) (*PrepareRuntimeAttemptResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method PrepareRuntimeAttempt not implemented")
+}
+func (UnimplementedExecutionSessionServiceServer) RecoverRuntime(context.Context, *RecoverRuntimeRequest) (*RecoverRuntimeResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method RecoverRuntime not implemented")
+}
+func (UnimplementedExecutionSessionServiceServer) RenewRuntimeLease(context.Context, *RenewRuntimeLeaseRequest) (*RenewRuntimeLeaseResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method RenewRuntimeLease not implemented")
+}
+func (UnimplementedExecutionSessionServiceServer) ActivateRuntime(context.Context, *ActivateRuntimeRequest) (*ActivateRuntimeResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ActivateRuntime not implemented")
+}
+func (UnimplementedExecutionSessionServiceServer) CommitRuntimeCheckpoint(context.Context, *CommitRuntimeCheckpointRequest) (*CommitRuntimeCheckpointResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method CommitRuntimeCheckpoint not implemented")
+}
+func (UnimplementedExecutionSessionServiceServer) ExecuteRuntimeOperation(context.Context, *ExecuteRuntimeOperationRequest) (*ExecuteRuntimeOperationResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ExecuteRuntimeOperation not implemented")
+}
+func (UnimplementedExecutionSessionServiceServer) GetRuntimeOperation(context.Context, *GetRuntimeOperationRequest) (*GetRuntimeOperationResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetRuntimeOperation not implemented")
+}
+func (UnimplementedExecutionSessionServiceServer) RecordRuntimeReceipt(context.Context, *RecordRuntimeReceiptRequest) (*RecordRuntimeReceiptResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method RecordRuntimeReceipt not implemented")
+}
+func (UnimplementedExecutionSessionServiceServer) EndRuntime(context.Context, *EndRuntimeRequest) (*EndRuntimeResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method EndRuntime not implemented")
+}
+func (UnimplementedExecutionSessionServiceServer) RecordRuntimeUsage(context.Context, *RecordRuntimeUsageRequest) (*RecordRuntimeUsageResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method RecordRuntimeUsage not implemented")
+}
+func (UnimplementedExecutionSessionServiceServer) ReadRuntimeKnowledge(context.Context, *ReadRuntimeKnowledgeRequest) (*ReadRuntimeKnowledgeResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ReadRuntimeKnowledge not implemented")
 }
 func (UnimplementedExecutionSessionServiceServer) mustEmbedUnimplementedExecutionSessionServiceServer() {
 }
@@ -245,6 +421,204 @@ func _ExecutionSessionService_CommandFormCollection_Handler(srv interface{}, ctx
 	return interceptor(ctx, in, info, handler)
 }
 
+func _ExecutionSessionService_PrepareRuntimeAttempt_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(PrepareRuntimeAttemptRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ExecutionSessionServiceServer).PrepareRuntimeAttempt(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ExecutionSessionService_PrepareRuntimeAttempt_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ExecutionSessionServiceServer).PrepareRuntimeAttempt(ctx, req.(*PrepareRuntimeAttemptRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ExecutionSessionService_RecoverRuntime_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RecoverRuntimeRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ExecutionSessionServiceServer).RecoverRuntime(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ExecutionSessionService_RecoverRuntime_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ExecutionSessionServiceServer).RecoverRuntime(ctx, req.(*RecoverRuntimeRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ExecutionSessionService_RenewRuntimeLease_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RenewRuntimeLeaseRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ExecutionSessionServiceServer).RenewRuntimeLease(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ExecutionSessionService_RenewRuntimeLease_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ExecutionSessionServiceServer).RenewRuntimeLease(ctx, req.(*RenewRuntimeLeaseRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ExecutionSessionService_ActivateRuntime_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ActivateRuntimeRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ExecutionSessionServiceServer).ActivateRuntime(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ExecutionSessionService_ActivateRuntime_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ExecutionSessionServiceServer).ActivateRuntime(ctx, req.(*ActivateRuntimeRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ExecutionSessionService_CommitRuntimeCheckpoint_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CommitRuntimeCheckpointRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ExecutionSessionServiceServer).CommitRuntimeCheckpoint(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ExecutionSessionService_CommitRuntimeCheckpoint_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ExecutionSessionServiceServer).CommitRuntimeCheckpoint(ctx, req.(*CommitRuntimeCheckpointRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ExecutionSessionService_ExecuteRuntimeOperation_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ExecuteRuntimeOperationRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ExecutionSessionServiceServer).ExecuteRuntimeOperation(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ExecutionSessionService_ExecuteRuntimeOperation_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ExecutionSessionServiceServer).ExecuteRuntimeOperation(ctx, req.(*ExecuteRuntimeOperationRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ExecutionSessionService_GetRuntimeOperation_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetRuntimeOperationRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ExecutionSessionServiceServer).GetRuntimeOperation(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ExecutionSessionService_GetRuntimeOperation_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ExecutionSessionServiceServer).GetRuntimeOperation(ctx, req.(*GetRuntimeOperationRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ExecutionSessionService_RecordRuntimeReceipt_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RecordRuntimeReceiptRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ExecutionSessionServiceServer).RecordRuntimeReceipt(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ExecutionSessionService_RecordRuntimeReceipt_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ExecutionSessionServiceServer).RecordRuntimeReceipt(ctx, req.(*RecordRuntimeReceiptRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ExecutionSessionService_EndRuntime_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(EndRuntimeRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ExecutionSessionServiceServer).EndRuntime(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ExecutionSessionService_EndRuntime_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ExecutionSessionServiceServer).EndRuntime(ctx, req.(*EndRuntimeRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ExecutionSessionService_RecordRuntimeUsage_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RecordRuntimeUsageRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ExecutionSessionServiceServer).RecordRuntimeUsage(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ExecutionSessionService_RecordRuntimeUsage_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ExecutionSessionServiceServer).RecordRuntimeUsage(ctx, req.(*RecordRuntimeUsageRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ExecutionSessionService_ReadRuntimeKnowledge_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ReadRuntimeKnowledgeRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ExecutionSessionServiceServer).ReadRuntimeKnowledge(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ExecutionSessionService_ReadRuntimeKnowledge_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ExecutionSessionServiceServer).ReadRuntimeKnowledge(ctx, req.(*ReadRuntimeKnowledgeRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // ExecutionSessionService_ServiceDesc is the grpc.ServiceDesc for ExecutionSessionService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -271,6 +645,50 @@ var ExecutionSessionService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "CommandFormCollection",
 			Handler:    _ExecutionSessionService_CommandFormCollection_Handler,
+		},
+		{
+			MethodName: "PrepareRuntimeAttempt",
+			Handler:    _ExecutionSessionService_PrepareRuntimeAttempt_Handler,
+		},
+		{
+			MethodName: "RecoverRuntime",
+			Handler:    _ExecutionSessionService_RecoverRuntime_Handler,
+		},
+		{
+			MethodName: "RenewRuntimeLease",
+			Handler:    _ExecutionSessionService_RenewRuntimeLease_Handler,
+		},
+		{
+			MethodName: "ActivateRuntime",
+			Handler:    _ExecutionSessionService_ActivateRuntime_Handler,
+		},
+		{
+			MethodName: "CommitRuntimeCheckpoint",
+			Handler:    _ExecutionSessionService_CommitRuntimeCheckpoint_Handler,
+		},
+		{
+			MethodName: "ExecuteRuntimeOperation",
+			Handler:    _ExecutionSessionService_ExecuteRuntimeOperation_Handler,
+		},
+		{
+			MethodName: "GetRuntimeOperation",
+			Handler:    _ExecutionSessionService_GetRuntimeOperation_Handler,
+		},
+		{
+			MethodName: "RecordRuntimeReceipt",
+			Handler:    _ExecutionSessionService_RecordRuntimeReceipt_Handler,
+		},
+		{
+			MethodName: "EndRuntime",
+			Handler:    _ExecutionSessionService_EndRuntime_Handler,
+		},
+		{
+			MethodName: "RecordRuntimeUsage",
+			Handler:    _ExecutionSessionService_RecordRuntimeUsage_Handler,
+		},
+		{
+			MethodName: "ReadRuntimeKnowledge",
+			Handler:    _ExecutionSessionService_ReadRuntimeKnowledge_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

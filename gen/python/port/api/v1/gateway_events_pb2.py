@@ -25,9 +25,10 @@ _sym_db = _symbol_database.Default()
 from buf.validate import validate_pb2 as buf_dot_validate_dot_validate__pb2
 from google.api import annotations_pb2 as google_dot_api_dot_annotations__pb2
 from google.protobuf import timestamp_pb2 as google_dot_protobuf_dot_timestamp__pb2
+from port.api.v1 import runtime_identity_pb2 as port_dot_api_dot_v1_dot_runtime__identity__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n port/api/v1/gateway_events.proto\x12\x0bport.api.v1\x1a\x1b\x62uf/validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\xc3\x03\n\x19RecordGatewayEventRequest\x12\x19\n\x08\x65vent_id\x18\x01 \x01(\tR\x07\x65ventId\x12Q\n\nevent_type\x18\x02 \x01(\x0e\x32&.port.api.v1.GatewayLifecycleEventTypeB\n\xbaH\x07\x82\x01\x04\x10\x01 \x00R\teventType\x12\x30\n\x0f\x63onversation_id\x18\x03 \x01(\tB\x07\xbaH\x04r\x02\x10\x01R\x0e\x63onversationId\x12\x1d\n\nsession_id\x18\x04 \x01(\tR\tsessionId\x12\x17\n\x07room_id\x18\x05 \x01(\tR\x06roomId\x12\x43\n\x0boccurred_at\x18\x06 \x01(\x0b\x32\x1a.google.protobuf.TimestampB\x06\xbaH\x03\xc8\x01\x01R\noccurredAt\x12M\n\x07payload\x18\x07 \x03(\x0b\x32\x33.port.api.v1.RecordGatewayEventRequest.PayloadEntryR\x07payload\x1a:\n\x0cPayloadEntry\x12\x10\n\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n\x05value\x18\x02 \x01(\tR\x05value:\x02\x38\x01\"\x1c\n\x1aRecordGatewayEventResponse*\x84\x02\n\x19GatewayLifecycleEventType\x12,\n(GATEWAY_LIFECYCLE_EVENT_TYPE_UNSPECIFIED\x10\x00\x12.\n*GATEWAY_LIFECYCLE_EVENT_TYPE_AGENT_STARTED\x10\x01\x12-\n)GATEWAY_LIFECYCLE_EVENT_TYPE_AGENT_FAILED\x10\x02\x12.\n*GATEWAY_LIFECYCLE_EVENT_TYPE_SIP_CONNECTED\x10\x03\x12*\n&GATEWAY_LIFECYCLE_EVENT_TYPE_SIP_ENDED\x10\x04\x32\x9c\x01\n\x0f\x41piEventService\x12\x88\x01\n\x12RecordGatewayEvent\x12&.port.api.v1.RecordGatewayEventRequest\x1a\'.port.api.v1.RecordGatewayEventResponse\"!\x82\xd3\xe4\x93\x02\x1b\"\x16/api/v1/gateway/events:\x01*B?Z=github.com/kyh0703/port-contracts/v4/gen/go/port/api/v1;apiv1b\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n port/api/v1/gateway_events.proto\x12\x0bport.api.v1\x1a\x1b\x62uf/validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\"port/api/v1/runtime_identity.proto\"\xeb\t\n\x19RecordGatewayEventRequest\x12\x19\n\x08\x65vent_id\x18\x01 \x01(\tR\x07\x65ventId\x12Q\n\nevent_type\x18\x02 \x01(\x0e\x32&.port.api.v1.GatewayLifecycleEventTypeB\n\xbaH\x07\x82\x01\x04\x10\x01 \x00R\teventType\x12\x30\n\x0f\x63onversation_id\x18\x03 \x01(\tB\x07\xbaH\x04r\x02\x10\x01R\x0e\x63onversationId\x12\x1d\n\nsession_id\x18\x04 \x01(\tR\tsessionId\x12\x17\n\x07room_id\x18\x05 \x01(\tR\x06roomId\x12\x43\n\x0boccurred_at\x18\x06 \x01(\x0b\x32\x1a.google.protobuf.TimestampB\x06\xbaH\x03\xc8\x01\x01R\noccurredAt\x12M\n\x07payload\x18\x07 \x03(\x0b\x32\x33.port.api.v1.RecordGatewayEventRequest.PayloadEntryR\x07payload\x12\x39\n\x05owner\x18\x08 \x01(\x0b\x32!.port.api.v1.RuntimeAuthorizationH\x00R\x05owner\x12\\\n\x14helper_authorization\x18\x0c \x01(\x0b\x32\'.port.api.v1.RuntimeHelperAuthorizationH\x00R\x13helperAuthorization\x12_\n\x15receipt_authorization\x18\t \x01(\x0b\x32(.port.api.v1.RuntimeReceiptAuthorizationH\x00R\x14receiptAuthorization\x12.\n\x10relay_generation\x18\n \x01(\rH\x01R\x0frelayGeneration\x88\x01\x01\x12*\n\x08input_id\x18\x0b \x01(\tB\n\xbaH\x07r\x05\x10\x01\x18\x80\x02H\x02R\x07inputId\x88\x01\x01\x1a:\n\x0cPayloadEntry\x12\x10\n\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n\x05value\x18\x02 \x01(\tR\x05value:\x02\x38\x01:\xa0\x03\xbaH\x9c\x03\x1a\x99\x03\n\x1dgateway_event.runtime_purpose\x12qworker start requires main or helper control, worker failure requires origin receipt, SIP requires signed ingress\x1a\x84\x02(this.event_type == 1 && (has(this.owner) || has(this.helper_authorization))) || (this.event_type == 2 && has(this.receipt_authorization)) || (this.event_type in [3, 4] && !has(this.owner) && !has(this.helper_authorization) && !has(this.receipt_authorization))B\x0b\n\tauthorityB\x13\n\x11_relay_generationB\x0b\n\t_input_id\"\xb2\x01\n\x1aRecordGatewayEventResponse\x12M\n\x12runtime_projection\x18\x01 \x01(\x0b\x32\x1e.port.api.v1.RuntimeProjectionR\x11runtimeProjection\x12\x45\n\rinput_receipt\x18\x02 \x01(\x0b\x32 .port.api.v1.RuntimeInputReceiptR\x0cinputReceipt*\x84\x02\n\x19GatewayLifecycleEventType\x12,\n(GATEWAY_LIFECYCLE_EVENT_TYPE_UNSPECIFIED\x10\x00\x12.\n*GATEWAY_LIFECYCLE_EVENT_TYPE_AGENT_STARTED\x10\x01\x12-\n)GATEWAY_LIFECYCLE_EVENT_TYPE_AGENT_FAILED\x10\x02\x12.\n*GATEWAY_LIFECYCLE_EVENT_TYPE_SIP_CONNECTED\x10\x03\x12*\n&GATEWAY_LIFECYCLE_EVENT_TYPE_SIP_ENDED\x10\x04\x32\x9c\x01\n\x0f\x41piEventService\x12\x88\x01\n\x12RecordGatewayEvent\x12&.port.api.v1.RecordGatewayEventRequest\x1a\'.port.api.v1.RecordGatewayEventResponse\"!\x82\xd3\xe4\x93\x02\x1b\"\x16/api/v1/gateway/events:\x01*B?Z=github.com/kyh0703/port-contracts/v4/gen/go/port/api/v1;apiv1b\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -43,16 +44,20 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_RECORDGATEWAYEVENTREQUEST'].fields_by_name['conversation_id']._serialized_options = b'\272H\004r\002\020\001'
   _globals['_RECORDGATEWAYEVENTREQUEST'].fields_by_name['occurred_at']._loaded_options = None
   _globals['_RECORDGATEWAYEVENTREQUEST'].fields_by_name['occurred_at']._serialized_options = b'\272H\003\310\001\001'
+  _globals['_RECORDGATEWAYEVENTREQUEST'].fields_by_name['input_id']._loaded_options = None
+  _globals['_RECORDGATEWAYEVENTREQUEST'].fields_by_name['input_id']._serialized_options = b'\272H\007r\005\020\001\030\200\002'
+  _globals['_RECORDGATEWAYEVENTREQUEST']._loaded_options = None
+  _globals['_RECORDGATEWAYEVENTREQUEST']._serialized_options = b'\272H\234\003\032\231\003\n\035gateway_event.runtime_purpose\022qworker start requires main or helper control, worker failure requires origin receipt, SIP requires signed ingress\032\204\002(this.event_type == 1 && (has(this.owner) || has(this.helper_authorization))) || (this.event_type == 2 && has(this.receipt_authorization)) || (this.event_type in [3, 4] && !has(this.owner) && !has(this.helper_authorization) && !has(this.receipt_authorization))'
   _globals['_APIEVENTSERVICE'].methods_by_name['RecordGatewayEvent']._loaded_options = None
   _globals['_APIEVENTSERVICE'].methods_by_name['RecordGatewayEvent']._serialized_options = b'\202\323\344\223\002\033\"\026/api/v1/gateway/events:\001*'
-  _globals['_GATEWAYLIFECYCLEEVENTTYPE']._serialized_start=626
-  _globals['_GATEWAYLIFECYCLEEVENTTYPE']._serialized_end=886
-  _globals['_RECORDGATEWAYEVENTREQUEST']._serialized_start=142
-  _globals['_RECORDGATEWAYEVENTREQUEST']._serialized_end=593
-  _globals['_RECORDGATEWAYEVENTREQUEST_PAYLOADENTRY']._serialized_start=535
-  _globals['_RECORDGATEWAYEVENTREQUEST_PAYLOADENTRY']._serialized_end=593
-  _globals['_RECORDGATEWAYEVENTRESPONSE']._serialized_start=595
-  _globals['_RECORDGATEWAYEVENTRESPONSE']._serialized_end=623
-  _globals['_APIEVENTSERVICE']._serialized_start=889
-  _globals['_APIEVENTSERVICE']._serialized_end=1045
+  _globals['_GATEWAYLIFECYCLEEVENTTYPE']._serialized_start=1621
+  _globals['_GATEWAYLIFECYCLEEVENTTYPE']._serialized_end=1881
+  _globals['_RECORDGATEWAYEVENTREQUEST']._serialized_start=178
+  _globals['_RECORDGATEWAYEVENTREQUEST']._serialized_end=1437
+  _globals['_RECORDGATEWAYEVENTREQUEST_PAYLOADENTRY']._serialized_start=913
+  _globals['_RECORDGATEWAYEVENTREQUEST_PAYLOADENTRY']._serialized_end=971
+  _globals['_RECORDGATEWAYEVENTRESPONSE']._serialized_start=1440
+  _globals['_RECORDGATEWAYEVENTRESPONSE']._serialized_end=1618
+  _globals['_APIEVENTSERVICE']._serialized_start=1884
+  _globals['_APIEVENTSERVICE']._serialized_end=2040
 # @@protoc_insertion_point(module_scope)

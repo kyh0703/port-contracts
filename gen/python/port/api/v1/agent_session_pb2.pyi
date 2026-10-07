@@ -1,4 +1,5 @@
 from buf.validate import validate_pb2 as _validate_pb2
+from port.api.v1 import runtime_identity_pb2 as _runtime_identity_pb2
 from port.api.v1 import voice_runtime_pb2 as _voice_runtime_pb2
 from google.protobuf.internal import containers as _containers
 from google.protobuf.internal import enum_type_wrapper as _enum_type_wrapper
@@ -84,23 +85,29 @@ CONTEXT_POLICY_USER_AND_ASSISTANT_MESSAGES: ContextPolicy
 CONTEXT_POLICY_PREVIOUS_ASSISTANT_MESSAGES: ContextPolicy
 
 class CommandFormCollectionRequest(_message.Message):
-    __slots__ = ("action", "conversation_id", "session_id", "published_id", "transition_id", "request_id")
+    __slots__ = ("action", "conversation_id", "session_id", "published_id", "transition_id", "request_id", "owner", "consumption_revision", "expires_at")
     ACTION_FIELD_NUMBER: _ClassVar[int]
     CONVERSATION_ID_FIELD_NUMBER: _ClassVar[int]
     SESSION_ID_FIELD_NUMBER: _ClassVar[int]
     PUBLISHED_ID_FIELD_NUMBER: _ClassVar[int]
     TRANSITION_ID_FIELD_NUMBER: _ClassVar[int]
     REQUEST_ID_FIELD_NUMBER: _ClassVar[int]
+    OWNER_FIELD_NUMBER: _ClassVar[int]
+    CONSUMPTION_REVISION_FIELD_NUMBER: _ClassVar[int]
+    EXPIRES_AT_FIELD_NUMBER: _ClassVar[int]
     action: str
     conversation_id: str
     session_id: str
     published_id: str
     transition_id: str
     request_id: str
-    def __init__(self, action: _Optional[str] = ..., conversation_id: _Optional[str] = ..., session_id: _Optional[str] = ..., published_id: _Optional[str] = ..., transition_id: _Optional[str] = ..., request_id: _Optional[str] = ...) -> None: ...
+    owner: _runtime_identity_pb2.RuntimeAuthorization
+    consumption_revision: int
+    expires_at: str
+    def __init__(self, action: _Optional[str] = ..., conversation_id: _Optional[str] = ..., session_id: _Optional[str] = ..., published_id: _Optional[str] = ..., transition_id: _Optional[str] = ..., request_id: _Optional[str] = ..., owner: _Optional[_Union[_runtime_identity_pb2.RuntimeAuthorization, _Mapping]] = ..., consumption_revision: _Optional[int] = ..., expires_at: _Optional[str] = ...) -> None: ...
 
 class CommandFormCollectionResponse(_message.Message):
-    __slots__ = ("request_id", "status", "delivery", "expires_at", "values", "failure_code")
+    __slots__ = ("request_id", "status", "delivery", "expires_at", "values", "failure_code", "provider_acceptance")
     class ValuesEntry(_message.Message):
         __slots__ = ("key", "value")
         KEY_FIELD_NUMBER: _ClassVar[int]
@@ -114,13 +121,25 @@ class CommandFormCollectionResponse(_message.Message):
     EXPIRES_AT_FIELD_NUMBER: _ClassVar[int]
     VALUES_FIELD_NUMBER: _ClassVar[int]
     FAILURE_CODE_FIELD_NUMBER: _ClassVar[int]
+    PROVIDER_ACCEPTANCE_FIELD_NUMBER: _ClassVar[int]
     request_id: str
     status: str
     delivery: str
     expires_at: str
     values: _containers.ScalarMap[str, str]
     failure_code: str
-    def __init__(self, request_id: _Optional[str] = ..., status: _Optional[str] = ..., delivery: _Optional[str] = ..., expires_at: _Optional[str] = ..., values: _Optional[_Mapping[str, str]] = ..., failure_code: _Optional[str] = ...) -> None: ...
+    provider_acceptance: RuntimeFormProviderAcceptance
+    def __init__(self, request_id: _Optional[str] = ..., status: _Optional[str] = ..., delivery: _Optional[str] = ..., expires_at: _Optional[str] = ..., values: _Optional[_Mapping[str, str]] = ..., failure_code: _Optional[str] = ..., provider_acceptance: _Optional[_Union[RuntimeFormProviderAcceptance, _Mapping]] = ...) -> None: ...
+
+class RuntimeFormProviderAcceptance(_message.Message):
+    __slots__ = ("provider", "send_code", "status")
+    PROVIDER_FIELD_NUMBER: _ClassVar[int]
+    SEND_CODE_FIELD_NUMBER: _ClassVar[int]
+    STATUS_FIELD_NUMBER: _ClassVar[int]
+    provider: str
+    send_code: str
+    status: str
+    def __init__(self, provider: _Optional[str] = ..., send_code: _Optional[str] = ..., status: _Optional[str] = ...) -> None: ...
 
 class BootstrapRequest(_message.Message):
     __slots__ = ("webrtc_ticket", "sip")
@@ -151,60 +170,55 @@ class SipBootstrapContext(_message.Message):
     def __init__(self, job_id: _Optional[str] = ..., dispatch_id: _Optional[str] = ..., room_name: _Optional[str] = ..., participant_identity: _Optional[str] = ..., trunk_id: _Optional[str] = ..., trunk_phone_number: _Optional[str] = ..., call_id_full: _Optional[str] = ..., phone_number: _Optional[str] = ...) -> None: ...
 
 class BootstrapPublishedRequest(_message.Message):
-    __slots__ = ("admission", "conversation_id", "session_id", "published_id", "contract_revision", "worker_job_id")
+    __slots__ = ("admission", "conversation_id", "session_id", "published_id", "contract_revision", "worker_job_id", "attempt_authorization", "helper_authorization")
     ADMISSION_FIELD_NUMBER: _ClassVar[int]
     CONVERSATION_ID_FIELD_NUMBER: _ClassVar[int]
     SESSION_ID_FIELD_NUMBER: _ClassVar[int]
     PUBLISHED_ID_FIELD_NUMBER: _ClassVar[int]
     CONTRACT_REVISION_FIELD_NUMBER: _ClassVar[int]
     WORKER_JOB_ID_FIELD_NUMBER: _ClassVar[int]
+    ATTEMPT_AUTHORIZATION_FIELD_NUMBER: _ClassVar[int]
+    HELPER_AUTHORIZATION_FIELD_NUMBER: _ClassVar[int]
     admission: BootstrapRequest
     conversation_id: str
     session_id: str
     published_id: str
     contract_revision: str
     worker_job_id: str
-    def __init__(self, admission: _Optional[_Union[BootstrapRequest, _Mapping]] = ..., conversation_id: _Optional[str] = ..., session_id: _Optional[str] = ..., published_id: _Optional[str] = ..., contract_revision: _Optional[str] = ..., worker_job_id: _Optional[str] = ...) -> None: ...
+    attempt_authorization: _runtime_identity_pb2.RuntimeAttemptAuthorization
+    helper_authorization: _runtime_identity_pb2.RuntimeHelperAuthorization
+    def __init__(self, admission: _Optional[_Union[BootstrapRequest, _Mapping]] = ..., conversation_id: _Optional[str] = ..., session_id: _Optional[str] = ..., published_id: _Optional[str] = ..., contract_revision: _Optional[str] = ..., worker_job_id: _Optional[str] = ..., attempt_authorization: _Optional[_Union[_runtime_identity_pb2.RuntimeAttemptAuthorization, _Mapping]] = ..., helper_authorization: _Optional[_Union[_runtime_identity_pb2.RuntimeHelperAuthorization, _Mapping]] = ...) -> None: ...
 
 class BootstrapPublishedResponse(_message.Message):
-    __slots__ = ("contract_revision", "conversation_id", "session_id", "published_id", "user_id", "transfer_capability", "prompt_variables", "agent", "voice_runtime", "text_runtime", "llm_audit_capability")
+    __slots__ = ("contract_revision", "conversation_id", "session_id", "published_id", "user_id", "prompt_variables", "agent", "voice_runtime", "text_runtime", "runtime_lease", "helper_checkpoint", "helper_bootstrap")
     CONTRACT_REVISION_FIELD_NUMBER: _ClassVar[int]
     CONVERSATION_ID_FIELD_NUMBER: _ClassVar[int]
     SESSION_ID_FIELD_NUMBER: _ClassVar[int]
     PUBLISHED_ID_FIELD_NUMBER: _ClassVar[int]
     USER_ID_FIELD_NUMBER: _ClassVar[int]
-    TRANSFER_CAPABILITY_FIELD_NUMBER: _ClassVar[int]
     PROMPT_VARIABLES_FIELD_NUMBER: _ClassVar[int]
     AGENT_FIELD_NUMBER: _ClassVar[int]
     VOICE_RUNTIME_FIELD_NUMBER: _ClassVar[int]
     TEXT_RUNTIME_FIELD_NUMBER: _ClassVar[int]
-    LLM_AUDIT_CAPABILITY_FIELD_NUMBER: _ClassVar[int]
+    RUNTIME_LEASE_FIELD_NUMBER: _ClassVar[int]
+    HELPER_CHECKPOINT_FIELD_NUMBER: _ClassVar[int]
+    HELPER_BOOTSTRAP_FIELD_NUMBER: _ClassVar[int]
     contract_revision: str
     conversation_id: str
     session_id: str
     published_id: str
     user_id: str
-    transfer_capability: str
     prompt_variables: SessionPromptVariableBag
     agent: PublishedAgentExecution
     voice_runtime: CallRuntimeSnapshot
     text_runtime: TextRuntimeSnapshot
-    llm_audit_capability: LlmAuditCapability
-    def __init__(self, contract_revision: _Optional[str] = ..., conversation_id: _Optional[str] = ..., session_id: _Optional[str] = ..., published_id: _Optional[str] = ..., user_id: _Optional[str] = ..., transfer_capability: _Optional[str] = ..., prompt_variables: _Optional[_Union[SessionPromptVariableBag, _Mapping]] = ..., agent: _Optional[_Union[PublishedAgentExecution, _Mapping]] = ..., voice_runtime: _Optional[_Union[CallRuntimeSnapshot, _Mapping]] = ..., text_runtime: _Optional[_Union[TextRuntimeSnapshot, _Mapping]] = ..., llm_audit_capability: _Optional[_Union[LlmAuditCapability, _Mapping]] = ...) -> None: ...
-
-class LlmAuditCapability(_message.Message):
-    __slots__ = ("execution_id", "token", "expires_at")
-    EXECUTION_ID_FIELD_NUMBER: _ClassVar[int]
-    TOKEN_FIELD_NUMBER: _ClassVar[int]
-    EXPIRES_AT_FIELD_NUMBER: _ClassVar[int]
-    execution_id: str
-    token: str
-    expires_at: str
-    def __init__(self, execution_id: _Optional[str] = ..., token: _Optional[str] = ..., expires_at: _Optional[str] = ...) -> None: ...
+    runtime_lease: _runtime_identity_pb2.RuntimeLease
+    helper_checkpoint: _runtime_identity_pb2.RuntimeCheckpoint
+    helper_bootstrap: RuntimeTransferHelperBootstrap
+    def __init__(self, contract_revision: _Optional[str] = ..., conversation_id: _Optional[str] = ..., session_id: _Optional[str] = ..., published_id: _Optional[str] = ..., user_id: _Optional[str] = ..., prompt_variables: _Optional[_Union[SessionPromptVariableBag, _Mapping]] = ..., agent: _Optional[_Union[PublishedAgentExecution, _Mapping]] = ..., voice_runtime: _Optional[_Union[CallRuntimeSnapshot, _Mapping]] = ..., text_runtime: _Optional[_Union[TextRuntimeSnapshot, _Mapping]] = ..., runtime_lease: _Optional[_Union[_runtime_identity_pb2.RuntimeLease, _Mapping]] = ..., helper_checkpoint: _Optional[_Union[_runtime_identity_pb2.RuntimeCheckpoint, _Mapping]] = ..., helper_bootstrap: _Optional[_Union[RuntimeTransferHelperBootstrap, _Mapping]] = ...) -> None: ...
 
 class LlmAuditRequestContext(_message.Message):
-    __slots__ = ("capability", "request_attempt_id", "logical_request_id", "attempt_sequence", "node_id", "agent_runtime_id", "task_run_id", "role", "requested_model", "provider")
-    CAPABILITY_FIELD_NUMBER: _ClassVar[int]
+    __slots__ = ("request_attempt_id", "logical_request_id", "attempt_sequence", "node_id", "agent_runtime_id", "task_run_id", "role", "requested_model", "provider")
     REQUEST_ATTEMPT_ID_FIELD_NUMBER: _ClassVar[int]
     LOGICAL_REQUEST_ID_FIELD_NUMBER: _ClassVar[int]
     ATTEMPT_SEQUENCE_FIELD_NUMBER: _ClassVar[int]
@@ -214,7 +228,6 @@ class LlmAuditRequestContext(_message.Message):
     ROLE_FIELD_NUMBER: _ClassVar[int]
     REQUESTED_MODEL_FIELD_NUMBER: _ClassVar[int]
     PROVIDER_FIELD_NUMBER: _ClassVar[int]
-    capability: str
     request_attempt_id: str
     logical_request_id: str
     attempt_sequence: int
@@ -224,13 +237,17 @@ class LlmAuditRequestContext(_message.Message):
     role: str
     requested_model: str
     provider: str
-    def __init__(self, capability: _Optional[str] = ..., request_attempt_id: _Optional[str] = ..., logical_request_id: _Optional[str] = ..., attempt_sequence: _Optional[int] = ..., node_id: _Optional[str] = ..., agent_runtime_id: _Optional[str] = ..., task_run_id: _Optional[str] = ..., role: _Optional[str] = ..., requested_model: _Optional[str] = ..., provider: _Optional[str] = ...) -> None: ...
+    def __init__(self, request_attempt_id: _Optional[str] = ..., logical_request_id: _Optional[str] = ..., attempt_sequence: _Optional[int] = ..., node_id: _Optional[str] = ..., agent_runtime_id: _Optional[str] = ..., task_run_id: _Optional[str] = ..., role: _Optional[str] = ..., requested_model: _Optional[str] = ..., provider: _Optional[str] = ...) -> None: ...
 
 class RecordLlmRequestStartedRequest(_message.Message):
-    __slots__ = ("request",)
+    __slots__ = ("request", "owner", "helper_authorization")
     REQUEST_FIELD_NUMBER: _ClassVar[int]
+    OWNER_FIELD_NUMBER: _ClassVar[int]
+    HELPER_AUTHORIZATION_FIELD_NUMBER: _ClassVar[int]
     request: LlmAuditRequestContext
-    def __init__(self, request: _Optional[_Union[LlmAuditRequestContext, _Mapping]] = ...) -> None: ...
+    owner: _runtime_identity_pb2.RuntimeAuthorization
+    helper_authorization: _runtime_identity_pb2.RuntimeHelperAuthorization
+    def __init__(self, request: _Optional[_Union[LlmAuditRequestContext, _Mapping]] = ..., owner: _Optional[_Union[_runtime_identity_pb2.RuntimeAuthorization, _Mapping]] = ..., helper_authorization: _Optional[_Union[_runtime_identity_pb2.RuntimeHelperAuthorization, _Mapping]] = ...) -> None: ...
 
 class RecordLlmRequestStartedResponse(_message.Message):
     __slots__ = ("request_attempt_id", "recorded")
@@ -259,7 +276,7 @@ class LlmAuditUsage(_message.Message):
     def __init__(self, input_tokens: _Optional[int] = ..., output_tokens: _Optional[int] = ..., cached_input_tokens: _Optional[int] = ..., cache_write_tokens: _Optional[int] = ..., reasoning_tokens: _Optional[int] = ..., reported_cost_usd: _Optional[str] = ..., provider_usage_json: _Optional[str] = ...) -> None: ...
 
 class RecordLlmRequestTerminalRequest(_message.Message):
-    __slots__ = ("request", "status", "http_status", "actual_model", "provider_request_id", "usage", "error_code")
+    __slots__ = ("request", "status", "http_status", "actual_model", "provider_request_id", "usage", "error_code", "receipt_authorization")
     REQUEST_FIELD_NUMBER: _ClassVar[int]
     STATUS_FIELD_NUMBER: _ClassVar[int]
     HTTP_STATUS_FIELD_NUMBER: _ClassVar[int]
@@ -267,6 +284,7 @@ class RecordLlmRequestTerminalRequest(_message.Message):
     PROVIDER_REQUEST_ID_FIELD_NUMBER: _ClassVar[int]
     USAGE_FIELD_NUMBER: _ClassVar[int]
     ERROR_CODE_FIELD_NUMBER: _ClassVar[int]
+    RECEIPT_AUTHORIZATION_FIELD_NUMBER: _ClassVar[int]
     request: LlmAuditRequestContext
     status: str
     http_status: int
@@ -274,7 +292,8 @@ class RecordLlmRequestTerminalRequest(_message.Message):
     provider_request_id: str
     usage: LlmAuditUsage
     error_code: str
-    def __init__(self, request: _Optional[_Union[LlmAuditRequestContext, _Mapping]] = ..., status: _Optional[str] = ..., http_status: _Optional[int] = ..., actual_model: _Optional[str] = ..., provider_request_id: _Optional[str] = ..., usage: _Optional[_Union[LlmAuditUsage, _Mapping]] = ..., error_code: _Optional[str] = ...) -> None: ...
+    receipt_authorization: _runtime_identity_pb2.RuntimeReceiptAuthorization
+    def __init__(self, request: _Optional[_Union[LlmAuditRequestContext, _Mapping]] = ..., status: _Optional[str] = ..., http_status: _Optional[int] = ..., actual_model: _Optional[str] = ..., provider_request_id: _Optional[str] = ..., usage: _Optional[_Union[LlmAuditUsage, _Mapping]] = ..., error_code: _Optional[str] = ..., receipt_authorization: _Optional[_Union[_runtime_identity_pb2.RuntimeReceiptAuthorization, _Mapping]] = ...) -> None: ...
 
 class RecordLlmRequestTerminalResponse(_message.Message):
     __slots__ = ("request_attempt_id", "recorded", "duplicate")
@@ -341,7 +360,7 @@ class AgentPromptConfigSnapshot(_message.Message):
     def __init__(self, revision: _Optional[int] = ..., system_guardrail: _Optional[str] = ..., crew_system_context: _Optional[str] = ..., handoff_context: _Optional[str] = ..., supervisor_context: _Optional[str] = ..., specialist_context: _Optional[str] = ..., voice_rules: _Optional[str] = ..., dtmf_rules: _Optional[str] = ...) -> None: ...
 
 class PublishedAgentNodeRuntime(_message.Message):
-    __slots__ = ("node_id", "llm_worker", "instructions", "context_policy", "tools", "mcp_servers", "api_tool_runtimes", "a2a_tool_runtimes", "built_in_tools", "knowledge_revision_id", "knowledge_retrieval_capability", "knowledge_function_name", "knowledge_description", "knowledge_tool_runtimes", "authoring", "display_name", "greeting")
+    __slots__ = ("node_id", "llm_worker", "instructions", "context_policy", "tools", "mcp_servers", "api_tool_runtimes", "a2a_tool_runtimes", "built_in_tools", "knowledge_revision_id", "knowledge_function_name", "knowledge_description", "knowledge_tool_runtimes", "authoring", "display_name", "greeting", "knowledge_tool_reference")
     NODE_ID_FIELD_NUMBER: _ClassVar[int]
     LLM_WORKER_FIELD_NUMBER: _ClassVar[int]
     INSTRUCTIONS_FIELD_NUMBER: _ClassVar[int]
@@ -352,13 +371,13 @@ class PublishedAgentNodeRuntime(_message.Message):
     A2A_TOOL_RUNTIMES_FIELD_NUMBER: _ClassVar[int]
     BUILT_IN_TOOLS_FIELD_NUMBER: _ClassVar[int]
     KNOWLEDGE_REVISION_ID_FIELD_NUMBER: _ClassVar[int]
-    KNOWLEDGE_RETRIEVAL_CAPABILITY_FIELD_NUMBER: _ClassVar[int]
     KNOWLEDGE_FUNCTION_NAME_FIELD_NUMBER: _ClassVar[int]
     KNOWLEDGE_DESCRIPTION_FIELD_NUMBER: _ClassVar[int]
     KNOWLEDGE_TOOL_RUNTIMES_FIELD_NUMBER: _ClassVar[int]
     AUTHORING_FIELD_NUMBER: _ClassVar[int]
     DISPLAY_NAME_FIELD_NUMBER: _ClassVar[int]
     GREETING_FIELD_NUMBER: _ClassVar[int]
+    KNOWLEDGE_TOOL_REFERENCE_FIELD_NUMBER: _ClassVar[int]
     node_id: str
     llm_worker: _voice_runtime_pb2.LlmRuntime
     instructions: AgentInstructions
@@ -369,14 +388,14 @@ class PublishedAgentNodeRuntime(_message.Message):
     a2a_tool_runtimes: _containers.RepeatedCompositeFieldContainer[A2aToolRuntime]
     built_in_tools: _containers.RepeatedCompositeFieldContainer[BuiltInTool]
     knowledge_revision_id: str
-    knowledge_retrieval_capability: str
     knowledge_function_name: str
     knowledge_description: str
     knowledge_tool_runtimes: _containers.RepeatedCompositeFieldContainer[KnowledgeToolRuntime]
     authoring: InlineAuthoringOptions
     display_name: str
     greeting: str
-    def __init__(self, node_id: _Optional[str] = ..., llm_worker: _Optional[_Union[_voice_runtime_pb2.LlmRuntime, _Mapping]] = ..., instructions: _Optional[_Union[AgentInstructions, _Mapping]] = ..., context_policy: _Optional[_Union[ContextPolicy, str]] = ..., tools: _Optional[_Iterable[_Union[NodeToolMetadata, _Mapping]]] = ..., mcp_servers: _Optional[_Iterable[_Union[McpServerRuntime, _Mapping]]] = ..., api_tool_runtimes: _Optional[_Iterable[_Union[ApiToolRuntime, _Mapping]]] = ..., a2a_tool_runtimes: _Optional[_Iterable[_Union[A2aToolRuntime, _Mapping]]] = ..., built_in_tools: _Optional[_Iterable[_Union[BuiltInTool, _Mapping]]] = ..., knowledge_revision_id: _Optional[str] = ..., knowledge_retrieval_capability: _Optional[str] = ..., knowledge_function_name: _Optional[str] = ..., knowledge_description: _Optional[str] = ..., knowledge_tool_runtimes: _Optional[_Iterable[_Union[KnowledgeToolRuntime, _Mapping]]] = ..., authoring: _Optional[_Union[InlineAuthoringOptions, _Mapping]] = ..., display_name: _Optional[str] = ..., greeting: _Optional[str] = ...) -> None: ...
+    knowledge_tool_reference: str
+    def __init__(self, node_id: _Optional[str] = ..., llm_worker: _Optional[_Union[_voice_runtime_pb2.LlmRuntime, _Mapping]] = ..., instructions: _Optional[_Union[AgentInstructions, _Mapping]] = ..., context_policy: _Optional[_Union[ContextPolicy, str]] = ..., tools: _Optional[_Iterable[_Union[NodeToolMetadata, _Mapping]]] = ..., mcp_servers: _Optional[_Iterable[_Union[McpServerRuntime, _Mapping]]] = ..., api_tool_runtimes: _Optional[_Iterable[_Union[ApiToolRuntime, _Mapping]]] = ..., a2a_tool_runtimes: _Optional[_Iterable[_Union[A2aToolRuntime, _Mapping]]] = ..., built_in_tools: _Optional[_Iterable[_Union[BuiltInTool, _Mapping]]] = ..., knowledge_revision_id: _Optional[str] = ..., knowledge_function_name: _Optional[str] = ..., knowledge_description: _Optional[str] = ..., knowledge_tool_runtimes: _Optional[_Iterable[_Union[KnowledgeToolRuntime, _Mapping]]] = ..., authoring: _Optional[_Union[InlineAuthoringOptions, _Mapping]] = ..., display_name: _Optional[str] = ..., greeting: _Optional[str] = ..., knowledge_tool_reference: _Optional[str] = ...) -> None: ...
 
 class InlineAuthoringOptions(_message.Message):
     __slots__ = ("model", "tool_bindings")
@@ -671,18 +690,20 @@ class McpToolMetadata(_message.Message):
     def __init__(self, server_name: _Optional[str] = ..., transport: _Optional[str] = ..., url: _Optional[str] = ...) -> None: ...
 
 class ApiToolMetadata(_message.Message):
-    __slots__ = ("method", "url", "request_schema_json", "response_schema_json", "messages")
+    __slots__ = ("method", "url", "request_schema_json", "response_schema_json", "messages", "url_template_parameters")
     METHOD_FIELD_NUMBER: _ClassVar[int]
     URL_FIELD_NUMBER: _ClassVar[int]
     REQUEST_SCHEMA_JSON_FIELD_NUMBER: _ClassVar[int]
     RESPONSE_SCHEMA_JSON_FIELD_NUMBER: _ClassVar[int]
     MESSAGES_FIELD_NUMBER: _ClassVar[int]
+    URL_TEMPLATE_PARAMETERS_FIELD_NUMBER: _ClassVar[int]
     method: str
     url: str
     request_schema_json: str
     response_schema_json: str
     messages: _containers.RepeatedCompositeFieldContainer[ApiToolMessage]
-    def __init__(self, method: _Optional[str] = ..., url: _Optional[str] = ..., request_schema_json: _Optional[str] = ..., response_schema_json: _Optional[str] = ..., messages: _Optional[_Iterable[_Union[ApiToolMessage, _Mapping]]] = ...) -> None: ...
+    url_template_parameters: _containers.RepeatedScalarFieldContainer[str]
+    def __init__(self, method: _Optional[str] = ..., url: _Optional[str] = ..., request_schema_json: _Optional[str] = ..., response_schema_json: _Optional[str] = ..., messages: _Optional[_Iterable[_Union[ApiToolMessage, _Mapping]]] = ..., url_template_parameters: _Optional[_Iterable[str]] = ...) -> None: ...
 
 class ToolMessages(_message.Message):
     __slots__ = ("items",)
@@ -735,44 +756,30 @@ class KnowledgeToolMetadata(_message.Message):
     def __init__(self, knowledge_revision_id: _Optional[str] = ...) -> None: ...
 
 class ApiToolRuntime(_message.Message):
-    __slots__ = ("tool_id", "headers")
-    class HeadersEntry(_message.Message):
-        __slots__ = ("key", "value")
-        KEY_FIELD_NUMBER: _ClassVar[int]
-        VALUE_FIELD_NUMBER: _ClassVar[int]
-        key: str
-        value: str
-        def __init__(self, key: _Optional[str] = ..., value: _Optional[str] = ...) -> None: ...
+    __slots__ = ("tool_id", "tool_reference")
     TOOL_ID_FIELD_NUMBER: _ClassVar[int]
-    HEADERS_FIELD_NUMBER: _ClassVar[int]
+    TOOL_REFERENCE_FIELD_NUMBER: _ClassVar[int]
     tool_id: str
-    headers: _containers.ScalarMap[str, str]
-    def __init__(self, tool_id: _Optional[str] = ..., headers: _Optional[_Mapping[str, str]] = ...) -> None: ...
+    tool_reference: str
+    def __init__(self, tool_id: _Optional[str] = ..., tool_reference: _Optional[str] = ...) -> None: ...
 
 class A2aToolRuntime(_message.Message):
-    __slots__ = ("tool_id", "headers", "timeout_ms")
-    class HeadersEntry(_message.Message):
-        __slots__ = ("key", "value")
-        KEY_FIELD_NUMBER: _ClassVar[int]
-        VALUE_FIELD_NUMBER: _ClassVar[int]
-        key: str
-        value: str
-        def __init__(self, key: _Optional[str] = ..., value: _Optional[str] = ...) -> None: ...
+    __slots__ = ("tool_id", "timeout_ms", "tool_reference")
     TOOL_ID_FIELD_NUMBER: _ClassVar[int]
-    HEADERS_FIELD_NUMBER: _ClassVar[int]
     TIMEOUT_MS_FIELD_NUMBER: _ClassVar[int]
+    TOOL_REFERENCE_FIELD_NUMBER: _ClassVar[int]
     tool_id: str
-    headers: _containers.ScalarMap[str, str]
     timeout_ms: int
-    def __init__(self, tool_id: _Optional[str] = ..., headers: _Optional[_Mapping[str, str]] = ..., timeout_ms: _Optional[int] = ...) -> None: ...
+    tool_reference: str
+    def __init__(self, tool_id: _Optional[str] = ..., timeout_ms: _Optional[int] = ..., tool_reference: _Optional[str] = ...) -> None: ...
 
 class KnowledgeToolRuntime(_message.Message):
-    __slots__ = ("tool_id", "retrieval_capability")
+    __slots__ = ("tool_id", "tool_reference")
     TOOL_ID_FIELD_NUMBER: _ClassVar[int]
-    RETRIEVAL_CAPABILITY_FIELD_NUMBER: _ClassVar[int]
+    TOOL_REFERENCE_FIELD_NUMBER: _ClassVar[int]
     tool_id: str
-    retrieval_capability: str
-    def __init__(self, tool_id: _Optional[str] = ..., retrieval_capability: _Optional[str] = ...) -> None: ...
+    tool_reference: str
+    def __init__(self, tool_id: _Optional[str] = ..., tool_reference: _Optional[str] = ...) -> None: ...
 
 class BuiltInTool(_message.Message):
     __slots__ = ("messages", "end_call", "transfer_to_human", "dtmf", "send_sms", "speaker")
@@ -845,25 +852,16 @@ class SpeakerTool(_message.Message):
     def __init__(self, condition: _Optional[str] = ..., script: _Optional[str] = ..., consent_question: _Optional[str] = ..., response_timeout_seconds: _Optional[int] = ...) -> None: ...
 
 class McpServerRuntime(_message.Message):
-    __slots__ = ("name", "transport", "url", "headers", "timeout_ms")
-    class HeadersEntry(_message.Message):
-        __slots__ = ("key", "value")
-        KEY_FIELD_NUMBER: _ClassVar[int]
-        VALUE_FIELD_NUMBER: _ClassVar[int]
-        key: str
-        value: str
-        def __init__(self, key: _Optional[str] = ..., value: _Optional[str] = ...) -> None: ...
+    __slots__ = ("name", "transport", "timeout_ms", "tool_reference")
     NAME_FIELD_NUMBER: _ClassVar[int]
     TRANSPORT_FIELD_NUMBER: _ClassVar[int]
-    URL_FIELD_NUMBER: _ClassVar[int]
-    HEADERS_FIELD_NUMBER: _ClassVar[int]
     TIMEOUT_MS_FIELD_NUMBER: _ClassVar[int]
+    TOOL_REFERENCE_FIELD_NUMBER: _ClassVar[int]
     name: str
     transport: str
-    url: str
-    headers: _containers.ScalarMap[str, str]
     timeout_ms: int
-    def __init__(self, name: _Optional[str] = ..., transport: _Optional[str] = ..., url: _Optional[str] = ..., headers: _Optional[_Mapping[str, str]] = ..., timeout_ms: _Optional[int] = ...) -> None: ...
+    tool_reference: str
+    def __init__(self, name: _Optional[str] = ..., transport: _Optional[str] = ..., timeout_ms: _Optional[int] = ..., tool_reference: _Optional[str] = ...) -> None: ...
 
 class ConversationFillerRuntime(_message.Message):
     __slots__ = ("phrase",)
@@ -872,8 +870,7 @@ class ConversationFillerRuntime(_message.Message):
     def __init__(self, phrase: _Optional[str] = ...) -> None: ...
 
 class CommandSipTransferRequest(_message.Message):
-    __slots__ = ("capability", "conversation_id", "session_id", "request_id", "node_id", "attempt_id", "action", "reason", "consultant_identity", "briefing", "consent_source")
-    CAPABILITY_FIELD_NUMBER: _ClassVar[int]
+    __slots__ = ("conversation_id", "session_id", "request_id", "node_id", "attempt_id", "action", "reason", "consultant_identity", "briefing", "consent_source", "owner", "helper_authorization", "owner_control_intent_id")
     CONVERSATION_ID_FIELD_NUMBER: _ClassVar[int]
     SESSION_ID_FIELD_NUMBER: _ClassVar[int]
     REQUEST_ID_FIELD_NUMBER: _ClassVar[int]
@@ -884,7 +881,9 @@ class CommandSipTransferRequest(_message.Message):
     CONSULTANT_IDENTITY_FIELD_NUMBER: _ClassVar[int]
     BRIEFING_FIELD_NUMBER: _ClassVar[int]
     CONSENT_SOURCE_FIELD_NUMBER: _ClassVar[int]
-    capability: str
+    OWNER_FIELD_NUMBER: _ClassVar[int]
+    HELPER_AUTHORIZATION_FIELD_NUMBER: _ClassVar[int]
+    OWNER_CONTROL_INTENT_ID_FIELD_NUMBER: _ClassVar[int]
     conversation_id: str
     session_id: str
     request_id: str
@@ -895,34 +894,399 @@ class CommandSipTransferRequest(_message.Message):
     consultant_identity: str
     briefing: str
     consent_source: str
-    def __init__(self, capability: _Optional[str] = ..., conversation_id: _Optional[str] = ..., session_id: _Optional[str] = ..., request_id: _Optional[str] = ..., node_id: _Optional[str] = ..., attempt_id: _Optional[str] = ..., action: _Optional[str] = ..., reason: _Optional[str] = ..., consultant_identity: _Optional[str] = ..., briefing: _Optional[str] = ..., consent_source: _Optional[str] = ...) -> None: ...
+    owner: _runtime_identity_pb2.RuntimeAuthorization
+    helper_authorization: _runtime_identity_pb2.RuntimeHelperAuthorization
+    owner_control_intent_id: str
+    def __init__(self, conversation_id: _Optional[str] = ..., session_id: _Optional[str] = ..., request_id: _Optional[str] = ..., node_id: _Optional[str] = ..., attempt_id: _Optional[str] = ..., action: _Optional[str] = ..., reason: _Optional[str] = ..., consultant_identity: _Optional[str] = ..., briefing: _Optional[str] = ..., consent_source: _Optional[str] = ..., owner: _Optional[_Union[_runtime_identity_pb2.RuntimeAuthorization, _Mapping]] = ..., helper_authorization: _Optional[_Union[_runtime_identity_pb2.RuntimeHelperAuthorization, _Mapping]] = ..., owner_control_intent_id: _Optional[str] = ...) -> None: ...
 
 class CommandSipTransferResponse(_message.Message):
-    __slots__ = ("attempt_id", "state", "mode", "consultation", "expires_at", "reason")
+    __slots__ = ("attempt_id", "state", "mode", "expires_at", "reason")
     ATTEMPT_ID_FIELD_NUMBER: _ClassVar[int]
     STATE_FIELD_NUMBER: _ClassVar[int]
     MODE_FIELD_NUMBER: _ClassVar[int]
-    CONSULTATION_FIELD_NUMBER: _ClassVar[int]
     EXPIRES_AT_FIELD_NUMBER: _ClassVar[int]
     REASON_FIELD_NUMBER: _ClassVar[int]
     attempt_id: str
     state: str
     mode: str
-    consultation: SipTransferConsultation
     expires_at: str
     reason: str
-    def __init__(self, attempt_id: _Optional[str] = ..., state: _Optional[str] = ..., mode: _Optional[str] = ..., consultation: _Optional[_Union[SipTransferConsultation, _Mapping]] = ..., expires_at: _Optional[str] = ..., reason: _Optional[str] = ...) -> None: ...
+    def __init__(self, attempt_id: _Optional[str] = ..., state: _Optional[str] = ..., mode: _Optional[str] = ..., expires_at: _Optional[str] = ..., reason: _Optional[str] = ...) -> None: ...
 
-class SipTransferConsultation(_message.Message):
-    __slots__ = ("room_name", "consultant_identity", "worker_identity", "livekit_url", "participant_token")
-    ROOM_NAME_FIELD_NUMBER: _ClassVar[int]
-    CONSULTANT_IDENTITY_FIELD_NUMBER: _ClassVar[int]
-    WORKER_IDENTITY_FIELD_NUMBER: _ClassVar[int]
-    LIVEKIT_URL_FIELD_NUMBER: _ClassVar[int]
-    PARTICIPANT_TOKEN_FIELD_NUMBER: _ClassVar[int]
-    room_name: str
-    consultant_identity: str
-    worker_identity: str
-    livekit_url: str
-    participant_token: str
-    def __init__(self, room_name: _Optional[str] = ..., consultant_identity: _Optional[str] = ..., worker_identity: _Optional[str] = ..., livekit_url: _Optional[str] = ..., participant_token: _Optional[str] = ...) -> None: ...
+class RuntimeTransferHelperBootstrap(_message.Message):
+    __slots__ = ("transfer_attempt_id", "briefing_text", "briefing_state", "consent_state", "automatic", "consent_question", "node_id", "llm_worker", "source_context_json", "briefing_reason")
+    TRANSFER_ATTEMPT_ID_FIELD_NUMBER: _ClassVar[int]
+    BRIEFING_TEXT_FIELD_NUMBER: _ClassVar[int]
+    BRIEFING_STATE_FIELD_NUMBER: _ClassVar[int]
+    CONSENT_STATE_FIELD_NUMBER: _ClassVar[int]
+    AUTOMATIC_FIELD_NUMBER: _ClassVar[int]
+    CONSENT_QUESTION_FIELD_NUMBER: _ClassVar[int]
+    NODE_ID_FIELD_NUMBER: _ClassVar[int]
+    LLM_WORKER_FIELD_NUMBER: _ClassVar[int]
+    SOURCE_CONTEXT_JSON_FIELD_NUMBER: _ClassVar[int]
+    BRIEFING_REASON_FIELD_NUMBER: _ClassVar[int]
+    transfer_attempt_id: str
+    briefing_text: str
+    briefing_state: str
+    consent_state: str
+    automatic: bool
+    consent_question: str
+    node_id: str
+    llm_worker: _voice_runtime_pb2.LlmRuntime
+    source_context_json: str
+    briefing_reason: str
+    def __init__(self, transfer_attempt_id: _Optional[str] = ..., briefing_text: _Optional[str] = ..., briefing_state: _Optional[str] = ..., consent_state: _Optional[str] = ..., automatic: _Optional[bool] = ..., consent_question: _Optional[str] = ..., node_id: _Optional[str] = ..., llm_worker: _Optional[_Union[_voice_runtime_pb2.LlmRuntime, _Mapping]] = ..., source_context_json: _Optional[str] = ..., briefing_reason: _Optional[str] = ...) -> None: ...
+
+class PrepareRuntimeAttemptRequest(_message.Message):
+    __slots__ = ("launcher_id", "launcher_incarnation", "nonce", "protocol_revision", "compatibility_fingerprint", "purpose", "assignment", "session_id", "dispatch_intent_id", "transfer_attempt_id")
+    LAUNCHER_ID_FIELD_NUMBER: _ClassVar[int]
+    LAUNCHER_INCARNATION_FIELD_NUMBER: _ClassVar[int]
+    NONCE_FIELD_NUMBER: _ClassVar[int]
+    PROTOCOL_REVISION_FIELD_NUMBER: _ClassVar[int]
+    COMPATIBILITY_FINGERPRINT_FIELD_NUMBER: _ClassVar[int]
+    PURPOSE_FIELD_NUMBER: _ClassVar[int]
+    ASSIGNMENT_FIELD_NUMBER: _ClassVar[int]
+    SESSION_ID_FIELD_NUMBER: _ClassVar[int]
+    DISPATCH_INTENT_ID_FIELD_NUMBER: _ClassVar[int]
+    TRANSFER_ATTEMPT_ID_FIELD_NUMBER: _ClassVar[int]
+    launcher_id: str
+    launcher_incarnation: str
+    nonce: str
+    protocol_revision: str
+    compatibility_fingerprint: str
+    purpose: str
+    assignment: _runtime_identity_pb2.RuntimeAssignment
+    session_id: str
+    dispatch_intent_id: str
+    transfer_attempt_id: str
+    def __init__(self, launcher_id: _Optional[str] = ..., launcher_incarnation: _Optional[str] = ..., nonce: _Optional[str] = ..., protocol_revision: _Optional[str] = ..., compatibility_fingerprint: _Optional[str] = ..., purpose: _Optional[str] = ..., assignment: _Optional[_Union[_runtime_identity_pb2.RuntimeAssignment, _Mapping]] = ..., session_id: _Optional[str] = ..., dispatch_intent_id: _Optional[str] = ..., transfer_attempt_id: _Optional[str] = ...) -> None: ...
+
+class PrepareRuntimeAttemptResponse(_message.Message):
+    __slots__ = ("attempt_authorization", "expires_at")
+    ATTEMPT_AUTHORIZATION_FIELD_NUMBER: _ClassVar[int]
+    EXPIRES_AT_FIELD_NUMBER: _ClassVar[int]
+    attempt_authorization: _runtime_identity_pb2.RuntimeAttemptAuthorization
+    expires_at: str
+    def __init__(self, attempt_authorization: _Optional[_Union[_runtime_identity_pb2.RuntimeAttemptAuthorization, _Mapping]] = ..., expires_at: _Optional[str] = ...) -> None: ...
+
+class RecoverRuntimeRequest(_message.Message):
+    __slots__ = ("attempt_authorization", "assignment", "conversation_id", "session_id", "published_id", "contract_revision", "protocol_revision", "checkpoint_codec", "transfer_attempt_id")
+    ATTEMPT_AUTHORIZATION_FIELD_NUMBER: _ClassVar[int]
+    ASSIGNMENT_FIELD_NUMBER: _ClassVar[int]
+    CONVERSATION_ID_FIELD_NUMBER: _ClassVar[int]
+    SESSION_ID_FIELD_NUMBER: _ClassVar[int]
+    PUBLISHED_ID_FIELD_NUMBER: _ClassVar[int]
+    CONTRACT_REVISION_FIELD_NUMBER: _ClassVar[int]
+    PROTOCOL_REVISION_FIELD_NUMBER: _ClassVar[int]
+    CHECKPOINT_CODEC_FIELD_NUMBER: _ClassVar[int]
+    TRANSFER_ATTEMPT_ID_FIELD_NUMBER: _ClassVar[int]
+    attempt_authorization: _runtime_identity_pb2.RuntimeAttemptAuthorization
+    assignment: _runtime_identity_pb2.RuntimeAssignment
+    conversation_id: str
+    session_id: str
+    published_id: str
+    contract_revision: str
+    protocol_revision: str
+    checkpoint_codec: str
+    transfer_attempt_id: str
+    def __init__(self, attempt_authorization: _Optional[_Union[_runtime_identity_pb2.RuntimeAttemptAuthorization, _Mapping]] = ..., assignment: _Optional[_Union[_runtime_identity_pb2.RuntimeAssignment, _Mapping]] = ..., conversation_id: _Optional[str] = ..., session_id: _Optional[str] = ..., published_id: _Optional[str] = ..., contract_revision: _Optional[str] = ..., protocol_revision: _Optional[str] = ..., checkpoint_codec: _Optional[str] = ..., transfer_attempt_id: _Optional[str] = ...) -> None: ...
+
+class RuntimeControlEffect(_message.Message):
+    __slots__ = ("effect_id", "execution_id", "epoch", "kind", "status", "participant_identity")
+    EFFECT_ID_FIELD_NUMBER: _ClassVar[int]
+    EXECUTION_ID_FIELD_NUMBER: _ClassVar[int]
+    EPOCH_FIELD_NUMBER: _ClassVar[int]
+    KIND_FIELD_NUMBER: _ClassVar[int]
+    STATUS_FIELD_NUMBER: _ClassVar[int]
+    PARTICIPANT_IDENTITY_FIELD_NUMBER: _ClassVar[int]
+    effect_id: str
+    execution_id: str
+    epoch: int
+    kind: str
+    status: _runtime_identity_pb2.RuntimeOperationStatus
+    participant_identity: str
+    def __init__(self, effect_id: _Optional[str] = ..., execution_id: _Optional[str] = ..., epoch: _Optional[int] = ..., kind: _Optional[str] = ..., status: _Optional[_Union[_runtime_identity_pb2.RuntimeOperationStatus, str]] = ..., participant_identity: _Optional[str] = ...) -> None: ...
+
+class RecoverRuntimeResponse(_message.Message):
+    __slots__ = ("runtime_lease", "bootstrap", "checkpoint", "unresolved_operations", "media_fences", "control_effects")
+    RUNTIME_LEASE_FIELD_NUMBER: _ClassVar[int]
+    BOOTSTRAP_FIELD_NUMBER: _ClassVar[int]
+    CHECKPOINT_FIELD_NUMBER: _ClassVar[int]
+    UNRESOLVED_OPERATIONS_FIELD_NUMBER: _ClassVar[int]
+    MEDIA_FENCES_FIELD_NUMBER: _ClassVar[int]
+    CONTROL_EFFECTS_FIELD_NUMBER: _ClassVar[int]
+    runtime_lease: _runtime_identity_pb2.RuntimeLease
+    bootstrap: BootstrapPublishedResponse
+    checkpoint: _runtime_identity_pb2.RuntimeCheckpoint
+    unresolved_operations: _containers.RepeatedCompositeFieldContainer[_runtime_identity_pb2.RuntimeOperation]
+    media_fences: _containers.RepeatedCompositeFieldContainer[_runtime_identity_pb2.RuntimeMediaFence]
+    control_effects: _containers.RepeatedCompositeFieldContainer[RuntimeControlEffect]
+    def __init__(self, runtime_lease: _Optional[_Union[_runtime_identity_pb2.RuntimeLease, _Mapping]] = ..., bootstrap: _Optional[_Union[BootstrapPublishedResponse, _Mapping]] = ..., checkpoint: _Optional[_Union[_runtime_identity_pb2.RuntimeCheckpoint, _Mapping]] = ..., unresolved_operations: _Optional[_Iterable[_Union[_runtime_identity_pb2.RuntimeOperation, _Mapping]]] = ..., media_fences: _Optional[_Iterable[_Union[_runtime_identity_pb2.RuntimeMediaFence, _Mapping]]] = ..., control_effects: _Optional[_Iterable[_Union[RuntimeControlEffect, _Mapping]]] = ...) -> None: ...
+
+class RenewRuntimeLeaseRequest(_message.Message):
+    __slots__ = ("owner", "helper_authorization")
+    OWNER_FIELD_NUMBER: _ClassVar[int]
+    HELPER_AUTHORIZATION_FIELD_NUMBER: _ClassVar[int]
+    owner: _runtime_identity_pb2.RuntimeAuthorization
+    helper_authorization: _runtime_identity_pb2.RuntimeHelperAuthorization
+    def __init__(self, owner: _Optional[_Union[_runtime_identity_pb2.RuntimeAuthorization, _Mapping]] = ..., helper_authorization: _Optional[_Union[_runtime_identity_pb2.RuntimeHelperAuthorization, _Mapping]] = ...) -> None: ...
+
+class RenewRuntimeLeaseResponse(_message.Message):
+    __slots__ = ("runtime_lease",)
+    RUNTIME_LEASE_FIELD_NUMBER: _ClassVar[int]
+    runtime_lease: _runtime_identity_pb2.RuntimeLease
+    def __init__(self, runtime_lease: _Optional[_Union[_runtime_identity_pb2.RuntimeLease, _Mapping]] = ...) -> None: ...
+
+class ActivateRuntimeRequest(_message.Message):
+    __slots__ = ("owner", "helper_authorization", "room_sid", "caller_identity", "caller_sid", "checkpoint_revision")
+    OWNER_FIELD_NUMBER: _ClassVar[int]
+    HELPER_AUTHORIZATION_FIELD_NUMBER: _ClassVar[int]
+    ROOM_SID_FIELD_NUMBER: _ClassVar[int]
+    CALLER_IDENTITY_FIELD_NUMBER: _ClassVar[int]
+    CALLER_SID_FIELD_NUMBER: _ClassVar[int]
+    CHECKPOINT_REVISION_FIELD_NUMBER: _ClassVar[int]
+    owner: _runtime_identity_pb2.RuntimeAuthorization
+    helper_authorization: _runtime_identity_pb2.RuntimeHelperAuthorization
+    room_sid: str
+    caller_identity: str
+    caller_sid: str
+    checkpoint_revision: int
+    def __init__(self, owner: _Optional[_Union[_runtime_identity_pb2.RuntimeAuthorization, _Mapping]] = ..., helper_authorization: _Optional[_Union[_runtime_identity_pb2.RuntimeHelperAuthorization, _Mapping]] = ..., room_sid: _Optional[str] = ..., caller_identity: _Optional[str] = ..., caller_sid: _Optional[str] = ..., checkpoint_revision: _Optional[int] = ...) -> None: ...
+
+class ActivateRuntimeResponse(_message.Message):
+    __slots__ = ("runtime_lease",)
+    RUNTIME_LEASE_FIELD_NUMBER: _ClassVar[int]
+    runtime_lease: _runtime_identity_pb2.RuntimeLease
+    def __init__(self, runtime_lease: _Optional[_Union[_runtime_identity_pb2.RuntimeLease, _Mapping]] = ...) -> None: ...
+
+class RuntimeConsumedFormRequest(_message.Message):
+    __slots__ = ("request_id", "transition_id")
+    REQUEST_ID_FIELD_NUMBER: _ClassVar[int]
+    TRANSITION_ID_FIELD_NUMBER: _ClassVar[int]
+    request_id: str
+    transition_id: str
+    def __init__(self, request_id: _Optional[str] = ..., transition_id: _Optional[str] = ...) -> None: ...
+
+class RuntimeAppliedOperationResult(_message.Message):
+    __slots__ = ("operation_id", "frame_id", "activation_id", "expected_binding_version")
+    OPERATION_ID_FIELD_NUMBER: _ClassVar[int]
+    FRAME_ID_FIELD_NUMBER: _ClassVar[int]
+    ACTIVATION_ID_FIELD_NUMBER: _ClassVar[int]
+    EXPECTED_BINDING_VERSION_FIELD_NUMBER: _ClassVar[int]
+    operation_id: str
+    frame_id: str
+    activation_id: str
+    expected_binding_version: int
+    def __init__(self, operation_id: _Optional[str] = ..., frame_id: _Optional[str] = ..., activation_id: _Optional[str] = ..., expected_binding_version: _Optional[int] = ...) -> None: ...
+
+class CommitRuntimeCheckpointRequest(_message.Message):
+    __slots__ = ("owner", "helper_authorization", "expected_revision", "codec", "compatibility_fingerprint", "checkpoint_payload", "consumed_form_requests", "applied_operation_results", "accepted_input_ids")
+    OWNER_FIELD_NUMBER: _ClassVar[int]
+    HELPER_AUTHORIZATION_FIELD_NUMBER: _ClassVar[int]
+    EXPECTED_REVISION_FIELD_NUMBER: _ClassVar[int]
+    CODEC_FIELD_NUMBER: _ClassVar[int]
+    COMPATIBILITY_FINGERPRINT_FIELD_NUMBER: _ClassVar[int]
+    CHECKPOINT_PAYLOAD_FIELD_NUMBER: _ClassVar[int]
+    CONSUMED_FORM_REQUESTS_FIELD_NUMBER: _ClassVar[int]
+    APPLIED_OPERATION_RESULTS_FIELD_NUMBER: _ClassVar[int]
+    ACCEPTED_INPUT_IDS_FIELD_NUMBER: _ClassVar[int]
+    owner: _runtime_identity_pb2.RuntimeAuthorization
+    helper_authorization: _runtime_identity_pb2.RuntimeHelperAuthorization
+    expected_revision: int
+    codec: str
+    compatibility_fingerprint: str
+    checkpoint_payload: bytes
+    consumed_form_requests: _containers.RepeatedCompositeFieldContainer[RuntimeConsumedFormRequest]
+    applied_operation_results: _containers.RepeatedCompositeFieldContainer[RuntimeAppliedOperationResult]
+    accepted_input_ids: _containers.RepeatedScalarFieldContainer[str]
+    def __init__(self, owner: _Optional[_Union[_runtime_identity_pb2.RuntimeAuthorization, _Mapping]] = ..., helper_authorization: _Optional[_Union[_runtime_identity_pb2.RuntimeHelperAuthorization, _Mapping]] = ..., expected_revision: _Optional[int] = ..., codec: _Optional[str] = ..., compatibility_fingerprint: _Optional[str] = ..., checkpoint_payload: _Optional[bytes] = ..., consumed_form_requests: _Optional[_Iterable[_Union[RuntimeConsumedFormRequest, _Mapping]]] = ..., applied_operation_results: _Optional[_Iterable[_Union[RuntimeAppliedOperationResult, _Mapping]]] = ..., accepted_input_ids: _Optional[_Iterable[str]] = ...) -> None: ...
+
+class CommitRuntimeCheckpointResponse(_message.Message):
+    __slots__ = ("committed_revision", "projection")
+    COMMITTED_REVISION_FIELD_NUMBER: _ClassVar[int]
+    PROJECTION_FIELD_NUMBER: _ClassVar[int]
+    committed_revision: int
+    projection: _runtime_identity_pb2.RuntimeProjection
+    def __init__(self, committed_revision: _Optional[int] = ..., projection: _Optional[_Union[_runtime_identity_pb2.RuntimeProjection, _Mapping]] = ...) -> None: ...
+
+class ExecuteRuntimeOperationRequest(_message.Message):
+    __slots__ = ("owner", "operation_id", "intent_id", "node_id", "frame_id", "activation_id", "tool_reference", "tool_name", "resolved_arguments_json", "input_turn_id", "transition_id", "expected_binding_version", "operation_kind", "delivery_target", "provider_correlation")
+    OWNER_FIELD_NUMBER: _ClassVar[int]
+    OPERATION_ID_FIELD_NUMBER: _ClassVar[int]
+    INTENT_ID_FIELD_NUMBER: _ClassVar[int]
+    NODE_ID_FIELD_NUMBER: _ClassVar[int]
+    FRAME_ID_FIELD_NUMBER: _ClassVar[int]
+    ACTIVATION_ID_FIELD_NUMBER: _ClassVar[int]
+    TOOL_REFERENCE_FIELD_NUMBER: _ClassVar[int]
+    TOOL_NAME_FIELD_NUMBER: _ClassVar[int]
+    RESOLVED_ARGUMENTS_JSON_FIELD_NUMBER: _ClassVar[int]
+    INPUT_TURN_ID_FIELD_NUMBER: _ClassVar[int]
+    TRANSITION_ID_FIELD_NUMBER: _ClassVar[int]
+    EXPECTED_BINDING_VERSION_FIELD_NUMBER: _ClassVar[int]
+    OPERATION_KIND_FIELD_NUMBER: _ClassVar[int]
+    DELIVERY_TARGET_FIELD_NUMBER: _ClassVar[int]
+    PROVIDER_CORRELATION_FIELD_NUMBER: _ClassVar[int]
+    owner: _runtime_identity_pb2.RuntimeAuthorization
+    operation_id: str
+    intent_id: str
+    node_id: str
+    frame_id: str
+    activation_id: str
+    tool_reference: str
+    tool_name: str
+    resolved_arguments_json: str
+    input_turn_id: str
+    transition_id: str
+    expected_binding_version: int
+    operation_kind: _runtime_identity_pb2.RuntimeOperationKind
+    delivery_target: str
+    provider_correlation: _runtime_identity_pb2.RuntimeProviderCorrelation
+    def __init__(self, owner: _Optional[_Union[_runtime_identity_pb2.RuntimeAuthorization, _Mapping]] = ..., operation_id: _Optional[str] = ..., intent_id: _Optional[str] = ..., node_id: _Optional[str] = ..., frame_id: _Optional[str] = ..., activation_id: _Optional[str] = ..., tool_reference: _Optional[str] = ..., tool_name: _Optional[str] = ..., resolved_arguments_json: _Optional[str] = ..., input_turn_id: _Optional[str] = ..., transition_id: _Optional[str] = ..., expected_binding_version: _Optional[int] = ..., operation_kind: _Optional[_Union[_runtime_identity_pb2.RuntimeOperationKind, str]] = ..., delivery_target: _Optional[str] = ..., provider_correlation: _Optional[_Union[_runtime_identity_pb2.RuntimeProviderCorrelation, _Mapping]] = ...) -> None: ...
+
+class ExecuteRuntimeOperationResponse(_message.Message):
+    __slots__ = ("operation",)
+    OPERATION_FIELD_NUMBER: _ClassVar[int]
+    operation: _runtime_identity_pb2.RuntimeOperation
+    def __init__(self, operation: _Optional[_Union[_runtime_identity_pb2.RuntimeOperation, _Mapping]] = ...) -> None: ...
+
+class GetRuntimeOperationRequest(_message.Message):
+    __slots__ = ("owner", "operation_id")
+    OWNER_FIELD_NUMBER: _ClassVar[int]
+    OPERATION_ID_FIELD_NUMBER: _ClassVar[int]
+    owner: _runtime_identity_pb2.RuntimeAuthorization
+    operation_id: str
+    def __init__(self, owner: _Optional[_Union[_runtime_identity_pb2.RuntimeAuthorization, _Mapping]] = ..., operation_id: _Optional[str] = ...) -> None: ...
+
+class GetRuntimeOperationResponse(_message.Message):
+    __slots__ = ("operation",)
+    OPERATION_FIELD_NUMBER: _ClassVar[int]
+    operation: _runtime_identity_pb2.RuntimeOperation
+    def __init__(self, operation: _Optional[_Union[_runtime_identity_pb2.RuntimeOperation, _Mapping]] = ...) -> None: ...
+
+class RecordRuntimeReceiptRequest(_message.Message):
+    __slots__ = ("receipt_authorization", "receipt_id", "operation_id", "kind", "status", "result_json", "provider_request_id", "occurred_at", "confirmed_no_effect", "provider_correlation")
+    RECEIPT_AUTHORIZATION_FIELD_NUMBER: _ClassVar[int]
+    RECEIPT_ID_FIELD_NUMBER: _ClassVar[int]
+    OPERATION_ID_FIELD_NUMBER: _ClassVar[int]
+    KIND_FIELD_NUMBER: _ClassVar[int]
+    STATUS_FIELD_NUMBER: _ClassVar[int]
+    RESULT_JSON_FIELD_NUMBER: _ClassVar[int]
+    PROVIDER_REQUEST_ID_FIELD_NUMBER: _ClassVar[int]
+    OCCURRED_AT_FIELD_NUMBER: _ClassVar[int]
+    CONFIRMED_NO_EFFECT_FIELD_NUMBER: _ClassVar[int]
+    PROVIDER_CORRELATION_FIELD_NUMBER: _ClassVar[int]
+    receipt_authorization: _runtime_identity_pb2.RuntimeReceiptAuthorization
+    receipt_id: str
+    operation_id: str
+    kind: str
+    status: _runtime_identity_pb2.RuntimeOperationStatus
+    result_json: str
+    provider_request_id: str
+    occurred_at: str
+    confirmed_no_effect: bool
+    provider_correlation: _runtime_identity_pb2.RuntimeProviderCorrelation
+    def __init__(self, receipt_authorization: _Optional[_Union[_runtime_identity_pb2.RuntimeReceiptAuthorization, _Mapping]] = ..., receipt_id: _Optional[str] = ..., operation_id: _Optional[str] = ..., kind: _Optional[str] = ..., status: _Optional[_Union[_runtime_identity_pb2.RuntimeOperationStatus, str]] = ..., result_json: _Optional[str] = ..., provider_request_id: _Optional[str] = ..., occurred_at: _Optional[str] = ..., confirmed_no_effect: _Optional[bool] = ..., provider_correlation: _Optional[_Union[_runtime_identity_pb2.RuntimeProviderCorrelation, _Mapping]] = ...) -> None: ...
+
+class RecordRuntimeReceiptResponse(_message.Message):
+    __slots__ = ("receipt_id", "recorded", "duplicate", "disposition")
+    RECEIPT_ID_FIELD_NUMBER: _ClassVar[int]
+    RECORDED_FIELD_NUMBER: _ClassVar[int]
+    DUPLICATE_FIELD_NUMBER: _ClassVar[int]
+    DISPOSITION_FIELD_NUMBER: _ClassVar[int]
+    receipt_id: str
+    recorded: bool
+    duplicate: bool
+    disposition: str
+    def __init__(self, receipt_id: _Optional[str] = ..., recorded: _Optional[bool] = ..., duplicate: _Optional[bool] = ..., disposition: _Optional[str] = ...) -> None: ...
+
+class EndRuntimeRequest(_message.Message):
+    __slots__ = ("owner", "intent_id", "reason", "ended_by")
+    OWNER_FIELD_NUMBER: _ClassVar[int]
+    INTENT_ID_FIELD_NUMBER: _ClassVar[int]
+    REASON_FIELD_NUMBER: _ClassVar[int]
+    ENDED_BY_FIELD_NUMBER: _ClassVar[int]
+    owner: _runtime_identity_pb2.RuntimeAuthorization
+    intent_id: str
+    reason: str
+    ended_by: str
+    def __init__(self, owner: _Optional[_Union[_runtime_identity_pb2.RuntimeAuthorization, _Mapping]] = ..., intent_id: _Optional[str] = ..., reason: _Optional[str] = ..., ended_by: _Optional[str] = ...) -> None: ...
+
+class EndRuntimeResponse(_message.Message):
+    __slots__ = ("projection",)
+    PROJECTION_FIELD_NUMBER: _ClassVar[int]
+    projection: _runtime_identity_pb2.RuntimeProjection
+    def __init__(self, projection: _Optional[_Union[_runtime_identity_pb2.RuntimeProjection, _Mapping]] = ...) -> None: ...
+
+class RecordRuntimeUsageRequest(_message.Message):
+    __slots__ = ("owner", "receipt", "helper_authorization", "kind", "fact_id", "paid_attempt_id", "provider_segment_id", "delta_id", "completeness", "cloud_event_json", "usage_kind", "provider", "model", "expected_meters", "request_attempt_id", "usage", "actual_model", "provider_request_id")
+    OWNER_FIELD_NUMBER: _ClassVar[int]
+    RECEIPT_FIELD_NUMBER: _ClassVar[int]
+    HELPER_AUTHORIZATION_FIELD_NUMBER: _ClassVar[int]
+    KIND_FIELD_NUMBER: _ClassVar[int]
+    FACT_ID_FIELD_NUMBER: _ClassVar[int]
+    PAID_ATTEMPT_ID_FIELD_NUMBER: _ClassVar[int]
+    PROVIDER_SEGMENT_ID_FIELD_NUMBER: _ClassVar[int]
+    DELTA_ID_FIELD_NUMBER: _ClassVar[int]
+    COMPLETENESS_FIELD_NUMBER: _ClassVar[int]
+    CLOUD_EVENT_JSON_FIELD_NUMBER: _ClassVar[int]
+    USAGE_KIND_FIELD_NUMBER: _ClassVar[int]
+    PROVIDER_FIELD_NUMBER: _ClassVar[int]
+    MODEL_FIELD_NUMBER: _ClassVar[int]
+    EXPECTED_METERS_FIELD_NUMBER: _ClassVar[int]
+    REQUEST_ATTEMPT_ID_FIELD_NUMBER: _ClassVar[int]
+    USAGE_FIELD_NUMBER: _ClassVar[int]
+    ACTUAL_MODEL_FIELD_NUMBER: _ClassVar[int]
+    PROVIDER_REQUEST_ID_FIELD_NUMBER: _ClassVar[int]
+    owner: _runtime_identity_pb2.RuntimeAuthorization
+    receipt: _runtime_identity_pb2.RuntimeReceiptAuthorization
+    helper_authorization: _runtime_identity_pb2.RuntimeHelperAuthorization
+    kind: str
+    fact_id: str
+    paid_attempt_id: str
+    provider_segment_id: str
+    delta_id: str
+    completeness: str
+    cloud_event_json: str
+    usage_kind: str
+    provider: str
+    model: str
+    expected_meters: _containers.RepeatedScalarFieldContainer[str]
+    request_attempt_id: str
+    usage: LlmAuditUsage
+    actual_model: str
+    provider_request_id: str
+    def __init__(self, owner: _Optional[_Union[_runtime_identity_pb2.RuntimeAuthorization, _Mapping]] = ..., receipt: _Optional[_Union[_runtime_identity_pb2.RuntimeReceiptAuthorization, _Mapping]] = ..., helper_authorization: _Optional[_Union[_runtime_identity_pb2.RuntimeHelperAuthorization, _Mapping]] = ..., kind: _Optional[str] = ..., fact_id: _Optional[str] = ..., paid_attempt_id: _Optional[str] = ..., provider_segment_id: _Optional[str] = ..., delta_id: _Optional[str] = ..., completeness: _Optional[str] = ..., cloud_event_json: _Optional[str] = ..., usage_kind: _Optional[str] = ..., provider: _Optional[str] = ..., model: _Optional[str] = ..., expected_meters: _Optional[_Iterable[str]] = ..., request_attempt_id: _Optional[str] = ..., usage: _Optional[_Union[LlmAuditUsage, _Mapping]] = ..., actual_model: _Optional[str] = ..., provider_request_id: _Optional[str] = ...) -> None: ...
+
+class RecordRuntimeUsageResponse(_message.Message):
+    __slots__ = ("fact_id", "recorded", "duplicate", "completeness", "disposition")
+    FACT_ID_FIELD_NUMBER: _ClassVar[int]
+    RECORDED_FIELD_NUMBER: _ClassVar[int]
+    DUPLICATE_FIELD_NUMBER: _ClassVar[int]
+    COMPLETENESS_FIELD_NUMBER: _ClassVar[int]
+    DISPOSITION_FIELD_NUMBER: _ClassVar[int]
+    fact_id: str
+    recorded: bool
+    duplicate: bool
+    completeness: str
+    disposition: str
+    def __init__(self, fact_id: _Optional[str] = ..., recorded: _Optional[bool] = ..., duplicate: _Optional[bool] = ..., completeness: _Optional[str] = ..., disposition: _Optional[str] = ...) -> None: ...
+
+class ReadRuntimeKnowledgeRequest(_message.Message):
+    __slots__ = ("owner", "node_id", "tool_reference", "query", "limit")
+    OWNER_FIELD_NUMBER: _ClassVar[int]
+    NODE_ID_FIELD_NUMBER: _ClassVar[int]
+    TOOL_REFERENCE_FIELD_NUMBER: _ClassVar[int]
+    QUERY_FIELD_NUMBER: _ClassVar[int]
+    LIMIT_FIELD_NUMBER: _ClassVar[int]
+    owner: _runtime_identity_pb2.RuntimeAuthorization
+    node_id: str
+    tool_reference: str
+    query: str
+    limit: int
+    def __init__(self, owner: _Optional[_Union[_runtime_identity_pb2.RuntimeAuthorization, _Mapping]] = ..., node_id: _Optional[str] = ..., tool_reference: _Optional[str] = ..., query: _Optional[str] = ..., limit: _Optional[int] = ...) -> None: ...
+
+class ReadRuntimeKnowledgeResponse(_message.Message):
+    __slots__ = ("result_json",)
+    RESULT_JSON_FIELD_NUMBER: _ClassVar[int]
+    result_json: str
+    def __init__(self, result_json: _Optional[str] = ...) -> None: ...

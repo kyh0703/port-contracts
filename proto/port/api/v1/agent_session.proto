@@ -3,6 +3,7 @@ syntax = "proto3";
 package port.api.v1;
 
 import "buf/validate/validate.proto";
+import "port/api/v1/runtime_identity.proto";
 import "port/api/v1/voice_runtime.proto";
 
 option go_package = "github.com/kyh0703/port-contracts/v4/gen/go/port/api/v1;apiv1";
@@ -14,11 +15,27 @@ service ExecutionSessionService {
   rpc RecordLlmRequestStarted(RecordLlmRequestStartedRequest) returns (RecordLlmRequestStartedResponse);
   rpc RecordLlmRequestTerminal(RecordLlmRequestTerminalRequest) returns (RecordLlmRequestTerminalResponse);
   rpc CommandFormCollection(CommandFormCollectionRequest) returns (CommandFormCollectionResponse);
+  rpc PrepareRuntimeAttempt(PrepareRuntimeAttemptRequest) returns (PrepareRuntimeAttemptResponse);
+  rpc RecoverRuntime(RecoverRuntimeRequest) returns (RecoverRuntimeResponse);
+  rpc RenewRuntimeLease(RenewRuntimeLeaseRequest) returns (RenewRuntimeLeaseResponse);
+  rpc ActivateRuntime(ActivateRuntimeRequest) returns (ActivateRuntimeResponse);
+  rpc CommitRuntimeCheckpoint(CommitRuntimeCheckpointRequest) returns (CommitRuntimeCheckpointResponse);
+  rpc ExecuteRuntimeOperation(ExecuteRuntimeOperationRequest) returns (ExecuteRuntimeOperationResponse);
+  rpc GetRuntimeOperation(GetRuntimeOperationRequest) returns (GetRuntimeOperationResponse);
+  rpc RecordRuntimeReceipt(RecordRuntimeReceiptRequest) returns (RecordRuntimeReceiptResponse);
+  rpc EndRuntime(EndRuntimeRequest) returns (EndRuntimeResponse);
+  rpc RecordRuntimeUsage(RecordRuntimeUsageRequest) returns (RecordRuntimeUsageResponse);
+  rpc ReadRuntimeKnowledge(ReadRuntimeKnowledgeRequest) returns (ReadRuntimeKnowledgeResponse);
 }
 
 // Worker-only commands; the API derives fields and recipient from the pinned
 // publication and verifies the live conversation/session on every operation.
 message CommandFormCollectionRequest {
+  option (buf.validate.message).cel = {
+    id: "form_command.original_deadline"
+    message: "create must preserve the original creating-checkpoint deadline"
+    expression: "this.action != 'create' || has(this.expires_at)"
+  };
   string action = 1 [(buf.validate.field).string = {in: ["create", "poll", "cancel", "ack"]}];
   string conversation_id = 2 [(buf.validate.field).string = {min_len: 1 max_len: 128}];
   string session_id = 3 [(buf.validate.field).string = {min_len: 1 max_len: 128}];
@@ -26,16 +43,33 @@ message CommandFormCollectionRequest {
   string transition_id = 5 [(buf.validate.field).string = {min_len: 1 max_len: 256}];
   // Generated before create, reused for retries, cancellation and acknowledgement.
   string request_id = 6 [(buf.validate.field).string.uuid = true];
+  RuntimeAuthorization owner = 7 [(buf.validate.field).required = true];
+  optional uint32 consumption_revision = 8 [(buf.validate.field).uint32.gt = 0];
+  optional string expires_at = 9 [(buf.validate.field).string = {min_len: 1 max_len: 64}];
 }
 
 message CommandFormCollectionResponse {
+  option (buf.validate.message).cel = {
+    id: "form_response.absence"
+    message: "authoritative absence has no fabricated delivery or expiry; existing requests have both"
+    expression: "this.status == 'not_found' ? (!has(this.delivery) && !has(this.expires_at) && this.values.size() == 0 && !has(this.provider_acceptance)) : (has(this.delivery) && has(this.expires_at))"
+  };
   string request_id = 1 [(buf.validate.field).string.uuid = true];
-  string status = 2 [(buf.validate.field).string = {in: ["waiting", "completed", "applied", "expired", "cancelled", "failed"]}];
-  string delivery = 3 [(buf.validate.field).string = {in: ["preview", "alimtalk"]}];
-  string expires_at = 4 [(buf.validate.field).string = {min_len: 1 max_len: 64}];
+  // Only positive SQL absence under current authorization proves no dispatch
+  // intent exists; dependency failure, erasure and RPC 404 are not this status.
+  string status = 2 [(buf.validate.field).string = {in: ["not_found", "prepared", "sending", "waiting", "send_uncertain", "completed", "applied", "expired", "cancelled", "failed"]}];
+  optional string delivery = 3 [(buf.validate.field).string = {in: ["preview", "alimtalk"]}];
+  optional string expires_at = 4 [(buf.validate.field).string = {min_len: 1 max_len: 64}];
   // Sensitive: worker only. Never include in model messages or lifecycle events.
   map<string, string> values = 5;
   string failure_code = 6 [(buf.validate.field).string.max_len = 64];
+  RuntimeFormProviderAcceptance provider_acceptance = 7;
+}
+
+message RuntimeFormProviderAcceptance {
+  string provider = 1 [(buf.validate.field).string.const = "wideshot"];
+  string send_code = 2 [(buf.validate.field).string = {min_len: 1 max_len: 256}];
+  string status = 3 [(buf.validate.field).string.const = "accepted"];
 }
 
 message BootstrapRequest {
@@ -57,9 +91,18 @@ message SipBootstrapContext {
   optional string phone_number = 8 [(buf.validate.field).string.min_len = 1];
 }
 
-// published_id is the only execution identity accepted by a runtime session.
+// Publication pins are immutable. Main bootstrap uses a prepared initial attempt;
+// the API verifies its purpose, original admitted SQL binding and native assignment.
+// Recovery uses RecoverRuntime rather than treating bootstrap as a recovery alias.
 message BootstrapPublishedRequest {
-  BootstrapRequest admission = 1 [(buf.validate.field).required = true];
+  option (buf.validate.message).cel = {
+    id: "bootstrap.runtime_authority"
+    message: "main bootstrap requires its prepared attempt; private helpers forbid transport admission"
+    expression: "has(this.attempt_authorization) || (has(this.helper_authorization) && !has(this.admission))"
+  };
+  // Optional original ticket or complete SIP transport evidence. A prepared main
+  // attempt may omit it; omission never waives API admission or the four pins.
+  BootstrapRequest admission = 1;
   string conversation_id = 2 [(buf.validate.field).required = true, (buf.validate.field).string.min_len = 1];
   string session_id = 3 [(buf.validate.field).required = true, (buf.validate.field).string.min_len = 1];
   string published_id = 4 [(buf.validate.field).required = true, (buf.validate.field).string.min_len = 1];
@@ -67,20 +110,25 @@ message BootstrapPublishedRequest {
     (buf.validate.field).required = true,
     (buf.validate.field).string = {in: ["execution-publication-2026-09-04-r1", "execution-publication-2026-09-15-r2"]}
   ];
-  // Optional LiveKit worker job correlation for browser/text sessions. It is
-  // metadata only; admission remains bound to the ticket/session capability.
+  // Optional original worker job correlation; never a participant, admission or
+  // substitute for the required publication pins and private attempt authority.
   optional string worker_job_id = 6 [(buf.validate.field).string = {min_len: 1 max_len: 256}];
+  oneof authority {
+    option (buf.validate.oneof).required = true;
+    RuntimeAttemptAuthorization attempt_authorization = 7;
+    RuntimeHelperAuthorization helper_authorization = 8;
+  }
 }
 
 message BootstrapPublishedResponse {
-  option (buf.validate.message).cel = {
-    id: "transfer_capability.voice_binding"
-    message: "transfer capability is only valid for a voice runtime"
-    expression: "!has(this.transfer_capability) || has(this.voice_runtime)"
-  };
   option (buf.validate.message).oneof = {
     fields: ["voice_runtime", "text_runtime"]
     required: true
+  };
+  option (buf.validate.message).cel = {
+    id: "published_bootstrap.execution_purpose"
+    message: "main bootstrap requires its publication graph and variables; a private SIP helper requires only its original helper and speech runtimes"
+    expression: "has(this.runtime_lease) && ((has(this.runtime_lease.authorization) && has(this.agent) && has(this.prompt_variables) && !has(this.helper_bootstrap) && !has(this.helper_checkpoint)) || (has(this.runtime_lease.helper_authorization) && has(this.helper_bootstrap) && has(this.voice_runtime) && !has(this.agent) && !has(this.prompt_variables) && this.helper_bootstrap.transfer_attempt_id == this.runtime_lease.helper_authorization.transfer_attempt_id))"
   };
 
   string contract_revision = 1 [
@@ -93,33 +141,28 @@ message BootstrapPublishedResponse {
   // Authoritative admitted account owner, used to fence late worker storage writes.
   string user_id = 11 [(buf.validate.field).required = true, (buf.validate.field).string.min_len = 1];
 
-  // Short-lived control capability bound to this admitted voice session.
-  optional string transfer_capability = 9 [(buf.validate.field).string = {min_len: 1 max_len: 8192}];
+  reserved 9, 10;
+  reserved "transfer_capability", "llm_audit_capability";
 
-  SessionPromptVariableBag prompt_variables = 6 [(buf.validate.field).required = true];
-  PublishedAgentExecution agent = 5 [(buf.validate.field).required = true];
+  SessionPromptVariableBag prompt_variables = 6;
+  PublishedAgentExecution agent = 5;
   oneof runtime {
     option (buf.validate.oneof).required = true;
     CallRuntimeSnapshot voice_runtime = 7;
     TextRuntimeSnapshot text_runtime = 8;
   }
 
-  // Short-lived, opaque capability for the worker's LLM audit calls. The API
-  // binds the capability to the admitted session, account and publication.
-  optional LlmAuditCapability llm_audit_capability = 10;
+  RuntimeLease runtime_lease = 12 [(buf.validate.field).required = true];
+  RuntimeCheckpoint helper_checkpoint = 13;
+  RuntimeTransferHelperBootstrap helper_bootstrap = 14;
 }
 
-message LlmAuditCapability {
-  string execution_id = 1 [(buf.validate.field).string = {min_len: 1 max_len: 128}];
-  string token = 2 [(buf.validate.field).string = {min_len: 32 max_len: 512}];
-  string expires_at = 3 [(buf.validate.field).string = {min_len: 1 max_len: 64}];
-}
 
-// Correlation fields are repeated on terminal records so the API can safely
-// accept an out-of-order terminal delivery without trusting its owner fields.
-// Ownership is always derived from LlmAuditCapability.token.
+// Terminal delivery preserves the original request correlation. Current control
+// and original-execution receipt authority live on their distinct RPC envelopes.
 message LlmAuditRequestContext {
-  string capability = 1 [(buf.validate.field).string = {min_len: 32 max_len: 512}];
+  reserved 1;
+  reserved "capability";
   string request_attempt_id = 2 [(buf.validate.field).string = {min_len: 1 max_len: 128}];
   string logical_request_id = 3 [(buf.validate.field).string = {min_len: 1 max_len: 128}];
   uint32 attempt_sequence = 4 [(buf.validate.field).uint32 = {gte: 1 lte: 100}];
@@ -134,6 +177,11 @@ message LlmAuditRequestContext {
 
 message RecordLlmRequestStartedRequest {
   LlmAuditRequestContext request = 1 [(buf.validate.field).required = true];
+  oneof authority {
+    option (buf.validate.oneof).required = true;
+    RuntimeAuthorization owner = 2;
+    RuntimeHelperAuthorization helper_authorization = 3;
+  }
 }
 
 message RecordLlmRequestStartedResponse {
@@ -162,6 +210,7 @@ message RecordLlmRequestTerminalRequest {
   optional string provider_request_id = 5 [(buf.validate.field).string = {min_len: 1 max_len: 512}];
   optional LlmAuditUsage usage = 6;
   optional string error_code = 7 [(buf.validate.field).string = {min_len: 1 max_len: 128}];
+  RuntimeReceiptAuthorization receipt_authorization = 8 [(buf.validate.field).required = true];
 }
 
 message RecordLlmRequestTerminalResponse {
@@ -244,13 +293,15 @@ message PublishedAgentNodeRuntime {
   repeated A2aToolRuntime a2a_tool_runtimes = 8;
   repeated BuiltInTool built_in_tools = 9;
   string knowledge_revision_id = 10;
-  string knowledge_retrieval_capability = 11;
+  reserved 11;
+  reserved "knowledge_retrieval_capability";
   string knowledge_function_name = 12;
   string knowledge_description = 13;
   repeated KnowledgeToolRuntime knowledge_tool_runtimes = 14;
   InlineAuthoringOptions authoring = 15;
   optional string display_name = 16 [(buf.validate.field).string = {min_len: 1 pattern: "\\S"}];
   optional string greeting = 17 [(buf.validate.field).string.max_len = 4000];
+  optional string knowledge_tool_reference = 18 [(buf.validate.field).string = {min_len: 1 max_len: 256}];
 }
 
 // Optional so older publications retain provider defaults.
@@ -547,7 +598,7 @@ message McpToolMetadata {
     (buf.validate.field).string.in = "sse",
     (buf.validate.field).string.in = "streamable-http"
   ];
-  string url = 3 [(buf.validate.field).string.min_len = 1];
+  optional string url = 3 [(buf.validate.field).string.min_len = 1];
 }
 
 message ApiToolMetadata {
@@ -557,10 +608,15 @@ message ApiToolMetadata {
     expression: "this.messages.all(item, this.messages.filter(candidate, candidate.type == item.type && (item.type != 'request-response-delayed' || candidate.timing_milliseconds == item.timing_milliseconds)).size() <= 10)"
   };
   string method = 1 [(buf.validate.field).string.min_len = 1];
-  string url = 2 [(buf.validate.field).string.min_len = 1];
+  optional string url = 2 [(buf.validate.field).string.min_len = 1];
   string request_schema_json = 3;
   string response_schema_json = 4;
   repeated ApiToolMessage messages = 5 [(buf.validate.field).repeated.max_items = 40];
+  // Original placeholder names only, including when a credential-bearing URL is omitted.
+  repeated string url_template_parameters = 6 [(buf.validate.field).repeated = {
+    max_items: 1000 unique: true
+    items: {string: {min_len: 1 max_len: 256}}
+  }];
 }
 
 // Shared by all tool types; ApiToolMessage retains its original wire identity.
@@ -606,28 +662,34 @@ message ToolMessageCondition {
 }
 
 message A2aToolMetadata {
-  string agent_card_url = 1 [(buf.validate.field).string.min_len = 1];
+  optional string agent_card_url = 1 [(buf.validate.field).string.min_len = 1];
 }
 
 message KnowledgeToolMetadata {
   string knowledge_revision_id = 1 [(buf.validate.field).string = {min_len: 1 pattern: "\\S"}];
 }
 
-// Short-lived execution credentials for API tools, scoped to the bootstrap lease.
+// References to API-owned business credentials; no raw credentials reach workers.
 message ApiToolRuntime {
   string tool_id = 1 [(buf.validate.field).string.min_len = 1];
-  map<string, string> headers = 2;
+  reserved 2;
+  reserved "headers";
+  string tool_reference = 3 [(buf.validate.field).string = {min_len: 1 max_len: 256}];
 }
 
 message A2aToolRuntime {
   string tool_id = 1 [(buf.validate.field).string.min_len = 1];
-  map<string, string> headers = 2;
+  reserved 2;
+  reserved "headers";
   uint32 timeout_ms = 3 [(buf.validate.field).uint32 = {gte: 1000 lte: 600000}];
+  string tool_reference = 4 [(buf.validate.field).string = {min_len: 1 max_len: 256}];
 }
 
 message KnowledgeToolRuntime {
   string tool_id = 1 [(buf.validate.field).string = {min_len: 1 pattern: "\\S"}];
-  string retrieval_capability = 2 [(buf.validate.field).string = {min_len: 1 pattern: "\\S"}];
+  reserved 2;
+  reserved "retrieval_capability";
+  string tool_reference = 3 [(buf.validate.field).string = {min_len: 1 max_len: 256}];
 }
 
 message BuiltInTool {
@@ -682,10 +744,11 @@ message SpeakerTool {
 message McpServerRuntime {
   string name = 1 [(buf.validate.field).string.min_len = 1];
   string transport = 2 [(buf.validate.field).string.in = "sse", (buf.validate.field).string.in = "streamable-http"];
-  string url = 3 [(buf.validate.field).string.min_len = 1];
-  map<string, string> headers = 4;
+  reserved 3, 4;
+  reserved "url", "headers";
   // Applies only to tool invocation; omission keeps the worker's legacy deadline.
   optional uint32 timeout_ms = 5 [(buf.validate.field).uint32 = {gte: 1000 lte: 600000}];
+  string tool_reference = 6 [(buf.validate.field).string = {min_len: 1 max_len: 256}];
 }
 
 message ConversationFillerRuntime {
@@ -697,27 +760,41 @@ message ConversationFillerRuntime {
 message CommandSipTransferRequest {
   option (buf.validate.message).cel = {
     id: "transfer_command.operation_binding"
-    message: "start requires a node; subsequent commands require an attempt"
-    expression: "this.action == 'start' ? this.node_id != '' : this.attempt_id != ''"
+    message: "start requires the original request and node; subsequent commands require the original attempt"
+    expression: "this.action == 'start' ? (this.request_id != '' && this.node_id != '') : this.attempt_id != ''"
   };
   option (buf.validate.message).cel = {
     id: "transfer_command.consent_identity"
     message: "accept requires consultant identity and voice or DTMF evidence"
     expression: "this.action != 'accept' || (this.consultant_identity != '' && has(this.consent_source))"
   };
-  string capability = 1 [(buf.validate.field).string.min_len = 1];
+  option (buf.validate.message).cel = {
+    id: "transfer_command.owner_control_plan"
+    message: "a protected owner control plan may be consumed only by a main-owner start command"
+    expression: "!has(this.owner_control_intent_id) || (this.action == 'start' && has(this.owner))"
+  };
+  reserved 1;
+  reserved "capability";
   string conversation_id = 2 [(buf.validate.field).string.min_len = 1];
   string session_id = 3 [(buf.validate.field).string.min_len = 1];
-  string request_id = 4 [(buf.validate.field).string.min_len = 1];
+  string request_id = 4;
   string node_id = 5;
   string attempt_id = 6;
-  string action = 7 [(buf.validate.field).string = {in: ["start", "briefing", "ready", "accept", "reject", "cancel"]}];
+  string action = 7 [(buf.validate.field).string = {in: ["start", "resume", "briefing", "ready", "accept", "reject", "cancel"]}];
   string reason = 8 [(buf.validate.field).string.max_len = 1000];
   string consultant_identity = 9;
   // Private briefing evidence; never published as a customer conversation turn.
   string briefing = 10 [(buf.validate.field).string.max_len = 10000];
   // Web consent enters through the authenticated owner HTTP API.
   optional string consent_source = 11 [(buf.validate.field).string = {in: ["voice", "dtmf"]}];
+  oneof authority {
+    option (buf.validate.oneof).required = true;
+    RuntimeAuthorization owner = 12;
+    RuntimeHelperAuthorization helper_authorization = 13;
+  }
+  // Protected original API-owned plan; never a caller-created node, phone or
+  // legacy signed room attribute. Ordinary published tool starts omit this.
+  optional string owner_control_intent_id = 14 [(buf.validate.field).string.uuid = true];
 }
 
 message CommandSipTransferResponse {
@@ -729,15 +806,275 @@ message CommandSipTransferResponse {
   string attempt_id = 1 [(buf.validate.field).string.min_len = 1];
   string state = 2 [(buf.validate.field).string = {in: ["dialing", "briefing", "awaiting_consent", "connecting", "completed", "rejected", "cancelled", "failed", "timed_out"]}];
   string mode = 3 [(buf.validate.field).string = {in: ["single", "consultative"]}];
-  SipTransferConsultation consultation = 4;
+  reserved 4;
+  reserved "consultation";
   string expires_at = 5 [(buf.validate.field).string = {min_len: 1 max_len: 64}];
   string reason = 6;
 }
 
-message SipTransferConsultation {
-  string room_name = 1 [(buf.validate.field).string.min_len = 1];
-  string consultant_identity = 2 [(buf.validate.field).string.min_len = 1];
-  string worker_identity = 3 [(buf.validate.field).string.min_len = 1];
-  string livekit_url = 4 [(buf.validate.field).string.min_len = 1];
-  string participant_token = 5 [(buf.validate.field).string.min_len = 1];
+// Private helper-only bootstrap. The main job receives no helper credentials,
+// media token, lease or briefing continuation through transfer command replies.
+message RuntimeTransferHelperBootstrap {
+  option (buf.validate.message).cel = {
+    id: "transfer_helper.original_model_reference"
+    message: "private helpers require the registered original node model reference"
+    expression: "has(this.llm_worker) && has(this.llm_worker.lease_id)"
+  };
+  string transfer_attempt_id = 1 [(buf.validate.field).string.uuid = true];
+  // Present only when an actual original final briefing summary exists.
+  optional string briefing_text = 2 [(buf.validate.field).string = {min_len: 1 max_len: 10000}];
+  optional string briefing_state = 3 [(buf.validate.field).string = {in: ["pending", "unconfirmed"]}];
+  optional string consent_state = 4 [(buf.validate.field).string = {in: ["pending", "unconfirmed", "committed"]}];
+  // Original policy captured at initial admission, not inferred on recovery.
+  // Presence is mandatory even for false and the truthful empty separate
+  // question when the original manual briefing already contains that question.
+  optional bool automatic = 5 [(buf.validate.field).required = true];
+  optional string consent_question = 6 [(buf.validate.field).required = true, (buf.validate.field).string.max_len = 1000];
+  string node_id = 7 [(buf.validate.field).required = true, (buf.validate.field).string.min_len = 1];
+  LlmRuntime llm_worker = 8 [(buf.validate.field).required = true];
+  // Sealed original committed-frame user/assistant string messages, encoded as
+  // {"items":[{"role":"user","content":"..."}]}; positive empty is {"items":[]}.
+  // Missing original checkpoint/frame is unavailable, never an empty fallback.
+  optional string source_context_json = 9 [(buf.validate.field).required = true, (buf.validate.field).string = {min_len: 2 max_len: 4194304}];
+  optional string briefing_reason = 10 [(buf.validate.field).required = true, (buf.validate.field).string.max_len = 1000];
+}
+
+// These methods use the same grpc-js ExecutionSessionService as bootstrap.
+// Launcher preparation requires launcher credentials at the transport boundary;
+// it does not grant child PII, connection or current-runtime authority.
+message PrepareRuntimeAttemptRequest {
+  option (buf.validate.message).cel = {
+    id: "runtime_attempt.helper_dispatch_binding"
+    message: "helper preparation must name its durable dispatch and original transfer attempt"
+    expression: "this.purpose != 'transfer_helper' || (has(this.dispatch_intent_id) && has(this.transfer_attempt_id))"
+  };
+  string launcher_id = 1 [(buf.validate.field).string.uuid = true];
+  string launcher_incarnation = 2 [(buf.validate.field).string.uuid = true];
+  string nonce = 3 [(buf.validate.field).string.uuid = true];
+  string protocol_revision = 4 [(buf.validate.field).string.const = "runtime-recovery-v1"];
+  string compatibility_fingerprint = 5 [(buf.validate.field).string = {min_len: 1 max_len: 256}];
+  string purpose = 6 [(buf.validate.field).string = {in: ["initial", "recovery", "transfer_helper"]}];
+  RuntimeAssignment assignment = 7;
+  optional string session_id = 8 [(buf.validate.field).string.uuid = true];
+  optional string dispatch_intent_id = 9 [(buf.validate.field).string.uuid = true];
+  optional string transfer_attempt_id = 10 [(buf.validate.field).string.uuid = true];
+}
+
+message PrepareRuntimeAttemptResponse {
+  RuntimeAttemptAuthorization attempt_authorization = 1 [(buf.validate.field).required = true];
+  string expires_at = 2 [(buf.validate.field).string = {min_len: 1 max_len: 64}];
+}
+
+message RecoverRuntimeRequest {
+  RuntimeAttemptAuthorization attempt_authorization = 1 [(buf.validate.field).required = true];
+  RuntimeAssignment assignment = 2 [(buf.validate.field).required = true];
+  string conversation_id = 3 [(buf.validate.field).string = {min_len: 1 max_len: 128}];
+  string session_id = 4 [(buf.validate.field).string.uuid = true];
+  string published_id = 5 [(buf.validate.field).string.uuid = true];
+  string contract_revision = 6 [(buf.validate.field).string = {in: ["execution-publication-2026-09-04-r1", "execution-publication-2026-09-15-r2"]}];
+  string protocol_revision = 7 [(buf.validate.field).string.const = "runtime-recovery-v1"];
+  string checkpoint_codec = 8 [(buf.validate.field).string = {min_len: 1 max_len: 128}];
+  optional string transfer_attempt_id = 9 [(buf.validate.field).string.uuid = true];
+}
+
+message RuntimeControlEffect {
+  string effect_id = 1 [(buf.validate.field).string.uuid = true];
+  string execution_id = 2 [(buf.validate.field).string.uuid = true];
+  uint32 epoch = 3 [(buf.validate.field).uint32 = {gte: 1 lte: 2147483647}];
+  string kind = 4 [(buf.validate.field).string = {min_len: 1 max_len: 128}];
+  RuntimeOperationStatus status = 5 [(buf.validate.field).enum = {defined_only: true not_in: 0}];
+  optional string participant_identity = 6 [(buf.validate.field).string = {min_len: 1 max_len: 256}];
+}
+
+message RecoverRuntimeResponse {
+  RuntimeLease runtime_lease = 1 [(buf.validate.field).required = true];
+  // HUMAN has no AI bootstrap. TEXT_RELAY attaches a neutral runtime, and
+  // TRANSFERRING reconciles the original transfer before any AI is resumed.
+  BootstrapPublishedResponse bootstrap = 2;
+  RuntimeCheckpoint checkpoint = 3;
+  repeated RuntimeOperation unresolved_operations = 4;
+  repeated RuntimeMediaFence media_fences = 5;
+  repeated RuntimeControlEffect control_effects = 6;
+}
+
+message RenewRuntimeLeaseRequest {
+  oneof authority {
+    option (buf.validate.oneof).required = true;
+    RuntimeAuthorization owner = 1;
+    RuntimeHelperAuthorization helper_authorization = 2;
+  }
+}
+
+message RenewRuntimeLeaseResponse {
+  RuntimeLease runtime_lease = 1 [(buf.validate.field).required = true];
+}
+
+message ActivateRuntimeRequest {
+  oneof authority {
+    option (buf.validate.oneof).required = true;
+    RuntimeAuthorization owner = 1;
+    RuntimeHelperAuthorization helper_authorization = 6;
+  }
+  string room_sid = 2 [(buf.validate.field).string = {min_len: 1 max_len: 256}];
+  string caller_identity = 3 [(buf.validate.field).string = {min_len: 1 max_len: 256}];
+  string caller_sid = 4 [(buf.validate.field).string = {min_len: 1 max_len: 256}];
+  uint32 checkpoint_revision = 5;
+}
+
+message ActivateRuntimeResponse {
+  RuntimeLease runtime_lease = 1 [(buf.validate.field).required = true];
+}
+
+message RuntimeConsumedFormRequest {
+  string request_id = 1 [(buf.validate.field).string.uuid = true];
+  string transition_id = 2 [(buf.validate.field).string = {min_len: 1 max_len: 256}];
+}
+
+message RuntimeAppliedOperationResult {
+  string operation_id = 1 [(buf.validate.field).string.uuid = true];
+  string frame_id = 2 [(buf.validate.field).string = {min_len: 1 max_len: 256}];
+  string activation_id = 3 [(buf.validate.field).string = {min_len: 1 max_len: 256}];
+  uint32 expected_binding_version = 4;
+}
+
+message CommitRuntimeCheckpointRequest {
+  oneof authority {
+    option (buf.validate.oneof).required = true;
+    RuntimeAuthorization owner = 1;
+    RuntimeHelperAuthorization helper_authorization = 9;
+  }
+  uint32 expected_revision = 2;
+  string codec = 3 [(buf.validate.field).string = {min_len: 1 max_len: 128}];
+  string compatibility_fingerprint = 4 [(buf.validate.field).string = {min_len: 1 max_len: 256}];
+  bytes checkpoint_payload = 5 [(buf.validate.field).bytes = {min_len: 1 max_len: 4194304}];
+  repeated RuntimeConsumedFormRequest consumed_form_requests = 6 [(buf.validate.field).repeated.max_items = 100];
+  repeated RuntimeAppliedOperationResult applied_operation_results = 7 [(buf.validate.field).repeated.max_items = 1000];
+  repeated string accepted_input_ids = 8 [(buf.validate.field).repeated = {
+    max_items: 1000 unique: true
+    items: {string: {min_len: 1 max_len: 256}}
+  }];
+}
+
+message CommitRuntimeCheckpointResponse {
+  uint32 committed_revision = 1 [(buf.validate.field).uint32.gt = 0];
+  RuntimeProjection projection = 2 [(buf.validate.field).required = true];
+}
+
+message ExecuteRuntimeOperationRequest {
+  RuntimeAuthorization owner = 1 [(buf.validate.field).required = true];
+  string operation_id = 2 [(buf.validate.field).string.uuid = true];
+  string intent_id = 3 [(buf.validate.field).string = {min_len: 1 max_len: 256}];
+  string node_id = 4 [(buf.validate.field).string = {min_len: 1 max_len: 256}];
+  string frame_id = 5 [(buf.validate.field).string = {min_len: 1 max_len: 256}];
+  string activation_id = 6 [(buf.validate.field).string = {min_len: 1 max_len: 256}];
+  string tool_reference = 7 [(buf.validate.field).string = {min_len: 1 max_len: 256}];
+  string tool_name = 8 [(buf.validate.field).string = {min_len: 1 max_len: 256}];
+  string resolved_arguments_json = 9 [(buf.validate.field).string = {min_bytes: 1 max_bytes: 1048576}];
+  optional string input_turn_id = 10 [(buf.validate.field).string = {min_len: 1 max_len: 256}];
+  optional string transition_id = 11 [(buf.validate.field).string = {min_len: 1 max_len: 256}];
+  uint32 expected_binding_version = 12;
+  RuntimeOperationKind operation_kind = 13 [(buf.validate.field).enum = {defined_only: true not_in: 0}];
+  optional string delivery_target = 14 [(buf.validate.field).string = {min_len: 1 max_len: 256}];
+  RuntimeProviderCorrelation provider_correlation = 15;
+}
+
+message ExecuteRuntimeOperationResponse {
+  RuntimeOperation operation = 1 [(buf.validate.field).required = true];
+}
+
+message GetRuntimeOperationRequest {
+  RuntimeAuthorization owner = 1 [(buf.validate.field).required = true];
+  string operation_id = 2 [(buf.validate.field).string.uuid = true];
+}
+
+message GetRuntimeOperationResponse {
+  RuntimeOperation operation = 1 [(buf.validate.field).required = true];
+}
+
+message RecordRuntimeReceiptRequest {
+  RuntimeReceiptAuthorization receipt_authorization = 1 [(buf.validate.field).required = true];
+  string receipt_id = 2 [(buf.validate.field).string.uuid = true];
+  string operation_id = 3 [(buf.validate.field).string.uuid = true];
+  // Provider evidence is recorded only by the private API-owned executor.
+  string kind = 4 [(buf.validate.field).string.const = "delivery"];
+  RuntimeOperationStatus status = 5 [(buf.validate.field).enum = {defined_only: true not_in: 0}];
+  optional string result_json = 6 [(buf.validate.field).string.max_bytes = 1048576];
+  optional string provider_request_id = 7 [(buf.validate.field).string = {min_len: 1 max_len: 512}];
+  string occurred_at = 8 [(buf.validate.field).string = {min_len: 1 max_len: 64}];
+  bool confirmed_no_effect = 9;
+  RuntimeProviderCorrelation provider_correlation = 10;
+}
+
+message RecordRuntimeReceiptResponse {
+  string receipt_id = 1 [(buf.validate.field).string.uuid = true];
+  bool recorded = 2;
+  bool duplicate = 3;
+  // Erased data is intentionally not retained; absence is not delivery failure.
+  string disposition = 4 [(buf.validate.field).string = {in: ["retained", "duplicate", "erased"]}];
+}
+
+message EndRuntimeRequest {
+  RuntimeAuthorization owner = 1 [(buf.validate.field).required = true];
+  string intent_id = 2 [(buf.validate.field).string.uuid = true];
+  string reason = 3 [(buf.validate.field).string = {min_len: 1 max_len: 500}];
+  string ended_by = 4 [(buf.validate.field).string = {in: ["ai", "system"]}];
+}
+
+message EndRuntimeResponse {
+  RuntimeProjection projection = 1 [(buf.validate.field).required = true];
+}
+
+message RecordRuntimeUsageRequest {
+  option (buf.validate.message).cel = {
+    id: "runtime_usage.purpose"
+    message: "intent requires main or helper control; capture and late facts require origin receipt authority"
+    expression: "(this.kind == 'intent' && (has(this.owner) || has(this.helper_authorization))) || (this.kind != 'intent' && has(this.receipt))"
+  };
+  oneof authority {
+    option (buf.validate.oneof).required = true;
+    RuntimeAuthorization owner = 1;
+    RuntimeReceiptAuthorization receipt = 2;
+    RuntimeHelperAuthorization helper_authorization = 18;
+  }
+  string kind = 3 [(buf.validate.field).string = {in: ["intent", "capture", "execution_close", "llm_reconciliation"]}];
+  string fact_id = 4 [(buf.validate.field).string = {min_len: 1 max_len: 512}];
+  optional string paid_attempt_id = 5 [(buf.validate.field).string = {min_len: 1 max_len: 256}];
+  optional string provider_segment_id = 6 [(buf.validate.field).string = {min_len: 1 max_len: 512}];
+  optional string delta_id = 7 [(buf.validate.field).string = {min_len: 1 max_len: 256}];
+  string completeness = 8 [(buf.validate.field).string = {in: ["pending", "complete", "partial", "unknown"]}];
+  // Preserve the existing CloudEvent and its canonical ID. Its sessionid stays
+  // the original audit execution ID, not the recovering interaction session.
+  optional string cloud_event_json = 9 [(buf.validate.field).string.max_bytes = 65536];
+  optional string usage_kind = 10 [(buf.validate.field).string = {in: ["llm", "stt", "tts"]}];
+  optional string provider = 11 [(buf.validate.field).string = {min_len: 1 max_len: 128}];
+  optional string model = 12 [(buf.validate.field).string = {min_len: 1 max_len: 512}];
+  repeated string expected_meters = 13 [(buf.validate.field).repeated = {
+    max_items: 32 unique: true
+    items: {string: {min_len: 1 max_len: 64}}
+  }];
+  optional string request_attempt_id = 14 [(buf.validate.field).string = {min_len: 1 max_len: 128}];
+  LlmAuditUsage usage = 15;
+  optional string actual_model = 16 [(buf.validate.field).string = {min_len: 1 max_len: 512}];
+  optional string provider_request_id = 17 [(buf.validate.field).string = {min_len: 1 max_len: 512}];
+}
+
+message RecordRuntimeUsageResponse {
+  string fact_id = 1 [(buf.validate.field).string = {min_len: 1 max_len: 512}];
+  bool recorded = 2;
+  bool duplicate = 3;
+  string completeness = 4 [(buf.validate.field).string = {in: ["pending", "complete", "partial", "unknown"]}];
+  string disposition = 5 [(buf.validate.field).string = {in: ["retained", "duplicate", "erased"]}];
+}
+
+message ReadRuntimeKnowledgeRequest {
+  RuntimeAuthorization owner = 1 [(buf.validate.field).required = true];
+  string node_id = 2 [(buf.validate.field).string = {min_len: 1 max_len: 256}];
+  string tool_reference = 3 [(buf.validate.field).string = {min_len: 1 max_len: 256}];
+  string query = 4 [(buf.validate.field).string = {min_len: 1 max_bytes: 16000}];
+  optional uint32 limit = 5 [(buf.validate.field).uint32 = {gte: 1 lte: 100}];
+}
+
+message ReadRuntimeKnowledgeResponse {
+  // The unchanged search result ABI after the API rechecks current ownership.
+  string result_json = 1 [(buf.validate.field).string = {min_bytes: 1 max_bytes: 1048576}];
 }

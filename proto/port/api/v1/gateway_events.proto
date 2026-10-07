@@ -5,6 +5,7 @@ package port.api.v1;
 import "buf/validate/validate.proto";
 import "google/api/annotations.proto";
 import "google/protobuf/timestamp.proto";
+import "port/api/v1/runtime_identity.proto";
 
 option go_package = "github.com/kyh0703/port-contracts/v4/gen/go/port/api/v1;apiv1";
 
@@ -18,6 +19,11 @@ service ApiEventService {
 }
 
 message RecordGatewayEventRequest {
+  option (buf.validate.message).cel = {
+    id: "gateway_event.runtime_purpose"
+    message: "worker start requires main or helper control, worker failure requires origin receipt, SIP requires signed ingress"
+    expression: "(this.event_type == 1 && (has(this.owner) || has(this.helper_authorization))) || (this.event_type == 2 && has(this.receipt_authorization)) || (this.event_type in [3, 4] && !has(this.owner) && !has(this.helper_authorization) && !has(this.receipt_authorization))"
+  };
   string event_id = 1;
   GatewayLifecycleEventType event_type = 2 [(buf.validate.field).enum = {
     defined_only: true
@@ -28,9 +34,20 @@ message RecordGatewayEventRequest {
   string room_id = 5;
   google.protobuf.Timestamp occurred_at = 6 [(buf.validate.field).required = true];
   map<string, string> payload = 7;
+  oneof authority {
+    RuntimeAuthorization owner = 8;
+    RuntimeHelperAuthorization helper_authorization = 12;
+    RuntimeReceiptAuthorization receipt_authorization = 9;
+  }
+  optional uint32 relay_generation = 10;
+  optional string input_id = 11 [(buf.validate.field).string = {min_len: 1 max_len: 256}];
 }
 
-message RecordGatewayEventResponse {}
+message RecordGatewayEventResponse {
+  // Computed by the API; worker-provided observational payload cannot replace it.
+  RuntimeProjection runtime_projection = 1;
+  RuntimeInputReceipt input_receipt = 2;
+}
 
 enum GatewayLifecycleEventType {
   GATEWAY_LIFECYCLE_EVENT_TYPE_UNSPECIFIED = 0;
