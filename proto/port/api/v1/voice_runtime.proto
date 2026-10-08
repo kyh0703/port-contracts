@@ -53,6 +53,8 @@ message SttRuntime {
   repeated string keyterms = 4 [(buf.validate.field).repeated.items.string.min_len = 1];
   optional string provider = 5 [(buf.validate.field).string = {in: ["deepgram", "soniox", "xai"]}];
   optional bool multilingual = 6;
+  // Soniox speaker labels; independent of background voice cancellation.
+  optional bool speaker_diarization = 8;
 }
 
 message LlmRuntime {

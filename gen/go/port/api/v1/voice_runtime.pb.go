@@ -197,14 +197,16 @@ type SttRuntime struct {
 	//
 	//	*SttRuntime_ApiKey
 	//	*SttRuntime_LeaseId
-	Credential    isSttRuntime_Credential `protobuf_oneof:"credential"`
-	Model         string                  `protobuf:"bytes,2,opt,name=model,proto3" json:"model,omitempty"`
-	Language      string                  `protobuf:"bytes,3,opt,name=language,proto3" json:"language,omitempty"`
-	Keyterms      []string                `protobuf:"bytes,4,rep,name=keyterms,proto3" json:"keyterms,omitempty"`
-	Provider      *string                 `protobuf:"bytes,5,opt,name=provider,proto3,oneof" json:"provider,omitempty"`
-	Multilingual  *bool                   `protobuf:"varint,6,opt,name=multilingual,proto3,oneof" json:"multilingual,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	Credential   isSttRuntime_Credential `protobuf_oneof:"credential"`
+	Model        string                  `protobuf:"bytes,2,opt,name=model,proto3" json:"model,omitempty"`
+	Language     string                  `protobuf:"bytes,3,opt,name=language,proto3" json:"language,omitempty"`
+	Keyterms     []string                `protobuf:"bytes,4,rep,name=keyterms,proto3" json:"keyterms,omitempty"`
+	Provider     *string                 `protobuf:"bytes,5,opt,name=provider,proto3,oneof" json:"provider,omitempty"`
+	Multilingual *bool                   `protobuf:"varint,6,opt,name=multilingual,proto3,oneof" json:"multilingual,omitempty"`
+	// Soniox speaker labels; independent of background voice cancellation.
+	SpeakerDiarization *bool `protobuf:"varint,8,opt,name=speaker_diarization,json=speakerDiarization,proto3,oneof" json:"speaker_diarization,omitempty"`
+	unknownFields      protoimpl.UnknownFields
+	sizeCache          protoimpl.SizeCache
 }
 
 func (x *SttRuntime) Reset() {
@@ -293,6 +295,13 @@ func (x *SttRuntime) GetProvider() string {
 func (x *SttRuntime) GetMultilingual() bool {
 	if x != nil && x.Multilingual != nil {
 		return *x.Multilingual
+	}
+	return false
+}
+
+func (x *SttRuntime) GetSpeakerDiarization() bool {
+	if x != nil && x.SpeakerDiarization != nil {
+		return *x.SpeakerDiarization
 	}
 	return false
 }
@@ -547,7 +556,7 @@ const file_port_api_v1_voice_runtime_proto_rawDesc = "" +
 	"\x03llm\x18\x02 \x01(\v2\x17.port.api.v1.LlmRuntimeR\x03llm\x12)\n" +
 	"\x03tts\x18\x03 \x01(\v2\x17.port.api.v1.TtsRuntimeR\x03tts:\x92\x03\xbaH\x8e\x03\x1a\x94\x01\n" +
 	"\x19resolved_runtime.nonempty\x12Fa resolved grant must contain at least one authorized original runtime\x1a/has(this.stt) || has(this.llm) || has(this.tts)\x1a\xf4\x01\n" +
-	"\x1cresolved_runtime.credentials\x12Nresolved runtimes must contain actual credentials rather than lease references\x1a\x83\x01(!has(this.stt) || has(this.stt.api_key)) && (!has(this.llm) || has(this.llm.api_key)) && (!has(this.tts) || has(this.tts.api_key))\"\xdf\x02\n" +
+	"\x1cresolved_runtime.credentials\x12Nresolved runtimes must contain actual credentials rather than lease references\x1a\x83\x01(!has(this.stt) || has(this.stt.api_key)) && (!has(this.llm) || has(this.llm.api_key)) && (!has(this.tts) || has(this.tts.api_key))\"\xad\x03\n" +
 	"\n" +
 	"SttRuntime\x12\"\n" +
 	"\aapi_key\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01H\x00R\x06apiKey\x12$\n" +
@@ -556,11 +565,13 @@ const file_port_api_v1_voice_runtime_proto_rawDesc = "" +
 	"\blanguage\x18\x03 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\blanguage\x12(\n" +
 	"\bkeyterms\x18\x04 \x03(\tB\f\xbaH\t\x92\x01\x06\"\x04r\x02\x10\x01R\bkeyterms\x12=\n" +
 	"\bprovider\x18\x05 \x01(\tB\x1c\xbaH\x19r\x17R\bdeepgramR\x06sonioxR\x03xaiH\x01R\bprovider\x88\x01\x01\x12'\n" +
-	"\fmultilingual\x18\x06 \x01(\bH\x02R\fmultilingual\x88\x01\x01B\x13\n" +
+	"\fmultilingual\x18\x06 \x01(\bH\x02R\fmultilingual\x88\x01\x01\x124\n" +
+	"\x13speaker_diarization\x18\b \x01(\bH\x03R\x12speakerDiarization\x88\x01\x01B\x13\n" +
 	"\n" +
 	"credential\x12\x05\xbaH\x02\b\x01B\v\n" +
 	"\t_providerB\x0f\n" +
-	"\r_multilingual\"\xd3\x01\n" +
+	"\r_multilingualB\x16\n" +
+	"\x14_speaker_diarization\"\xd3\x01\n" +
 	"\n" +
 	"LlmRuntime\x12\"\n" +
 	"\aapi_key\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01H\x00R\x06apiKey\x12$\n" +

@@ -33,7 +33,7 @@ class ResolveLeaseResponse(_message.Message):
     def __init__(self, stt: _Optional[_Union[SttRuntime, _Mapping]] = ..., llm: _Optional[_Union[LlmRuntime, _Mapping]] = ..., tts: _Optional[_Union[TtsRuntime, _Mapping]] = ...) -> None: ...
 
 class SttRuntime(_message.Message):
-    __slots__ = ("api_key", "lease_id", "model", "language", "keyterms", "provider", "multilingual")
+    __slots__ = ("api_key", "lease_id", "model", "language", "keyterms", "provider", "multilingual", "speaker_diarization")
     API_KEY_FIELD_NUMBER: _ClassVar[int]
     LEASE_ID_FIELD_NUMBER: _ClassVar[int]
     MODEL_FIELD_NUMBER: _ClassVar[int]
@@ -41,6 +41,7 @@ class SttRuntime(_message.Message):
     KEYTERMS_FIELD_NUMBER: _ClassVar[int]
     PROVIDER_FIELD_NUMBER: _ClassVar[int]
     MULTILINGUAL_FIELD_NUMBER: _ClassVar[int]
+    SPEAKER_DIARIZATION_FIELD_NUMBER: _ClassVar[int]
     api_key: str
     lease_id: str
     model: str
@@ -48,7 +49,8 @@ class SttRuntime(_message.Message):
     keyterms: _containers.RepeatedScalarFieldContainer[str]
     provider: str
     multilingual: bool
-    def __init__(self, api_key: _Optional[str] = ..., lease_id: _Optional[str] = ..., model: _Optional[str] = ..., language: _Optional[str] = ..., keyterms: _Optional[_Iterable[str]] = ..., provider: _Optional[str] = ..., multilingual: _Optional[bool] = ...) -> None: ...
+    speaker_diarization: bool
+    def __init__(self, api_key: _Optional[str] = ..., lease_id: _Optional[str] = ..., model: _Optional[str] = ..., language: _Optional[str] = ..., keyterms: _Optional[_Iterable[str]] = ..., provider: _Optional[str] = ..., multilingual: _Optional[bool] = ..., speaker_diarization: _Optional[bool] = ...) -> None: ...
 
 class LlmRuntime(_message.Message):
     __slots__ = ("api_key", "lease_id", "model", "provider")

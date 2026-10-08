@@ -29,6 +29,15 @@ const { SttRuntime, TtsRuntime } = voiceRuntime;
 
 const publicationRevision = "execution-publication-2026-09-04-r1";
 
+test("Soniox speaker diarization preserves on, off and absent values on the wire", () => {
+  for (const speakerDiarization of [true, false, undefined]) {
+    const stt = SttRuntime.create({ apiKey: "key", model: "stt-rt-v5", language: "ko", provider: "soniox", speakerDiarization });
+    const decoded = SttRuntime.decode(SttRuntime.encode(stt).finish());
+    assert.equal(decoded.speakerDiarization, speakerDiarization);
+    assert.equal(SttRuntime.fromJSON(SttRuntime.toJSON(decoded)).speakerDiarization, speakerDiarization);
+  }
+});
+
 test("speech providers and API tool messages round-trip additively", () => {
   const stt = SttRuntime.create({
     provider: "soniox",

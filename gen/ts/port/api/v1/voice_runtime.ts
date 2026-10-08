@@ -51,7 +51,11 @@ export interface SttRuntime {
   language: string;
   keyterms: string[];
   provider?: string | undefined;
-  multilingual?: boolean | undefined;
+  multilingual?:
+    | boolean
+    | undefined;
+  /** Soniox speaker labels; independent of background voice cancellation. */
+  speakerDiarization?: boolean | undefined;
 }
 
 export interface LlmRuntime {
@@ -322,6 +326,7 @@ function createBaseSttRuntime(): SttRuntime {
     keyterms: [],
     provider: undefined,
     multilingual: undefined,
+    speakerDiarization: undefined,
   };
 }
 
@@ -347,6 +352,9 @@ export const SttRuntime: MessageFns<SttRuntime> = {
     }
     if (message.multilingual !== undefined) {
       writer.uint32(48).bool(message.multilingual);
+    }
+    if (message.speakerDiarization !== undefined) {
+      writer.uint32(64).bool(message.speakerDiarization);
     }
     return writer;
   },
@@ -414,6 +422,14 @@ export const SttRuntime: MessageFns<SttRuntime> = {
           message.multilingual = reader.bool();
           continue;
         }
+        case 8: {
+          if (tag !== 64) {
+            break;
+          }
+
+          message.speakerDiarization = reader.bool();
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -440,6 +456,11 @@ export const SttRuntime: MessageFns<SttRuntime> = {
       keyterms: globalThis.Array.isArray(object?.keyterms) ? object.keyterms.map((e: any) => globalThis.String(e)) : [],
       provider: isSet(object.provider) ? globalThis.String(object.provider) : undefined,
       multilingual: isSet(object.multilingual) ? globalThis.Boolean(object.multilingual) : undefined,
+      speakerDiarization: isSet(object.speakerDiarization)
+        ? globalThis.Boolean(object.speakerDiarization)
+        : isSet(object.speaker_diarization)
+        ? globalThis.Boolean(object.speaker_diarization)
+        : undefined,
     };
   },
 
@@ -466,6 +487,9 @@ export const SttRuntime: MessageFns<SttRuntime> = {
     if (message.multilingual !== undefined) {
       obj.multilingual = message.multilingual;
     }
+    if (message.speakerDiarization !== undefined) {
+      obj.speakerDiarization = message.speakerDiarization;
+    }
     return obj;
   },
 
@@ -481,6 +505,7 @@ export const SttRuntime: MessageFns<SttRuntime> = {
     message.keyterms = object.keyterms?.map((e) => e) || [];
     message.provider = object.provider ?? undefined;
     message.multilingual = object.multilingual ?? undefined;
+    message.speakerDiarization = object.speakerDiarization ?? undefined;
     return message;
   },
 };
