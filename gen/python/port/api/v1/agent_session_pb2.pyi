@@ -616,12 +616,14 @@ class VadRuntime(_message.Message):
     def __init__(self, noise_cancellation: _Optional[_Union[NoiseCancellationMode, str]] = ..., recognition_sensitivity: _Optional[float] = ...) -> None: ...
 
 class SpeechPolicyRuntime(_message.Message):
-    __slots__ = ("response_speed", "allow_interruptions")
+    __slots__ = ("response_speed", "allow_interruptions", "eot_on_number_secs")
     RESPONSE_SPEED_FIELD_NUMBER: _ClassVar[int]
     ALLOW_INTERRUPTIONS_FIELD_NUMBER: _ClassVar[int]
+    EOT_ON_NUMBER_SECS_FIELD_NUMBER: _ClassVar[int]
     response_speed: float
     allow_interruptions: bool
-    def __init__(self, response_speed: _Optional[float] = ..., allow_interruptions: _Optional[bool] = ...) -> None: ...
+    eot_on_number_secs: float
+    def __init__(self, response_speed: _Optional[float] = ..., allow_interruptions: _Optional[bool] = ..., eot_on_number_secs: _Optional[float] = ...) -> None: ...
 
 class CallLimitsRuntime(_message.Message):
     __slots__ = ("dial_wait_time_seconds", "max_call_duration_seconds", "no_answer_timeout_seconds", "no_answer_timeout_enabled")

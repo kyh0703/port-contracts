@@ -3366,8 +3366,11 @@ type SpeechPolicyRuntime struct {
 	state              protoimpl.MessageState `protogen:"open.v1"`
 	ResponseSpeed      *float64               `protobuf:"fixed64,1,opt,name=response_speed,json=responseSpeed,proto3,oneof" json:"response_speed,omitempty"`
 	AllowInterruptions *bool                  `protobuf:"varint,2,opt,name=allow_interruptions,json=allowInterruptions,proto3,oneof" json:"allow_interruptions,omitempty"`
-	unknownFields      protoimpl.UnknownFields
-	sizeCache          protoimpl.SizeCache
+	// Extra local EOT wait in seconds for a numeric transcript ending.
+	// Absence defaults to 0.5 at the worker; explicit zero disables the wait.
+	EotOnNumberSecs *float64 `protobuf:"fixed64,3,opt,name=eot_on_number_secs,json=eotOnNumberSecs,proto3,oneof" json:"eot_on_number_secs,omitempty"`
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
 }
 
 func (x *SpeechPolicyRuntime) Reset() {
@@ -3412,6 +3415,13 @@ func (x *SpeechPolicyRuntime) GetAllowInterruptions() bool {
 		return *x.AllowInterruptions
 	}
 	return false
+}
+
+func (x *SpeechPolicyRuntime) GetEotOnNumberSecs() float64 {
+	if x != nil && x.EotOnNumberSecs != nil {
+		return *x.EotOnNumberSecs
+	}
+	return 0
 }
 
 type CallLimitsRuntime struct {
@@ -7795,12 +7805,14 @@ const file_port_api_v1_agent_session_proto_rawDesc = "" +
 	"\x12noise_cancellation\x18\x01 \x01(\x0e2\".port.api.v1.NoiseCancellationModeB\n" +
 	"\xbaH\a\x82\x01\x04\x10\x01 \x00R\x11noiseCancellation\x12X\n" +
 	"\x17recognition_sensitivity\x18\x02 \x01(\x01B\x1a\xbaH\x17\xc8\x01\x01\x12\x12\x19\x00\x00\x00\x00\x00\x00\xe8?)\x00\x00\x00\x00\x00\x00\xe0?H\x00R\x16recognitionSensitivity\x88\x01\x01B\x1a\n" +
-	"\x18_recognition_sensitivity\"\xc6\x01\n" +
+	"\x18_recognition_sensitivity\"\xa8\x02\n" +
 	"\x13SpeechPolicyRuntime\x12F\n" +
 	"\x0eresponse_speed\x18\x01 \x01(\x01B\x1a\xbaH\x17\xc8\x01\x01\x12\x12\x19\x00\x00\x00\x00\x00\x00\xf0?)\x00\x00\x00\x00\x00\x00\x00\x00H\x00R\rresponseSpeed\x88\x01\x01\x12<\n" +
-	"\x13allow_interruptions\x18\x02 \x01(\bB\x06\xbaH\x03\xc8\x01\x01H\x01R\x12allowInterruptions\x88\x01\x01B\x11\n" +
+	"\x13allow_interruptions\x18\x02 \x01(\bB\x06\xbaH\x03\xc8\x01\x01H\x01R\x12allowInterruptions\x88\x01\x01\x12I\n" +
+	"\x12eot_on_number_secs\x18\x03 \x01(\x01B\x17\xbaH\x14\x12\x12\x19\x00\x00\x00\x00\x00\x00\b@)\x00\x00\x00\x00\x00\x00\x00\x00H\x02R\x0feotOnNumberSecs\x88\x01\x01B\x11\n" +
 	"\x0f_response_speedB\x16\n" +
-	"\x14_allow_interruptions\"\x9d\x02\n" +
+	"\x14_allow_interruptionsB\x15\n" +
+	"\x13_eot_on_number_secs\"\x9d\x02\n" +
 	"\x11CallLimitsRuntime\x12>\n" +
 	"\x16dial_wait_time_seconds\x18\x01 \x01(\rB\t\xbaH\x06*\x04\x18Z(\n" +
 	"R\x13dialWaitTimeSeconds\x12F\n" +

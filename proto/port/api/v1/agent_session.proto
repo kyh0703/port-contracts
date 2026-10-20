@@ -514,6 +514,11 @@ message SpeechPolicyRuntime {
     (buf.validate.field).double = {gte: 0 lte: 1}
   ];
   optional bool allow_interruptions = 2 [(buf.validate.field).required = true];
+  // Extra local EOT wait in seconds for a numeric transcript ending.
+  // Absence defaults to 0.5 at the worker; explicit zero disables the wait.
+  optional double eot_on_number_secs = 3 [
+    (buf.validate.field).double = {gte: 0 lte: 3}
+  ];
 }
 
 message CallLimitsRuntime {

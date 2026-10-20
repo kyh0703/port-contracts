@@ -44,6 +44,20 @@ parameters, `none | conversation | recent` context policy, and one blocking
 `request_start` message. Older Agent bootstrap services and revision fallbacks
 are intentionally unavailable.
 
+## Number-ending EOT wait — 8.1.0
+
+`SpeechPolicyRuntime.eot_on_number_secs` (optional double, field 3) carries the
+owner's additional numeric-ending wait in seconds, bounded to 0–3. Absence uses
+0.5 seconds in the worker; explicit zero disables the extension and remains
+present through binary and JSON round trips. API HTTP settings use the exact
+key `eot_on_number_secs`; generated TypeScript uses `eotOnNumberSecs`.
+
+Apply the canonical conversation-settings migration before the new API. Roll out
+API and worker together before exposing the Web input: an old worker ignores the
+additive field. This is an EOT hold before LLM generation, not TTS playback delay
+or a global VAD-silence change. API pins the value at admission; active sessions
+keep their original policy. This source change is not a production deployment.
+
 ## Runtime HA — 8.0.0
 
 `8.0.0` is a breaking coordinated release for API, worker, Web and aggregator.

@@ -691,7 +691,14 @@ export interface VadRuntime {
 
 export interface SpeechPolicyRuntime {
   responseSpeed?: number | undefined;
-  allowInterruptions?: boolean | undefined;
+  allowInterruptions?:
+    | boolean
+    | undefined;
+  /**
+   * Extra local EOT wait in seconds for a numeric transcript ending.
+   * Absence defaults to 0.5 at the worker; explicit zero disables the wait.
+   */
+  eotOnNumberSecs?: number | undefined;
 }
 
 export interface CallLimitsRuntime {
@@ -6623,7 +6630,7 @@ export const VadRuntime: MessageFns<VadRuntime> = {
 };
 
 function createBaseSpeechPolicyRuntime(): SpeechPolicyRuntime {
-  return { responseSpeed: undefined, allowInterruptions: undefined };
+  return { responseSpeed: undefined, allowInterruptions: undefined, eotOnNumberSecs: undefined };
 }
 
 export const SpeechPolicyRuntime: MessageFns<SpeechPolicyRuntime> = {
@@ -6633,6 +6640,9 @@ export const SpeechPolicyRuntime: MessageFns<SpeechPolicyRuntime> = {
     }
     if (message.allowInterruptions !== undefined) {
       writer.uint32(16).bool(message.allowInterruptions);
+    }
+    if (message.eotOnNumberSecs !== undefined) {
+      writer.uint32(25).double(message.eotOnNumberSecs);
     }
     return writer;
   },
@@ -6660,6 +6670,14 @@ export const SpeechPolicyRuntime: MessageFns<SpeechPolicyRuntime> = {
           message.allowInterruptions = reader.bool();
           continue;
         }
+        case 3: {
+          if (tag !== 25) {
+            break;
+          }
+
+          message.eotOnNumberSecs = reader.double();
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -6681,6 +6699,11 @@ export const SpeechPolicyRuntime: MessageFns<SpeechPolicyRuntime> = {
         : isSet(object.allow_interruptions)
         ? globalThis.Boolean(object.allow_interruptions)
         : undefined,
+      eotOnNumberSecs: isSet(object.eotOnNumberSecs)
+        ? globalThis.Number(object.eotOnNumberSecs)
+        : isSet(object.eot_on_number_secs)
+        ? globalThis.Number(object.eot_on_number_secs)
+        : undefined,
     };
   },
 
@@ -6692,6 +6715,9 @@ export const SpeechPolicyRuntime: MessageFns<SpeechPolicyRuntime> = {
     if (message.allowInterruptions !== undefined) {
       obj.allowInterruptions = message.allowInterruptions;
     }
+    if (message.eotOnNumberSecs !== undefined) {
+      obj.eotOnNumberSecs = message.eotOnNumberSecs;
+    }
     return obj;
   },
 
@@ -6702,6 +6728,7 @@ export const SpeechPolicyRuntime: MessageFns<SpeechPolicyRuntime> = {
     const message = createBaseSpeechPolicyRuntime();
     message.responseSpeed = object.responseSpeed ?? undefined;
     message.allowInterruptions = object.allowInterruptions ?? undefined;
+    message.eotOnNumberSecs = object.eotOnNumberSecs ?? undefined;
     return message;
   },
 };

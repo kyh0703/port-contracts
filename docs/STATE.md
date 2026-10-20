@@ -1,7 +1,19 @@
 # State
 
 current_version: orchestration-contract-v1
-last_updated: 2026-09-29
+last_updated: 2026-10-20
+
+## Number-ending EOT wait — 8.1.0, source only
+
+- Added optional double `SpeechPolicyRuntime.eot_on_number_secs`, field 3,
+  constrained to 0–3 seconds. TypeScript uses `eotOnNumberSecs`; omission is
+  distinct from explicit zero so the worker can apply default 0.5 or disable.
+- Regenerated TypeScript, Go and Python bindings. The binary/JSON presence
+  regression failed four configured-value cases before generation; all 42 wire
+  tests and Go validation passed, including finite bounds and missing/zero.
+- API and worker consume the same local 8.1.0 tarball with SHA-256
+  `0dad6ba795c975f7d51e01e247f8298e4786fcaa4f2d6b14e33593b0bda8c54d`.
+  Main publication is source-only; registry publication and production rollout remain separate.
 
 ## MCP timeout extension — 7.17.0
 
