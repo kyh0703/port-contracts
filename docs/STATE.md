@@ -1,7 +1,20 @@
 # State
 
 current_version: orchestration-contract-v1
-last_updated: 2026-10-20
+last_updated: 2026-10-21
+
+## Agent-generated opening — source only
+
+- Removed `PublishedAgentNodeRuntime.greeting` and reserved field 17 and its name.
+- Regenerated TypeScript, Go, and Python bindings with `npm run generate`.
+  The wire regression now covers ignoring historical binary/JSON greeting values.
+- Package version and consumer vendored archives are unchanged. API·worker·Web
+  must remove active greeting usage and adopt the generated contract in a coordinated
+  published release; no same-version tarball replacement or unrelated upgrade is included.
+- Existing persisted greetings remain inert. Opening content is generated from
+  instructions and conversation context, never from a fixed default phrase.
+- Verification: protobuf lint, TypeScript build, all 42 wire tests, and
+  `go test ./...` passed. Registry publication and deployment remain separate.
 
 ## Number-ending EOT wait — 8.1.0, source only
 

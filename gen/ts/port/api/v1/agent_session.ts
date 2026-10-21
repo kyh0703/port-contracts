@@ -532,10 +532,7 @@ export interface AgentPromptConfigSnapshot {
   dtmfRules: string;
 }
 
-/**
- * Agent nodes expose the optional start greeting alongside the raw system prompt.
- * It is only played for the publication's primary start node by the runtime.
- */
+/** The active agent generates its opening from these instructions and conversation context. */
 export interface PublishedAgentNodeRuntime {
   nodeId: string;
   llmWorker?: LlmRuntime | undefined;
@@ -552,7 +549,6 @@ export interface PublishedAgentNodeRuntime {
   knowledgeToolRuntimes: KnowledgeToolRuntime[];
   authoring?: InlineAuthoringOptions | undefined;
   displayName?: string | undefined;
-  greeting?: string | undefined;
   knowledgeToolReference?: string | undefined;
 }
 
@@ -4045,7 +4041,6 @@ function createBasePublishedAgentNodeRuntime(): PublishedAgentNodeRuntime {
     knowledgeToolRuntimes: [],
     authoring: undefined,
     displayName: undefined,
-    greeting: undefined,
     knowledgeToolReference: undefined,
   };
 }
@@ -4096,9 +4091,6 @@ export const PublishedAgentNodeRuntime: MessageFns<PublishedAgentNodeRuntime> = 
     }
     if (message.displayName !== undefined) {
       writer.uint32(130).string(message.displayName);
-    }
-    if (message.greeting !== undefined) {
-      writer.uint32(138).string(message.greeting);
     }
     if (message.knowledgeToolReference !== undefined) {
       writer.uint32(146).string(message.knowledgeToolReference);
@@ -4233,14 +4225,6 @@ export const PublishedAgentNodeRuntime: MessageFns<PublishedAgentNodeRuntime> = 
           message.displayName = reader.string();
           continue;
         }
-        case 17: {
-          if (tag !== 138) {
-            break;
-          }
-
-          message.greeting = reader.string();
-          continue;
-        }
         case 18: {
           if (tag !== 146) {
             break;
@@ -4323,7 +4307,6 @@ export const PublishedAgentNodeRuntime: MessageFns<PublishedAgentNodeRuntime> = 
         : isSet(object.display_name)
         ? globalThis.String(object.display_name)
         : undefined,
-      greeting: isSet(object.greeting) ? globalThis.String(object.greeting) : undefined,
       knowledgeToolReference: isSet(object.knowledgeToolReference)
         ? globalThis.String(object.knowledgeToolReference)
         : isSet(object.knowledge_tool_reference)
@@ -4379,9 +4362,6 @@ export const PublishedAgentNodeRuntime: MessageFns<PublishedAgentNodeRuntime> = 
     if (message.displayName !== undefined) {
       obj.displayName = message.displayName;
     }
-    if (message.greeting !== undefined) {
-      obj.greeting = message.greeting;
-    }
     if (message.knowledgeToolReference !== undefined) {
       obj.knowledgeToolReference = message.knowledgeToolReference;
     }
@@ -4414,7 +4394,6 @@ export const PublishedAgentNodeRuntime: MessageFns<PublishedAgentNodeRuntime> = 
       ? InlineAuthoringOptions.fromPartial(object.authoring)
       : undefined;
     message.displayName = object.displayName ?? undefined;
-    message.greeting = object.greeting ?? undefined;
     message.knowledgeToolReference = object.knowledgeToolReference ?? undefined;
     return message;
   },

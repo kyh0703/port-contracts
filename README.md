@@ -44,6 +44,22 @@ parameters, `none | conversation | recent` context policy, and one blocking
 `request_start` message. Older Agent bootstrap services and revision fallbacks
 are intentionally unavailable.
 
+## Agent-generated opening — source change
+
+`PublishedAgentNodeRuntime.greeting` is removed; field number 17 and the name
+`greeting` are reserved and must never be reused. The active agent generates its
+opening from its instructions and current conversation context, without a fixed
+phrase or preset fallback. Historical field-17 binary values are skipped, and
+the generated JSON adapters do not expose the retired property.
+
+The protobuf and generated TypeScript, Go, and Python sources are updated without
+a package version bump. This is not a registry publication or deployment.
+Consumers retaining older vendored packages must stop authoring and projecting
+the optional greeting immediately; their unused optional generated type may
+remain until a coordinated contracts release updates API, worker, and Web.
+Do not replace same-version archives or upgrade unrelated contracts as part of
+this removal. Existing stored greetings remain inert; no data migration is needed.
+
 ## Number-ending EOT wait — 8.1.0
 
 `SpeechPolicyRuntime.eot_on_number_secs` (optional double, field 3) carries the

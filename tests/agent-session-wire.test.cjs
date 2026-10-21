@@ -436,39 +436,19 @@ test("mode prompt config snapshots and optional node display names round-trip", 
   assert.equal(decoded.agent.nodeRuntimes[0].instructions.systemPrompt, "Raw node prompt.");
 });
 
-test("published node greeting round-trips with raw whitespace and legacy absence", () => {
-  const greeting = "  안녕하세요 {{고객명}}님.\n  무엇을 도와드릴까요?  ";
-  const response = BootstrapPublishedResponse.create({
-    contractRevision: publicationRevision,
-    userId: "01987a5f-2aa8-7000-8000-000000000001",
-    conversationId: "conversation-greeting",
-    sessionId: "session-greeting",
-    publishedId: "agent-greeting",
-    agent: {
-      mode: AgentMode.AGENT_MODE_HANDOFF,
-      nodeRuntimes: [{ ...inlineRuntime("entry", "Raw prompt."), displayName: "Entry", greeting }],
-      handoff: { entryNodeId: "entry", maxHandoffDepth: 1, routes: [] },
-    },
-    textRuntime: {
-      transport: "text_stream",
-      roomName: "room-greeting",
-      participantIdentity: "participant-greeting",
-      idleTimeoutSeconds: 300,
-      maxSessionDurationSeconds: 3600,
-    },
-  });
-
-  const decoded = BootstrapPublishedResponse.decode(
-    BootstrapPublishedResponse.encode(response).finish(),
-  );
-  assert.equal(decoded.agent.nodeRuntimes[0].greeting, greeting);
-  const legacy = BootstrapPublishedResponse.decode(
-    BootstrapPublishedResponse.encode(BootstrapPublishedResponse.create({
-      ...response,
-      agent: { ...response.agent, nodeRuntimes: [inlineRuntime("entry", "Raw prompt.")] },
-    })).finish(),
-  );
-  assert.equal(legacy.agent.nodeRuntimes[0].greeting, undefined);
+test("published nodes discard retired greetings from legacy binary and JSON payloads", () => {
+  const runtime = PublishedAgentNodeRuntime.create(inlineRuntime("entry", "Raw prompt."));
+  const encoded = PublishedAgentNodeRuntime.encode(runtime).finish();
+  // Field 17, wire type 2, with the historical value "Hello".
+  const legacy = Buffer.concat([encoded, Buffer.from([0x8a, 0x01, 0x05]), Buffer.from("Hello")]);
+  const decoded = PublishedAgentNodeRuntime.decode(legacy);
+  assert.equal(Object.hasOwn(decoded, "greeting"), false);
+  assert.equal(decoded.instructions.systemPrompt, "Raw prompt.");
+  assert.deepEqual(PublishedAgentNodeRuntime.encode(decoded).finish(), encoded);
+  const json = PublishedAgentNodeRuntime.toJSON(runtime);
+  const fromJson = PublishedAgentNodeRuntime.fromJSON({ ...json, greeting: "Hello" });
+  assert.equal(Object.hasOwn(fromJson, "greeting"), false);
+  assert.deepEqual(PublishedAgentNodeRuntime.toJSON(fromJson), json);
 });
 
 test("handoff routes round-trip typed parameters, recent context, and request-start", () => {

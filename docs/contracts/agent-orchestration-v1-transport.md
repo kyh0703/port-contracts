@@ -150,13 +150,16 @@ HTTP의 `endKey = null`은 wire에서 `end_key` absence로 표현한다. `preset
 - `Tools` snapshot
 - MCP binding snapshot
 - API tool별 단기 header credential
-- Greeting과 활성화 policy
 - `knowledge_revision_id`와 필요한 immutable retrieval binding
 
 Context의 대화 상태 자체는 wire snapshot에 고정된 Agent 자산이 아니라 실행 중
 AgentRuntime이 관리한다. AgentRuntime에는 Transport, STT, TTS, Voice, VAD,
 BackgroundAudio, DTMF 입력, 인터럽션 또는 통화 timeout 필드를 두지 않는다.
 LLMWorker는 optional이 아니며 전역 LLM field를 제공하지 않는다.
+
+고정 인사 필드는 전달하지 않는다. 최초 Agent는 Instructions와 현재 Conversation
+맥락으로 첫 발화를 생성한다. `PublishedAgentNodeRuntime`의 과거 field 17과
+`greeting` 이름은 예약되어 있으며, 기존 값은 실행 입력으로 사용하지 않는다.
 
 API tool의 URL·schema·설명은 `tools[]` metadata에 두고, 실행 시점의 단기 header는
 `api_tool_runtimes[]`에 분리한다. 각 `kind = "api"` tool은 같은 `tool_id`의 runtime
