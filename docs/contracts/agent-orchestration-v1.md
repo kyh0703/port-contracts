@@ -39,12 +39,12 @@ effective_date: 2026-08-07
   실행 Agent와 AgentTask는 자신에게 고정된 LLM을 사용해야 하며 전역 LLM
   fallback을 사용해서는 안 된다.
 - **C06 — No CallRuntime ownership:** Agent, AgentVersion, AgentRuntime은
-  Transport, STT, TTS, Voice, VAD, BackgroundAudio, DTMF 입력, 인터럽션,
+  Transport, STT, TTS, Voice, VAD, DTMF 입력, 인터럽션,
   통화 시간 또는 타임아웃을 소유하거나 재구성하지 않는다.
 - **C07 — CallRuntime ownership:** 현재 `userId`는 mutable한
   `CallRuntimeConfig` singleton 하나를 소유한다. 별도 named profile이나
   Agent별 통화 설정 객체를 만들지 않는다. CallRuntimeConfig는 Transport,
-  VAD, STT, Voice를 포함한 TTS, BackgroundAudio preset·volume, DTMF 입력,
+  VAD, STT, Voice를 포함한 TTS, DTMF 입력,
   인터럽션, 최대 통화 시간과 각종 타임아웃의 유일한 영속 설정 경계다.
 
 런타임 모델은 다음 두 경계로 고정한다.
@@ -56,7 +56,6 @@ CallRuntime — Conversation당 runtime instance 하나
 ├─ STT
 ├─ TTS
 │  └─ Voice
-├─ BackgroundAudio
 ├─ DTMF input
 └─ Policies
    ├─ Interruption
@@ -80,18 +79,13 @@ binding은 각각 Tools와 MCP의 입력이다. Context는 AgentVersion의 소�
 
 CallRuntimeConfig와 CallRuntimeSnapshot은 다음 값을 명시적으로 포함한다.
 
-- `backgroundAudio.preset`: `none | cafe | office | contact_center | library`,
-  기본값 `none`
-- `backgroundAudio.volume`: BackgroundAudio에만 적용되는 `0..1` 값,
-  기본값 `0.5`
 - `dtmf.timeoutSeconds`: 마지막 DTMF 키 입력 뒤 추가 입력을 기다리는 `1..10`
   범위의 초 단위 정수, 기본값 `3`
 - `dtmf.endKey`: `null | 0..9 | # | *`, 기본값 `null`
 
-`backgroundAudio.preset = none`이면 volume 값과 무관하게 재생하지 않는다.
-BackgroundAudio preset은 named CallRuntimeConfig profile이나 사용자 입력 URL이
-아니라 runtime이 소유한 system preset이다. DTMF timeout은 키 입력마다 다시
-시작하며, 설정된 end key는 결과에 포함하지 않고 입력 수집을 즉시 완료한다.
+배경음과 대기 중 키보드 소리 합성은 제거되었다. 기존 불변 snapshot의 관련 값은
+실행하지 않는다. DTMF timeout은 키 입력마다 다시 시작하며, 설정된 end key는
+결과에 포함하지 않고 입력 수집을 즉시 완료한다.
 end key는 통화를 종료하지 않는다. DTMF를 지원하지 않는 transport에서는 이
 정책을 실행하지 않되 snapshot 자체를 변경하지 않는다.
 
@@ -133,7 +127,7 @@ end key는 통화를 종료하지 않는다. DTMF를 지원하지 않는 transpo
 ## 5. Runtime 불변식
 
 - **C16 — One CallRuntime:** Transport, VAD, STT, TTS와 그 Voice, 인터럽션,
-  BackgroundAudio, DTMF 입력 수집, 통화 한도·타임아웃은 pinned
+  DTMF 입력 수집, 통화 한도·타임아웃은 pinned
   CallRuntimeSnapshot으로 통화 시작 시 한 번 생성한다. Agent 전환이나
   AgentTask 실행 중 player, listener 또는 policy를 교체하지 않는다. Voice를
   TTS와 분리된 Agent별 runtime으로 만들지 않는다.

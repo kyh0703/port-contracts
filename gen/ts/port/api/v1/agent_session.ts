@@ -176,63 +176,6 @@ export function noiseCancellationModeToJSON(object: NoiseCancellationMode): stri
   }
 }
 
-export enum BackgroundAudioPreset {
-  BACKGROUND_AUDIO_PRESET_UNSPECIFIED = 0,
-  BACKGROUND_AUDIO_PRESET_NONE = 1,
-  BACKGROUND_AUDIO_PRESET_CAFE = 2,
-  BACKGROUND_AUDIO_PRESET_OFFICE = 3,
-  BACKGROUND_AUDIO_PRESET_CONTACT_CENTER = 4,
-  BACKGROUND_AUDIO_PRESET_LIBRARY = 5,
-  UNRECOGNIZED = -1,
-}
-
-export function backgroundAudioPresetFromJSON(object: any): BackgroundAudioPreset {
-  switch (object) {
-    case 0:
-    case "BACKGROUND_AUDIO_PRESET_UNSPECIFIED":
-      return BackgroundAudioPreset.BACKGROUND_AUDIO_PRESET_UNSPECIFIED;
-    case 1:
-    case "BACKGROUND_AUDIO_PRESET_NONE":
-      return BackgroundAudioPreset.BACKGROUND_AUDIO_PRESET_NONE;
-    case 2:
-    case "BACKGROUND_AUDIO_PRESET_CAFE":
-      return BackgroundAudioPreset.BACKGROUND_AUDIO_PRESET_CAFE;
-    case 3:
-    case "BACKGROUND_AUDIO_PRESET_OFFICE":
-      return BackgroundAudioPreset.BACKGROUND_AUDIO_PRESET_OFFICE;
-    case 4:
-    case "BACKGROUND_AUDIO_PRESET_CONTACT_CENTER":
-      return BackgroundAudioPreset.BACKGROUND_AUDIO_PRESET_CONTACT_CENTER;
-    case 5:
-    case "BACKGROUND_AUDIO_PRESET_LIBRARY":
-      return BackgroundAudioPreset.BACKGROUND_AUDIO_PRESET_LIBRARY;
-    case -1:
-    case "UNRECOGNIZED":
-    default:
-      return BackgroundAudioPreset.UNRECOGNIZED;
-  }
-}
-
-export function backgroundAudioPresetToJSON(object: BackgroundAudioPreset): string {
-  switch (object) {
-    case BackgroundAudioPreset.BACKGROUND_AUDIO_PRESET_UNSPECIFIED:
-      return "BACKGROUND_AUDIO_PRESET_UNSPECIFIED";
-    case BackgroundAudioPreset.BACKGROUND_AUDIO_PRESET_NONE:
-      return "BACKGROUND_AUDIO_PRESET_NONE";
-    case BackgroundAudioPreset.BACKGROUND_AUDIO_PRESET_CAFE:
-      return "BACKGROUND_AUDIO_PRESET_CAFE";
-    case BackgroundAudioPreset.BACKGROUND_AUDIO_PRESET_OFFICE:
-      return "BACKGROUND_AUDIO_PRESET_OFFICE";
-    case BackgroundAudioPreset.BACKGROUND_AUDIO_PRESET_CONTACT_CENTER:
-      return "BACKGROUND_AUDIO_PRESET_CONTACT_CENTER";
-    case BackgroundAudioPreset.BACKGROUND_AUDIO_PRESET_LIBRARY:
-      return "BACKGROUND_AUDIO_PRESET_LIBRARY";
-    case BackgroundAudioPreset.UNRECOGNIZED:
-    default:
-      return "UNRECOGNIZED";
-  }
-}
-
 export enum AgentMode {
   AGENT_MODE_UNSPECIFIED = 0,
   AGENT_MODE_SUPERVISOR = 1,
@@ -654,7 +597,6 @@ export interface TextRuntimeSnapshot {
 export interface CallRuntimeSnapshot {
   stt?: SttRuntime | undefined;
   tts?: TtsRuntime | undefined;
-  backgroundAudio?: BackgroundAudioRuntime | undefined;
   dtmf?: DtmfInputRuntime | undefined;
   transport?: TransportRuntime | undefined;
   vad?: VadRuntime | undefined;
@@ -722,11 +664,6 @@ export interface CallLimitsRuntime {
    * The positive timeout above remains stored even when this policy is disabled.
    */
   noAnswerTimeoutEnabled: boolean;
-}
-
-export interface BackgroundAudioRuntime {
-  preset: BackgroundAudioPreset;
-  volume?: number | undefined;
 }
 
 export interface DtmfInputRuntime {
@@ -5972,7 +5909,6 @@ function createBaseCallRuntimeSnapshot(): CallRuntimeSnapshot {
   return {
     stt: undefined,
     tts: undefined,
-    backgroundAudio: undefined,
     dtmf: undefined,
     transport: undefined,
     vad: undefined,
@@ -5990,9 +5926,6 @@ export const CallRuntimeSnapshot: MessageFns<CallRuntimeSnapshot> = {
     }
     if (message.tts !== undefined) {
       TtsRuntime.encode(message.tts, writer.uint32(18).fork()).join();
-    }
-    if (message.backgroundAudio !== undefined) {
-      BackgroundAudioRuntime.encode(message.backgroundAudio, writer.uint32(26).fork()).join();
     }
     if (message.dtmf !== undefined) {
       DtmfInputRuntime.encode(message.dtmf, writer.uint32(34).fork()).join();
@@ -6039,14 +5972,6 @@ export const CallRuntimeSnapshot: MessageFns<CallRuntimeSnapshot> = {
           }
 
           message.tts = TtsRuntime.decode(reader, reader.uint32());
-          continue;
-        }
-        case 3: {
-          if (tag !== 26) {
-            break;
-          }
-
-          message.backgroundAudio = BackgroundAudioRuntime.decode(reader, reader.uint32());
           continue;
         }
         case 4: {
@@ -6118,11 +6043,6 @@ export const CallRuntimeSnapshot: MessageFns<CallRuntimeSnapshot> = {
     return {
       stt: isSet(object.stt) ? SttRuntime.fromJSON(object.stt) : undefined,
       tts: isSet(object.tts) ? TtsRuntime.fromJSON(object.tts) : undefined,
-      backgroundAudio: isSet(object.backgroundAudio)
-        ? BackgroundAudioRuntime.fromJSON(object.backgroundAudio)
-        : isSet(object.background_audio)
-        ? BackgroundAudioRuntime.fromJSON(object.background_audio)
-        : undefined,
       dtmf: isSet(object.dtmf) ? DtmfInputRuntime.fromJSON(object.dtmf) : undefined,
       transport: isSet(object.transport) ? TransportRuntime.fromJSON(object.transport) : undefined,
       vad: isSet(object.vad) ? VadRuntime.fromJSON(object.vad) : undefined,
@@ -6152,9 +6072,6 @@ export const CallRuntimeSnapshot: MessageFns<CallRuntimeSnapshot> = {
     }
     if (message.tts !== undefined) {
       obj.tts = TtsRuntime.toJSON(message.tts);
-    }
-    if (message.backgroundAudio !== undefined) {
-      obj.backgroundAudio = BackgroundAudioRuntime.toJSON(message.backgroundAudio);
     }
     if (message.dtmf !== undefined) {
       obj.dtmf = DtmfInputRuntime.toJSON(message.dtmf);
@@ -6187,9 +6104,6 @@ export const CallRuntimeSnapshot: MessageFns<CallRuntimeSnapshot> = {
     const message = createBaseCallRuntimeSnapshot();
     message.stt = (object.stt !== undefined && object.stt !== null) ? SttRuntime.fromPartial(object.stt) : undefined;
     message.tts = (object.tts !== undefined && object.tts !== null) ? TtsRuntime.fromPartial(object.tts) : undefined;
-    message.backgroundAudio = (object.backgroundAudio !== undefined && object.backgroundAudio !== null)
-      ? BackgroundAudioRuntime.fromPartial(object.backgroundAudio)
-      : undefined;
     message.dtmf = (object.dtmf !== undefined && object.dtmf !== null)
       ? DtmfInputRuntime.fromPartial(object.dtmf)
       : undefined;
@@ -7033,82 +6947,6 @@ export const CallLimitsRuntime: MessageFns<CallLimitsRuntime> = {
     message.maxCallDurationSeconds = object.maxCallDurationSeconds ?? 0;
     message.noAnswerTimeoutSeconds = object.noAnswerTimeoutSeconds ?? 0;
     message.noAnswerTimeoutEnabled = object.noAnswerTimeoutEnabled ?? false;
-    return message;
-  },
-};
-
-function createBaseBackgroundAudioRuntime(): BackgroundAudioRuntime {
-  return { preset: 0, volume: undefined };
-}
-
-export const BackgroundAudioRuntime: MessageFns<BackgroundAudioRuntime> = {
-  encode(message: BackgroundAudioRuntime, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
-    if (message.preset !== 0) {
-      writer.uint32(8).int32(message.preset);
-    }
-    if (message.volume !== undefined) {
-      writer.uint32(17).double(message.volume);
-    }
-    return writer;
-  },
-
-  decode(input: BinaryReader | Uint8Array, length?: number): BackgroundAudioRuntime {
-    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
-    const end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBaseBackgroundAudioRuntime();
-    while (reader.pos < end) {
-      const tag = reader.uint32();
-      switch (tag >>> 3) {
-        case 1: {
-          if (tag !== 8) {
-            break;
-          }
-
-          message.preset = reader.int32() as any;
-          continue;
-        }
-        case 2: {
-          if (tag !== 17) {
-            break;
-          }
-
-          message.volume = reader.double();
-          continue;
-        }
-      }
-      if ((tag & 7) === 4 || tag === 0) {
-        break;
-      }
-      reader.skip(tag & 7);
-    }
-    return message;
-  },
-
-  fromJSON(object: any): BackgroundAudioRuntime {
-    return {
-      preset: isSet(object.preset) ? backgroundAudioPresetFromJSON(object.preset) : 0,
-      volume: isSet(object.volume) ? globalThis.Number(object.volume) : undefined,
-    };
-  },
-
-  toJSON(message: BackgroundAudioRuntime): unknown {
-    const obj: any = {};
-    if (message.preset !== 0) {
-      obj.preset = backgroundAudioPresetToJSON(message.preset);
-    }
-    if (message.volume !== undefined) {
-      obj.volume = message.volume;
-    }
-    return obj;
-  },
-
-  create(base?: DeepPartial<BackgroundAudioRuntime>): BackgroundAudioRuntime {
-    return BackgroundAudioRuntime.fromPartial(base ?? {});
-  },
-  fromPartial(object: DeepPartial<BackgroundAudioRuntime>): BackgroundAudioRuntime {
-    const message = createBaseBackgroundAudioRuntime();
-    message.preset = object.preset ?? 0;
-    message.volume = object.volume ?? undefined;
     return message;
   },
 };

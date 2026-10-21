@@ -44,6 +44,22 @@ parameters, `none | conversation | recent` context policy, and one blocking
 `request_start` message. Older Agent bootstrap services and revision fallbacks
 are intentionally unavailable.
 
+## Background audio removal — 9.0.0
+
+`CallRuntimeSnapshot.background_audio` is removed; field number 3 and the name
+`background_audio` are reserved and must never be reused. `BackgroundAudioRuntime`
+and `BackgroundAudioPreset` are removed from generated TypeScript, Go and Python.
+Voice bootstrap still requires STT, TTS, VAD, DTMF, transport and speech policies,
+but no longer requires or carries ambient/thinking audio. Prior field-3 binary
+values are ignored without changing the remaining runtime fields.
+
+Update API, worker and Web to the matching vendored 9.0.0 package together.
+Old validators require the removed field, so this is not an additive release.
+Mutable saved settings are cleaned by the API's canonical migration; immutable
+publication snapshots remain unchanged and their retired background settings
+are not projected into runtime payloads. No package publication or deployment
+is implied by this source change.
+
 ## Personal conversation context — 8.2.0
 
 `NodeModelSettings.history_max_bytes` (optional uint32, field 4) opts a node into

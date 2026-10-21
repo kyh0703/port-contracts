@@ -306,7 +306,7 @@ func TestPublishedVoiceRuntimeRequiresAllComponents(t *testing.T) {
 		t.Fatalf("Validate(valid agent voice response) = %v", err)
 	}
 
-	for _, name := range []string{"stt", "tts", "background_audio", "dtmf", "transport", "vad", "speech_policy", "limits"} {
+	for _, name := range []string{"stt", "tts", "dtmf", "transport", "vad", "speech_policy", "limits"} {
 		t.Run(name, func(t *testing.T) {
 			response := proto.Clone(valid).(*apiv1.BootstrapPublishedResponse)
 			runtime := response.GetVoiceRuntime()
@@ -315,8 +315,6 @@ func TestPublishedVoiceRuntimeRequiresAllComponents(t *testing.T) {
 				runtime.Stt = nil
 			case "tts":
 				runtime.Tts = nil
-			case "background_audio":
-				runtime.BackgroundAudio = nil
 			case "dtmf":
 				runtime.Dtmf = nil
 			case "transport":
@@ -682,12 +680,8 @@ func validTextRuntime() *apiv1.TextRuntimeSnapshot {
 
 func validCallRuntime() *apiv1.CallRuntimeSnapshot {
 	return &apiv1.CallRuntimeSnapshot{
-		Stt: &apiv1.SttRuntime{Credential: &apiv1.SttRuntime_ApiKey{ApiKey: "stt-key"}, Model: "stt-model", Language: "ko"},
-		Tts: &apiv1.TtsRuntime{Credential: &apiv1.TtsRuntime_ApiKey{ApiKey: "tts-key"}, Model: "tts-model", Language: "ko", VoiceId: "voice-1"},
-		BackgroundAudio: &apiv1.BackgroundAudioRuntime{
-			Preset: apiv1.BackgroundAudioPreset_BACKGROUND_AUDIO_PRESET_NONE,
-			Volume: proto.Float64(0.5),
-		},
+		Stt:          &apiv1.SttRuntime{Credential: &apiv1.SttRuntime_ApiKey{ApiKey: "stt-key"}, Model: "stt-model", Language: "ko"},
+		Tts:          &apiv1.TtsRuntime{Credential: &apiv1.TtsRuntime_ApiKey{ApiKey: "tts-key"}, Model: "tts-model", Language: "ko", VoiceId: "voice-1"},
 		Dtmf:         &apiv1.DtmfInputRuntime{TimeoutSeconds: 3},
 		Transport:    &apiv1.TransportRuntime{Source: apiv1.CallTransportSource_CALL_TRANSPORT_SOURCE_WEBRTC, RoomName: "room-1", CallerParticipantIdentity: "caller-1"},
 		Vad:          &apiv1.VadRuntime{NoiseCancellation: apiv1.NoiseCancellationMode_NOISE_CANCELLATION_MODE_STANDARD, RecognitionSensitivity: proto.Float64(0.5)},
