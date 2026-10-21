@@ -360,7 +360,7 @@ class AgentPromptConfigSnapshot(_message.Message):
     def __init__(self, revision: _Optional[int] = ..., system_guardrail: _Optional[str] = ..., crew_system_context: _Optional[str] = ..., handoff_context: _Optional[str] = ..., supervisor_context: _Optional[str] = ..., specialist_context: _Optional[str] = ..., voice_rules: _Optional[str] = ..., dtmf_rules: _Optional[str] = ...) -> None: ...
 
 class PublishedAgentNodeRuntime(_message.Message):
-    __slots__ = ("node_id", "llm_worker", "instructions", "context_policy", "tools", "mcp_servers", "api_tool_runtimes", "a2a_tool_runtimes", "built_in_tools", "knowledge_revision_id", "knowledge_function_name", "knowledge_description", "knowledge_tool_runtimes", "authoring", "display_name", "greeting", "knowledge_tool_reference", "context_tool")
+    __slots__ = ("node_id", "llm_worker", "instructions", "context_policy", "tools", "mcp_servers", "api_tool_runtimes", "a2a_tool_runtimes", "built_in_tools", "knowledge_revision_id", "knowledge_function_name", "knowledge_description", "knowledge_tool_runtimes", "authoring", "display_name", "knowledge_tool_reference", "context_tool")
     NODE_ID_FIELD_NUMBER: _ClassVar[int]
     LLM_WORKER_FIELD_NUMBER: _ClassVar[int]
     INSTRUCTIONS_FIELD_NUMBER: _ClassVar[int]
@@ -376,7 +376,6 @@ class PublishedAgentNodeRuntime(_message.Message):
     KNOWLEDGE_TOOL_RUNTIMES_FIELD_NUMBER: _ClassVar[int]
     AUTHORING_FIELD_NUMBER: _ClassVar[int]
     DISPLAY_NAME_FIELD_NUMBER: _ClassVar[int]
-    GREETING_FIELD_NUMBER: _ClassVar[int]
     KNOWLEDGE_TOOL_REFERENCE_FIELD_NUMBER: _ClassVar[int]
     CONTEXT_TOOL_FIELD_NUMBER: _ClassVar[int]
     node_id: str
@@ -394,10 +393,9 @@ class PublishedAgentNodeRuntime(_message.Message):
     knowledge_tool_runtimes: _containers.RepeatedCompositeFieldContainer[KnowledgeToolRuntime]
     authoring: InlineAuthoringOptions
     display_name: str
-    greeting: str
     knowledge_tool_reference: str
     context_tool: RuntimeContextTool
-    def __init__(self, node_id: _Optional[str] = ..., llm_worker: _Optional[_Union[_voice_runtime_pb2.LlmRuntime, _Mapping]] = ..., instructions: _Optional[_Union[AgentInstructions, _Mapping]] = ..., context_policy: _Optional[_Union[ContextPolicy, str]] = ..., tools: _Optional[_Iterable[_Union[NodeToolMetadata, _Mapping]]] = ..., mcp_servers: _Optional[_Iterable[_Union[McpServerRuntime, _Mapping]]] = ..., api_tool_runtimes: _Optional[_Iterable[_Union[ApiToolRuntime, _Mapping]]] = ..., a2a_tool_runtimes: _Optional[_Iterable[_Union[A2aToolRuntime, _Mapping]]] = ..., built_in_tools: _Optional[_Iterable[_Union[BuiltInTool, _Mapping]]] = ..., knowledge_revision_id: _Optional[str] = ..., knowledge_function_name: _Optional[str] = ..., knowledge_description: _Optional[str] = ..., knowledge_tool_runtimes: _Optional[_Iterable[_Union[KnowledgeToolRuntime, _Mapping]]] = ..., authoring: _Optional[_Union[InlineAuthoringOptions, _Mapping]] = ..., display_name: _Optional[str] = ..., greeting: _Optional[str] = ..., knowledge_tool_reference: _Optional[str] = ..., context_tool: _Optional[_Union[RuntimeContextTool, _Mapping]] = ...) -> None: ...
+    def __init__(self, node_id: _Optional[str] = ..., llm_worker: _Optional[_Union[_voice_runtime_pb2.LlmRuntime, _Mapping]] = ..., instructions: _Optional[_Union[AgentInstructions, _Mapping]] = ..., context_policy: _Optional[_Union[ContextPolicy, str]] = ..., tools: _Optional[_Iterable[_Union[NodeToolMetadata, _Mapping]]] = ..., mcp_servers: _Optional[_Iterable[_Union[McpServerRuntime, _Mapping]]] = ..., api_tool_runtimes: _Optional[_Iterable[_Union[ApiToolRuntime, _Mapping]]] = ..., a2a_tool_runtimes: _Optional[_Iterable[_Union[A2aToolRuntime, _Mapping]]] = ..., built_in_tools: _Optional[_Iterable[_Union[BuiltInTool, _Mapping]]] = ..., knowledge_revision_id: _Optional[str] = ..., knowledge_function_name: _Optional[str] = ..., knowledge_description: _Optional[str] = ..., knowledge_tool_runtimes: _Optional[_Iterable[_Union[KnowledgeToolRuntime, _Mapping]]] = ..., authoring: _Optional[_Union[InlineAuthoringOptions, _Mapping]] = ..., display_name: _Optional[str] = ..., knowledge_tool_reference: _Optional[str] = ..., context_tool: _Optional[_Union[RuntimeContextTool, _Mapping]] = ...) -> None: ...
 
 class RuntimeContextTool(_message.Message):
     __slots__ = ("tool_reference", "function_name", "description", "max_result_bytes")

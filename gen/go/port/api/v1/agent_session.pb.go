@@ -1938,8 +1938,7 @@ func (x *AgentPromptConfigSnapshot) GetDtmfRules() string {
 	return ""
 }
 
-// Agent nodes expose the optional start greeting alongside the raw system prompt.
-// It is only played for the publication's primary start node by the runtime.
+// The active agent generates its opening from these instructions and conversation context.
 type PublishedAgentNodeRuntime struct {
 	state                  protoimpl.MessageState  `protogen:"open.v1"`
 	NodeId                 string                  `protobuf:"bytes,1,opt,name=node_id,json=nodeId,proto3" json:"node_id,omitempty"`
@@ -1957,7 +1956,6 @@ type PublishedAgentNodeRuntime struct {
 	KnowledgeToolRuntimes  []*KnowledgeToolRuntime `protobuf:"bytes,14,rep,name=knowledge_tool_runtimes,json=knowledgeToolRuntimes,proto3" json:"knowledge_tool_runtimes,omitempty"`
 	Authoring              *InlineAuthoringOptions `protobuf:"bytes,15,opt,name=authoring,proto3" json:"authoring,omitempty"`
 	DisplayName            *string                 `protobuf:"bytes,16,opt,name=display_name,json=displayName,proto3,oneof" json:"display_name,omitempty"`
-	Greeting               *string                 `protobuf:"bytes,17,opt,name=greeting,proto3,oneof" json:"greeting,omitempty"`
 	KnowledgeToolReference *string                 `protobuf:"bytes,18,opt,name=knowledge_tool_reference,json=knowledgeToolReference,proto3,oneof" json:"knowledge_tool_reference,omitempty"`
 	ContextTool            *RuntimeContextTool     `protobuf:"bytes,19,opt,name=context_tool,json=contextTool,proto3" json:"context_tool,omitempty"`
 	unknownFields          protoimpl.UnknownFields
@@ -2095,13 +2093,6 @@ func (x *PublishedAgentNodeRuntime) GetAuthoring() *InlineAuthoringOptions {
 func (x *PublishedAgentNodeRuntime) GetDisplayName() string {
 	if x != nil && x.DisplayName != nil {
 		return *x.DisplayName
-	}
-	return ""
-}
-
-func (x *PublishedAgentNodeRuntime) GetGreeting() string {
-	if x != nil && x.Greeting != nil {
-		return *x.Greeting
 	}
 	return ""
 }
@@ -7863,7 +7854,7 @@ const file_port_api_v1_agent_session_proto_rawDesc = "" +
 	"\vvoice_rules\x18\a \x01(\tB\x0e\xbaH\vr\t\x10\x01\x18\x80}2\x02\\SR\n" +
 	"voiceRules\x12-\n" +
 	"\n" +
-	"dtmf_rules\x18\b \x01(\tB\x0e\xbaH\vr\t\x10\x01\x18\x80}2\x02\\SR\tdtmfRules\"\xee\t\n" +
+	"dtmf_rules\x18\b \x01(\tB\x0e\xbaH\vr\t\x10\x01\x18\x80}2\x02\\SR\tdtmfRules\"\xc6\t\n" +
 	"\x19PublishedAgentNodeRuntime\x12 \n" +
 	"\anode_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x06nodeId\x12>\n" +
 	"\n" +
@@ -7883,14 +7874,12 @@ const file_port_api_v1_agent_session_proto_rawDesc = "" +
 	"\x15knowledge_description\x18\r \x01(\tR\x14knowledgeDescription\x12Y\n" +
 	"\x17knowledge_tool_runtimes\x18\x0e \x03(\v2!.port.api.v1.KnowledgeToolRuntimeR\x15knowledgeToolRuntimes\x12A\n" +
 	"\tauthoring\x18\x0f \x01(\v2#.port.api.v1.InlineAuthoringOptionsR\tauthoring\x123\n" +
-	"\fdisplay_name\x18\x10 \x01(\tB\v\xbaH\br\x06\x10\x012\x02\\SH\x00R\vdisplayName\x88\x01\x01\x12)\n" +
-	"\bgreeting\x18\x11 \x01(\tB\b\xbaH\x05r\x03\x18\xa0\x1fH\x01R\bgreeting\x88\x01\x01\x12I\n" +
+	"\fdisplay_name\x18\x10 \x01(\tB\v\xbaH\br\x06\x10\x012\x02\\SH\x00R\vdisplayName\x88\x01\x01\x12I\n" +
 	"\x18knowledge_tool_reference\x18\x12 \x01(\tB\n" +
-	"\xbaH\ar\x05\x10\x01\x18\x80\x02H\x02R\x16knowledgeToolReference\x88\x01\x01\x12B\n" +
+	"\xbaH\ar\x05\x10\x01\x18\x80\x02H\x01R\x16knowledgeToolReference\x88\x01\x01\x12B\n" +
 	"\fcontext_tool\x18\x13 \x01(\v2\x1f.port.api.v1.RuntimeContextToolR\vcontextToolB\x0f\n" +
-	"\r_display_nameB\v\n" +
-	"\t_greetingB\x1b\n" +
-	"\x19_knowledge_tool_referenceJ\x04\b\v\x10\fR\x1eknowledge_retrieval_capability\"\xf5\x01\n" +
+	"\r_display_nameB\x1b\n" +
+	"\x19_knowledge_tool_referenceJ\x04\b\v\x10\fJ\x04\b\x11\x10\x12R\x1eknowledge_retrieval_capabilityR\bgreeting\"\xf5\x01\n" +
 	"\x12RuntimeContextTool\x125\n" +
 	"\x0etool_reference\x18\x01 \x01(\tB\x0e\xbaH\vr\t\x10\x01\x18\x80\x022\x02\\SR\rtoolReference\x12>\n" +
 	"\rfunction_name\x18\x02 \x01(\tB\x19\xbaH\x16r\x14\n" +

@@ -281,8 +281,7 @@ message AgentPromptConfigSnapshot {
   string dtmf_rules = 8 [(buf.validate.field).string = {min_len: 1 max_len: 16000 pattern: "\\S"}];
 }
 
-// Agent nodes expose the optional start greeting alongside the raw system prompt.
-// It is only played for the publication's primary start node by the runtime.
+// The active agent generates its opening from these instructions and conversation context.
 message PublishedAgentNodeRuntime {
   string node_id = 1 [(buf.validate.field).string.min_len = 1];
   LlmRuntime llm_worker = 2 [(buf.validate.field).required = true];
@@ -301,7 +300,8 @@ message PublishedAgentNodeRuntime {
   repeated KnowledgeToolRuntime knowledge_tool_runtimes = 14;
   InlineAuthoringOptions authoring = 15;
   optional string display_name = 16 [(buf.validate.field).string = {min_len: 1 pattern: "\\S"}];
-  optional string greeting = 17 [(buf.validate.field).string.max_len = 4000];
+  reserved 17;
+  reserved "greeting";
   optional string knowledge_tool_reference = 18 [(buf.validate.field).string = {min_len: 1 max_len: 256}];
   RuntimeContextTool context_tool = 19;
 }

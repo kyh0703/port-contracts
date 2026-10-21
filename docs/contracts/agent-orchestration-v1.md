@@ -31,10 +31,10 @@ effective_date: 2026-08-07
 ## 2. 도메인 소유권
 
 - **C04 — Neutral Agent:** Agent는 역할이 없는 재사용 자산이다. Agent는
-  Prompt, Greeting, LLM, Tools, MCP, Knowledge, Guardrails를 소유한다. Agent에
+  Prompt, LLM, Tools, MCP, Knowledge, Guardrails를 소유한다. Agent에
   Supervisor, specialist, handoff source/target 같은 역할을 저장하지 않는다.
   역할은 Orchestration 안의 배치가 결정한다.
-- **C05 — AgentVersion:** AgentVersion은 해당 Agent의 Prompt, Greeting, LLM,
+- **C05 — AgentVersion:** AgentVersion은 해당 Agent의 Prompt, LLM,
   도구·MCP snapshot, Knowledge revision, Guardrails를 불변으로 고정한다. 모든
   실행 Agent와 AgentTask는 자신에게 고정된 LLM을 사용해야 하며 전역 LLM
   fallback을 사용해서는 안 된다.
@@ -137,10 +137,10 @@ end key는 통화를 종료하지 않는다. DTMF를 지원하지 않는 transpo
   CallRuntimeSnapshot으로 통화 시작 시 한 번 생성한다. Agent 전환이나
   AgentTask 실행 중 player, listener 또는 policy를 교체하지 않는다. Voice를
   TTS와 분리된 Agent별 runtime으로 만들지 않는다.
-- **C17 — Greeting:** 최초 활성 Agent는 자신의 Greeting을 실행할 수 있다.
-  Supervisor가 호출한 전문 Agent는 고객과 대화할 수 있지만 일반 Agent
-  Greeting을 자동 재생하지 않는다. handoff 대상 Agent는 자신의 Greeting을
-  실행할 수 있다.
+- **C17 — Opening:** 최초 활성 Agent는 자신의 역할·지침·대화 맥락에서 첫 발화를
+  생성한다. 고정 Greeting 필드나 기본 인사 문구는 사용하지 않는다. Supervisor가
+  호출한 전문 Agent와 handoff 대상은 기존 대화를 이어가며 별도의 고정 인사를
+  자동 재생하지 않는다. 시작 중복 방지 lifecycle은 유지한다.
 - **C18 — Context:** 전환 context 기본값은 `conversation`이다. conversation
   복사 시 대화 내용은 전달하지만 source instructions는 전달하지 않는다.
   명시적 `none`은 새 context를 뜻한다.
@@ -191,7 +191,7 @@ end key는 통화를 종료하지 않는다. DTMF를 지원하지 않는 transpo
 | C04–C07 | AgentVersion·CallRuntime 소유권 | CallRuntime·AgentRuntime factory |
 | C08–C11 | ExecutionTarget과 모드별 validation | direct Agent와 모드별 compiler |
 | C12–C15 | publish·통화 routing·Conversation pin | Pinned target만 실행 |
-| C16–C18 | Bootstrap projection | CallRuntime·AgentRuntime·Greeting 규칙 |
+| C16–C18 | Bootstrap projection | CallRuntime·AgentRuntime·Opening 규칙 |
 | C19–C22 | 한도·event 필드 계약 | 실패·depth·event 실행 규칙 |
 | C23–C24 | RPC 선택과 legacy 분리 | RPC별 별도 decode/compiler |
 | C25–C26 | Feature gate와 선택 전환 | 비활성 payload 실행 금지 |
