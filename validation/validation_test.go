@@ -31,6 +31,37 @@ func TestValidateAcceptsValidGatewayEvent(t *testing.T) {
 	}
 }
 
+func TestSttRuntimeProviderValidation(t *testing.T) {
+	for _, tt := range []struct {
+		name     string
+		provider *string
+		model    string
+		valid    bool
+	}{
+		{"Soniox", proto.String("soniox"), "stt-rt-v5", true},
+		{"xAI", proto.String("xai"), "grok-stt", true},
+		{"missing provider", nil, "stt-rt-v5", false},
+		{"retired Deepgram", proto.String("deepgram"), "nova-3", false},
+		{"empty provider", proto.String(""), "stt-rt-v5", false},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			runtime := &apiv1.SttRuntime{
+				Credential: &apiv1.SttRuntime_ApiKey{ApiKey: "offline-stt-key"},
+				Model:      tt.model,
+				Language:   "ko",
+				Provider:   tt.provider,
+			}
+			err := Validate(runtime)
+			if tt.valid && err != nil {
+				t.Fatalf("supported STT provider rejected: %v", err)
+			}
+			if !tt.valid && err == nil {
+				t.Fatal("retired or missing STT provider accepted")
+			}
+		})
+	}
+}
+
 func TestKnowledgeToolMetadataValidation(t *testing.T) {
 	valid := &apiv1.NodeToolMetadata{
 		ToolId: "knowledge-search",
@@ -680,7 +711,7 @@ func validTextRuntime() *apiv1.TextRuntimeSnapshot {
 
 func validCallRuntime() *apiv1.CallRuntimeSnapshot {
 	return &apiv1.CallRuntimeSnapshot{
-		Stt:          &apiv1.SttRuntime{Credential: &apiv1.SttRuntime_ApiKey{ApiKey: "stt-key"}, Model: "stt-model", Language: "ko"},
+		Stt:          &apiv1.SttRuntime{Credential: &apiv1.SttRuntime_ApiKey{ApiKey: "stt-key"}, Model: "stt-model", Language: "ko", Provider: proto.String("soniox")},
 		Tts:          &apiv1.TtsRuntime{Credential: &apiv1.TtsRuntime_ApiKey{ApiKey: "tts-key"}, Model: "tts-model", Language: "ko", VoiceId: "voice-1"},
 		Dtmf:         &apiv1.DtmfInputRuntime{TimeoutSeconds: 3},
 		Transport:    &apiv1.TransportRuntime{Source: apiv1.CallTransportSource_CALL_TRANSPORT_SOURCE_WEBRTC, RoomName: "room-1", CallerParticipantIdentity: "caller-1"},

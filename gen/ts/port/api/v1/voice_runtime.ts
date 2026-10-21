@@ -50,6 +50,7 @@ export interface SttRuntime {
   model: string;
   language: string;
   keyterms: string[];
+  /** Explicit original provider identity; retired providers never use another key. */
   provider?: string | undefined;
   multilingual?:
     | boolean

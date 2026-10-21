@@ -44,6 +44,27 @@ parameters, `none | conversation | recent` context policy, and one blocking
 `request_start` message. Older Agent bootstrap services and revision fallbacks
 are intentionally unavailable.
 
+## Deepgram retirement — 10.0.0
+
+`SttRuntime.provider` retains field number 5 and optional wire presence, but
+validation now requires an explicit `soniox` or `xai` identity. Deepgram,
+missing and empty providers are rejected instead of choosing another provider's
+credentials. STT models and credentials are never silently relabeled. TTS
+providers and the remaining wire fields are unchanged.
+
+Update API, worker and Web to the matching vendored 10.0.0 package together.
+The API's existing Deepgram retirement migrations already migrate eligible
+mutable profiles/defaults to language-matched Soniox and reject retired catalog
+rows. Do not edit applied migrations or rewrite immutable publication,
+conversation or usage history. Retired original pins require a new supported
+configuration/publication; they are not runtime compatibility routes.
+
+The real Go validator rejected missing/Deepgram providers after a failing-before
+regression; Soniox and xAI remain accepted. TypeScript serialization still
+preserves optional wire presence, so API and worker also enforce provider
+identity at their runtime boundaries. No registry publication, production SQL
+execution or operating deployment is implied by this source change.
+
 ## Background audio removal — 9.0.0
 
 `CallRuntimeSnapshot.background_audio` is removed; field number 3 and the name
