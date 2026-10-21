@@ -44,6 +44,34 @@ parameters, `none | conversation | recent` context policy, and one blocking
 `request_start` message. Older Agent bootstrap services and revision fallbacks
 are intentionally unavailable.
 
+## Personal conversation context — 8.2.0
+
+`NodeModelSettings.history_max_bytes` (optional uint32, field 4) opts a node into
+a UTF-8 serialized conversation-history view of 8192–262144 bytes. Fixed
+instructions are excluded; this is neither output tokens nor exact provider
+input tokens. Absence leaves existing node inference behavior unchanged.
+
+`PublishedAgentNodeRuntime.context_tool` (message, field 19) carries the API-owned
+`RuntimeContextTool` reference, fixed `read_space_context` name, description and
+whole-result byte ceiling. It is not caller metadata or a tenant/source grant.
+`ExecutionSessionService.ReadRuntimeContext` requires current main-owner
+authorization, node ID and that pinned reference. Query is 1–4000 UTF-8 bytes;
+optional `max_bytes` is 1024–16384 and `limit` is 1–20. The response `result_json`
+includes cited sources and authorized memory within the entire JSON byte budget.
+
+API and worker retain publication/node/actor authority, personal-principal
+provenance and memory settings. Published Space originals remain immutable.
+An ordinary Agent root explicitly authored with `memoryScope: "caller"` can
+return live caller-owned Space citations (`origin.kind: "space"`) or consented
+customer facts. Workers accept a Space origin only when it matches the original
+server-owned `space-context:<spaceId>:<nodeId>` reference. Manual customer facts
+keep `sourceConversationId: null`; no conversation provenance is invented.
+No graph, role, tool authority or private helper capability is inferred from data.
+Publication revisions r1/r2, HA `runtime-recovery-v1` and protobuf fields stay
+unchanged. Roll out matching API/worker before exposing caller-enabled presets;
+older strict workers do not implement these result semantics. No SQL migration,
+registry package publication or operating deployment is implied.
+
 ## Number-ending EOT wait — 8.1.0
 
 `SpeechPolicyRuntime.eot_on_number_secs` (optional double, field 3) carries the

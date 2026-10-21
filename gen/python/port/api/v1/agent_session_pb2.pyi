@@ -360,7 +360,7 @@ class AgentPromptConfigSnapshot(_message.Message):
     def __init__(self, revision: _Optional[int] = ..., system_guardrail: _Optional[str] = ..., crew_system_context: _Optional[str] = ..., handoff_context: _Optional[str] = ..., supervisor_context: _Optional[str] = ..., specialist_context: _Optional[str] = ..., voice_rules: _Optional[str] = ..., dtmf_rules: _Optional[str] = ...) -> None: ...
 
 class PublishedAgentNodeRuntime(_message.Message):
-    __slots__ = ("node_id", "llm_worker", "instructions", "context_policy", "tools", "mcp_servers", "api_tool_runtimes", "a2a_tool_runtimes", "built_in_tools", "knowledge_revision_id", "knowledge_function_name", "knowledge_description", "knowledge_tool_runtimes", "authoring", "display_name", "greeting", "knowledge_tool_reference")
+    __slots__ = ("node_id", "llm_worker", "instructions", "context_policy", "tools", "mcp_servers", "api_tool_runtimes", "a2a_tool_runtimes", "built_in_tools", "knowledge_revision_id", "knowledge_function_name", "knowledge_description", "knowledge_tool_runtimes", "authoring", "display_name", "greeting", "knowledge_tool_reference", "context_tool")
     NODE_ID_FIELD_NUMBER: _ClassVar[int]
     LLM_WORKER_FIELD_NUMBER: _ClassVar[int]
     INSTRUCTIONS_FIELD_NUMBER: _ClassVar[int]
@@ -378,6 +378,7 @@ class PublishedAgentNodeRuntime(_message.Message):
     DISPLAY_NAME_FIELD_NUMBER: _ClassVar[int]
     GREETING_FIELD_NUMBER: _ClassVar[int]
     KNOWLEDGE_TOOL_REFERENCE_FIELD_NUMBER: _ClassVar[int]
+    CONTEXT_TOOL_FIELD_NUMBER: _ClassVar[int]
     node_id: str
     llm_worker: _voice_runtime_pb2.LlmRuntime
     instructions: AgentInstructions
@@ -395,7 +396,20 @@ class PublishedAgentNodeRuntime(_message.Message):
     display_name: str
     greeting: str
     knowledge_tool_reference: str
-    def __init__(self, node_id: _Optional[str] = ..., llm_worker: _Optional[_Union[_voice_runtime_pb2.LlmRuntime, _Mapping]] = ..., instructions: _Optional[_Union[AgentInstructions, _Mapping]] = ..., context_policy: _Optional[_Union[ContextPolicy, str]] = ..., tools: _Optional[_Iterable[_Union[NodeToolMetadata, _Mapping]]] = ..., mcp_servers: _Optional[_Iterable[_Union[McpServerRuntime, _Mapping]]] = ..., api_tool_runtimes: _Optional[_Iterable[_Union[ApiToolRuntime, _Mapping]]] = ..., a2a_tool_runtimes: _Optional[_Iterable[_Union[A2aToolRuntime, _Mapping]]] = ..., built_in_tools: _Optional[_Iterable[_Union[BuiltInTool, _Mapping]]] = ..., knowledge_revision_id: _Optional[str] = ..., knowledge_function_name: _Optional[str] = ..., knowledge_description: _Optional[str] = ..., knowledge_tool_runtimes: _Optional[_Iterable[_Union[KnowledgeToolRuntime, _Mapping]]] = ..., authoring: _Optional[_Union[InlineAuthoringOptions, _Mapping]] = ..., display_name: _Optional[str] = ..., greeting: _Optional[str] = ..., knowledge_tool_reference: _Optional[str] = ...) -> None: ...
+    context_tool: RuntimeContextTool
+    def __init__(self, node_id: _Optional[str] = ..., llm_worker: _Optional[_Union[_voice_runtime_pb2.LlmRuntime, _Mapping]] = ..., instructions: _Optional[_Union[AgentInstructions, _Mapping]] = ..., context_policy: _Optional[_Union[ContextPolicy, str]] = ..., tools: _Optional[_Iterable[_Union[NodeToolMetadata, _Mapping]]] = ..., mcp_servers: _Optional[_Iterable[_Union[McpServerRuntime, _Mapping]]] = ..., api_tool_runtimes: _Optional[_Iterable[_Union[ApiToolRuntime, _Mapping]]] = ..., a2a_tool_runtimes: _Optional[_Iterable[_Union[A2aToolRuntime, _Mapping]]] = ..., built_in_tools: _Optional[_Iterable[_Union[BuiltInTool, _Mapping]]] = ..., knowledge_revision_id: _Optional[str] = ..., knowledge_function_name: _Optional[str] = ..., knowledge_description: _Optional[str] = ..., knowledge_tool_runtimes: _Optional[_Iterable[_Union[KnowledgeToolRuntime, _Mapping]]] = ..., authoring: _Optional[_Union[InlineAuthoringOptions, _Mapping]] = ..., display_name: _Optional[str] = ..., greeting: _Optional[str] = ..., knowledge_tool_reference: _Optional[str] = ..., context_tool: _Optional[_Union[RuntimeContextTool, _Mapping]] = ...) -> None: ...
+
+class RuntimeContextTool(_message.Message):
+    __slots__ = ("tool_reference", "function_name", "description", "max_result_bytes")
+    TOOL_REFERENCE_FIELD_NUMBER: _ClassVar[int]
+    FUNCTION_NAME_FIELD_NUMBER: _ClassVar[int]
+    DESCRIPTION_FIELD_NUMBER: _ClassVar[int]
+    MAX_RESULT_BYTES_FIELD_NUMBER: _ClassVar[int]
+    tool_reference: str
+    function_name: str
+    description: str
+    max_result_bytes: int
+    def __init__(self, tool_reference: _Optional[str] = ..., function_name: _Optional[str] = ..., description: _Optional[str] = ..., max_result_bytes: _Optional[int] = ...) -> None: ...
 
 class InlineAuthoringOptions(_message.Message):
     __slots__ = ("model", "tool_bindings")
@@ -406,14 +420,16 @@ class InlineAuthoringOptions(_message.Message):
     def __init__(self, model: _Optional[_Union[NodeModelSettings, _Mapping]] = ..., tool_bindings: _Optional[_Iterable[_Union[NodeToolBinding, _Mapping]]] = ...) -> None: ...
 
 class NodeModelSettings(_message.Message):
-    __slots__ = ("temperature", "max_tokens", "reasoning_effort")
+    __slots__ = ("temperature", "max_tokens", "reasoning_effort", "history_max_bytes")
     TEMPERATURE_FIELD_NUMBER: _ClassVar[int]
     MAX_TOKENS_FIELD_NUMBER: _ClassVar[int]
     REASONING_EFFORT_FIELD_NUMBER: _ClassVar[int]
+    HISTORY_MAX_BYTES_FIELD_NUMBER: _ClassVar[int]
     temperature: float
     max_tokens: int
     reasoning_effort: str
-    def __init__(self, temperature: _Optional[float] = ..., max_tokens: _Optional[int] = ..., reasoning_effort: _Optional[str] = ...) -> None: ...
+    history_max_bytes: int
+    def __init__(self, temperature: _Optional[float] = ..., max_tokens: _Optional[int] = ..., reasoning_effort: _Optional[str] = ..., history_max_bytes: _Optional[int] = ...) -> None: ...
 
 class NodeToolBinding(_message.Message):
     __slots__ = ("tool_id", "parameter", "variable", "target")
@@ -1288,6 +1304,28 @@ class ReadRuntimeKnowledgeRequest(_message.Message):
     def __init__(self, owner: _Optional[_Union[_runtime_identity_pb2.RuntimeAuthorization, _Mapping]] = ..., node_id: _Optional[str] = ..., tool_reference: _Optional[str] = ..., query: _Optional[str] = ..., limit: _Optional[int] = ...) -> None: ...
 
 class ReadRuntimeKnowledgeResponse(_message.Message):
+    __slots__ = ("result_json",)
+    RESULT_JSON_FIELD_NUMBER: _ClassVar[int]
+    result_json: str
+    def __init__(self, result_json: _Optional[str] = ...) -> None: ...
+
+class ReadRuntimeContextRequest(_message.Message):
+    __slots__ = ("owner", "node_id", "tool_reference", "query", "max_bytes", "limit")
+    OWNER_FIELD_NUMBER: _ClassVar[int]
+    NODE_ID_FIELD_NUMBER: _ClassVar[int]
+    TOOL_REFERENCE_FIELD_NUMBER: _ClassVar[int]
+    QUERY_FIELD_NUMBER: _ClassVar[int]
+    MAX_BYTES_FIELD_NUMBER: _ClassVar[int]
+    LIMIT_FIELD_NUMBER: _ClassVar[int]
+    owner: _runtime_identity_pb2.RuntimeAuthorization
+    node_id: str
+    tool_reference: str
+    query: str
+    max_bytes: int
+    limit: int
+    def __init__(self, owner: _Optional[_Union[_runtime_identity_pb2.RuntimeAuthorization, _Mapping]] = ..., node_id: _Optional[str] = ..., tool_reference: _Optional[str] = ..., query: _Optional[str] = ..., max_bytes: _Optional[int] = ..., limit: _Optional[int] = ...) -> None: ...
+
+class ReadRuntimeContextResponse(_message.Message):
     __slots__ = ("result_json",)
     RESULT_JSON_FIELD_NUMBER: _ClassVar[int]
     result_json: str

@@ -554,6 +554,15 @@ export interface PublishedAgentNodeRuntime {
   displayName?: string | undefined;
   greeting?: string | undefined;
   knowledgeToolReference?: string | undefined;
+  contextTool?: RuntimeContextTool | undefined;
+}
+
+/** An API-authorized read binding, not a caller-supplied source or tenant ID. */
+export interface RuntimeContextTool {
+  toolReference: string;
+  functionName: string;
+  description: string;
+  maxResultBytes: number;
 }
 
 /** Optional so older publications retain provider defaults. */
@@ -565,7 +574,14 @@ export interface InlineAuthoringOptions {
 export interface NodeModelSettings {
   temperature?: number | undefined;
   maxTokens?: number | undefined;
-  reasoningEffort?: string | undefined;
+  reasoningEffort?:
+    | string
+    | undefined;
+  /**
+   * Bounds UTF-8 serialized conversation history, excluding fixed instructions.
+   * Absent preserves the publication's existing inference behavior.
+   */
+  historyMaxBytes?: number | undefined;
 }
 
 export interface NodeToolBinding {
@@ -1149,6 +1165,23 @@ export interface ReadRuntimeKnowledgeRequest {
 
 export interface ReadRuntimeKnowledgeResponse {
   /** The unchanged search result ABI after the API rechecks current ownership. */
+  resultJson: string;
+}
+
+export interface ReadRuntimeContextRequest {
+  owner?: RuntimeAuthorization | undefined;
+  nodeId: string;
+  toolReference: string;
+  query: string;
+  maxBytes?: number | undefined;
+  limit?: number | undefined;
+}
+
+export interface ReadRuntimeContextResponse {
+  /**
+   * Versioned source citations and consent-scoped memory are reference data.
+   * The entire UTF-8 JSON result, including metadata, fits the requested budget.
+   */
   resultJson: string;
 }
 
@@ -4047,6 +4080,7 @@ function createBasePublishedAgentNodeRuntime(): PublishedAgentNodeRuntime {
     displayName: undefined,
     greeting: undefined,
     knowledgeToolReference: undefined,
+    contextTool: undefined,
   };
 }
 
@@ -4102,6 +4136,9 @@ export const PublishedAgentNodeRuntime: MessageFns<PublishedAgentNodeRuntime> = 
     }
     if (message.knowledgeToolReference !== undefined) {
       writer.uint32(146).string(message.knowledgeToolReference);
+    }
+    if (message.contextTool !== undefined) {
+      RuntimeContextTool.encode(message.contextTool, writer.uint32(154).fork()).join();
     }
     return writer;
   },
@@ -4249,6 +4286,14 @@ export const PublishedAgentNodeRuntime: MessageFns<PublishedAgentNodeRuntime> = 
           message.knowledgeToolReference = reader.string();
           continue;
         }
+        case 19: {
+          if (tag !== 154) {
+            break;
+          }
+
+          message.contextTool = RuntimeContextTool.decode(reader, reader.uint32());
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -4329,6 +4374,11 @@ export const PublishedAgentNodeRuntime: MessageFns<PublishedAgentNodeRuntime> = 
         : isSet(object.knowledge_tool_reference)
         ? globalThis.String(object.knowledge_tool_reference)
         : undefined,
+      contextTool: isSet(object.contextTool)
+        ? RuntimeContextTool.fromJSON(object.contextTool)
+        : isSet(object.context_tool)
+        ? RuntimeContextTool.fromJSON(object.context_tool)
+        : undefined,
     };
   },
 
@@ -4385,6 +4435,9 @@ export const PublishedAgentNodeRuntime: MessageFns<PublishedAgentNodeRuntime> = 
     if (message.knowledgeToolReference !== undefined) {
       obj.knowledgeToolReference = message.knowledgeToolReference;
     }
+    if (message.contextTool !== undefined) {
+      obj.contextTool = RuntimeContextTool.toJSON(message.contextTool);
+    }
     return obj;
   },
 
@@ -4416,6 +4469,129 @@ export const PublishedAgentNodeRuntime: MessageFns<PublishedAgentNodeRuntime> = 
     message.displayName = object.displayName ?? undefined;
     message.greeting = object.greeting ?? undefined;
     message.knowledgeToolReference = object.knowledgeToolReference ?? undefined;
+    message.contextTool = (object.contextTool !== undefined && object.contextTool !== null)
+      ? RuntimeContextTool.fromPartial(object.contextTool)
+      : undefined;
+    return message;
+  },
+};
+
+function createBaseRuntimeContextTool(): RuntimeContextTool {
+  return { toolReference: "", functionName: "", description: "", maxResultBytes: 0 };
+}
+
+export const RuntimeContextTool: MessageFns<RuntimeContextTool> = {
+  encode(message: RuntimeContextTool, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.toolReference !== "") {
+      writer.uint32(10).string(message.toolReference);
+    }
+    if (message.functionName !== "") {
+      writer.uint32(18).string(message.functionName);
+    }
+    if (message.description !== "") {
+      writer.uint32(26).string(message.description);
+    }
+    if (message.maxResultBytes !== 0) {
+      writer.uint32(32).uint32(message.maxResultBytes);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): RuntimeContextTool {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseRuntimeContextTool();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.toolReference = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.functionName = reader.string();
+          continue;
+        }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.description = reader.string();
+          continue;
+        }
+        case 4: {
+          if (tag !== 32) {
+            break;
+          }
+
+          message.maxResultBytes = reader.uint32();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): RuntimeContextTool {
+    return {
+      toolReference: isSet(object.toolReference)
+        ? globalThis.String(object.toolReference)
+        : isSet(object.tool_reference)
+        ? globalThis.String(object.tool_reference)
+        : "",
+      functionName: isSet(object.functionName)
+        ? globalThis.String(object.functionName)
+        : isSet(object.function_name)
+        ? globalThis.String(object.function_name)
+        : "",
+      description: isSet(object.description) ? globalThis.String(object.description) : "",
+      maxResultBytes: isSet(object.maxResultBytes)
+        ? globalThis.Number(object.maxResultBytes)
+        : isSet(object.max_result_bytes)
+        ? globalThis.Number(object.max_result_bytes)
+        : 0,
+    };
+  },
+
+  toJSON(message: RuntimeContextTool): unknown {
+    const obj: any = {};
+    if (message.toolReference !== "") {
+      obj.toolReference = message.toolReference;
+    }
+    if (message.functionName !== "") {
+      obj.functionName = message.functionName;
+    }
+    if (message.description !== "") {
+      obj.description = message.description;
+    }
+    if (message.maxResultBytes !== 0) {
+      obj.maxResultBytes = Math.round(message.maxResultBytes);
+    }
+    return obj;
+  },
+
+  create(base?: DeepPartial<RuntimeContextTool>): RuntimeContextTool {
+    return RuntimeContextTool.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<RuntimeContextTool>): RuntimeContextTool {
+    const message = createBaseRuntimeContextTool();
+    message.toolReference = object.toolReference ?? "";
+    message.functionName = object.functionName ?? "";
+    message.description = object.description ?? "";
+    message.maxResultBytes = object.maxResultBytes ?? 0;
     return message;
   },
 };
@@ -4503,7 +4679,7 @@ export const InlineAuthoringOptions: MessageFns<InlineAuthoringOptions> = {
 };
 
 function createBaseNodeModelSettings(): NodeModelSettings {
-  return { temperature: undefined, maxTokens: undefined, reasoningEffort: undefined };
+  return { temperature: undefined, maxTokens: undefined, reasoningEffort: undefined, historyMaxBytes: undefined };
 }
 
 export const NodeModelSettings: MessageFns<NodeModelSettings> = {
@@ -4516,6 +4692,9 @@ export const NodeModelSettings: MessageFns<NodeModelSettings> = {
     }
     if (message.reasoningEffort !== undefined) {
       writer.uint32(26).string(message.reasoningEffort);
+    }
+    if (message.historyMaxBytes !== undefined) {
+      writer.uint32(32).uint32(message.historyMaxBytes);
     }
     return writer;
   },
@@ -4551,6 +4730,14 @@ export const NodeModelSettings: MessageFns<NodeModelSettings> = {
           message.reasoningEffort = reader.string();
           continue;
         }
+        case 4: {
+          if (tag !== 32) {
+            break;
+          }
+
+          message.historyMaxBytes = reader.uint32();
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -4573,6 +4760,11 @@ export const NodeModelSettings: MessageFns<NodeModelSettings> = {
         : isSet(object.reasoning_effort)
         ? globalThis.String(object.reasoning_effort)
         : undefined,
+      historyMaxBytes: isSet(object.historyMaxBytes)
+        ? globalThis.Number(object.historyMaxBytes)
+        : isSet(object.history_max_bytes)
+        ? globalThis.Number(object.history_max_bytes)
+        : undefined,
     };
   },
 
@@ -4587,6 +4779,9 @@ export const NodeModelSettings: MessageFns<NodeModelSettings> = {
     if (message.reasoningEffort !== undefined) {
       obj.reasoningEffort = message.reasoningEffort;
     }
+    if (message.historyMaxBytes !== undefined) {
+      obj.historyMaxBytes = Math.round(message.historyMaxBytes);
+    }
     return obj;
   },
 
@@ -4598,6 +4793,7 @@ export const NodeModelSettings: MessageFns<NodeModelSettings> = {
     message.temperature = object.temperature ?? undefined;
     message.maxTokens = object.maxTokens ?? undefined;
     message.reasoningEffort = object.reasoningEffort ?? undefined;
+    message.historyMaxBytes = object.historyMaxBytes ?? undefined;
     return message;
   },
 };
@@ -13513,6 +13709,224 @@ export const ReadRuntimeKnowledgeResponse: MessageFns<ReadRuntimeKnowledgeRespon
   },
 };
 
+function createBaseReadRuntimeContextRequest(): ReadRuntimeContextRequest {
+  return { owner: undefined, nodeId: "", toolReference: "", query: "", maxBytes: undefined, limit: undefined };
+}
+
+export const ReadRuntimeContextRequest: MessageFns<ReadRuntimeContextRequest> = {
+  encode(message: ReadRuntimeContextRequest, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.owner !== undefined) {
+      RuntimeAuthorization.encode(message.owner, writer.uint32(10).fork()).join();
+    }
+    if (message.nodeId !== "") {
+      writer.uint32(18).string(message.nodeId);
+    }
+    if (message.toolReference !== "") {
+      writer.uint32(26).string(message.toolReference);
+    }
+    if (message.query !== "") {
+      writer.uint32(34).string(message.query);
+    }
+    if (message.maxBytes !== undefined) {
+      writer.uint32(40).uint32(message.maxBytes);
+    }
+    if (message.limit !== undefined) {
+      writer.uint32(48).uint32(message.limit);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): ReadRuntimeContextRequest {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseReadRuntimeContextRequest();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.owner = RuntimeAuthorization.decode(reader, reader.uint32());
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.nodeId = reader.string();
+          continue;
+        }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.toolReference = reader.string();
+          continue;
+        }
+        case 4: {
+          if (tag !== 34) {
+            break;
+          }
+
+          message.query = reader.string();
+          continue;
+        }
+        case 5: {
+          if (tag !== 40) {
+            break;
+          }
+
+          message.maxBytes = reader.uint32();
+          continue;
+        }
+        case 6: {
+          if (tag !== 48) {
+            break;
+          }
+
+          message.limit = reader.uint32();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): ReadRuntimeContextRequest {
+    return {
+      owner: isSet(object.owner) ? RuntimeAuthorization.fromJSON(object.owner) : undefined,
+      nodeId: isSet(object.nodeId)
+        ? globalThis.String(object.nodeId)
+        : isSet(object.node_id)
+        ? globalThis.String(object.node_id)
+        : "",
+      toolReference: isSet(object.toolReference)
+        ? globalThis.String(object.toolReference)
+        : isSet(object.tool_reference)
+        ? globalThis.String(object.tool_reference)
+        : "",
+      query: isSet(object.query) ? globalThis.String(object.query) : "",
+      maxBytes: isSet(object.maxBytes)
+        ? globalThis.Number(object.maxBytes)
+        : isSet(object.max_bytes)
+        ? globalThis.Number(object.max_bytes)
+        : undefined,
+      limit: isSet(object.limit) ? globalThis.Number(object.limit) : undefined,
+    };
+  },
+
+  toJSON(message: ReadRuntimeContextRequest): unknown {
+    const obj: any = {};
+    if (message.owner !== undefined) {
+      obj.owner = RuntimeAuthorization.toJSON(message.owner);
+    }
+    if (message.nodeId !== "") {
+      obj.nodeId = message.nodeId;
+    }
+    if (message.toolReference !== "") {
+      obj.toolReference = message.toolReference;
+    }
+    if (message.query !== "") {
+      obj.query = message.query;
+    }
+    if (message.maxBytes !== undefined) {
+      obj.maxBytes = Math.round(message.maxBytes);
+    }
+    if (message.limit !== undefined) {
+      obj.limit = Math.round(message.limit);
+    }
+    return obj;
+  },
+
+  create(base?: DeepPartial<ReadRuntimeContextRequest>): ReadRuntimeContextRequest {
+    return ReadRuntimeContextRequest.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<ReadRuntimeContextRequest>): ReadRuntimeContextRequest {
+    const message = createBaseReadRuntimeContextRequest();
+    message.owner = (object.owner !== undefined && object.owner !== null)
+      ? RuntimeAuthorization.fromPartial(object.owner)
+      : undefined;
+    message.nodeId = object.nodeId ?? "";
+    message.toolReference = object.toolReference ?? "";
+    message.query = object.query ?? "";
+    message.maxBytes = object.maxBytes ?? undefined;
+    message.limit = object.limit ?? undefined;
+    return message;
+  },
+};
+
+function createBaseReadRuntimeContextResponse(): ReadRuntimeContextResponse {
+  return { resultJson: "" };
+}
+
+export const ReadRuntimeContextResponse: MessageFns<ReadRuntimeContextResponse> = {
+  encode(message: ReadRuntimeContextResponse, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.resultJson !== "") {
+      writer.uint32(10).string(message.resultJson);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): ReadRuntimeContextResponse {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseReadRuntimeContextResponse();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.resultJson = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): ReadRuntimeContextResponse {
+    return {
+      resultJson: isSet(object.resultJson)
+        ? globalThis.String(object.resultJson)
+        : isSet(object.result_json)
+        ? globalThis.String(object.result_json)
+        : "",
+    };
+  },
+
+  toJSON(message: ReadRuntimeContextResponse): unknown {
+    const obj: any = {};
+    if (message.resultJson !== "") {
+      obj.resultJson = message.resultJson;
+    }
+    return obj;
+  },
+
+  create(base?: DeepPartial<ReadRuntimeContextResponse>): ReadRuntimeContextResponse {
+    return ReadRuntimeContextResponse.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<ReadRuntimeContextResponse>): ReadRuntimeContextResponse {
+    const message = createBaseReadRuntimeContextResponse();
+    message.resultJson = object.resultJson ?? "";
+    return message;
+  },
+};
+
 /** ExecutionSessionService is the worker-only API boundary for LiveKit jobs. */
 export type ExecutionSessionServiceService = typeof ExecutionSessionServiceService;
 export const ExecutionSessionServiceService = {
@@ -13695,6 +14109,17 @@ export const ExecutionSessionServiceService = {
       Buffer.from(ReadRuntimeKnowledgeResponse.encode(value).finish()),
     responseDeserialize: (value: Buffer): ReadRuntimeKnowledgeResponse => ReadRuntimeKnowledgeResponse.decode(value),
   },
+  readRuntimeContext: {
+    path: "/port.api.v1.ExecutionSessionService/ReadRuntimeContext" as const,
+    requestStream: false as const,
+    responseStream: false as const,
+    requestSerialize: (value: ReadRuntimeContextRequest): Buffer =>
+      Buffer.from(ReadRuntimeContextRequest.encode(value).finish()),
+    requestDeserialize: (value: Buffer): ReadRuntimeContextRequest => ReadRuntimeContextRequest.decode(value),
+    responseSerialize: (value: ReadRuntimeContextResponse): Buffer =>
+      Buffer.from(ReadRuntimeContextResponse.encode(value).finish()),
+    responseDeserialize: (value: Buffer): ReadRuntimeContextResponse => ReadRuntimeContextResponse.decode(value),
+  },
 } as const;
 
 export interface ExecutionSessionServiceServer extends UntypedServiceImplementation {
@@ -13714,6 +14139,7 @@ export interface ExecutionSessionServiceServer extends UntypedServiceImplementat
   endRuntime: handleUnaryCall<EndRuntimeRequest, EndRuntimeResponse>;
   recordRuntimeUsage: handleUnaryCall<RecordRuntimeUsageRequest, RecordRuntimeUsageResponse>;
   readRuntimeKnowledge: handleUnaryCall<ReadRuntimeKnowledgeRequest, ReadRuntimeKnowledgeResponse>;
+  readRuntimeContext: handleUnaryCall<ReadRuntimeContextRequest, ReadRuntimeContextResponse>;
 }
 
 export interface ExecutionSessionServiceClient extends Client {
@@ -13956,6 +14382,21 @@ export interface ExecutionSessionServiceClient extends Client {
     metadata: Metadata,
     options: Partial<CallOptions>,
     callback: (error: ServiceError | null, response: ReadRuntimeKnowledgeResponse) => void,
+  ): ClientUnaryCall;
+  readRuntimeContext(
+    request: ReadRuntimeContextRequest,
+    callback: (error: ServiceError | null, response: ReadRuntimeContextResponse) => void,
+  ): ClientUnaryCall;
+  readRuntimeContext(
+    request: ReadRuntimeContextRequest,
+    metadata: Metadata,
+    callback: (error: ServiceError | null, response: ReadRuntimeContextResponse) => void,
+  ): ClientUnaryCall;
+  readRuntimeContext(
+    request: ReadRuntimeContextRequest,
+    metadata: Metadata,
+    options: Partial<CallOptions>,
+    callback: (error: ServiceError | null, response: ReadRuntimeContextResponse) => void,
   ): ClientUnaryCall;
 }
 

@@ -1,7 +1,23 @@
 # State
 
-current_version: orchestration-contract-v1
+current_version: contracts-8.2.0
 last_updated: 2026-10-20
+
+## Personal conversation context — 8.2.0, source only
+
+- Added optional node `context_tool` field 19, optional model
+  `history_max_bytes` field 4, and owner-authorized `ReadRuntimeContext`.
+  UTF-8 JSON budgets, current-publication/node references and optional feature
+  presence are explicit. Existing execution modes and publication revisions remain.
+- Regenerated canonical TypeScript/Go/Python bindings. Buf lint and breaking
+  compatibility passed; TypeScript build and 42 existing wire cases passed.
+  Go tests/vet and Python generated-source syntax compilation passed.
+  A temporary 8.1-failing/8.2-passing program exercised the actual new wire fields.
+- API and worker consume the identical local8.2.0 archive, SHA-256
+  `cf6b322e5e0c653bf30d83757298f98207e3304f458f6d89f707821d392a5813`.
+  The API's exact Docker deps stage completed its frozen Node24/pnpm10.26.0 install.
+- No package registry publication, production change, schema migration or main
+  integration occurred. Matching API/worker must precede new personal presets.
 
 ## Number-ending EOT wait — 8.1.0, source only
 
@@ -28,24 +44,21 @@ last_updated: 2026-10-20
 
 ## Active
 
-현재 기준은 [Agent·Orchestration 공통 계약](contracts/agent-orchestration-v1.md)과
-[protobuf transport 계약](contracts/agent-orchestration-v1-transport.md)이다.
+The canonical worker boundary is `proto/port/api/v1/agent_session.proto` plus
+`runtime_identity.proto`. `ExecutionSessionService.BootstrapPublished` returns
+one pinned Supervisor/Handoff graph, typed prompt variables, transport runtime
+and mandatory owner lease. Publication revision
+`execution-publication-2026-09-15-r2` is current; the explicitly admitted legacy
+revision is `execution-publication-2026-09-04-r1`. HA protocol
+`runtime-recovery-v1` is independent of publication and npm versions.
 
-- 신규 제품은 schema 명칭 `agent.orchestration.v1`과 필수
-  `contractRevision = "orchestration-2026-08-07-r4"`를 함께 사용한다.
-- `contracts@1.8.0`의 graph 계약은 역사적 retired 계약이다.
-- `contracts@2.0.0`은 신규 RPC, r4 response, CallRuntimeSnapshot과 AgentRuntime
-  경계를 포함해 출시됐다.
-- Agent 직접 실행은 `BootstrapAgent`, Orchestration 실행은
-  `BootstrapOrchestration` RPC/response를 사용한다.
-- 두 신규 response는 Conversation 시작 시 CallRuntimeConfig에서 고정한
-  CallRuntimeSnapshot 하나와 AgentRuntime 입력을 전달한다. BackgroundAudio와
-  DTMF 입력 설정은 CallRuntimeSnapshot에만 포함한다.
-- 기존 `Bootstrap`은 전환되지 않은 `agent.canvas.v1` 통화에만 유지한다.
-- additive `2.1.0` 후보는 `SttRuntime.keyterms`와 AgentRuntime별
-  `api_tool_runtimes`를 추가한다. API tool metadata와 runtime credential은 같은
-  `tool_id`로 정확히 1:1 대응해야 한다.
+Contracts8.2.0 adds typed personal-context lookup and an optional history-view
+budget without a new execution mode. The HTTP personal principal and scoped
+immutable sources remain API-owned; a retrieved payload grants no role or effect.
 
-`2.1.0` 후보의 protobuf와 Go·TypeScript·Python 생성물, wire 호환성 검증을
-완료했다. npm publish, API producer 반영과 voice-agent dependency 업데이트는
-별도 단계로 진행한다.
+`Bootstrap`, `BootstrapAgent`, `BootstrapOrchestration` and the old
+`orchestration-2026-08-07-r4` runtime are retired, with no fallback aliases.
+The earlier `docs/contracts/agent-orchestration-v1*.md` and
+`docs/orchestration-contract-v1/` records describe historical orchestration,
+not the current worker integration.
+

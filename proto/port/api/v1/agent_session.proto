@@ -26,6 +26,7 @@ service ExecutionSessionService {
   rpc EndRuntime(EndRuntimeRequest) returns (EndRuntimeResponse);
   rpc RecordRuntimeUsage(RecordRuntimeUsageRequest) returns (RecordRuntimeUsageResponse);
   rpc ReadRuntimeKnowledge(ReadRuntimeKnowledgeRequest) returns (ReadRuntimeKnowledgeResponse);
+  rpc ReadRuntimeContext(ReadRuntimeContextRequest) returns (ReadRuntimeContextResponse);
 }
 
 // Worker-only commands; the API derives fields and recipient from the pinned
@@ -302,6 +303,15 @@ message PublishedAgentNodeRuntime {
   optional string display_name = 16 [(buf.validate.field).string = {min_len: 1 pattern: "\\S"}];
   optional string greeting = 17 [(buf.validate.field).string.max_len = 4000];
   optional string knowledge_tool_reference = 18 [(buf.validate.field).string = {min_len: 1 max_len: 256}];
+  RuntimeContextTool context_tool = 19;
+}
+
+// An API-authorized read binding, not a caller-supplied source or tenant ID.
+message RuntimeContextTool {
+  string tool_reference = 1 [(buf.validate.field).string = {min_len: 1 max_len: 256 pattern: "\\S"}];
+  string function_name = 2 [(buf.validate.field).string.const = "read_space_context"];
+  string description = 3 [(buf.validate.field).string = {min_len: 1 max_len: 2000 pattern: "\\S"}];
+  uint32 max_result_bytes = 4 [(buf.validate.field).uint32 = {gte: 1024 lte: 16384}];
 }
 
 // Optional so older publications retain provider defaults.
@@ -314,6 +324,9 @@ message NodeModelSettings {
   optional double temperature = 1 [(buf.validate.field).double = {gte: 0, lte: 2}];
   optional int32 max_tokens = 2 [(buf.validate.field).int32 = {gte: 1, lte: 4096}];
   optional string reasoning_effort = 3 [(buf.validate.field).string = {in: ["low", "medium", "high"]}];
+  // Bounds UTF-8 serialized conversation history, excluding fixed instructions.
+  // Absent preserves the publication's existing inference behavior.
+  optional uint32 history_max_bytes = 4 [(buf.validate.field).uint32 = {gte: 8192 lte: 262144}];
 }
 
 message NodeToolBinding {
@@ -1082,4 +1095,19 @@ message ReadRuntimeKnowledgeRequest {
 message ReadRuntimeKnowledgeResponse {
   // The unchanged search result ABI after the API rechecks current ownership.
   string result_json = 1 [(buf.validate.field).string = {min_bytes: 1 max_bytes: 1048576}];
+}
+
+message ReadRuntimeContextRequest {
+  RuntimeAuthorization owner = 1 [(buf.validate.field).required = true];
+  string node_id = 2 [(buf.validate.field).string = {min_len: 1 max_len: 256 pattern: "\\S"}];
+  string tool_reference = 3 [(buf.validate.field).string = {min_len: 1 max_len: 256 pattern: "\\S"}];
+  string query = 4 [(buf.validate.field).string = {min_len: 1 max_bytes: 4000 pattern: "\\S"}];
+  optional uint32 max_bytes = 5 [(buf.validate.field).uint32 = {gte: 1024 lte: 16384}];
+  optional uint32 limit = 6 [(buf.validate.field).uint32 = {gte: 1 lte: 20}];
+}
+
+message ReadRuntimeContextResponse {
+  // Versioned source citations and consent-scoped memory are reference data.
+  // The entire UTF-8 JSON result, including metadata, fits the requested budget.
+  string result_json = 1 [(buf.validate.field).string = {min_bytes: 1 max_bytes: 16384}];
 }

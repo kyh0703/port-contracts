@@ -35,6 +35,7 @@ const (
 	ExecutionSessionService_EndRuntime_FullMethodName               = "/port.api.v1.ExecutionSessionService/EndRuntime"
 	ExecutionSessionService_RecordRuntimeUsage_FullMethodName       = "/port.api.v1.ExecutionSessionService/RecordRuntimeUsage"
 	ExecutionSessionService_ReadRuntimeKnowledge_FullMethodName     = "/port.api.v1.ExecutionSessionService/ReadRuntimeKnowledge"
+	ExecutionSessionService_ReadRuntimeContext_FullMethodName       = "/port.api.v1.ExecutionSessionService/ReadRuntimeContext"
 )
 
 // ExecutionSessionServiceClient is the client API for ExecutionSessionService service.
@@ -59,6 +60,7 @@ type ExecutionSessionServiceClient interface {
 	EndRuntime(ctx context.Context, in *EndRuntimeRequest, opts ...grpc.CallOption) (*EndRuntimeResponse, error)
 	RecordRuntimeUsage(ctx context.Context, in *RecordRuntimeUsageRequest, opts ...grpc.CallOption) (*RecordRuntimeUsageResponse, error)
 	ReadRuntimeKnowledge(ctx context.Context, in *ReadRuntimeKnowledgeRequest, opts ...grpc.CallOption) (*ReadRuntimeKnowledgeResponse, error)
+	ReadRuntimeContext(ctx context.Context, in *ReadRuntimeContextRequest, opts ...grpc.CallOption) (*ReadRuntimeContextResponse, error)
 }
 
 type executionSessionServiceClient struct {
@@ -229,6 +231,16 @@ func (c *executionSessionServiceClient) ReadRuntimeKnowledge(ctx context.Context
 	return out, nil
 }
 
+func (c *executionSessionServiceClient) ReadRuntimeContext(ctx context.Context, in *ReadRuntimeContextRequest, opts ...grpc.CallOption) (*ReadRuntimeContextResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ReadRuntimeContextResponse)
+	err := c.cc.Invoke(ctx, ExecutionSessionService_ReadRuntimeContext_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // ExecutionSessionServiceServer is the server API for ExecutionSessionService service.
 // All implementations must embed UnimplementedExecutionSessionServiceServer
 // for forward compatibility.
@@ -251,6 +263,7 @@ type ExecutionSessionServiceServer interface {
 	EndRuntime(context.Context, *EndRuntimeRequest) (*EndRuntimeResponse, error)
 	RecordRuntimeUsage(context.Context, *RecordRuntimeUsageRequest) (*RecordRuntimeUsageResponse, error)
 	ReadRuntimeKnowledge(context.Context, *ReadRuntimeKnowledgeRequest) (*ReadRuntimeKnowledgeResponse, error)
+	ReadRuntimeContext(context.Context, *ReadRuntimeContextRequest) (*ReadRuntimeContextResponse, error)
 	mustEmbedUnimplementedExecutionSessionServiceServer()
 }
 
@@ -308,6 +321,9 @@ func (UnimplementedExecutionSessionServiceServer) RecordRuntimeUsage(context.Con
 }
 func (UnimplementedExecutionSessionServiceServer) ReadRuntimeKnowledge(context.Context, *ReadRuntimeKnowledgeRequest) (*ReadRuntimeKnowledgeResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method ReadRuntimeKnowledge not implemented")
+}
+func (UnimplementedExecutionSessionServiceServer) ReadRuntimeContext(context.Context, *ReadRuntimeContextRequest) (*ReadRuntimeContextResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ReadRuntimeContext not implemented")
 }
 func (UnimplementedExecutionSessionServiceServer) mustEmbedUnimplementedExecutionSessionServiceServer() {
 }
@@ -619,6 +635,24 @@ func _ExecutionSessionService_ReadRuntimeKnowledge_Handler(srv interface{}, ctx 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _ExecutionSessionService_ReadRuntimeContext_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ReadRuntimeContextRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ExecutionSessionServiceServer).ReadRuntimeContext(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ExecutionSessionService_ReadRuntimeContext_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ExecutionSessionServiceServer).ReadRuntimeContext(ctx, req.(*ReadRuntimeContextRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // ExecutionSessionService_ServiceDesc is the grpc.ServiceDesc for ExecutionSessionService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -689,6 +723,10 @@ var ExecutionSessionService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ReadRuntimeKnowledge",
 			Handler:    _ExecutionSessionService_ReadRuntimeKnowledge_Handler,
+		},
+		{
+			MethodName: "ReadRuntimeContext",
+			Handler:    _ExecutionSessionService_ReadRuntimeContext_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
