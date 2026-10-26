@@ -656,7 +656,14 @@ export interface SpeechPolicyRuntime {
     | number
     | undefined;
   /** New voice originals only; absence preserves the previous native policy. */
-  clientSpeakingPlan?: ClientSpeakingPlanRuntime | undefined;
+  clientSpeakingPlan?:
+    | ClientSpeakingPlanRuntime
+    | undefined;
+  /**
+   * Only the initial voice greeting; absent originals default to false.
+   * Effective interruption also requires allow_interruptions to be true.
+   */
+  allowInitialGreetingInterruptions?: boolean | undefined;
 }
 
 export interface ClientSpeakingPlanRuntime {
@@ -6738,6 +6745,7 @@ function createBaseSpeechPolicyRuntime(): SpeechPolicyRuntime {
     allowInterruptions: undefined,
     eotOnNumberSecs: undefined,
     clientSpeakingPlan: undefined,
+    allowInitialGreetingInterruptions: undefined,
   };
 }
 
@@ -6754,6 +6762,9 @@ export const SpeechPolicyRuntime: MessageFns<SpeechPolicyRuntime> = {
     }
     if (message.clientSpeakingPlan !== undefined) {
       ClientSpeakingPlanRuntime.encode(message.clientSpeakingPlan, writer.uint32(34).fork()).join();
+    }
+    if (message.allowInitialGreetingInterruptions !== undefined) {
+      writer.uint32(40).bool(message.allowInitialGreetingInterruptions);
     }
     return writer;
   },
@@ -6797,6 +6808,14 @@ export const SpeechPolicyRuntime: MessageFns<SpeechPolicyRuntime> = {
           message.clientSpeakingPlan = ClientSpeakingPlanRuntime.decode(reader, reader.uint32());
           continue;
         }
+        case 5: {
+          if (tag !== 40) {
+            break;
+          }
+
+          message.allowInitialGreetingInterruptions = reader.bool();
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -6828,6 +6847,11 @@ export const SpeechPolicyRuntime: MessageFns<SpeechPolicyRuntime> = {
         : isSet(object.client_speaking_plan)
         ? ClientSpeakingPlanRuntime.fromJSON(object.client_speaking_plan)
         : undefined,
+      allowInitialGreetingInterruptions: isSet(object.allowInitialGreetingInterruptions)
+        ? globalThis.Boolean(object.allowInitialGreetingInterruptions)
+        : isSet(object.allow_initial_greeting_interruptions)
+        ? globalThis.Boolean(object.allow_initial_greeting_interruptions)
+        : undefined,
     };
   },
 
@@ -6845,6 +6869,9 @@ export const SpeechPolicyRuntime: MessageFns<SpeechPolicyRuntime> = {
     if (message.clientSpeakingPlan !== undefined) {
       obj.clientSpeakingPlan = ClientSpeakingPlanRuntime.toJSON(message.clientSpeakingPlan);
     }
+    if (message.allowInitialGreetingInterruptions !== undefined) {
+      obj.allowInitialGreetingInterruptions = message.allowInitialGreetingInterruptions;
+    }
     return obj;
   },
 
@@ -6859,6 +6886,7 @@ export const SpeechPolicyRuntime: MessageFns<SpeechPolicyRuntime> = {
     message.clientSpeakingPlan = (object.clientSpeakingPlan !== undefined && object.clientSpeakingPlan !== null)
       ? ClientSpeakingPlanRuntime.fromPartial(object.clientSpeakingPlan)
       : undefined;
+    message.allowInitialGreetingInterruptions = object.allowInitialGreetingInterruptions ?? undefined;
     return message;
   },
 };

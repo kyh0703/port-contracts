@@ -535,6 +535,9 @@ message SpeechPolicyRuntime {
   ];
   // New voice originals only; absence preserves the previous native policy.
   ClientSpeakingPlanRuntime client_speaking_plan = 4;
+  // Only the initial voice greeting; absent originals default to false.
+  // Effective interruption also requires allow_interruptions to be true.
+  optional bool allow_initial_greeting_interruptions = 5;
 }
 
 message ClientSpeakingPlanRuntime {

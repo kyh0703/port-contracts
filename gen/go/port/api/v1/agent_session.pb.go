@@ -3383,8 +3383,11 @@ type SpeechPolicyRuntime struct {
 	EotOnNumberSecs *float64 `protobuf:"fixed64,3,opt,name=eot_on_number_secs,json=eotOnNumberSecs,proto3,oneof" json:"eot_on_number_secs,omitempty"`
 	// New voice originals only; absence preserves the previous native policy.
 	ClientSpeakingPlan *ClientSpeakingPlanRuntime `protobuf:"bytes,4,opt,name=client_speaking_plan,json=clientSpeakingPlan,proto3" json:"client_speaking_plan,omitempty"`
-	unknownFields      protoimpl.UnknownFields
-	sizeCache          protoimpl.SizeCache
+	// Only the initial voice greeting; absent originals default to false.
+	// Effective interruption also requires allow_interruptions to be true.
+	AllowInitialGreetingInterruptions *bool `protobuf:"varint,5,opt,name=allow_initial_greeting_interruptions,json=allowInitialGreetingInterruptions,proto3,oneof" json:"allow_initial_greeting_interruptions,omitempty"`
+	unknownFields                     protoimpl.UnknownFields
+	sizeCache                         protoimpl.SizeCache
 }
 
 func (x *SpeechPolicyRuntime) Reset() {
@@ -3443,6 +3446,13 @@ func (x *SpeechPolicyRuntime) GetClientSpeakingPlan() *ClientSpeakingPlanRuntime
 		return x.ClientSpeakingPlan
 	}
 	return nil
+}
+
+func (x *SpeechPolicyRuntime) GetAllowInitialGreetingInterruptions() bool {
+	if x != nil && x.AllowInitialGreetingInterruptions != nil {
+		return *x.AllowInitialGreetingInterruptions
+	}
+	return false
 }
 
 type ClientSpeakingPlanRuntime struct {
@@ -7988,15 +7998,17 @@ const file_port_api_v1_agent_session_proto_rawDesc = "" +
 	"\x12noise_cancellation\x18\x01 \x01(\x0e2\".port.api.v1.NoiseCancellationModeB\n" +
 	"\xbaH\a\x82\x01\x04\x10\x01 \x00R\x11noiseCancellation\x12X\n" +
 	"\x17recognition_sensitivity\x18\x02 \x01(\x01B\x1a\xbaH\x17\xc8\x01\x01\x12\x12\x19\x00\x00\x00\x00\x00\x00\xe8?)\x00\x00\x00\x00\x00\x00\xe0?H\x00R\x16recognitionSensitivity\x88\x01\x01B\x1a\n" +
-	"\x18_recognition_sensitivity\"\x82\x03\n" +
+	"\x18_recognition_sensitivity\"\x81\x04\n" +
 	"\x13SpeechPolicyRuntime\x12F\n" +
 	"\x0eresponse_speed\x18\x01 \x01(\x01B\x1a\xbaH\x17\xc8\x01\x01\x12\x12\x19\x00\x00\x00\x00\x00\x00\xf0?)\x00\x00\x00\x00\x00\x00\x00\x00H\x00R\rresponseSpeed\x88\x01\x01\x12<\n" +
 	"\x13allow_interruptions\x18\x02 \x01(\bB\x06\xbaH\x03\xc8\x01\x01H\x01R\x12allowInterruptions\x88\x01\x01\x12I\n" +
 	"\x12eot_on_number_secs\x18\x03 \x01(\x01B\x17\xbaH\x14\x12\x12\x19\x00\x00\x00\x00\x00\x00\b@)\x00\x00\x00\x00\x00\x00\x00\x00H\x02R\x0feotOnNumberSecs\x88\x01\x01\x12X\n" +
-	"\x14client_speaking_plan\x18\x04 \x01(\v2&.port.api.v1.ClientSpeakingPlanRuntimeR\x12clientSpeakingPlanB\x11\n" +
+	"\x14client_speaking_plan\x18\x04 \x01(\v2&.port.api.v1.ClientSpeakingPlanRuntimeR\x12clientSpeakingPlan\x12T\n" +
+	"$allow_initial_greeting_interruptions\x18\x05 \x01(\bH\x03R!allowInitialGreetingInterruptions\x88\x01\x01B\x11\n" +
 	"\x0f_response_speedB\x16\n" +
 	"\x14_allow_interruptionsB\x15\n" +
-	"\x13_eot_on_number_secs\"\xd9\x02\n" +
+	"\x13_eot_on_number_secsB'\n" +
+	"%_allow_initial_greeting_interruptions\"\xd9\x02\n" +
 	"\x19ClientSpeakingPlanRuntime\x12\x18\n" +
 	"\aenabled\x18\x01 \x01(\bR\aenabled\x12M\n" +
 	"\x16on_punctuation_seconds\x18\x02 \x01(\x01B\x17\xbaH\x14\x12\x12\x19\x00\x00\x00\x00\x00\x00\b@)\x00\x00\x00\x00\x00\x00\x00\x00R\x14onPunctuationSeconds\x12R\n" +

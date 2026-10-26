@@ -44,6 +44,25 @@ parameters, `none | conversation | recent` context policy, and one blocking
 `request_start` message. Older Agent bootstrap services and revision fallbacks
 are intentionally unavailable.
 
+## Optional first-greeting interruption policy — 10.3.0
+
+`SpeechPolicyRuntime.allow_initial_greeting_interruptions` is optional bool
+field 5. Absence in a historical original means false at runtime; it does not
+rewrite original JSON/binary values or hashes. Explicit true and false remain
+distinct from absence in generated TypeScript, Go and Python codecs.
+
+Voice workers allow interruption of the initial greeting only when this field
+and the existing `allow_interruptions` are both true, under the existing
+detection rules. This is a per-opening speech policy, not a session-wide toggle;
+ordinary replies and text interaction retain their existing behavior.
+
+API and worker use the same local10.3.0 archive. Administrator Web uses HTTP JSON
+and retains its10.0.0 dependency. The additive schema passes proto lint and the
+existing51 wire regressions. Real isolated HTTP/PG settings were round-tripped
+through this codec into both runtime compilers and native speech output.
+The user approved merging and pushing the matching Contracts/API/worker/Web source
+to main. npm registry publication and operating rollout remain separate.
+
 ## Optional client speaking plan — 10.2.0
 
 `SpeechPolicyRuntime.client_speaking_plan` is optional message field 4.
@@ -78,7 +97,7 @@ also retains message presence; explicit false/zero values use normal protobuf
 scalar encoding without dropping the parent message. Readers must not inject
 new defaults into immutable originals or change their hashes.
 
-API and worker consume the matching local 10.2.0 archive. Web's administrator
+API and worker now consume the matching local10.3.0 archive. Web's administrator
 controls use HTTP JSON and do not require upgrading its 10.0.0 archive. Deploy
 matching API/worker and approved runtime inventory before enabling server mode;
 older workers ignore this additive field. Wire presence/regression fixtures

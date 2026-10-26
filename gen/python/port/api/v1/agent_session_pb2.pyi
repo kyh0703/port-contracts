@@ -613,16 +613,18 @@ class VadRuntime(_message.Message):
     def __init__(self, noise_cancellation: _Optional[_Union[NoiseCancellationMode, str]] = ..., recognition_sensitivity: _Optional[float] = ...) -> None: ...
 
 class SpeechPolicyRuntime(_message.Message):
-    __slots__ = ("response_speed", "allow_interruptions", "eot_on_number_secs", "client_speaking_plan")
+    __slots__ = ("response_speed", "allow_interruptions", "eot_on_number_secs", "client_speaking_plan", "allow_initial_greeting_interruptions")
     RESPONSE_SPEED_FIELD_NUMBER: _ClassVar[int]
     ALLOW_INTERRUPTIONS_FIELD_NUMBER: _ClassVar[int]
     EOT_ON_NUMBER_SECS_FIELD_NUMBER: _ClassVar[int]
     CLIENT_SPEAKING_PLAN_FIELD_NUMBER: _ClassVar[int]
+    ALLOW_INITIAL_GREETING_INTERRUPTIONS_FIELD_NUMBER: _ClassVar[int]
     response_speed: float
     allow_interruptions: bool
     eot_on_number_secs: float
     client_speaking_plan: ClientSpeakingPlanRuntime
-    def __init__(self, response_speed: _Optional[float] = ..., allow_interruptions: _Optional[bool] = ..., eot_on_number_secs: _Optional[float] = ..., client_speaking_plan: _Optional[_Union[ClientSpeakingPlanRuntime, _Mapping]] = ...) -> None: ...
+    allow_initial_greeting_interruptions: bool
+    def __init__(self, response_speed: _Optional[float] = ..., allow_interruptions: _Optional[bool] = ..., eot_on_number_secs: _Optional[float] = ..., client_speaking_plan: _Optional[_Union[ClientSpeakingPlanRuntime, _Mapping]] = ..., allow_initial_greeting_interruptions: _Optional[bool] = ...) -> None: ...
 
 class ClientSpeakingPlanRuntime(_message.Message):
     __slots__ = ("enabled", "on_punctuation_seconds", "on_no_punctuation_seconds", "on_number_seconds", "wait_seconds")
