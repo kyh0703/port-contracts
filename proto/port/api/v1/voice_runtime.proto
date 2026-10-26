@@ -42,6 +42,11 @@ message ResolveLeaseResponse {
 }
 
 message SttRuntime {
+  option (buf.validate.message).cel = {
+    id: "stt.soniox_endpointing_provider"
+    message: "Soniox endpointing settings require the Soniox provider"
+    expression: "!has(this.soniox_endpointing) || (has(this.provider) && this.provider == 'soniox')"
+  };
   oneof credential {
     option (buf.validate.oneof).required = true;
     string api_key = 1 [(buf.validate.field).string.min_len = 1];
@@ -64,6 +69,16 @@ message SttRuntime {
   optional bool multilingual = 6;
   // Soniox speaker labels; independent of background voice cancellation.
   optional bool speaker_diarization = 8;
+  // Original-pinned settings. Absence preserves legacy client/native behavior.
+  SonioxEndpointingRuntime soniox_endpointing = 9;
+}
+
+message SonioxEndpointingRuntime {
+  // False retains existing client/native turn selection and SDK provider defaults.
+  bool server_turn_detection = 1;
+  uint32 latency_adjustment_level = 2 [(buf.validate.field).uint32 = {lte: 3}];
+  double sensitivity = 3 [(buf.validate.field).double = {gte: -1 lte: 1}];
+  uint32 max_delay_ms = 4 [(buf.validate.field).uint32 = {gte: 500 lte: 3000}];
 }
 
 message LlmRuntime {

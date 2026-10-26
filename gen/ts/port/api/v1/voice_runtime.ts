@@ -56,7 +56,19 @@ export interface SttRuntime {
     | boolean
     | undefined;
   /** Soniox speaker labels; independent of background voice cancellation. */
-  speakerDiarization?: boolean | undefined;
+  speakerDiarization?:
+    | boolean
+    | undefined;
+  /** Original-pinned settings. Absence preserves legacy client/native behavior. */
+  sonioxEndpointing?: SonioxEndpointingRuntime | undefined;
+}
+
+export interface SonioxEndpointingRuntime {
+  /** False retains existing client/native turn selection and SDK provider defaults. */
+  serverTurnDetection: boolean;
+  latencyAdjustmentLevel: number;
+  sensitivity: number;
+  maxDelayMs: number;
 }
 
 export interface LlmRuntime {
@@ -328,6 +340,7 @@ function createBaseSttRuntime(): SttRuntime {
     provider: undefined,
     multilingual: undefined,
     speakerDiarization: undefined,
+    sonioxEndpointing: undefined,
   };
 }
 
@@ -356,6 +369,9 @@ export const SttRuntime: MessageFns<SttRuntime> = {
     }
     if (message.speakerDiarization !== undefined) {
       writer.uint32(64).bool(message.speakerDiarization);
+    }
+    if (message.sonioxEndpointing !== undefined) {
+      SonioxEndpointingRuntime.encode(message.sonioxEndpointing, writer.uint32(74).fork()).join();
     }
     return writer;
   },
@@ -431,6 +447,14 @@ export const SttRuntime: MessageFns<SttRuntime> = {
           message.speakerDiarization = reader.bool();
           continue;
         }
+        case 9: {
+          if (tag !== 74) {
+            break;
+          }
+
+          message.sonioxEndpointing = SonioxEndpointingRuntime.decode(reader, reader.uint32());
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -462,6 +486,11 @@ export const SttRuntime: MessageFns<SttRuntime> = {
         : isSet(object.speaker_diarization)
         ? globalThis.Boolean(object.speaker_diarization)
         : undefined,
+      sonioxEndpointing: isSet(object.sonioxEndpointing)
+        ? SonioxEndpointingRuntime.fromJSON(object.sonioxEndpointing)
+        : isSet(object.soniox_endpointing)
+        ? SonioxEndpointingRuntime.fromJSON(object.soniox_endpointing)
+        : undefined,
     };
   },
 
@@ -491,6 +520,9 @@ export const SttRuntime: MessageFns<SttRuntime> = {
     if (message.speakerDiarization !== undefined) {
       obj.speakerDiarization = message.speakerDiarization;
     }
+    if (message.sonioxEndpointing !== undefined) {
+      obj.sonioxEndpointing = SonioxEndpointingRuntime.toJSON(message.sonioxEndpointing);
+    }
     return obj;
   },
 
@@ -507,6 +539,129 @@ export const SttRuntime: MessageFns<SttRuntime> = {
     message.provider = object.provider ?? undefined;
     message.multilingual = object.multilingual ?? undefined;
     message.speakerDiarization = object.speakerDiarization ?? undefined;
+    message.sonioxEndpointing = (object.sonioxEndpointing !== undefined && object.sonioxEndpointing !== null)
+      ? SonioxEndpointingRuntime.fromPartial(object.sonioxEndpointing)
+      : undefined;
+    return message;
+  },
+};
+
+function createBaseSonioxEndpointingRuntime(): SonioxEndpointingRuntime {
+  return { serverTurnDetection: false, latencyAdjustmentLevel: 0, sensitivity: 0, maxDelayMs: 0 };
+}
+
+export const SonioxEndpointingRuntime: MessageFns<SonioxEndpointingRuntime> = {
+  encode(message: SonioxEndpointingRuntime, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.serverTurnDetection !== false) {
+      writer.uint32(8).bool(message.serverTurnDetection);
+    }
+    if (message.latencyAdjustmentLevel !== 0) {
+      writer.uint32(16).uint32(message.latencyAdjustmentLevel);
+    }
+    if (message.sensitivity !== 0) {
+      writer.uint32(25).double(message.sensitivity);
+    }
+    if (message.maxDelayMs !== 0) {
+      writer.uint32(32).uint32(message.maxDelayMs);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): SonioxEndpointingRuntime {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseSonioxEndpointingRuntime();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 8) {
+            break;
+          }
+
+          message.serverTurnDetection = reader.bool();
+          continue;
+        }
+        case 2: {
+          if (tag !== 16) {
+            break;
+          }
+
+          message.latencyAdjustmentLevel = reader.uint32();
+          continue;
+        }
+        case 3: {
+          if (tag !== 25) {
+            break;
+          }
+
+          message.sensitivity = reader.double();
+          continue;
+        }
+        case 4: {
+          if (tag !== 32) {
+            break;
+          }
+
+          message.maxDelayMs = reader.uint32();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): SonioxEndpointingRuntime {
+    return {
+      serverTurnDetection: isSet(object.serverTurnDetection)
+        ? globalThis.Boolean(object.serverTurnDetection)
+        : isSet(object.server_turn_detection)
+        ? globalThis.Boolean(object.server_turn_detection)
+        : false,
+      latencyAdjustmentLevel: isSet(object.latencyAdjustmentLevel)
+        ? globalThis.Number(object.latencyAdjustmentLevel)
+        : isSet(object.latency_adjustment_level)
+        ? globalThis.Number(object.latency_adjustment_level)
+        : 0,
+      sensitivity: isSet(object.sensitivity) ? globalThis.Number(object.sensitivity) : 0,
+      maxDelayMs: isSet(object.maxDelayMs)
+        ? globalThis.Number(object.maxDelayMs)
+        : isSet(object.max_delay_ms)
+        ? globalThis.Number(object.max_delay_ms)
+        : 0,
+    };
+  },
+
+  toJSON(message: SonioxEndpointingRuntime): unknown {
+    const obj: any = {};
+    if (message.serverTurnDetection !== false) {
+      obj.serverTurnDetection = message.serverTurnDetection;
+    }
+    if (message.latencyAdjustmentLevel !== 0) {
+      obj.latencyAdjustmentLevel = Math.round(message.latencyAdjustmentLevel);
+    }
+    if (message.sensitivity !== 0) {
+      obj.sensitivity = message.sensitivity;
+    }
+    if (message.maxDelayMs !== 0) {
+      obj.maxDelayMs = Math.round(message.maxDelayMs);
+    }
+    return obj;
+  },
+
+  create(base?: DeepPartial<SonioxEndpointingRuntime>): SonioxEndpointingRuntime {
+    return SonioxEndpointingRuntime.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<SonioxEndpointingRuntime>): SonioxEndpointingRuntime {
+    const message = createBaseSonioxEndpointingRuntime();
+    message.serverTurnDetection = object.serverTurnDetection ?? false;
+    message.latencyAdjustmentLevel = object.latencyAdjustmentLevel ?? 0;
+    message.sensitivity = object.sensitivity ?? 0;
+    message.maxDelayMs = object.maxDelayMs ?? 0;
     return message;
   },
 };

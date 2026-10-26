@@ -33,7 +33,7 @@ class ResolveLeaseResponse(_message.Message):
     def __init__(self, stt: _Optional[_Union[SttRuntime, _Mapping]] = ..., llm: _Optional[_Union[LlmRuntime, _Mapping]] = ..., tts: _Optional[_Union[TtsRuntime, _Mapping]] = ...) -> None: ...
 
 class SttRuntime(_message.Message):
-    __slots__ = ("api_key", "lease_id", "model", "language", "keyterms", "provider", "multilingual", "speaker_diarization")
+    __slots__ = ("api_key", "lease_id", "model", "language", "keyterms", "provider", "multilingual", "speaker_diarization", "soniox_endpointing")
     API_KEY_FIELD_NUMBER: _ClassVar[int]
     LEASE_ID_FIELD_NUMBER: _ClassVar[int]
     MODEL_FIELD_NUMBER: _ClassVar[int]
@@ -42,6 +42,7 @@ class SttRuntime(_message.Message):
     PROVIDER_FIELD_NUMBER: _ClassVar[int]
     MULTILINGUAL_FIELD_NUMBER: _ClassVar[int]
     SPEAKER_DIARIZATION_FIELD_NUMBER: _ClassVar[int]
+    SONIOX_ENDPOINTING_FIELD_NUMBER: _ClassVar[int]
     api_key: str
     lease_id: str
     model: str
@@ -50,7 +51,20 @@ class SttRuntime(_message.Message):
     provider: str
     multilingual: bool
     speaker_diarization: bool
-    def __init__(self, api_key: _Optional[str] = ..., lease_id: _Optional[str] = ..., model: _Optional[str] = ..., language: _Optional[str] = ..., keyterms: _Optional[_Iterable[str]] = ..., provider: _Optional[str] = ..., multilingual: _Optional[bool] = ..., speaker_diarization: _Optional[bool] = ...) -> None: ...
+    soniox_endpointing: SonioxEndpointingRuntime
+    def __init__(self, api_key: _Optional[str] = ..., lease_id: _Optional[str] = ..., model: _Optional[str] = ..., language: _Optional[str] = ..., keyterms: _Optional[_Iterable[str]] = ..., provider: _Optional[str] = ..., multilingual: _Optional[bool] = ..., speaker_diarization: _Optional[bool] = ..., soniox_endpointing: _Optional[_Union[SonioxEndpointingRuntime, _Mapping]] = ...) -> None: ...
+
+class SonioxEndpointingRuntime(_message.Message):
+    __slots__ = ("server_turn_detection", "latency_adjustment_level", "sensitivity", "max_delay_ms")
+    SERVER_TURN_DETECTION_FIELD_NUMBER: _ClassVar[int]
+    LATENCY_ADJUSTMENT_LEVEL_FIELD_NUMBER: _ClassVar[int]
+    SENSITIVITY_FIELD_NUMBER: _ClassVar[int]
+    MAX_DELAY_MS_FIELD_NUMBER: _ClassVar[int]
+    server_turn_detection: bool
+    latency_adjustment_level: int
+    sensitivity: float
+    max_delay_ms: int
+    def __init__(self, server_turn_detection: _Optional[bool] = ..., latency_adjustment_level: _Optional[int] = ..., sensitivity: _Optional[float] = ..., max_delay_ms: _Optional[int] = ...) -> None: ...
 
 class LlmRuntime(_message.Message):
     __slots__ = ("api_key", "lease_id", "model", "provider")

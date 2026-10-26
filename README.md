@@ -44,6 +44,47 @@ parameters, `none | conversation | recent` context policy, and one blocking
 `request_start` message. Older Agent bootstrap services and revision fallbacks
 are intentionally unavailable.
 
+## Optional client speaking plan — 10.2.0
+
+`SpeechPolicyRuntime.client_speaking_plan` is optional message field 4.
+`ClientSpeakingPlanRuntime` carries `enabled` (bool, field 1),
+`on_punctuation_seconds` (field 2), `on_no_punctuation_seconds` (field 3),
+`on_number_seconds` (field 4), and `wait_seconds` (field 5). The first three
+timers accept finite 0–3-second values; playback wait accepts 0–5 seconds.
+Existing speech-policy fields 1–3 and absent legacy original bytes are unchanged.
+Explicit zero and inactive prepared-message presence survive serialization.
+
+New client originals choose one numeric-first, punctuation, or incomplete
+minimum endpoint wait; these timers and legacy numeric extensions do not stack.
+Playback wait begins after first TTS audio is ready, once per logical speech.
+Soniox server mode takes precedence without deleting the prepared client plan.
+Missing legacy original fields must not be filled or alter original hashes.
+
+The local matching API/worker10.2.0 archive includes both this policy and the
+Soniox addition below; Web continues its HTTP-only10.0.0 dependency. Wire51
+regressions and real Go validators cover presence, zero, and finite bounds.
+Main publication is approved; registry publication and deployment are separate.
+
+## Optional Soniox endpoint policy — 10.1.0
+
+`SttRuntime.soniox_endpointing` is optional message field 9; existing fields 1–8
+are unchanged. `SonioxEndpointingRuntime` contains `server_turn_detection`
+(bool, field 1), `latency_adjustment_level` (uint32 0–3, field 2),
+`sensitivity` (double -1–1, field 3) and `max_delay_ms` (uint32 500–3000, field 4).
+The parent validator permits the message only for an explicit Soniox provider.
+
+Absence remains absent in legacy binary originals. An inactive prepared policy
+also retains message presence; explicit false/zero values use normal protobuf
+scalar encoding without dropping the parent message. Readers must not inject
+new defaults into immutable originals or change their hashes.
+
+API and worker consume the matching local 10.2.0 archive. Web's administrator
+controls use HTTP JSON and do not require upgrading its 10.0.0 archive. Deploy
+matching API/worker and approved runtime inventory before enabling server mode;
+older workers ignore this additive field. Wire presence/regression fixtures
+and the real Go validator cover the legacy, provider and numeric boundaries.
+This source change is not an npm registry publication or production deployment.
+
 ## Deepgram retirement — 10.0.0
 
 `SttRuntime.provider` retains field number 5 and optional wire presence, but

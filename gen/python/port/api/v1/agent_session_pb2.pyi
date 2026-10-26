@@ -613,14 +613,30 @@ class VadRuntime(_message.Message):
     def __init__(self, noise_cancellation: _Optional[_Union[NoiseCancellationMode, str]] = ..., recognition_sensitivity: _Optional[float] = ...) -> None: ...
 
 class SpeechPolicyRuntime(_message.Message):
-    __slots__ = ("response_speed", "allow_interruptions", "eot_on_number_secs")
+    __slots__ = ("response_speed", "allow_interruptions", "eot_on_number_secs", "client_speaking_plan")
     RESPONSE_SPEED_FIELD_NUMBER: _ClassVar[int]
     ALLOW_INTERRUPTIONS_FIELD_NUMBER: _ClassVar[int]
     EOT_ON_NUMBER_SECS_FIELD_NUMBER: _ClassVar[int]
+    CLIENT_SPEAKING_PLAN_FIELD_NUMBER: _ClassVar[int]
     response_speed: float
     allow_interruptions: bool
     eot_on_number_secs: float
-    def __init__(self, response_speed: _Optional[float] = ..., allow_interruptions: _Optional[bool] = ..., eot_on_number_secs: _Optional[float] = ...) -> None: ...
+    client_speaking_plan: ClientSpeakingPlanRuntime
+    def __init__(self, response_speed: _Optional[float] = ..., allow_interruptions: _Optional[bool] = ..., eot_on_number_secs: _Optional[float] = ..., client_speaking_plan: _Optional[_Union[ClientSpeakingPlanRuntime, _Mapping]] = ...) -> None: ...
+
+class ClientSpeakingPlanRuntime(_message.Message):
+    __slots__ = ("enabled", "on_punctuation_seconds", "on_no_punctuation_seconds", "on_number_seconds", "wait_seconds")
+    ENABLED_FIELD_NUMBER: _ClassVar[int]
+    ON_PUNCTUATION_SECONDS_FIELD_NUMBER: _ClassVar[int]
+    ON_NO_PUNCTUATION_SECONDS_FIELD_NUMBER: _ClassVar[int]
+    ON_NUMBER_SECONDS_FIELD_NUMBER: _ClassVar[int]
+    WAIT_SECONDS_FIELD_NUMBER: _ClassVar[int]
+    enabled: bool
+    on_punctuation_seconds: float
+    on_no_punctuation_seconds: float
+    on_number_seconds: float
+    wait_seconds: float
+    def __init__(self, enabled: _Optional[bool] = ..., on_punctuation_seconds: _Optional[float] = ..., on_no_punctuation_seconds: _Optional[float] = ..., on_number_seconds: _Optional[float] = ..., wait_seconds: _Optional[float] = ...) -> None: ...
 
 class CallLimitsRuntime(_message.Message):
     __slots__ = ("dial_wait_time_seconds", "max_call_duration_seconds", "no_answer_timeout_seconds", "no_answer_timeout_enabled")

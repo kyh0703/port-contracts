@@ -652,7 +652,21 @@ export interface SpeechPolicyRuntime {
    * Extra local EOT wait in seconds for a numeric transcript ending.
    * Absence defaults to 0.5 at the worker; explicit zero disables the wait.
    */
-  eotOnNumberSecs?: number | undefined;
+  eotOnNumberSecs?:
+    | number
+    | undefined;
+  /** New voice originals only; absence preserves the previous native policy. */
+  clientSpeakingPlan?: ClientSpeakingPlanRuntime | undefined;
+}
+
+export interface ClientSpeakingPlanRuntime {
+  enabled: boolean;
+  /** Select one minimum transcription wait; never sum these three timers. */
+  onPunctuationSeconds: number;
+  onNoPunctuationSeconds: number;
+  onNumberSeconds: number;
+  /** Applied after the first synthesized audio is ready, before first playback. */
+  waitSeconds: number;
 }
 
 export interface CallLimitsRuntime {
@@ -6719,7 +6733,12 @@ export const VadRuntime: MessageFns<VadRuntime> = {
 };
 
 function createBaseSpeechPolicyRuntime(): SpeechPolicyRuntime {
-  return { responseSpeed: undefined, allowInterruptions: undefined, eotOnNumberSecs: undefined };
+  return {
+    responseSpeed: undefined,
+    allowInterruptions: undefined,
+    eotOnNumberSecs: undefined,
+    clientSpeakingPlan: undefined,
+  };
 }
 
 export const SpeechPolicyRuntime: MessageFns<SpeechPolicyRuntime> = {
@@ -6732,6 +6751,9 @@ export const SpeechPolicyRuntime: MessageFns<SpeechPolicyRuntime> = {
     }
     if (message.eotOnNumberSecs !== undefined) {
       writer.uint32(25).double(message.eotOnNumberSecs);
+    }
+    if (message.clientSpeakingPlan !== undefined) {
+      ClientSpeakingPlanRuntime.encode(message.clientSpeakingPlan, writer.uint32(34).fork()).join();
     }
     return writer;
   },
@@ -6767,6 +6789,14 @@ export const SpeechPolicyRuntime: MessageFns<SpeechPolicyRuntime> = {
           message.eotOnNumberSecs = reader.double();
           continue;
         }
+        case 4: {
+          if (tag !== 34) {
+            break;
+          }
+
+          message.clientSpeakingPlan = ClientSpeakingPlanRuntime.decode(reader, reader.uint32());
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -6793,6 +6823,11 @@ export const SpeechPolicyRuntime: MessageFns<SpeechPolicyRuntime> = {
         : isSet(object.eot_on_number_secs)
         ? globalThis.Number(object.eot_on_number_secs)
         : undefined,
+      clientSpeakingPlan: isSet(object.clientSpeakingPlan)
+        ? ClientSpeakingPlanRuntime.fromJSON(object.clientSpeakingPlan)
+        : isSet(object.client_speaking_plan)
+        ? ClientSpeakingPlanRuntime.fromJSON(object.client_speaking_plan)
+        : undefined,
     };
   },
 
@@ -6807,6 +6842,9 @@ export const SpeechPolicyRuntime: MessageFns<SpeechPolicyRuntime> = {
     if (message.eotOnNumberSecs !== undefined) {
       obj.eotOnNumberSecs = message.eotOnNumberSecs;
     }
+    if (message.clientSpeakingPlan !== undefined) {
+      obj.clientSpeakingPlan = ClientSpeakingPlanRuntime.toJSON(message.clientSpeakingPlan);
+    }
     return obj;
   },
 
@@ -6818,6 +6856,149 @@ export const SpeechPolicyRuntime: MessageFns<SpeechPolicyRuntime> = {
     message.responseSpeed = object.responseSpeed ?? undefined;
     message.allowInterruptions = object.allowInterruptions ?? undefined;
     message.eotOnNumberSecs = object.eotOnNumberSecs ?? undefined;
+    message.clientSpeakingPlan = (object.clientSpeakingPlan !== undefined && object.clientSpeakingPlan !== null)
+      ? ClientSpeakingPlanRuntime.fromPartial(object.clientSpeakingPlan)
+      : undefined;
+    return message;
+  },
+};
+
+function createBaseClientSpeakingPlanRuntime(): ClientSpeakingPlanRuntime {
+  return { enabled: false, onPunctuationSeconds: 0, onNoPunctuationSeconds: 0, onNumberSeconds: 0, waitSeconds: 0 };
+}
+
+export const ClientSpeakingPlanRuntime: MessageFns<ClientSpeakingPlanRuntime> = {
+  encode(message: ClientSpeakingPlanRuntime, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.enabled !== false) {
+      writer.uint32(8).bool(message.enabled);
+    }
+    if (message.onPunctuationSeconds !== 0) {
+      writer.uint32(17).double(message.onPunctuationSeconds);
+    }
+    if (message.onNoPunctuationSeconds !== 0) {
+      writer.uint32(25).double(message.onNoPunctuationSeconds);
+    }
+    if (message.onNumberSeconds !== 0) {
+      writer.uint32(33).double(message.onNumberSeconds);
+    }
+    if (message.waitSeconds !== 0) {
+      writer.uint32(41).double(message.waitSeconds);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): ClientSpeakingPlanRuntime {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseClientSpeakingPlanRuntime();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 8) {
+            break;
+          }
+
+          message.enabled = reader.bool();
+          continue;
+        }
+        case 2: {
+          if (tag !== 17) {
+            break;
+          }
+
+          message.onPunctuationSeconds = reader.double();
+          continue;
+        }
+        case 3: {
+          if (tag !== 25) {
+            break;
+          }
+
+          message.onNoPunctuationSeconds = reader.double();
+          continue;
+        }
+        case 4: {
+          if (tag !== 33) {
+            break;
+          }
+
+          message.onNumberSeconds = reader.double();
+          continue;
+        }
+        case 5: {
+          if (tag !== 41) {
+            break;
+          }
+
+          message.waitSeconds = reader.double();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): ClientSpeakingPlanRuntime {
+    return {
+      enabled: isSet(object.enabled) ? globalThis.Boolean(object.enabled) : false,
+      onPunctuationSeconds: isSet(object.onPunctuationSeconds)
+        ? globalThis.Number(object.onPunctuationSeconds)
+        : isSet(object.on_punctuation_seconds)
+        ? globalThis.Number(object.on_punctuation_seconds)
+        : 0,
+      onNoPunctuationSeconds: isSet(object.onNoPunctuationSeconds)
+        ? globalThis.Number(object.onNoPunctuationSeconds)
+        : isSet(object.on_no_punctuation_seconds)
+        ? globalThis.Number(object.on_no_punctuation_seconds)
+        : 0,
+      onNumberSeconds: isSet(object.onNumberSeconds)
+        ? globalThis.Number(object.onNumberSeconds)
+        : isSet(object.on_number_seconds)
+        ? globalThis.Number(object.on_number_seconds)
+        : 0,
+      waitSeconds: isSet(object.waitSeconds)
+        ? globalThis.Number(object.waitSeconds)
+        : isSet(object.wait_seconds)
+        ? globalThis.Number(object.wait_seconds)
+        : 0,
+    };
+  },
+
+  toJSON(message: ClientSpeakingPlanRuntime): unknown {
+    const obj: any = {};
+    if (message.enabled !== false) {
+      obj.enabled = message.enabled;
+    }
+    if (message.onPunctuationSeconds !== 0) {
+      obj.onPunctuationSeconds = message.onPunctuationSeconds;
+    }
+    if (message.onNoPunctuationSeconds !== 0) {
+      obj.onNoPunctuationSeconds = message.onNoPunctuationSeconds;
+    }
+    if (message.onNumberSeconds !== 0) {
+      obj.onNumberSeconds = message.onNumberSeconds;
+    }
+    if (message.waitSeconds !== 0) {
+      obj.waitSeconds = message.waitSeconds;
+    }
+    return obj;
+  },
+
+  create(base?: DeepPartial<ClientSpeakingPlanRuntime>): ClientSpeakingPlanRuntime {
+    return ClientSpeakingPlanRuntime.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<ClientSpeakingPlanRuntime>): ClientSpeakingPlanRuntime {
+    const message = createBaseClientSpeakingPlanRuntime();
+    message.enabled = object.enabled ?? false;
+    message.onPunctuationSeconds = object.onPunctuationSeconds ?? 0;
+    message.onNoPunctuationSeconds = object.onNoPunctuationSeconds ?? 0;
+    message.onNumberSeconds = object.onNumberSeconds ?? 0;
+    message.waitSeconds = object.waitSeconds ?? 0;
     return message;
   },
 };

@@ -533,6 +533,18 @@ message SpeechPolicyRuntime {
   optional double eot_on_number_secs = 3 [
     (buf.validate.field).double = {gte: 0 lte: 3}
   ];
+  // New voice originals only; absence preserves the previous native policy.
+  ClientSpeakingPlanRuntime client_speaking_plan = 4;
+}
+
+message ClientSpeakingPlanRuntime {
+  bool enabled = 1;
+  // Select one minimum transcription wait; never sum these three timers.
+  double on_punctuation_seconds = 2 [(buf.validate.field).double = {gte: 0 lte: 3}];
+  double on_no_punctuation_seconds = 3 [(buf.validate.field).double = {gte: 0 lte: 3}];
+  double on_number_seconds = 4 [(buf.validate.field).double = {gte: 0 lte: 3}];
+  // Applied after the first synthesized audio is ready, before first playback.
+  double wait_seconds = 5 [(buf.validate.field).double = {gte: 0 lte: 5}];
 }
 
 message CallLimitsRuntime {

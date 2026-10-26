@@ -206,8 +206,10 @@ type SttRuntime struct {
 	Multilingual *bool   `protobuf:"varint,6,opt,name=multilingual,proto3,oneof" json:"multilingual,omitempty"`
 	// Soniox speaker labels; independent of background voice cancellation.
 	SpeakerDiarization *bool `protobuf:"varint,8,opt,name=speaker_diarization,json=speakerDiarization,proto3,oneof" json:"speaker_diarization,omitempty"`
-	unknownFields      protoimpl.UnknownFields
-	sizeCache          protoimpl.SizeCache
+	// Original-pinned settings. Absence preserves legacy client/native behavior.
+	SonioxEndpointing *SonioxEndpointingRuntime `protobuf:"bytes,9,opt,name=soniox_endpointing,json=sonioxEndpointing,proto3" json:"soniox_endpointing,omitempty"`
+	unknownFields     protoimpl.UnknownFields
+	sizeCache         protoimpl.SizeCache
 }
 
 func (x *SttRuntime) Reset() {
@@ -307,6 +309,13 @@ func (x *SttRuntime) GetSpeakerDiarization() bool {
 	return false
 }
 
+func (x *SttRuntime) GetSonioxEndpointing() *SonioxEndpointingRuntime {
+	if x != nil {
+		return x.SonioxEndpointing
+	}
+	return nil
+}
+
 type isSttRuntime_Credential interface {
 	isSttRuntime_Credential()
 }
@@ -324,6 +333,75 @@ func (*SttRuntime_ApiKey) isSttRuntime_Credential() {}
 
 func (*SttRuntime_LeaseId) isSttRuntime_Credential() {}
 
+type SonioxEndpointingRuntime struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// False retains existing client/native turn selection and SDK provider defaults.
+	ServerTurnDetection    bool    `protobuf:"varint,1,opt,name=server_turn_detection,json=serverTurnDetection,proto3" json:"server_turn_detection,omitempty"`
+	LatencyAdjustmentLevel uint32  `protobuf:"varint,2,opt,name=latency_adjustment_level,json=latencyAdjustmentLevel,proto3" json:"latency_adjustment_level,omitempty"`
+	Sensitivity            float64 `protobuf:"fixed64,3,opt,name=sensitivity,proto3" json:"sensitivity,omitempty"`
+	MaxDelayMs             uint32  `protobuf:"varint,4,opt,name=max_delay_ms,json=maxDelayMs,proto3" json:"max_delay_ms,omitempty"`
+	unknownFields          protoimpl.UnknownFields
+	sizeCache              protoimpl.SizeCache
+}
+
+func (x *SonioxEndpointingRuntime) Reset() {
+	*x = SonioxEndpointingRuntime{}
+	mi := &file_port_api_v1_voice_runtime_proto_msgTypes[3]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SonioxEndpointingRuntime) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SonioxEndpointingRuntime) ProtoMessage() {}
+
+func (x *SonioxEndpointingRuntime) ProtoReflect() protoreflect.Message {
+	mi := &file_port_api_v1_voice_runtime_proto_msgTypes[3]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SonioxEndpointingRuntime.ProtoReflect.Descriptor instead.
+func (*SonioxEndpointingRuntime) Descriptor() ([]byte, []int) {
+	return file_port_api_v1_voice_runtime_proto_rawDescGZIP(), []int{3}
+}
+
+func (x *SonioxEndpointingRuntime) GetServerTurnDetection() bool {
+	if x != nil {
+		return x.ServerTurnDetection
+	}
+	return false
+}
+
+func (x *SonioxEndpointingRuntime) GetLatencyAdjustmentLevel() uint32 {
+	if x != nil {
+		return x.LatencyAdjustmentLevel
+	}
+	return 0
+}
+
+func (x *SonioxEndpointingRuntime) GetSensitivity() float64 {
+	if x != nil {
+		return x.Sensitivity
+	}
+	return 0
+}
+
+func (x *SonioxEndpointingRuntime) GetMaxDelayMs() uint32 {
+	if x != nil {
+		return x.MaxDelayMs
+	}
+	return 0
+}
+
 type LlmRuntime struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// Types that are valid to be assigned to Credential:
@@ -340,7 +418,7 @@ type LlmRuntime struct {
 
 func (x *LlmRuntime) Reset() {
 	*x = LlmRuntime{}
-	mi := &file_port_api_v1_voice_runtime_proto_msgTypes[3]
+	mi := &file_port_api_v1_voice_runtime_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -352,7 +430,7 @@ func (x *LlmRuntime) String() string {
 func (*LlmRuntime) ProtoMessage() {}
 
 func (x *LlmRuntime) ProtoReflect() protoreflect.Message {
-	mi := &file_port_api_v1_voice_runtime_proto_msgTypes[3]
+	mi := &file_port_api_v1_voice_runtime_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -365,7 +443,7 @@ func (x *LlmRuntime) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use LlmRuntime.ProtoReflect.Descriptor instead.
 func (*LlmRuntime) Descriptor() ([]byte, []int) {
-	return file_port_api_v1_voice_runtime_proto_rawDescGZIP(), []int{3}
+	return file_port_api_v1_voice_runtime_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *LlmRuntime) GetCredential() isLlmRuntime_Credential {
@@ -441,7 +519,7 @@ type TtsRuntime struct {
 
 func (x *TtsRuntime) Reset() {
 	*x = TtsRuntime{}
-	mi := &file_port_api_v1_voice_runtime_proto_msgTypes[4]
+	mi := &file_port_api_v1_voice_runtime_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -453,7 +531,7 @@ func (x *TtsRuntime) String() string {
 func (*TtsRuntime) ProtoMessage() {}
 
 func (x *TtsRuntime) ProtoReflect() protoreflect.Message {
-	mi := &file_port_api_v1_voice_runtime_proto_msgTypes[4]
+	mi := &file_port_api_v1_voice_runtime_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -466,7 +544,7 @@ func (x *TtsRuntime) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TtsRuntime.ProtoReflect.Descriptor instead.
 func (*TtsRuntime) Descriptor() ([]byte, []int) {
-	return file_port_api_v1_voice_runtime_proto_rawDescGZIP(), []int{4}
+	return file_port_api_v1_voice_runtime_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *TtsRuntime) GetCredential() isTtsRuntime_Credential {
@@ -557,7 +635,7 @@ const file_port_api_v1_voice_runtime_proto_rawDesc = "" +
 	"\x03llm\x18\x02 \x01(\v2\x17.port.api.v1.LlmRuntimeR\x03llm\x12)\n" +
 	"\x03tts\x18\x03 \x01(\v2\x17.port.api.v1.TtsRuntimeR\x03tts:\x92\x03\xbaH\x8e\x03\x1a\x94\x01\n" +
 	"\x19resolved_runtime.nonempty\x12Fa resolved grant must contain at least one authorized original runtime\x1a/has(this.stt) || has(this.llm) || has(this.tts)\x1a\xf4\x01\n" +
-	"\x1cresolved_runtime.credentials\x12Nresolved runtimes must contain actual credentials rather than lease references\x1a\x83\x01(!has(this.stt) || has(this.stt.api_key)) && (!has(this.llm) || has(this.llm.api_key)) && (!has(this.tts) || has(this.tts.api_key))\"\xa6\x03\n" +
+	"\x1cresolved_runtime.credentials\x12Nresolved runtimes must contain actual credentials rather than lease references\x1a\x83\x01(!has(this.stt) || has(this.stt.api_key)) && (!has(this.llm) || has(this.llm.api_key)) && (!has(this.tts) || has(this.tts.api_key))\"\xb4\x05\n" +
 	"\n" +
 	"SttRuntime\x12\"\n" +
 	"\aapi_key\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01H\x00R\x06apiKey\x12$\n" +
@@ -567,12 +645,20 @@ const file_port_api_v1_voice_runtime_proto_rawDesc = "" +
 	"\bkeyterms\x18\x04 \x03(\tB\f\xbaH\t\x92\x01\x06\"\x04r\x02\x10\x01R\bkeyterms\x126\n" +
 	"\bprovider\x18\x05 \x01(\tB\x15\xbaH\x12\xc8\x01\x01r\rR\x06sonioxR\x03xaiH\x01R\bprovider\x88\x01\x01\x12'\n" +
 	"\fmultilingual\x18\x06 \x01(\bH\x02R\fmultilingual\x88\x01\x01\x124\n" +
-	"\x13speaker_diarization\x18\b \x01(\bH\x03R\x12speakerDiarization\x88\x01\x01B\x13\n" +
+	"\x13speaker_diarization\x18\b \x01(\bH\x03R\x12speakerDiarization\x88\x01\x01\x12T\n" +
+	"\x12soniox_endpointing\x18\t \x01(\v2%.port.api.v1.SonioxEndpointingRuntimeR\x11sonioxEndpointing:\xb5\x01\xbaH\xb1\x01\x1a\xae\x01\n" +
+	"\x1fstt.soniox_endpointing_provider\x127Soniox endpointing settings require the Soniox provider\x1aR!has(this.soniox_endpointing) || (has(this.provider) && this.provider == 'soniox')B\x13\n" +
 	"\n" +
 	"credential\x12\x05\xbaH\x02\b\x01B\v\n" +
 	"\t_providerB\x0f\n" +
 	"\r_multilingualB\x16\n" +
-	"\x14_speaker_diarization\"\xd3\x01\n" +
+	"\x14_speaker_diarization\"\xfb\x01\n" +
+	"\x18SonioxEndpointingRuntime\x122\n" +
+	"\x15server_turn_detection\x18\x01 \x01(\bR\x13serverTurnDetection\x12A\n" +
+	"\x18latency_adjustment_level\x18\x02 \x01(\rB\a\xbaH\x04*\x02\x18\x03R\x16latencyAdjustmentLevel\x129\n" +
+	"\vsensitivity\x18\x03 \x01(\x01B\x17\xbaH\x14\x12\x12\x19\x00\x00\x00\x00\x00\x00\xf0?)\x00\x00\x00\x00\x00\x00\xf0\xbfR\vsensitivity\x12-\n" +
+	"\fmax_delay_ms\x18\x04 \x01(\rB\v\xbaH\b*\x06\x18\xb8\x17(\xf4\x03R\n" +
+	"maxDelayMs\"\xd3\x01\n" +
 	"\n" +
 	"LlmRuntime\x12\"\n" +
 	"\aapi_key\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01H\x00R\x06apiKey\x12$\n" +
@@ -610,29 +696,31 @@ func file_port_api_v1_voice_runtime_proto_rawDescGZIP() []byte {
 	return file_port_api_v1_voice_runtime_proto_rawDescData
 }
 
-var file_port_api_v1_voice_runtime_proto_msgTypes = make([]protoimpl.MessageInfo, 5)
+var file_port_api_v1_voice_runtime_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
 var file_port_api_v1_voice_runtime_proto_goTypes = []any{
 	(*ResolveLeaseRequest)(nil),        // 0: port.api.v1.ResolveLeaseRequest
 	(*ResolveLeaseResponse)(nil),       // 1: port.api.v1.ResolveLeaseResponse
 	(*SttRuntime)(nil),                 // 2: port.api.v1.SttRuntime
-	(*LlmRuntime)(nil),                 // 3: port.api.v1.LlmRuntime
-	(*TtsRuntime)(nil),                 // 4: port.api.v1.TtsRuntime
-	(*RuntimeAuthorization)(nil),       // 5: port.api.v1.RuntimeAuthorization
-	(*RuntimeHelperAuthorization)(nil), // 6: port.api.v1.RuntimeHelperAuthorization
+	(*SonioxEndpointingRuntime)(nil),   // 3: port.api.v1.SonioxEndpointingRuntime
+	(*LlmRuntime)(nil),                 // 4: port.api.v1.LlmRuntime
+	(*TtsRuntime)(nil),                 // 5: port.api.v1.TtsRuntime
+	(*RuntimeAuthorization)(nil),       // 6: port.api.v1.RuntimeAuthorization
+	(*RuntimeHelperAuthorization)(nil), // 7: port.api.v1.RuntimeHelperAuthorization
 }
 var file_port_api_v1_voice_runtime_proto_depIdxs = []int32{
-	5, // 0: port.api.v1.ResolveLeaseRequest.owner:type_name -> port.api.v1.RuntimeAuthorization
-	6, // 1: port.api.v1.ResolveLeaseRequest.helper_authorization:type_name -> port.api.v1.RuntimeHelperAuthorization
+	6, // 0: port.api.v1.ResolveLeaseRequest.owner:type_name -> port.api.v1.RuntimeAuthorization
+	7, // 1: port.api.v1.ResolveLeaseRequest.helper_authorization:type_name -> port.api.v1.RuntimeHelperAuthorization
 	2, // 2: port.api.v1.ResolveLeaseResponse.stt:type_name -> port.api.v1.SttRuntime
-	3, // 3: port.api.v1.ResolveLeaseResponse.llm:type_name -> port.api.v1.LlmRuntime
-	4, // 4: port.api.v1.ResolveLeaseResponse.tts:type_name -> port.api.v1.TtsRuntime
-	0, // 5: port.api.v1.VoiceRuntimeService.ResolveLease:input_type -> port.api.v1.ResolveLeaseRequest
-	1, // 6: port.api.v1.VoiceRuntimeService.ResolveLease:output_type -> port.api.v1.ResolveLeaseResponse
-	6, // [6:7] is the sub-list for method output_type
-	5, // [5:6] is the sub-list for method input_type
-	5, // [5:5] is the sub-list for extension type_name
-	5, // [5:5] is the sub-list for extension extendee
-	0, // [0:5] is the sub-list for field type_name
+	4, // 3: port.api.v1.ResolveLeaseResponse.llm:type_name -> port.api.v1.LlmRuntime
+	5, // 4: port.api.v1.ResolveLeaseResponse.tts:type_name -> port.api.v1.TtsRuntime
+	3, // 5: port.api.v1.SttRuntime.soniox_endpointing:type_name -> port.api.v1.SonioxEndpointingRuntime
+	0, // 6: port.api.v1.VoiceRuntimeService.ResolveLease:input_type -> port.api.v1.ResolveLeaseRequest
+	1, // 7: port.api.v1.VoiceRuntimeService.ResolveLease:output_type -> port.api.v1.ResolveLeaseResponse
+	7, // [7:8] is the sub-list for method output_type
+	6, // [6:7] is the sub-list for method input_type
+	6, // [6:6] is the sub-list for extension type_name
+	6, // [6:6] is the sub-list for extension extendee
+	0, // [0:6] is the sub-list for field type_name
 }
 
 func init() { file_port_api_v1_voice_runtime_proto_init() }
@@ -649,11 +737,11 @@ func file_port_api_v1_voice_runtime_proto_init() {
 		(*SttRuntime_ApiKey)(nil),
 		(*SttRuntime_LeaseId)(nil),
 	}
-	file_port_api_v1_voice_runtime_proto_msgTypes[3].OneofWrappers = []any{
+	file_port_api_v1_voice_runtime_proto_msgTypes[4].OneofWrappers = []any{
 		(*LlmRuntime_ApiKey)(nil),
 		(*LlmRuntime_LeaseId)(nil),
 	}
-	file_port_api_v1_voice_runtime_proto_msgTypes[4].OneofWrappers = []any{
+	file_port_api_v1_voice_runtime_proto_msgTypes[5].OneofWrappers = []any{
 		(*TtsRuntime_ApiKey)(nil),
 		(*TtsRuntime_LeaseId)(nil),
 	}
@@ -663,7 +751,7 @@ func file_port_api_v1_voice_runtime_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_port_api_v1_voice_runtime_proto_rawDesc), len(file_port_api_v1_voice_runtime_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   5,
+			NumMessages:   6,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
