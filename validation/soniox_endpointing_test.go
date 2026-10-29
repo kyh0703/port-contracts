@@ -17,6 +17,7 @@ func sonioxPolicyRuntime(policy *apiv1.SonioxEndpointingRuntime) *apiv1.SttRunti
 }
 
 func TestSonioxEndpointingValidation(t *testing.T) {
+	t.Parallel()
 	if err := Validate(sonioxPolicyRuntime(nil)); err != nil {
 		t.Fatalf("legacy absent policy must remain valid: %v", err)
 	}

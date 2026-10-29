@@ -8,6 +8,7 @@ import (
 )
 
 func TestToolMessageVariants(t *testing.T) {
+	t.Parallel()
 	for _, count := range []int{1, 2, 10, 11} {
 		items := make([]*apiv1.ApiToolMessage, count)
 		for i := range items {
@@ -29,6 +30,7 @@ func TestToolMessageVariants(t *testing.T) {
 }
 
 func TestToolMessageVariantsAllStages(t *testing.T) {
+	t.Parallel()
 	var items []*apiv1.ApiToolMessage
 	for _, stage := range []string{"request-start", "request-complete", "request-failed", "request-response-delayed"} {
 		for range 10 {
@@ -41,6 +43,7 @@ func TestToolMessageVariantsAllStages(t *testing.T) {
 }
 
 func TestToolMessageBehavior(t *testing.T) {
+	t.Parallel()
 	for _, tc := range []struct {
 		name    string
 		message *apiv1.ApiToolMessage

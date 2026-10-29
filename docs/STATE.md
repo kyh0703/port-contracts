@@ -3,6 +3,13 @@
 current_version: contracts-8.2.0
 last_updated: 2026-10-21
 
+## Parallel validation tests
+
+- Independent Go contract validation tests use `t.Parallel()`; shared subtests
+  retain their order. `go test -race -count=1 ./...` passed.
+- Node 24 wire tests passed through `npm run test:wire`; publication and
+  deployment were not performed.
+
 ## Agent-generated opening — source only
 
 - Removed `PublishedAgentNodeRuntime.greeting` and reserved field 17 and its name.

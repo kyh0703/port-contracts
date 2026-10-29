@@ -9,6 +9,7 @@ import (
 )
 
 func TestNumberEndingWaitValidation(t *testing.T) {
+	t.Parallel()
 	policy := &apiv1.SpeechPolicyRuntime{ResponseSpeed: proto.Float64(1), AllowInterruptions: proto.Bool(true)}
 	if err := Validate(policy); err != nil {
 		t.Fatalf("legacy unset wait must remain valid: %v", err)

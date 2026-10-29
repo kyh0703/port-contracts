@@ -7,6 +7,7 @@ import (
 )
 
 func TestHandoffCollectionValidation(t *testing.T) {
+	t.Parallel()
 	valid := func() *apiv1.HandoffParameter {
 		return &apiv1.HandoffParameter{
 			Name: "휴대폰번호", Type: apiv1.HandoffParameterType_HANDOFF_PARAMETER_TYPE_STRING, Required: true,
@@ -56,6 +57,7 @@ func TestHandoffCollectionValidation(t *testing.T) {
 }
 
 func TestWebFormCollectionFormatConstraints(t *testing.T) {
+	t.Parallel()
 	format := "birthdate"
 	collection := &apiv1.HandoffParameterCollection{
 		Input: "web_form", Digits: 8, Prompt: "생년월일", TimeoutSeconds: 60, Format: &format,
@@ -84,6 +86,7 @@ func TestWebFormCollectionFormatConstraints(t *testing.T) {
 }
 
 func TestCollectionRevisionR2OnBootstrap(t *testing.T) {
+	t.Parallel()
 	request := validPublishedRequest()
 	request.ContractRevision = "execution-publication-2026-09-15-r2"
 	if err := Validate(request); err != nil {

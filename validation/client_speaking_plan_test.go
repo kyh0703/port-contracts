@@ -15,6 +15,7 @@ func clientSpeechPolicy(plan *apiv1.ClientSpeakingPlanRuntime) *apiv1.SpeechPoli
 }
 
 func TestClientSpeakingPlanValidation(t *testing.T) {
+	t.Parallel()
 	for _, plan := range []*apiv1.ClientSpeakingPlanRuntime{
 		nil,
 		{Enabled: true},

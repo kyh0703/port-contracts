@@ -8,6 +8,7 @@ import (
 )
 
 func TestIdleMessageValidation(t *testing.T) {
+	t.Parallel()
 	for _, mode := range []string{"exact", "prompt"} {
 		for _, reset := range []bool{false, true} {
 			valid := &apiv1.IdleMessageRuntime{Mode: mode, Message: "  여보세요?\n  ", TimeoutSeconds: 10, MaxCount: 1, ResetOnUserSpeech: reset}

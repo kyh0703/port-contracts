@@ -14,12 +14,14 @@ import (
 const publicationContractRevision = "execution-publication-2026-09-04-r1"
 
 func TestValidateRejectsMissingRequiredFields(t *testing.T) {
+	t.Parallel()
 	if err := Validate(&apiv1.RecordGatewayEventRequest{}); err == nil {
 		t.Fatal("Validate() error = nil, want validation error")
 	}
 }
 
 func TestValidateAcceptsValidGatewayEvent(t *testing.T) {
+	t.Parallel()
 	err := Validate(&apiv1.RecordGatewayEventRequest{
 		EventType:      apiv1.GatewayLifecycleEventType_GATEWAY_LIFECYCLE_EVENT_TYPE_AGENT_STARTED,
 		ConversationId: "conversation-1",
@@ -32,6 +34,7 @@ func TestValidateAcceptsValidGatewayEvent(t *testing.T) {
 }
 
 func TestSttRuntimeProviderValidation(t *testing.T) {
+	t.Parallel()
 	for _, tt := range []struct {
 		name     string
 		provider *string
@@ -63,6 +66,7 @@ func TestSttRuntimeProviderValidation(t *testing.T) {
 }
 
 func TestKnowledgeToolMetadataValidation(t *testing.T) {
+	t.Parallel()
 	valid := &apiv1.NodeToolMetadata{
 		ToolId: "knowledge-search",
 		Kind:   "knowledge",
@@ -94,6 +98,7 @@ func TestKnowledgeToolMetadataValidation(t *testing.T) {
 }
 
 func TestBuiltInToolValidation(t *testing.T) {
+	t.Parallel()
 	valid := []*apiv1.BuiltInTool{
 		{Config: &apiv1.BuiltInTool_Dtmf{Dtmf: &apiv1.DtmfTool{}}},
 		{Config: &apiv1.BuiltInTool_SendSms{SendSms: &apiv1.SendSmsTool{
@@ -125,6 +130,7 @@ func TestBuiltInToolValidation(t *testing.T) {
 }
 
 func TestExecutionSessionServiceExposesBootstrapAndTransferControl(t *testing.T) {
+	t.Parallel()
 	descriptor, err := protoregistry.GlobalFiles.FindDescriptorByName("port.api.v1.ExecutionSessionService")
 	if err != nil {
 		t.Fatal(err)
@@ -157,6 +163,7 @@ func TestExecutionSessionServiceExposesBootstrapAndTransferControl(t *testing.T)
 }
 
 func TestPublishedBootstrapRequestValidation(t *testing.T) {
+	t.Parallel()
 	valid := validPublishedRequest()
 	if err := Validate(valid); err != nil {
 		t.Fatalf("Validate(valid request) = %v", err)
@@ -188,6 +195,7 @@ func TestPublishedBootstrapRequestValidation(t *testing.T) {
 }
 
 func TestPreparedMainBootstrapValidation(t *testing.T) {
+	t.Parallel()
 	for _, revision := range []string{publicationContractRevision, "execution-publication-2026-09-15-r2"} {
 		t.Run(revision, func(t *testing.T) {
 			request := validPublishedRequest()
@@ -261,6 +269,7 @@ func TestPreparedMainBootstrapValidation(t *testing.T) {
 }
 
 func TestSipCallerPhoneNumberValidation(t *testing.T) {
+	t.Parallel()
 	for _, tt := range []struct {
 		name  string
 		phone *string
@@ -302,6 +311,7 @@ func validSipPublishedRequest() *apiv1.BootstrapPublishedRequest {
 }
 
 func TestPublishedAgentTextResponseValidation(t *testing.T) {
+	t.Parallel()
 	valid := validAgentTextResponse()
 	if err := Validate(valid); err != nil {
 		t.Fatalf("Validate(valid agent text response) = %v", err)
@@ -332,6 +342,7 @@ func TestPublishedAgentTextResponseValidation(t *testing.T) {
 }
 
 func TestPublishedVoiceRuntimeRequiresAllComponents(t *testing.T) {
+	t.Parallel()
 	valid := validAgentVoiceResponse()
 	if err := Validate(valid); err != nil {
 		t.Fatalf("Validate(valid agent voice response) = %v", err)
@@ -365,6 +376,7 @@ func TestPublishedVoiceRuntimeRequiresAllComponents(t *testing.T) {
 }
 
 func TestConversationFillerRuntimeValidation(t *testing.T) {
+	t.Parallel()
 	tests := []struct {
 		name   string
 		phrase string
@@ -394,6 +406,7 @@ func TestConversationFillerRuntimeValidation(t *testing.T) {
 }
 
 func TestConversationControlRuntimeValidation(t *testing.T) {
+	t.Parallel()
 	valid := validCallRuntime()
 	if err := Validate(valid); err != nil {
 		t.Fatalf("Validate(valid conversation control) = %v, want nil", err)
@@ -434,6 +447,7 @@ func TestConversationControlRuntimeValidation(t *testing.T) {
 }
 
 func TestPublishedAgentValidation(t *testing.T) {
+	t.Parallel()
 	for _, valid := range []*apiv1.BootstrapPublishedResponse{
 		validSupervisorTextResponse(),
 		validHandoffTextResponse(),
@@ -522,6 +536,7 @@ func TestPublishedAgentValidation(t *testing.T) {
 }
 
 func TestPublishedSoloSupervisorValidation(t *testing.T) {
+	t.Parallel()
 	tests := []struct {
 		name     string
 		response func() *apiv1.BootstrapPublishedResponse
@@ -560,6 +575,7 @@ func TestPublishedSoloSupervisorValidation(t *testing.T) {
 }
 
 func TestPublishedAgentPromptConfigSnapshotValidation(t *testing.T) {
+	t.Parallel()
 	valid := validHandoffTextResponse()
 	valid.GetAgent().PromptConfig = &apiv1.AgentPromptConfigSnapshot{
 		Revision:          4,
@@ -597,6 +613,7 @@ func TestPublishedAgentPromptConfigSnapshotValidation(t *testing.T) {
 }
 
 func TestSessionPromptVariableBagValidation(t *testing.T) {
+	t.Parallel()
 	valid := &apiv1.SessionPromptVariableBag{
 		System: []*apiv1.SessionPromptVariable{
 			{Name: "customer.number", Value: &apiv1.SessionPromptVariable_StringValue{StringValue: "+821012345678"}},
@@ -649,6 +666,7 @@ func TestSessionPromptVariableBagValidation(t *testing.T) {
 }
 
 func TestPublishedBootstrapWireRoundTrip(t *testing.T) {
+	t.Parallel()
 	for _, source := range []proto.Message{
 		validPublishedRequest(),
 		validSipPublishedRequest(),
@@ -840,6 +858,7 @@ func validHandoffTextResponse() *apiv1.BootstrapPublishedResponse {
 }
 
 func TestTransferCommandRequiresOperationBinding(t *testing.T) {
+	t.Parallel()
 	for _, tc := range []struct {
 		name, action, node, attempt, consultant string
 		valid                                   bool
@@ -861,6 +880,7 @@ func TestTransferCommandRequiresOperationBinding(t *testing.T) {
 }
 
 func TestTransferPolicyValidation(t *testing.T) {
+	t.Parallel()
 	for _, tc := range []struct {
 		name    string
 		mode    *string
@@ -884,6 +904,7 @@ func TestTransferPolicyValidation(t *testing.T) {
 }
 
 func TestPublishedBootstrapRequiresScopedRuntimeAuthority(t *testing.T) {
+	t.Parallel()
 	for _, tc := range []struct {
 		name   string
 		text   bool
@@ -920,6 +941,7 @@ func TestPublishedBootstrapRequiresScopedRuntimeAuthority(t *testing.T) {
 }
 
 func TestTransferAcceptRequiresConsentSource(t *testing.T) {
+	t.Parallel()
 	request := &apiv1.CommandSipTransferRequest{Authority: &apiv1.CommandSipTransferRequest_Owner{Owner: validRuntimeOwner()}, ConversationId: "conversation", SessionId: "session", RequestId: "request", Action: "accept", AttemptId: "attempt", ConsultantIdentity: "consultant"}
 	if err := Validate(request); err == nil {
 		t.Fatal("accept without consent source must fail")
@@ -927,6 +949,7 @@ func TestTransferAcceptRequiresConsentSource(t *testing.T) {
 }
 
 func TestTransferResponseDeadlineValidation(t *testing.T) {
+	t.Parallel()
 	for _, tc := range []struct {
 		deadline string
 		valid    bool
