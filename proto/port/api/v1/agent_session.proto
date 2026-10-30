@@ -27,6 +27,7 @@ service ExecutionSessionService {
   rpc RecordRuntimeUsage(RecordRuntimeUsageRequest) returns (RecordRuntimeUsageResponse);
   rpc ReadRuntimeKnowledge(ReadRuntimeKnowledgeRequest) returns (ReadRuntimeKnowledgeResponse);
   rpc ReadRuntimeContext(ReadRuntimeContextRequest) returns (ReadRuntimeContextResponse);
+  rpc SearchRuntimeAddress(SearchRuntimeAddressRequest) returns (SearchRuntimeAddressResponse);
 }
 
 // Worker-only commands; the API derives fields and recipient from the pinned
@@ -719,6 +720,7 @@ message BuiltInTool {
     DtmfTool dtmf = 3;
     SendSmsTool send_sms = 4;
     SpeakerTool speaker = 5;
+    SearchAddressTool search_address = 7;
   }
 }
 
@@ -757,6 +759,12 @@ message SpeakerTool {
   string script = 2 [(buf.validate.field).string = {min_len: 1 max_len: 20000 pattern: "\\S"}];
   string consent_question = 3 [(buf.validate.field).string = {min_len: 1 max_len: 1000 pattern: "\\S"}];
   uint32 response_timeout_seconds = 4 [(buf.validate.field).uint32 = {gte: 5 lte: 120}];
+}
+
+// Read-only Korea address/place lookup bound to the original flat tool root.
+message SearchAddressTool {
+  string condition = 1 [(buf.validate.field).string = {min_len: 1 max_len: 1000 pattern: "\\S"}];
+  string tool_reference = 2 [(buf.validate.field).string = {min_len: 1 max_len: 256 pattern: "\\S"}];
 }
 
 message McpServerRuntime {
@@ -1109,5 +1117,21 @@ message ReadRuntimeContextRequest {
 message ReadRuntimeContextResponse {
   // Versioned source citations and consent-scoped memory are reference data.
   // The entire UTF-8 JSON result, including metadata, fits the requested budget.
+  string result_json = 1 [(buf.validate.field).string = {min_bytes: 1 max_bytes: 16384}];
+}
+
+message SearchRuntimeAddressRequest {
+  RuntimeAuthorization owner = 1 [(buf.validate.field).required = true];
+  string node_id = 2 [(buf.validate.field).string = {min_len: 1 max_len: 256 pattern: "\\S"}];
+  string tool_reference = 3 [(buf.validate.field).string = {min_len: 1 max_len: 256 pattern: "\\S"}];
+  string query = 4 [(buf.validate.field).string = {
+    min_len: 1 max_len: 300 max_bytes: 1200
+    pattern: "^[^\\p{Cc}]*[^\\p{Z}\\p{Cc}\\x{FEFF}][^\\p{Cc}]*$"
+  }];
+  string search_type = 5 [(buf.validate.field).string = {in: ["address", "place"]}];
+}
+
+message SearchRuntimeAddressResponse {
+  // AddressSearchResult JSON: untrusted candidates, never confirmed or saved.
   string result_json = 1 [(buf.validate.field).string = {min_bytes: 1 max_bytes: 16384}];
 }

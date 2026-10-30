@@ -1,7 +1,23 @@
 # State
 
-current_version: contracts-8.2.0
-last_updated: 2026-10-21
+current_version: contracts-10.4.0
+last_updated: 2026-10-30
+
+## 한국 주소·장소 검색 — 10.4.0, 격리 검증
+
+- `BuiltInTool.search_address`는 새 field 7이며 기존 field 1–6은 유지한다.
+  `SearchAddressTool`은 호출 조건과 원래 flat 도구의 `tool_reference`만 전달한다.
+- 새 worker 전용 `SearchRuntimeAddress`는 owner·node·tool reference와
+  `query`·`search_type`을 받고 최대 16KiB의 `AddressSearchResult` JSON을 반환한다.
+  공급자 키·URL·좌표는 이 계약에 포함하지 않는다.
+- Buf lint·TS/Go/Python 생성·TypeScript 빌드·53개 wire 테스트와 새 Go validation
+  회귀가 통과했다. 실제 generated gRPC server/client smoke에서 성공 응답,
+  구 API의 미지원 오류, 클라이언트 취소 전파를 확인했다.
+- API·worker는 같은 `10.4.0` archive를 사용한다. SHA-256:
+  `6ea3aef59fe924c65e41e9fbfbd12fc51b6b3056c00de47384b5e12c6f2319af`.
+  두 소비자의 TypeScript 검사와 API bootstrap projection 33개 테스트가 통과했다.
+- 위 검증은 main 통합 전 작업본에서 수행했다. npm 발행·운영 배포·실제 Kakao 조회는 하지 않았다.
+  운영 호출에는 Local 키/권한과 LLM·대화록·checkpoint 사용 허용 확인이 별도로 필요하다.
 
 ## Parallel validation tests
 

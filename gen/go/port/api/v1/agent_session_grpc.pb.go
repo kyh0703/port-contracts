@@ -36,6 +36,7 @@ const (
 	ExecutionSessionService_RecordRuntimeUsage_FullMethodName       = "/port.api.v1.ExecutionSessionService/RecordRuntimeUsage"
 	ExecutionSessionService_ReadRuntimeKnowledge_FullMethodName     = "/port.api.v1.ExecutionSessionService/ReadRuntimeKnowledge"
 	ExecutionSessionService_ReadRuntimeContext_FullMethodName       = "/port.api.v1.ExecutionSessionService/ReadRuntimeContext"
+	ExecutionSessionService_SearchRuntimeAddress_FullMethodName     = "/port.api.v1.ExecutionSessionService/SearchRuntimeAddress"
 )
 
 // ExecutionSessionServiceClient is the client API for ExecutionSessionService service.
@@ -61,6 +62,7 @@ type ExecutionSessionServiceClient interface {
 	RecordRuntimeUsage(ctx context.Context, in *RecordRuntimeUsageRequest, opts ...grpc.CallOption) (*RecordRuntimeUsageResponse, error)
 	ReadRuntimeKnowledge(ctx context.Context, in *ReadRuntimeKnowledgeRequest, opts ...grpc.CallOption) (*ReadRuntimeKnowledgeResponse, error)
 	ReadRuntimeContext(ctx context.Context, in *ReadRuntimeContextRequest, opts ...grpc.CallOption) (*ReadRuntimeContextResponse, error)
+	SearchRuntimeAddress(ctx context.Context, in *SearchRuntimeAddressRequest, opts ...grpc.CallOption) (*SearchRuntimeAddressResponse, error)
 }
 
 type executionSessionServiceClient struct {
@@ -241,6 +243,16 @@ func (c *executionSessionServiceClient) ReadRuntimeContext(ctx context.Context, 
 	return out, nil
 }
 
+func (c *executionSessionServiceClient) SearchRuntimeAddress(ctx context.Context, in *SearchRuntimeAddressRequest, opts ...grpc.CallOption) (*SearchRuntimeAddressResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(SearchRuntimeAddressResponse)
+	err := c.cc.Invoke(ctx, ExecutionSessionService_SearchRuntimeAddress_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // ExecutionSessionServiceServer is the server API for ExecutionSessionService service.
 // All implementations must embed UnimplementedExecutionSessionServiceServer
 // for forward compatibility.
@@ -264,6 +276,7 @@ type ExecutionSessionServiceServer interface {
 	RecordRuntimeUsage(context.Context, *RecordRuntimeUsageRequest) (*RecordRuntimeUsageResponse, error)
 	ReadRuntimeKnowledge(context.Context, *ReadRuntimeKnowledgeRequest) (*ReadRuntimeKnowledgeResponse, error)
 	ReadRuntimeContext(context.Context, *ReadRuntimeContextRequest) (*ReadRuntimeContextResponse, error)
+	SearchRuntimeAddress(context.Context, *SearchRuntimeAddressRequest) (*SearchRuntimeAddressResponse, error)
 	mustEmbedUnimplementedExecutionSessionServiceServer()
 }
 
@@ -324,6 +337,9 @@ func (UnimplementedExecutionSessionServiceServer) ReadRuntimeKnowledge(context.C
 }
 func (UnimplementedExecutionSessionServiceServer) ReadRuntimeContext(context.Context, *ReadRuntimeContextRequest) (*ReadRuntimeContextResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method ReadRuntimeContext not implemented")
+}
+func (UnimplementedExecutionSessionServiceServer) SearchRuntimeAddress(context.Context, *SearchRuntimeAddressRequest) (*SearchRuntimeAddressResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method SearchRuntimeAddress not implemented")
 }
 func (UnimplementedExecutionSessionServiceServer) mustEmbedUnimplementedExecutionSessionServiceServer() {
 }
@@ -653,6 +669,24 @@ func _ExecutionSessionService_ReadRuntimeContext_Handler(srv interface{}, ctx co
 	return interceptor(ctx, in, info, handler)
 }
 
+func _ExecutionSessionService_SearchRuntimeAddress_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SearchRuntimeAddressRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ExecutionSessionServiceServer).SearchRuntimeAddress(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ExecutionSessionService_SearchRuntimeAddress_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ExecutionSessionServiceServer).SearchRuntimeAddress(ctx, req.(*SearchRuntimeAddressRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // ExecutionSessionService_ServiceDesc is the grpc.ServiceDesc for ExecutionSessionService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -727,6 +761,10 @@ var ExecutionSessionService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ReadRuntimeContext",
 			Handler:    _ExecutionSessionService_ReadRuntimeContext_Handler,
+		},
+		{
+			MethodName: "SearchRuntimeAddress",
+			Handler:    _ExecutionSessionService_SearchRuntimeAddress_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

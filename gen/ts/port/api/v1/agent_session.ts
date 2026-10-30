@@ -782,6 +782,7 @@ export interface BuiltInTool {
   dtmf?: DtmfTool | undefined;
   sendSms?: SendSmsTool | undefined;
   speaker?: SpeakerTool | undefined;
+  searchAddress?: SearchAddressTool | undefined;
 }
 
 export interface EndCallTool {
@@ -820,6 +821,12 @@ export interface SpeakerTool {
   script: string;
   consentQuestion: string;
   responseTimeoutSeconds: number;
+}
+
+/** Read-only Korea address/place lookup bound to the original flat tool root. */
+export interface SearchAddressTool {
+  condition: string;
+  toolReference: string;
 }
 
 export interface McpServerRuntime {
@@ -1136,6 +1143,19 @@ export interface ReadRuntimeContextResponse {
    * Versioned source citations and consent-scoped memory are reference data.
    * The entire UTF-8 JSON result, including metadata, fits the requested budget.
    */
+  resultJson: string;
+}
+
+export interface SearchRuntimeAddressRequest {
+  owner?: RuntimeAuthorization | undefined;
+  nodeId: string;
+  toolReference: string;
+  query: string;
+  searchType: string;
+}
+
+export interface SearchRuntimeAddressResponse {
+  /** AddressSearchResult JSON: untrusted candidates, never confirmed or saved. */
   resultJson: string;
 }
 
@@ -8552,6 +8572,7 @@ function createBaseBuiltInTool(): BuiltInTool {
     dtmf: undefined,
     sendSms: undefined,
     speaker: undefined,
+    searchAddress: undefined,
   };
 }
 
@@ -8574,6 +8595,9 @@ export const BuiltInTool: MessageFns<BuiltInTool> = {
     }
     if (message.speaker !== undefined) {
       SpeakerTool.encode(message.speaker, writer.uint32(42).fork()).join();
+    }
+    if (message.searchAddress !== undefined) {
+      SearchAddressTool.encode(message.searchAddress, writer.uint32(58).fork()).join();
     }
     return writer;
   },
@@ -8633,6 +8657,14 @@ export const BuiltInTool: MessageFns<BuiltInTool> = {
           message.speaker = SpeakerTool.decode(reader, reader.uint32());
           continue;
         }
+        case 7: {
+          if (tag !== 58) {
+            break;
+          }
+
+          message.searchAddress = SearchAddressTool.decode(reader, reader.uint32());
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -8662,6 +8694,11 @@ export const BuiltInTool: MessageFns<BuiltInTool> = {
         ? SendSmsTool.fromJSON(object.send_sms)
         : undefined,
       speaker: isSet(object.speaker) ? SpeakerTool.fromJSON(object.speaker) : undefined,
+      searchAddress: isSet(object.searchAddress)
+        ? SearchAddressTool.fromJSON(object.searchAddress)
+        : isSet(object.search_address)
+        ? SearchAddressTool.fromJSON(object.search_address)
+        : undefined,
     };
   },
 
@@ -8684,6 +8721,9 @@ export const BuiltInTool: MessageFns<BuiltInTool> = {
     }
     if (message.speaker !== undefined) {
       obj.speaker = SpeakerTool.toJSON(message.speaker);
+    }
+    if (message.searchAddress !== undefined) {
+      obj.searchAddress = SearchAddressTool.toJSON(message.searchAddress);
     }
     return obj;
   },
@@ -8708,6 +8748,9 @@ export const BuiltInTool: MessageFns<BuiltInTool> = {
       : undefined;
     message.speaker = (object.speaker !== undefined && object.speaker !== null)
       ? SpeakerTool.fromPartial(object.speaker)
+      : undefined;
+    message.searchAddress = (object.searchAddress !== undefined && object.searchAddress !== null)
+      ? SearchAddressTool.fromPartial(object.searchAddress)
       : undefined;
     return message;
   },
@@ -9239,6 +9282,86 @@ export const SpeakerTool: MessageFns<SpeakerTool> = {
     message.script = object.script ?? "";
     message.consentQuestion = object.consentQuestion ?? "";
     message.responseTimeoutSeconds = object.responseTimeoutSeconds ?? 0;
+    return message;
+  },
+};
+
+function createBaseSearchAddressTool(): SearchAddressTool {
+  return { condition: "", toolReference: "" };
+}
+
+export const SearchAddressTool: MessageFns<SearchAddressTool> = {
+  encode(message: SearchAddressTool, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.condition !== "") {
+      writer.uint32(10).string(message.condition);
+    }
+    if (message.toolReference !== "") {
+      writer.uint32(18).string(message.toolReference);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): SearchAddressTool {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseSearchAddressTool();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.condition = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.toolReference = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): SearchAddressTool {
+    return {
+      condition: isSet(object.condition) ? globalThis.String(object.condition) : "",
+      toolReference: isSet(object.toolReference)
+        ? globalThis.String(object.toolReference)
+        : isSet(object.tool_reference)
+        ? globalThis.String(object.tool_reference)
+        : "",
+    };
+  },
+
+  toJSON(message: SearchAddressTool): unknown {
+    const obj: any = {};
+    if (message.condition !== "") {
+      obj.condition = message.condition;
+    }
+    if (message.toolReference !== "") {
+      obj.toolReference = message.toolReference;
+    }
+    return obj;
+  },
+
+  create(base?: DeepPartial<SearchAddressTool>): SearchAddressTool {
+    return SearchAddressTool.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<SearchAddressTool>): SearchAddressTool {
+    const message = createBaseSearchAddressTool();
+    message.condition = object.condition ?? "";
+    message.toolReference = object.toolReference ?? "";
     return message;
   },
 };
@@ -13953,6 +14076,208 @@ export const ReadRuntimeContextResponse: MessageFns<ReadRuntimeContextResponse> 
   },
 };
 
+function createBaseSearchRuntimeAddressRequest(): SearchRuntimeAddressRequest {
+  return { owner: undefined, nodeId: "", toolReference: "", query: "", searchType: "" };
+}
+
+export const SearchRuntimeAddressRequest: MessageFns<SearchRuntimeAddressRequest> = {
+  encode(message: SearchRuntimeAddressRequest, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.owner !== undefined) {
+      RuntimeAuthorization.encode(message.owner, writer.uint32(10).fork()).join();
+    }
+    if (message.nodeId !== "") {
+      writer.uint32(18).string(message.nodeId);
+    }
+    if (message.toolReference !== "") {
+      writer.uint32(26).string(message.toolReference);
+    }
+    if (message.query !== "") {
+      writer.uint32(34).string(message.query);
+    }
+    if (message.searchType !== "") {
+      writer.uint32(42).string(message.searchType);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): SearchRuntimeAddressRequest {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseSearchRuntimeAddressRequest();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.owner = RuntimeAuthorization.decode(reader, reader.uint32());
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.nodeId = reader.string();
+          continue;
+        }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.toolReference = reader.string();
+          continue;
+        }
+        case 4: {
+          if (tag !== 34) {
+            break;
+          }
+
+          message.query = reader.string();
+          continue;
+        }
+        case 5: {
+          if (tag !== 42) {
+            break;
+          }
+
+          message.searchType = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): SearchRuntimeAddressRequest {
+    return {
+      owner: isSet(object.owner) ? RuntimeAuthorization.fromJSON(object.owner) : undefined,
+      nodeId: isSet(object.nodeId)
+        ? globalThis.String(object.nodeId)
+        : isSet(object.node_id)
+        ? globalThis.String(object.node_id)
+        : "",
+      toolReference: isSet(object.toolReference)
+        ? globalThis.String(object.toolReference)
+        : isSet(object.tool_reference)
+        ? globalThis.String(object.tool_reference)
+        : "",
+      query: isSet(object.query) ? globalThis.String(object.query) : "",
+      searchType: isSet(object.searchType)
+        ? globalThis.String(object.searchType)
+        : isSet(object.search_type)
+        ? globalThis.String(object.search_type)
+        : "",
+    };
+  },
+
+  toJSON(message: SearchRuntimeAddressRequest): unknown {
+    const obj: any = {};
+    if (message.owner !== undefined) {
+      obj.owner = RuntimeAuthorization.toJSON(message.owner);
+    }
+    if (message.nodeId !== "") {
+      obj.nodeId = message.nodeId;
+    }
+    if (message.toolReference !== "") {
+      obj.toolReference = message.toolReference;
+    }
+    if (message.query !== "") {
+      obj.query = message.query;
+    }
+    if (message.searchType !== "") {
+      obj.searchType = message.searchType;
+    }
+    return obj;
+  },
+
+  create(base?: DeepPartial<SearchRuntimeAddressRequest>): SearchRuntimeAddressRequest {
+    return SearchRuntimeAddressRequest.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<SearchRuntimeAddressRequest>): SearchRuntimeAddressRequest {
+    const message = createBaseSearchRuntimeAddressRequest();
+    message.owner = (object.owner !== undefined && object.owner !== null)
+      ? RuntimeAuthorization.fromPartial(object.owner)
+      : undefined;
+    message.nodeId = object.nodeId ?? "";
+    message.toolReference = object.toolReference ?? "";
+    message.query = object.query ?? "";
+    message.searchType = object.searchType ?? "";
+    return message;
+  },
+};
+
+function createBaseSearchRuntimeAddressResponse(): SearchRuntimeAddressResponse {
+  return { resultJson: "" };
+}
+
+export const SearchRuntimeAddressResponse: MessageFns<SearchRuntimeAddressResponse> = {
+  encode(message: SearchRuntimeAddressResponse, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.resultJson !== "") {
+      writer.uint32(10).string(message.resultJson);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): SearchRuntimeAddressResponse {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseSearchRuntimeAddressResponse();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.resultJson = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): SearchRuntimeAddressResponse {
+    return {
+      resultJson: isSet(object.resultJson)
+        ? globalThis.String(object.resultJson)
+        : isSet(object.result_json)
+        ? globalThis.String(object.result_json)
+        : "",
+    };
+  },
+
+  toJSON(message: SearchRuntimeAddressResponse): unknown {
+    const obj: any = {};
+    if (message.resultJson !== "") {
+      obj.resultJson = message.resultJson;
+    }
+    return obj;
+  },
+
+  create(base?: DeepPartial<SearchRuntimeAddressResponse>): SearchRuntimeAddressResponse {
+    return SearchRuntimeAddressResponse.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<SearchRuntimeAddressResponse>): SearchRuntimeAddressResponse {
+    const message = createBaseSearchRuntimeAddressResponse();
+    message.resultJson = object.resultJson ?? "";
+    return message;
+  },
+};
+
 /** ExecutionSessionService is the worker-only API boundary for LiveKit jobs. */
 export type ExecutionSessionServiceService = typeof ExecutionSessionServiceService;
 export const ExecutionSessionServiceService = {
@@ -14146,6 +14471,17 @@ export const ExecutionSessionServiceService = {
       Buffer.from(ReadRuntimeContextResponse.encode(value).finish()),
     responseDeserialize: (value: Buffer): ReadRuntimeContextResponse => ReadRuntimeContextResponse.decode(value),
   },
+  searchRuntimeAddress: {
+    path: "/port.api.v1.ExecutionSessionService/SearchRuntimeAddress" as const,
+    requestStream: false as const,
+    responseStream: false as const,
+    requestSerialize: (value: SearchRuntimeAddressRequest): Buffer =>
+      Buffer.from(SearchRuntimeAddressRequest.encode(value).finish()),
+    requestDeserialize: (value: Buffer): SearchRuntimeAddressRequest => SearchRuntimeAddressRequest.decode(value),
+    responseSerialize: (value: SearchRuntimeAddressResponse): Buffer =>
+      Buffer.from(SearchRuntimeAddressResponse.encode(value).finish()),
+    responseDeserialize: (value: Buffer): SearchRuntimeAddressResponse => SearchRuntimeAddressResponse.decode(value),
+  },
 } as const;
 
 export interface ExecutionSessionServiceServer extends UntypedServiceImplementation {
@@ -14166,6 +14502,7 @@ export interface ExecutionSessionServiceServer extends UntypedServiceImplementat
   recordRuntimeUsage: handleUnaryCall<RecordRuntimeUsageRequest, RecordRuntimeUsageResponse>;
   readRuntimeKnowledge: handleUnaryCall<ReadRuntimeKnowledgeRequest, ReadRuntimeKnowledgeResponse>;
   readRuntimeContext: handleUnaryCall<ReadRuntimeContextRequest, ReadRuntimeContextResponse>;
+  searchRuntimeAddress: handleUnaryCall<SearchRuntimeAddressRequest, SearchRuntimeAddressResponse>;
 }
 
 export interface ExecutionSessionServiceClient extends Client {
@@ -14423,6 +14760,21 @@ export interface ExecutionSessionServiceClient extends Client {
     metadata: Metadata,
     options: Partial<CallOptions>,
     callback: (error: ServiceError | null, response: ReadRuntimeContextResponse) => void,
+  ): ClientUnaryCall;
+  searchRuntimeAddress(
+    request: SearchRuntimeAddressRequest,
+    callback: (error: ServiceError | null, response: SearchRuntimeAddressResponse) => void,
+  ): ClientUnaryCall;
+  searchRuntimeAddress(
+    request: SearchRuntimeAddressRequest,
+    metadata: Metadata,
+    callback: (error: ServiceError | null, response: SearchRuntimeAddressResponse) => void,
+  ): ClientUnaryCall;
+  searchRuntimeAddress(
+    request: SearchRuntimeAddressRequest,
+    metadata: Metadata,
+    options: Partial<CallOptions>,
+    callback: (error: ServiceError | null, response: SearchRuntimeAddressResponse) => void,
   ): ClientUnaryCall;
 }
 

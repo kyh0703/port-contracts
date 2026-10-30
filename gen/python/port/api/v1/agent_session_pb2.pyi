@@ -791,20 +791,22 @@ class KnowledgeToolRuntime(_message.Message):
     def __init__(self, tool_id: _Optional[str] = ..., tool_reference: _Optional[str] = ...) -> None: ...
 
 class BuiltInTool(_message.Message):
-    __slots__ = ("messages", "end_call", "transfer_to_human", "dtmf", "send_sms", "speaker")
+    __slots__ = ("messages", "end_call", "transfer_to_human", "dtmf", "send_sms", "speaker", "search_address")
     MESSAGES_FIELD_NUMBER: _ClassVar[int]
     END_CALL_FIELD_NUMBER: _ClassVar[int]
     TRANSFER_TO_HUMAN_FIELD_NUMBER: _ClassVar[int]
     DTMF_FIELD_NUMBER: _ClassVar[int]
     SEND_SMS_FIELD_NUMBER: _ClassVar[int]
     SPEAKER_FIELD_NUMBER: _ClassVar[int]
+    SEARCH_ADDRESS_FIELD_NUMBER: _ClassVar[int]
     messages: ToolMessages
     end_call: EndCallTool
     transfer_to_human: TransferToHumanTool
     dtmf: DtmfTool
     send_sms: SendSmsTool
     speaker: SpeakerTool
-    def __init__(self, messages: _Optional[_Union[ToolMessages, _Mapping]] = ..., end_call: _Optional[_Union[EndCallTool, _Mapping]] = ..., transfer_to_human: _Optional[_Union[TransferToHumanTool, _Mapping]] = ..., dtmf: _Optional[_Union[DtmfTool, _Mapping]] = ..., send_sms: _Optional[_Union[SendSmsTool, _Mapping]] = ..., speaker: _Optional[_Union[SpeakerTool, _Mapping]] = ...) -> None: ...
+    search_address: SearchAddressTool
+    def __init__(self, messages: _Optional[_Union[ToolMessages, _Mapping]] = ..., end_call: _Optional[_Union[EndCallTool, _Mapping]] = ..., transfer_to_human: _Optional[_Union[TransferToHumanTool, _Mapping]] = ..., dtmf: _Optional[_Union[DtmfTool, _Mapping]] = ..., send_sms: _Optional[_Union[SendSmsTool, _Mapping]] = ..., speaker: _Optional[_Union[SpeakerTool, _Mapping]] = ..., search_address: _Optional[_Union[SearchAddressTool, _Mapping]] = ...) -> None: ...
 
 class EndCallTool(_message.Message):
     __slots__ = ("closing_phrase", "confirm", "condition")
@@ -859,6 +861,14 @@ class SpeakerTool(_message.Message):
     consent_question: str
     response_timeout_seconds: int
     def __init__(self, condition: _Optional[str] = ..., script: _Optional[str] = ..., consent_question: _Optional[str] = ..., response_timeout_seconds: _Optional[int] = ...) -> None: ...
+
+class SearchAddressTool(_message.Message):
+    __slots__ = ("condition", "tool_reference")
+    CONDITION_FIELD_NUMBER: _ClassVar[int]
+    TOOL_REFERENCE_FIELD_NUMBER: _ClassVar[int]
+    condition: str
+    tool_reference: str
+    def __init__(self, condition: _Optional[str] = ..., tool_reference: _Optional[str] = ...) -> None: ...
 
 class McpServerRuntime(_message.Message):
     __slots__ = ("name", "transport", "timeout_ms", "tool_reference")
@@ -1317,6 +1327,26 @@ class ReadRuntimeContextRequest(_message.Message):
     def __init__(self, owner: _Optional[_Union[_runtime_identity_pb2.RuntimeAuthorization, _Mapping]] = ..., node_id: _Optional[str] = ..., tool_reference: _Optional[str] = ..., query: _Optional[str] = ..., max_bytes: _Optional[int] = ..., limit: _Optional[int] = ...) -> None: ...
 
 class ReadRuntimeContextResponse(_message.Message):
+    __slots__ = ("result_json",)
+    RESULT_JSON_FIELD_NUMBER: _ClassVar[int]
+    result_json: str
+    def __init__(self, result_json: _Optional[str] = ...) -> None: ...
+
+class SearchRuntimeAddressRequest(_message.Message):
+    __slots__ = ("owner", "node_id", "tool_reference", "query", "search_type")
+    OWNER_FIELD_NUMBER: _ClassVar[int]
+    NODE_ID_FIELD_NUMBER: _ClassVar[int]
+    TOOL_REFERENCE_FIELD_NUMBER: _ClassVar[int]
+    QUERY_FIELD_NUMBER: _ClassVar[int]
+    SEARCH_TYPE_FIELD_NUMBER: _ClassVar[int]
+    owner: _runtime_identity_pb2.RuntimeAuthorization
+    node_id: str
+    tool_reference: str
+    query: str
+    search_type: str
+    def __init__(self, owner: _Optional[_Union[_runtime_identity_pb2.RuntimeAuthorization, _Mapping]] = ..., node_id: _Optional[str] = ..., tool_reference: _Optional[str] = ..., query: _Optional[str] = ..., search_type: _Optional[str] = ...) -> None: ...
+
+class SearchRuntimeAddressResponse(_message.Message):
     __slots__ = ("result_json",)
     RESULT_JSON_FIELD_NUMBER: _ClassVar[int]
     result_json: str
