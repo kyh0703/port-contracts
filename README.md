@@ -35,14 +35,23 @@ import { ApiEventServiceClient } from '@overthinker1127/port-contracts/gen/ts/po
 and transfer control contract. `ExecutionSessionService.BootstrapPublished`
 requires native attempt authorization in addition to the original
 one-time browser ticket or verified SIP binding, and returns one exact Agent
-supervisor or handoff runtime with its mandatory runtime lease. The publication revision is
-`execution-publication-2026-09-15-r2` for keypad collection. The wire also recognizes
-legacy `execution-publication-2026-09-04-r1`; services enforce the negotiated
-revision so older workers cannot silently skip collection. The response carries bounded typed
-system and per-call user prompt variables, and handoff routes carry typed
-parameters, `none | conversation | recent` context policy, and one blocking
-`request_start` message. Older Agent bootstrap services and revision fallbacks
-are intentionally unavailable.
+supervisor or handoff runtime with its mandatory runtime lease. Recognized publication
+revisions are legacy `execution-publication-2026-09-04-r1`, collection
+`execution-publication-2026-09-15-r2`, and Goal routing
+`execution-publication-2026-10-31-r3`. Services enforce the negotiated revision;
+older workers must not silently skip collection or Goal routing. The response
+carries bounded typed system/per-call user prompt variables. Handoff routes carry
+typed parameters, `none | conversation | recent` context policy and one blocking
+`request_start` message. Older bootstrap services/revision fallbacks are unavailable.
+
+## Goal-routed Supervisor — 10.5.0
+
+`PublishedSupervisorSnapshot.goal_routes` repeats `PublishedGoalRoute`: frozen
+Goal ID/title/condition, stable specialist relation ID and deterministic tool name.
+Multiple Goals may share a specialist; every Goal still has only one target.
+The worker uses these scope-bound tools for selection, without merging specialist
+capabilities into the root. No Goal selection HTTP service is added to this wire
+contract. Consumers retain r1/r2 semantics and use r3 for Goal-bearing publications.
 
 ## Optional first-greeting interruption policy — 10.3.0
 

@@ -1,7 +1,18 @@
 # State
 
-current_version: contracts-10.4.0
-last_updated: 2026-10-30
+current_version: contracts-10.5.0
+last_updated: 2026-11-01
+
+## Goal-routed Supervisor — 10.5.0
+
+- `PublishedGoalRoute`와 supervisor의 repeated `goal_routes`를 추가했다.
+  Goal ID/제목/조건과 기존 specialist relation/tool name을 배포본에 고정한다.
+  Bootstrap은 새 `execution-publication-2026-10-31-r3`를 인식하며 r1/r2 의미는 유지한다.
+- Buf lint, TS/Go/Python 생성, TypeScript 빌드와 기존 wire 53개가 통과했다.
+  별도 실제 protobuf round-trip에서 Goal 경로 누락 RED와 정확한 대상 복원 GREEN을 확인했다.
+- API·worker가 같은 로컬 10.5.0 archive를 사용한다. SHA-256:
+  `5dc9be6fd247c77a88787adcb4d95f049e3665257925e578cdc36cf2fc9bc8fb`.
+  npm 공개 발행은 하지 않는다. 사용자 후속 승인 범위는 검증된 소스의 main 통합·push다.
 
 ## 한국 주소·장소 검색 — 10.4.0, 격리 검증
 

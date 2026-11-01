@@ -533,6 +533,16 @@ export interface NodeToolBinding {
 export interface PublishedSupervisorSnapshot {
   supervisorNodeId: string;
   specialists: PublishedSupervisorSpecialist[];
+  goalRoutes: PublishedGoalRoute[];
+}
+
+/** A frozen Goal connection; the relation, never a caller-supplied node, owns scope. */
+export interface PublishedGoalRoute {
+  goalId: string;
+  title: string;
+  condition: string;
+  relationId: string;
+  toolName: string;
 }
 
 export interface PublishedSupervisorSpecialist {
@@ -4868,7 +4878,7 @@ export const NodeToolBinding: MessageFns<NodeToolBinding> = {
 };
 
 function createBasePublishedSupervisorSnapshot(): PublishedSupervisorSnapshot {
-  return { supervisorNodeId: "", specialists: [] };
+  return { supervisorNodeId: "", specialists: [], goalRoutes: [] };
 }
 
 export const PublishedSupervisorSnapshot: MessageFns<PublishedSupervisorSnapshot> = {
@@ -4878,6 +4888,9 @@ export const PublishedSupervisorSnapshot: MessageFns<PublishedSupervisorSnapshot
     }
     for (const v of message.specialists) {
       PublishedSupervisorSpecialist.encode(v!, writer.uint32(18).fork()).join();
+    }
+    for (const v of message.goalRoutes) {
+      PublishedGoalRoute.encode(v!, writer.uint32(26).fork()).join();
     }
     return writer;
   },
@@ -4905,6 +4918,14 @@ export const PublishedSupervisorSnapshot: MessageFns<PublishedSupervisorSnapshot
           message.specialists.push(PublishedSupervisorSpecialist.decode(reader, reader.uint32()));
           continue;
         }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.goalRoutes.push(PublishedGoalRoute.decode(reader, reader.uint32()));
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -4924,6 +4945,11 @@ export const PublishedSupervisorSnapshot: MessageFns<PublishedSupervisorSnapshot
       specialists: globalThis.Array.isArray(object?.specialists)
         ? object.specialists.map((e: any) => PublishedSupervisorSpecialist.fromJSON(e))
         : [],
+      goalRoutes: globalThis.Array.isArray(object?.goalRoutes)
+        ? object.goalRoutes.map((e: any) => PublishedGoalRoute.fromJSON(e))
+        : globalThis.Array.isArray(object?.goal_routes)
+        ? object.goal_routes.map((e: any) => PublishedGoalRoute.fromJSON(e))
+        : [],
     };
   },
 
@@ -4935,6 +4961,9 @@ export const PublishedSupervisorSnapshot: MessageFns<PublishedSupervisorSnapshot
     if (message.specialists?.length) {
       obj.specialists = message.specialists.map((e) => PublishedSupervisorSpecialist.toJSON(e));
     }
+    if (message.goalRoutes?.length) {
+      obj.goalRoutes = message.goalRoutes.map((e) => PublishedGoalRoute.toJSON(e));
+    }
     return obj;
   },
 
@@ -4945,6 +4974,143 @@ export const PublishedSupervisorSnapshot: MessageFns<PublishedSupervisorSnapshot
     const message = createBasePublishedSupervisorSnapshot();
     message.supervisorNodeId = object.supervisorNodeId ?? "";
     message.specialists = object.specialists?.map((e) => PublishedSupervisorSpecialist.fromPartial(e)) || [];
+    message.goalRoutes = object.goalRoutes?.map((e) => PublishedGoalRoute.fromPartial(e)) || [];
+    return message;
+  },
+};
+
+function createBasePublishedGoalRoute(): PublishedGoalRoute {
+  return { goalId: "", title: "", condition: "", relationId: "", toolName: "" };
+}
+
+export const PublishedGoalRoute: MessageFns<PublishedGoalRoute> = {
+  encode(message: PublishedGoalRoute, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.goalId !== "") {
+      writer.uint32(10).string(message.goalId);
+    }
+    if (message.title !== "") {
+      writer.uint32(18).string(message.title);
+    }
+    if (message.condition !== "") {
+      writer.uint32(26).string(message.condition);
+    }
+    if (message.relationId !== "") {
+      writer.uint32(34).string(message.relationId);
+    }
+    if (message.toolName !== "") {
+      writer.uint32(42).string(message.toolName);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): PublishedGoalRoute {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBasePublishedGoalRoute();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.goalId = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.title = reader.string();
+          continue;
+        }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.condition = reader.string();
+          continue;
+        }
+        case 4: {
+          if (tag !== 34) {
+            break;
+          }
+
+          message.relationId = reader.string();
+          continue;
+        }
+        case 5: {
+          if (tag !== 42) {
+            break;
+          }
+
+          message.toolName = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): PublishedGoalRoute {
+    return {
+      goalId: isSet(object.goalId)
+        ? globalThis.String(object.goalId)
+        : isSet(object.goal_id)
+        ? globalThis.String(object.goal_id)
+        : "",
+      title: isSet(object.title) ? globalThis.String(object.title) : "",
+      condition: isSet(object.condition) ? globalThis.String(object.condition) : "",
+      relationId: isSet(object.relationId)
+        ? globalThis.String(object.relationId)
+        : isSet(object.relation_id)
+        ? globalThis.String(object.relation_id)
+        : "",
+      toolName: isSet(object.toolName)
+        ? globalThis.String(object.toolName)
+        : isSet(object.tool_name)
+        ? globalThis.String(object.tool_name)
+        : "",
+    };
+  },
+
+  toJSON(message: PublishedGoalRoute): unknown {
+    const obj: any = {};
+    if (message.goalId !== "") {
+      obj.goalId = message.goalId;
+    }
+    if (message.title !== "") {
+      obj.title = message.title;
+    }
+    if (message.condition !== "") {
+      obj.condition = message.condition;
+    }
+    if (message.relationId !== "") {
+      obj.relationId = message.relationId;
+    }
+    if (message.toolName !== "") {
+      obj.toolName = message.toolName;
+    }
+    return obj;
+  },
+
+  create(base?: DeepPartial<PublishedGoalRoute>): PublishedGoalRoute {
+    return PublishedGoalRoute.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<PublishedGoalRoute>): PublishedGoalRoute {
+    const message = createBasePublishedGoalRoute();
+    message.goalId = object.goalId ?? "";
+    message.title = object.title ?? "";
+    message.condition = object.condition ?? "";
+    message.relationId = object.relationId ?? "";
+    message.toolName = object.toolName ?? "";
     return message;
   },
 };

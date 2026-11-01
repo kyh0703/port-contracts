@@ -110,7 +110,7 @@ message BootstrapPublishedRequest {
   string published_id = 4 [(buf.validate.field).required = true, (buf.validate.field).string.min_len = 1];
   string contract_revision = 5 [
     (buf.validate.field).required = true,
-    (buf.validate.field).string = {in: ["execution-publication-2026-09-04-r1", "execution-publication-2026-09-15-r2"]}
+    (buf.validate.field).string = {in: ["execution-publication-2026-09-04-r1", "execution-publication-2026-09-15-r2", "execution-publication-2026-10-31-r3"]}
   ];
   // Optional original worker job correlation; never a participant, admission or
   // substitute for the required publication pins and private attempt authority.
@@ -135,7 +135,7 @@ message BootstrapPublishedResponse {
 
   string contract_revision = 1 [
     (buf.validate.field).required = true,
-    (buf.validate.field).string = {in: ["execution-publication-2026-09-04-r1", "execution-publication-2026-09-15-r2"]}
+    (buf.validate.field).string = {in: ["execution-publication-2026-09-04-r1", "execution-publication-2026-09-15-r2", "execution-publication-2026-10-31-r3"]}
   ];
   string conversation_id = 2 [(buf.validate.field).required = true, (buf.validate.field).string.min_len = 1];
   string session_id = 3 [(buf.validate.field).required = true, (buf.validate.field).string.min_len = 1];
@@ -338,8 +338,33 @@ message NodeToolBinding {
 }
 
 message PublishedSupervisorSnapshot {
+  option (buf.validate.message).cel = {
+    id: "published_supervisor.goals_unique"
+    message: "each Goal must route to one specialist"
+    expression: "this.goal_routes.map(route, route.goal_id).unique()"
+  };
+  option (buf.validate.message).cel = {
+    id: "published_supervisor.goal_relation_exists"
+    message: "Goal routes must reference a published specialist relation"
+    expression: "this.goal_routes.all(route, this.specialists.exists(specialist, specialist.relation_id == route.relation_id))"
+  };
+  option (buf.validate.message).cel = {
+    id: "published_supervisor.goal_tool_names_unique"
+    message: "Goal delegation tool names must be unique"
+    expression: "this.goal_routes.map(route, route.tool_name).unique()"
+  };
   string supervisor_node_id = 1 [(buf.validate.field).string.min_len = 1];
   repeated PublishedSupervisorSpecialist specialists = 2;
+  repeated PublishedGoalRoute goal_routes = 3 [(buf.validate.field).repeated.max_items = 100];
+}
+
+// A frozen Goal connection; the relation, never a caller-supplied node, owns scope.
+message PublishedGoalRoute {
+  string goal_id = 1 [(buf.validate.field).string = {min_len: 1 max_len: 128 pattern: "^[A-Za-z0-9][A-Za-z0-9_-]*$"}];
+  string title = 2 [(buf.validate.field).string = {min_len: 1 max_len: 200 pattern: "\\S"}];
+  string condition = 3 [(buf.validate.field).string = {min_len: 1 max_len: 2000 pattern: "\\S"}];
+  string relation_id = 4 [(buf.validate.field).string = {min_len: 1 max_len: 55}];
+  string tool_name = 5 [(buf.validate.field).string = {pattern: "^goal_[0-9a-f]{24}$"}];
 }
 
 message PublishedSupervisorSpecialist {

@@ -427,12 +427,28 @@ class NodeToolBinding(_message.Message):
     def __init__(self, tool_id: _Optional[str] = ..., parameter: _Optional[str] = ..., variable: _Optional[str] = ..., target: _Optional[str] = ...) -> None: ...
 
 class PublishedSupervisorSnapshot(_message.Message):
-    __slots__ = ("supervisor_node_id", "specialists")
+    __slots__ = ("supervisor_node_id", "specialists", "goal_routes")
     SUPERVISOR_NODE_ID_FIELD_NUMBER: _ClassVar[int]
     SPECIALISTS_FIELD_NUMBER: _ClassVar[int]
+    GOAL_ROUTES_FIELD_NUMBER: _ClassVar[int]
     supervisor_node_id: str
     specialists: _containers.RepeatedCompositeFieldContainer[PublishedSupervisorSpecialist]
-    def __init__(self, supervisor_node_id: _Optional[str] = ..., specialists: _Optional[_Iterable[_Union[PublishedSupervisorSpecialist, _Mapping]]] = ...) -> None: ...
+    goal_routes: _containers.RepeatedCompositeFieldContainer[PublishedGoalRoute]
+    def __init__(self, supervisor_node_id: _Optional[str] = ..., specialists: _Optional[_Iterable[_Union[PublishedSupervisorSpecialist, _Mapping]]] = ..., goal_routes: _Optional[_Iterable[_Union[PublishedGoalRoute, _Mapping]]] = ...) -> None: ...
+
+class PublishedGoalRoute(_message.Message):
+    __slots__ = ("goal_id", "title", "condition", "relation_id", "tool_name")
+    GOAL_ID_FIELD_NUMBER: _ClassVar[int]
+    TITLE_FIELD_NUMBER: _ClassVar[int]
+    CONDITION_FIELD_NUMBER: _ClassVar[int]
+    RELATION_ID_FIELD_NUMBER: _ClassVar[int]
+    TOOL_NAME_FIELD_NUMBER: _ClassVar[int]
+    goal_id: str
+    title: str
+    condition: str
+    relation_id: str
+    tool_name: str
+    def __init__(self, goal_id: _Optional[str] = ..., title: _Optional[str] = ..., condition: _Optional[str] = ..., relation_id: _Optional[str] = ..., tool_name: _Optional[str] = ...) -> None: ...
 
 class PublishedSupervisorSpecialist(_message.Message):
     __slots__ = ("relation_id", "target_node_id", "route_description", "context_policy")

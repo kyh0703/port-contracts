@@ -6,6 +6,16 @@
 Agent·Orchestration의 현재 기준은 [공통 계약](contracts/agent-orchestration-v1.md)과
 [transport 상세 계약](contracts/agent-orchestration-v1-transport.md)이다.
 
+## Published Goal Routing
+
+`BootstrapPublished` carries one immutable published supervisor/handoff runtime.
+Goal-bearing supervisor publications negotiate `execution-publication-2026-10-31-r3`.
+Their repeated `goal_routes` bind a frozen Goal objective to an existing specialist
+relation and generated tool name; they do not alter tool credential scopes or add
+an ordered tool graph. One Goal targets one specialist; specialists can be shared.
+Legacy r1/r2 publications retain their existing meanings. Consumers must reject
+unsupported negotiated revisions rather than falling back to another decoder.
+
 ## Agent·Orchestration Transport Boundary
 
 ```text
