@@ -30,22 +30,20 @@ effective_date: 2026-08-07
 
 ## 2. 도메인 소유권
 
-- **C04 — Neutral Agent:** Agent는 역할이 없는 재사용 자산이다. Agent는
-  Prompt, LLM, Tools, MCP, Knowledge, Guardrails를 소유한다. Agent에
-  Supervisor, specialist, handoff source/target 같은 역할을 저장하지 않는다.
-  역할은 Orchestration 안의 배치가 결정한다.
-- **C05 — AgentVersion:** AgentVersion은 해당 Agent의 Prompt, LLM,
-  도구·MCP snapshot, Knowledge revision, Guardrails를 불변으로 고정한다. 모든
-  실행 Agent와 AgentTask는 자신에게 고정된 LLM을 사용해야 하며 전역 LLM
-  fallback을 사용해서는 안 된다.
-- **C06 — No CallRuntime ownership:** Agent, AgentVersion, AgentRuntime은
-  Transport, STT, TTS, Voice, VAD, DTMF 입력, 인터럽션,
-  통화 시간 또는 타임아웃을 소유하거나 재구성하지 않는다.
-- **C07 — CallRuntime ownership:** 현재 `userId`는 mutable한
-  `CallRuntimeConfig` singleton 하나를 소유한다. 별도 named profile이나
-  Agent별 통화 설정 객체를 만들지 않는다. CallRuntimeConfig는 Transport,
-  VAD, STT, Voice를 포함한 TTS, DTMF 입력,
-  인터럽션, 최대 통화 시간과 각종 타임아웃의 유일한 영속 설정 경계다.
+- **C04 — Authoring source:** Agent는 노드별 Prompt, LLM, Tools, MCP,
+  Knowledge와 mode별 topology를 가진 저작 source다. Personal Space는 기존 암호화
+  content와 독립 source ID를 유지한다. 실행 역할은 topology의 노드 배치가 결정한다.
+- **C05 — Immutable publication:** 게시본은 노드 모델·옵션·도구·MCP와 지침을
+  고정한다. root `speechSettings`에는 source 음성 revision·behavior와 실제
+  STT/TTS tuple·provider voice ID를 고정한다. 노드 LLM의 전역 fallback은 없다.
+- **C06 — Runtime construction:** 저작 source가 음성 설정을 저장하는 것과
+  AgentRuntime이 오디오 자원을 소유하는 것은 별개다. AgentRuntime은 노드별 LLM과
+  도구를 materialize하며 통화의 STT/TTS·VAD·transport를 재구성하지 않는다.
+- **C07 — Persisted speech ownership:** `agent_speech_settings`,
+  `space_speech_settings`가 source별 음성 설정을 소유한다. Agent 노드 모델은
+  `agent_node_llm_settings`에서 읽고 mutable draft JSON에 중복 저장하지 않는다.
+  `voice_runtime_defaults`는 신규 설정 초기화에만 사용한다. 별도 계정 음성 프로필과
+  채널 profile FK는 두지 않으며 기존 credential 관리 경계는 유지한다.
 
 런타임 모델은 다음 두 경계로 고정한다.
 
@@ -69,13 +67,11 @@ AgentRuntime — 활성 Agent 또는 AgentTask별
 └─ MCP
 ```
 
-ExecutionTarget 종류와 무관하게 통화 시작 시 현재 CallRuntimeConfig 전체를
-불변 `CallRuntimeSnapshot`으로 고정하고, 하나의 session-scoped CallRuntime
-instance로 materialize한다. AgentRuntime은 pinned AgentVersion에서
-materialize하며, 실행 중인 모든 AgentRuntime은 같은 CallRuntime을 공유한다.
-AgentVersion의 Prompt·Guardrails는 Instructions, LLM은 LLMWorker, 도구와 MCP
-binding은 각각 Tools와 MCP의 입력이다. Context는 AgentVersion의 소유 자산이
-아니라 AgentRuntime이 실행 중 관리하는 상태다.
+통화 시작 시 게시된 `speechSettings`와 계정의 기존 종료·시간 정책을 합성해
+불변 `CallRuntimeSnapshot`으로 고정하고 session-scoped CallRuntime 하나로
+materialize한다. 실행 중인 모든 AgentRuntime은 같은 CallRuntime을 공유한다.
+노드의 고정 모델은 LLMWorker, 지침은 Instructions, 도구·MCP binding은 각 입력이 된다.
+Context는 게시본의 소유 자산이 아니라 AgentRuntime의 실행 상태다.
 
 CallRuntimeConfig와 CallRuntimeSnapshot은 다음 값을 명시적으로 포함한다.
 
@@ -108,21 +104,18 @@ end key는 통화를 종료하지 않는다. DTMF를 지원하지 않는 transpo
 
 ## 4. Publish, routing, pinning
 
-- **C12 — Immutable OrchestrationVersion:** OrchestrationVersion은 모드, 정확한
-  AgentVersion 참조, 모드별 관계와 orchestration 한도를 불변 snapshot으로
-  고정한다. CallRuntimeConfig나 CallRuntimeSnapshot은 소유하지 않는다.
-- **C13 — Publish isolation:** Orchestration이 참조하는 Agent를 변경해도 이미
-  production인 OrchestrationVersion의 AgentVersion 참조는 바뀌지 않으며 적용하려면
-  Orchestration을 다시 publish해야 한다. CallRuntimeConfig 변경은 Orchestration
-  publish와 독립적이며 다음 Conversation 시작 시 Agent와 Orchestration 실행 모두에
-  적용된다.
-- **C14 — Call routing:** 전화번호와 WebRTC 통화 관리는 Agent 또는 Orchestration
-  중 정확히 하나를 ExecutionTarget으로 가리킨다. AgentVersion이나
-  OrchestrationVersion을 직접 설정 대상으로 노출하지 않는다.
-- **C15 — Conversation pin:** Conversation은 시작 시 ExecutionTarget을
-  해석해 정확히 하나의 AgentVersion 또는 OrchestrationVersion을 고정하고, 같은
-  transaction 경계에서 현재 CallRuntimeConfig 전체를 CallRuntimeSnapshot으로
-  고정한다. 이후 publish나 설정 변경은 진행 중 통화에 소급되지 않는다.
+- **C12 — Immutable topology:** 실행 게시본은 mode, node와 관계·도구 pin 및
+  source 음성 선택을 고정한다. 실제 CallRuntime instance는 통화마다 생성한다.
+- **C13 — Publish isolation:** 저작 node나 source 음성 설정을 바꿔도 이미
+  production인 게시본은 바뀌지 않는다. 음성 저장도 초안 편집이며 새 게시가 필요하다.
+  관리자 기본값 편집은 기존 source 설정·게시본에 소급되지 않는다.
+- **C14 — Call routing:** 전화번호·Web endpoint는 Agent source를 가리킨다.
+  개인 Space는 자체 source publication을 사용한다. 세션 admission은 해석한 정확한
+  `publishedId`를 고정하고 채널에서 별도의 profile을 선택하지 않는다.
+- **C15 — Conversation pin:** 같은 transaction 경계에서 게시된 음성 원본과
+  계정 통화 운영 정책을 CallRuntimeSnapshot으로 고정한다. source에 게시된 음성이
+  없으면 새 음성 admission을 거부하되 텍스트/과거 기록 조회는 유지한다. 이후
+  publish나 설정 변경은 진행 중 통화에 소급되지 않는다.
 
 ## 5. Runtime 불변식
 
