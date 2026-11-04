@@ -493,7 +493,31 @@ export interface PublishedAgentNodeRuntime {
   authoring?: InlineAuthoringOptions | undefined;
   displayName?: string | undefined;
   knowledgeToolReference?: string | undefined;
-  contextTool?: RuntimeContextTool | undefined;
+  contextTool?:
+    | RuntimeContextTool
+    | undefined;
+  /** Optional local reference snapshot; unrelated transcript text is never rewritten. */
+  phoneticCorrection?: PhoneticCorrectionConfig | undefined;
+}
+
+/** Tag-scoped reference data, with no remote source or business-action authority. */
+export interface PhoneticCorrectionConfig {
+  /** The worker additionally limits the combined entry count to 5000. */
+  lists: PhoneticCorrectionList[];
+  /** Absent thresholds use worker defaults of 0.8 similarity and 0.15 margin. */
+  minSimilarity?: number | undefined;
+  minMargin?: number | undefined;
+}
+
+export interface PhoneticCorrectionList {
+  tag: string;
+  entries: PhoneticCorrectionEntry[];
+}
+
+export interface PhoneticCorrectionEntry {
+  value: string;
+  /** Shared aliases are allowed; the local matcher reports ambiguous values. */
+  aliases: string[];
 }
 
 /** An API-authorized read binding, not a caller-supplied source or tenant ID. */
@@ -4064,6 +4088,7 @@ function createBasePublishedAgentNodeRuntime(): PublishedAgentNodeRuntime {
     displayName: undefined,
     knowledgeToolReference: undefined,
     contextTool: undefined,
+    phoneticCorrection: undefined,
   };
 }
 
@@ -4119,6 +4144,9 @@ export const PublishedAgentNodeRuntime: MessageFns<PublishedAgentNodeRuntime> = 
     }
     if (message.contextTool !== undefined) {
       RuntimeContextTool.encode(message.contextTool, writer.uint32(154).fork()).join();
+    }
+    if (message.phoneticCorrection !== undefined) {
+      PhoneticCorrectionConfig.encode(message.phoneticCorrection, writer.uint32(162).fork()).join();
     }
     return writer;
   },
@@ -4266,6 +4294,14 @@ export const PublishedAgentNodeRuntime: MessageFns<PublishedAgentNodeRuntime> = 
           message.contextTool = RuntimeContextTool.decode(reader, reader.uint32());
           continue;
         }
+        case 20: {
+          if (tag !== 162) {
+            break;
+          }
+
+          message.phoneticCorrection = PhoneticCorrectionConfig.decode(reader, reader.uint32());
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -4350,6 +4386,11 @@ export const PublishedAgentNodeRuntime: MessageFns<PublishedAgentNodeRuntime> = 
         : isSet(object.context_tool)
         ? RuntimeContextTool.fromJSON(object.context_tool)
         : undefined,
+      phoneticCorrection: isSet(object.phoneticCorrection)
+        ? PhoneticCorrectionConfig.fromJSON(object.phoneticCorrection)
+        : isSet(object.phonetic_correction)
+        ? PhoneticCorrectionConfig.fromJSON(object.phonetic_correction)
+        : undefined,
     };
   },
 
@@ -4406,6 +4447,9 @@ export const PublishedAgentNodeRuntime: MessageFns<PublishedAgentNodeRuntime> = 
     if (message.contextTool !== undefined) {
       obj.contextTool = RuntimeContextTool.toJSON(message.contextTool);
     }
+    if (message.phoneticCorrection !== undefined) {
+      obj.phoneticCorrection = PhoneticCorrectionConfig.toJSON(message.phoneticCorrection);
+    }
     return obj;
   },
 
@@ -4439,6 +4483,265 @@ export const PublishedAgentNodeRuntime: MessageFns<PublishedAgentNodeRuntime> = 
     message.contextTool = (object.contextTool !== undefined && object.contextTool !== null)
       ? RuntimeContextTool.fromPartial(object.contextTool)
       : undefined;
+    message.phoneticCorrection = (object.phoneticCorrection !== undefined && object.phoneticCorrection !== null)
+      ? PhoneticCorrectionConfig.fromPartial(object.phoneticCorrection)
+      : undefined;
+    return message;
+  },
+};
+
+function createBasePhoneticCorrectionConfig(): PhoneticCorrectionConfig {
+  return { lists: [], minSimilarity: undefined, minMargin: undefined };
+}
+
+export const PhoneticCorrectionConfig: MessageFns<PhoneticCorrectionConfig> = {
+  encode(message: PhoneticCorrectionConfig, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    for (const v of message.lists) {
+      PhoneticCorrectionList.encode(v!, writer.uint32(10).fork()).join();
+    }
+    if (message.minSimilarity !== undefined) {
+      writer.uint32(17).double(message.minSimilarity);
+    }
+    if (message.minMargin !== undefined) {
+      writer.uint32(25).double(message.minMargin);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): PhoneticCorrectionConfig {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBasePhoneticCorrectionConfig();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.lists.push(PhoneticCorrectionList.decode(reader, reader.uint32()));
+          continue;
+        }
+        case 2: {
+          if (tag !== 17) {
+            break;
+          }
+
+          message.minSimilarity = reader.double();
+          continue;
+        }
+        case 3: {
+          if (tag !== 25) {
+            break;
+          }
+
+          message.minMargin = reader.double();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): PhoneticCorrectionConfig {
+    return {
+      lists: globalThis.Array.isArray(object?.lists)
+        ? object.lists.map((e: any) => PhoneticCorrectionList.fromJSON(e))
+        : [],
+      minSimilarity: isSet(object.minSimilarity)
+        ? globalThis.Number(object.minSimilarity)
+        : isSet(object.min_similarity)
+        ? globalThis.Number(object.min_similarity)
+        : undefined,
+      minMargin: isSet(object.minMargin)
+        ? globalThis.Number(object.minMargin)
+        : isSet(object.min_margin)
+        ? globalThis.Number(object.min_margin)
+        : undefined,
+    };
+  },
+
+  toJSON(message: PhoneticCorrectionConfig): unknown {
+    const obj: any = {};
+    if (message.lists?.length) {
+      obj.lists = message.lists.map((e) => PhoneticCorrectionList.toJSON(e));
+    }
+    if (message.minSimilarity !== undefined) {
+      obj.minSimilarity = message.minSimilarity;
+    }
+    if (message.minMargin !== undefined) {
+      obj.minMargin = message.minMargin;
+    }
+    return obj;
+  },
+
+  create(base?: DeepPartial<PhoneticCorrectionConfig>): PhoneticCorrectionConfig {
+    return PhoneticCorrectionConfig.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<PhoneticCorrectionConfig>): PhoneticCorrectionConfig {
+    const message = createBasePhoneticCorrectionConfig();
+    message.lists = object.lists?.map((e) => PhoneticCorrectionList.fromPartial(e)) || [];
+    message.minSimilarity = object.minSimilarity ?? undefined;
+    message.minMargin = object.minMargin ?? undefined;
+    return message;
+  },
+};
+
+function createBasePhoneticCorrectionList(): PhoneticCorrectionList {
+  return { tag: "", entries: [] };
+}
+
+export const PhoneticCorrectionList: MessageFns<PhoneticCorrectionList> = {
+  encode(message: PhoneticCorrectionList, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.tag !== "") {
+      writer.uint32(10).string(message.tag);
+    }
+    for (const v of message.entries) {
+      PhoneticCorrectionEntry.encode(v!, writer.uint32(18).fork()).join();
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): PhoneticCorrectionList {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBasePhoneticCorrectionList();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.tag = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.entries.push(PhoneticCorrectionEntry.decode(reader, reader.uint32()));
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): PhoneticCorrectionList {
+    return {
+      tag: isSet(object.tag) ? globalThis.String(object.tag) : "",
+      entries: globalThis.Array.isArray(object?.entries)
+        ? object.entries.map((e: any) => PhoneticCorrectionEntry.fromJSON(e))
+        : [],
+    };
+  },
+
+  toJSON(message: PhoneticCorrectionList): unknown {
+    const obj: any = {};
+    if (message.tag !== "") {
+      obj.tag = message.tag;
+    }
+    if (message.entries?.length) {
+      obj.entries = message.entries.map((e) => PhoneticCorrectionEntry.toJSON(e));
+    }
+    return obj;
+  },
+
+  create(base?: DeepPartial<PhoneticCorrectionList>): PhoneticCorrectionList {
+    return PhoneticCorrectionList.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<PhoneticCorrectionList>): PhoneticCorrectionList {
+    const message = createBasePhoneticCorrectionList();
+    message.tag = object.tag ?? "";
+    message.entries = object.entries?.map((e) => PhoneticCorrectionEntry.fromPartial(e)) || [];
+    return message;
+  },
+};
+
+function createBasePhoneticCorrectionEntry(): PhoneticCorrectionEntry {
+  return { value: "", aliases: [] };
+}
+
+export const PhoneticCorrectionEntry: MessageFns<PhoneticCorrectionEntry> = {
+  encode(message: PhoneticCorrectionEntry, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.value !== "") {
+      writer.uint32(10).string(message.value);
+    }
+    for (const v of message.aliases) {
+      writer.uint32(18).string(v!);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): PhoneticCorrectionEntry {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBasePhoneticCorrectionEntry();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.value = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.aliases.push(reader.string());
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): PhoneticCorrectionEntry {
+    return {
+      value: isSet(object.value) ? globalThis.String(object.value) : "",
+      aliases: globalThis.Array.isArray(object?.aliases) ? object.aliases.map((e: any) => globalThis.String(e)) : [],
+    };
+  },
+
+  toJSON(message: PhoneticCorrectionEntry): unknown {
+    const obj: any = {};
+    if (message.value !== "") {
+      obj.value = message.value;
+    }
+    if (message.aliases?.length) {
+      obj.aliases = message.aliases;
+    }
+    return obj;
+  },
+
+  create(base?: DeepPartial<PhoneticCorrectionEntry>): PhoneticCorrectionEntry {
+    return PhoneticCorrectionEntry.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<PhoneticCorrectionEntry>): PhoneticCorrectionEntry {
+    const message = createBasePhoneticCorrectionEntry();
+    message.value = object.value ?? "";
+    message.aliases = object.aliases?.map((e) => e) || [];
     return message;
   },
 };

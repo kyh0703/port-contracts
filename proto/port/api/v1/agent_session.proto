@@ -305,6 +305,54 @@ message PublishedAgentNodeRuntime {
   reserved "greeting";
   optional string knowledge_tool_reference = 18 [(buf.validate.field).string = {min_len: 1 max_len: 256}];
   RuntimeContextTool context_tool = 19;
+  // Optional local reference snapshot; unrelated transcript text is never rewritten.
+  PhoneticCorrectionConfig phonetic_correction = 20;
+}
+
+// Tag-scoped reference data, with no remote source or business-action authority.
+message PhoneticCorrectionConfig {
+  option (buf.validate.message).cel = {
+    id: "phonetic_correction.tags_unique"
+    message: "phonetic correction list tags must be unique"
+    expression: "this.lists.map(list, list.tag).unique()"
+  };
+
+  // The worker additionally limits the combined entry count to 5000.
+  repeated PhoneticCorrectionList lists = 1 [(buf.validate.field).repeated = {min_items: 1 max_items: 32}];
+  // Absent thresholds use worker defaults of 0.8 similarity and 0.15 margin.
+  optional double min_similarity = 2 [(buf.validate.field).double = {gte: 0.5 lte: 1}];
+  optional double min_margin = 3 [(buf.validate.field).double = {gt: 0 lte: 1}];
+}
+
+message PhoneticCorrectionList {
+  option (buf.validate.message).cel = {
+    id: "phonetic_correction.values_unique"
+    message: "canonical values must be unique within each phonetic correction list"
+    expression: "this.entries.map(entry, entry.value).unique()"
+  };
+
+  string tag = 1 [(buf.validate.field).string = {
+    min_len: 1 max_len: 64
+    pattern: "^[^\\p{Z}\\p{Cc}\\x{FEFF}](?:[^\\p{Cc}]*[^\\p{Z}\\p{Cc}\\x{FEFF}])?$"
+  }];
+  repeated PhoneticCorrectionEntry entries = 2 [(buf.validate.field).repeated = {min_items: 1 max_items: 1000}];
+}
+
+message PhoneticCorrectionEntry {
+  string value = 1 [(buf.validate.field).string = {
+    min_len: 1 max_len: 128
+    pattern: "^[^\\p{Z}\\p{Cc}\\x{FEFF}](?:[^\\p{Cc}]*[^\\p{Z}\\p{Cc}\\x{FEFF}])?$"
+  }];
+  // Shared aliases are allowed; the local matcher reports ambiguous values.
+  repeated string aliases = 2 [(buf.validate.field).repeated = {
+    max_items: 20
+    items: {
+      string: {
+        min_len: 1 max_len: 128
+        pattern: "^[^\\p{Z}\\p{Cc}\\x{FEFF}](?:[^\\p{Cc}]*[^\\p{Z}\\p{Cc}\\x{FEFF}])?$"
+      }
+    }
+  }];
 }
 
 // An API-authorized read binding, not a caller-supplied source or tenant ID.

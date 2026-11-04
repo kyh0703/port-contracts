@@ -1,7 +1,23 @@
 # State
 
-current_version: contracts-10.5.0
-last_updated: 2026-11-01
+current_version: contracts-10.6.0
+last_updated: 2026-11-04
+
+## 태그별 로컬 유사음 보정 — 10.6.0
+
+- `PublishedAgentNodeRuntime.phonetic_correction`을 선택적 field 20으로 추가했다.
+  태그별 `value`/`aliases` 목록과 선택적 유사도·격차 기준만 전달한다.
+  외부 API 연결·RPC·URL·credentials·`api_value`를 추가하지 않는다.
+- 태그/표준값 exact 중복, Unicode 길이·공백·제어 문자, 배열 크기·임계값을
+  protobuf 제약으로 검사한다. 전체 항목 5,000개 상한은 API/worker가 추가로 검사한다.
+- Buf lint, TS/Go/Python 생성, TypeScript 빌드, 기존 wire 53개와 Go 전체 테스트가 통과했다.
+  새 메시지를 실제 Protovalidate에 넣은 8개 정상·거부 시나리오도 통과했다.
+- API·Web·worker가 같은 10.6.0 archive를 사용한다. SHA-256:
+  `78598ea405da1741618a727374b4fa468aafb840ef327601f186999cc1fa6ae6`.
+  실제 Space HTTP 저장·PG 발행·API mapper의 protobuf를 worker native 세션에 전달해 보정을 확인했다.
+  admission/lease·provider·LLM 경계는 로컬 fixture이며 운영 배포·registry 발행 검증은 아니다.
+- 2026-11-04 독립 코드리뷰에서 protobuf 호환성의 추가 결함은 찾지 못했다.
+  main 통합 전 Buf lint·wire 53개·Go 전체 테스트를 다시 실행해 통과했다.
 
 ## Goal-routed Supervisor — 10.5.0
 
