@@ -1,7 +1,52 @@
 # State
 
-current_version: contracts-10.6.0
-last_updated: 2026-11-04
+current_version: contracts-10.8.2
+last_updated: 2026-11-05
+
+## 음성 보정 미리보기 공유 matcher — 10.8.2
+
+- STT 태그별 후보 판정과 TTS 스트림의 literal 치환 핵심을 브라우저에서도
+  사용하는 공통 `speech-correction` 모듈로 옮겼다. worker와 화면이 같은 구현을 쓴다.
+- 기존 STT 임계값·모호성, TTS 청크 경계·취소·캐시 동작은 유지한다.
+  실제 matcher smoke에서 `왕십니 → 왕십리점`, `500ml를 html → 500밀리리터를 html` 확인.
+- 미리보기는 STT 인식 결과 전체 자동 수정이나 실제 TTS 음성을 뜻하지 않는다.
+
+## Liquid 입력 필수성 분리 — 10.8.1
+
+- inspector가 전체 외부 참조 `variables`와 무조건 엄격하게 평가되는
+  `requiredVariables`를 함께 반환한다. 조건·기본값에서 생략 가능한 값과
+  직접 출력·엄격한 필터 인수·range 경계를 구분한다.
+- Liquid 내부 `offset: continue`를 사용자 입력으로 수집하지 않는다.
+- 신규 회귀에서 필수성 메타데이터 누락 RED를 확인한 뒤 shared 전체 검사를 통과했다.
+  실제 실행에서 default 입력은 생략해도 `고객`, upcase 입력은 필수,
+  loop-resume의 입력 목록에는 `items`만 남는 것을 확인했다.
+- 기존 실행 제한·자료 재평가 금지·wire 형식은 변경하지 않았다.
+
+## 제한된 공통 Liquid 엔진 — 10.8.0
+
+- `@overthinker1127/port-contracts/templates`에 inspect/render와 안전한 오류 형식을 제공한다.
+  API·worker·Web이 LiquidJS 10.30.1의 같은 제한된 문법과 실행 경계를 사용한다.
+- 작성 문구만 실행한다. 조건·필터·반복, 한글·날짜 별칭, flat dotted key를 지원하고
+  입력 데이터의 재평가, 파일 접근, prototype 접근, 임의 JS와 무제한 자원 사용을 거부한다.
+- `AgentInstructions.literal_context` field 2로 지시문과 참고자료를 분리했다.
+  기존 retained Space 원본에서 경계가 모호하면 실행을 거부하며 hash를 고쳐 쓰지 않는다.
+- 실제 기존 렌더러의 조건문 미처리 RED, wire의 literalContext 누락 RED를 확인했다.
+  새 engine 48개와 기존 wire 53개, TypeScript 빌드·Buf lint·Go 전체 테스트 통과.
+  실제 wire/render smoke에서 변수 속 `{{secret}}`와 참고자료 속 include 구문이 그대로 남았다.
+- 운영 배포·registry 발행은 하지 않았다.
+
+## TTS 발음 보정 — 10.7.0
+
+- 선택적 `PublishedAgentNodeRuntime.tts_pronunciation` field 21과
+  `TtsPronunciationConfig` / `TtsPronunciationEntry`를 추가했다.
+- `entries`는 1–200개, `text`는 최대 128자, `pronunciation`은 최대 256자이며
+  원문 exact 중복·공백·제어 문자를 거부한다. STT field 20과 독립적이다.
+- 대소문자를 구분하는 literal 치환이며 긴 일치 우선·재귀 치환 없음.
+  런타임은 TTS 입력만 바꾸고 LLM 답변·대화 기록은 보존한다.
+- protobuf 실제 왕복에서 기존 field 누락 RED와 신규 보존 GREEN을 확인했다.
+  Buf lint, TS/Go/Python 생성, TypeScript 빌드, wire 53개, Go 전체 테스트 통과.
+- API·Web·worker 작업본은 같은 10.7.0 archive를 사용한다.
+  registry 발행·운영 배포는 수행하지 않았다.
 
 ## 태그별 로컬 유사음 보정 — 10.6.0
 

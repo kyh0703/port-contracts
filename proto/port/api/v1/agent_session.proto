@@ -307,6 +307,30 @@ message PublishedAgentNodeRuntime {
   RuntimeContextTool context_tool = 19;
   // Optional local reference snapshot; unrelated transcript text is never rewritten.
   PhoneticCorrectionConfig phonetic_correction = 20;
+  // Pronunciation substitutions affect synthesis only, never conversation text.
+  TtsPronunciationConfig tts_pronunciation = 21;
+}
+
+// Case-sensitive literal substitutions. Longest matches win without recursion.
+// ASCII letters/underscores delimit Latin rules; numbers and Korean particles do not.
+message TtsPronunciationConfig {
+  option (buf.validate.message).cel = {
+    id: "tts_pronunciation.texts_unique"
+    message: "TTS pronunciation source texts must be unique"
+    expression: "this.entries.map(entry, entry.text).unique()"
+  };
+  repeated TtsPronunciationEntry entries = 1 [(buf.validate.field).repeated = {min_items: 1 max_items: 200}];
+}
+
+message TtsPronunciationEntry {
+  string text = 1 [(buf.validate.field).string = {
+    min_len: 1 max_len: 128
+    pattern: "^[^\\p{Z}\\p{Cc}\\x{FEFF}](?:[^\\p{Cc}]*[^\\p{Z}\\p{Cc}\\x{FEFF}])?$"
+  }];
+  string pronunciation = 2 [(buf.validate.field).string = {
+    min_len: 1 max_len: 256
+    pattern: "^[^\\p{Z}\\p{Cc}\\x{FEFF}](?:[^\\p{Cc}]*[^\\p{Z}\\p{Cc}\\x{FEFF}])?$"
+  }];
 }
 
 // Tag-scoped reference data, with no remote source or business-action authority.
@@ -641,6 +665,8 @@ message DtmfInputRuntime {
 
 message AgentInstructions {
   string system_prompt = 1 [(buf.validate.field).string.min_len = 1];
+  // Reference data appended after rendering the authored system prompt, never evaluated as Liquid.
+  optional string literal_context = 2 [(buf.validate.field).string.max_len = 16000];
 }
 
 enum AgentMode {

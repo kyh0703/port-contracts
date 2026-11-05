@@ -345,7 +345,7 @@ class AgentPromptConfigSnapshot(_message.Message):
     def __init__(self, revision: _Optional[int] = ..., system_guardrail: _Optional[str] = ..., crew_system_context: _Optional[str] = ..., handoff_context: _Optional[str] = ..., supervisor_context: _Optional[str] = ..., specialist_context: _Optional[str] = ..., voice_rules: _Optional[str] = ..., dtmf_rules: _Optional[str] = ...) -> None: ...
 
 class PublishedAgentNodeRuntime(_message.Message):
-    __slots__ = ("node_id", "llm_worker", "instructions", "context_policy", "tools", "mcp_servers", "api_tool_runtimes", "a2a_tool_runtimes", "built_in_tools", "knowledge_revision_id", "knowledge_function_name", "knowledge_description", "knowledge_tool_runtimes", "authoring", "display_name", "knowledge_tool_reference", "context_tool", "phonetic_correction")
+    __slots__ = ("node_id", "llm_worker", "instructions", "context_policy", "tools", "mcp_servers", "api_tool_runtimes", "a2a_tool_runtimes", "built_in_tools", "knowledge_revision_id", "knowledge_function_name", "knowledge_description", "knowledge_tool_runtimes", "authoring", "display_name", "knowledge_tool_reference", "context_tool", "phonetic_correction", "tts_pronunciation")
     NODE_ID_FIELD_NUMBER: _ClassVar[int]
     LLM_WORKER_FIELD_NUMBER: _ClassVar[int]
     INSTRUCTIONS_FIELD_NUMBER: _ClassVar[int]
@@ -364,6 +364,7 @@ class PublishedAgentNodeRuntime(_message.Message):
     KNOWLEDGE_TOOL_REFERENCE_FIELD_NUMBER: _ClassVar[int]
     CONTEXT_TOOL_FIELD_NUMBER: _ClassVar[int]
     PHONETIC_CORRECTION_FIELD_NUMBER: _ClassVar[int]
+    TTS_PRONUNCIATION_FIELD_NUMBER: _ClassVar[int]
     node_id: str
     llm_worker: _voice_runtime_pb2.LlmRuntime
     instructions: AgentInstructions
@@ -382,7 +383,22 @@ class PublishedAgentNodeRuntime(_message.Message):
     knowledge_tool_reference: str
     context_tool: RuntimeContextTool
     phonetic_correction: PhoneticCorrectionConfig
-    def __init__(self, node_id: _Optional[str] = ..., llm_worker: _Optional[_Union[_voice_runtime_pb2.LlmRuntime, _Mapping]] = ..., instructions: _Optional[_Union[AgentInstructions, _Mapping]] = ..., context_policy: _Optional[_Union[ContextPolicy, str]] = ..., tools: _Optional[_Iterable[_Union[NodeToolMetadata, _Mapping]]] = ..., mcp_servers: _Optional[_Iterable[_Union[McpServerRuntime, _Mapping]]] = ..., api_tool_runtimes: _Optional[_Iterable[_Union[ApiToolRuntime, _Mapping]]] = ..., a2a_tool_runtimes: _Optional[_Iterable[_Union[A2aToolRuntime, _Mapping]]] = ..., built_in_tools: _Optional[_Iterable[_Union[BuiltInTool, _Mapping]]] = ..., knowledge_revision_id: _Optional[str] = ..., knowledge_function_name: _Optional[str] = ..., knowledge_description: _Optional[str] = ..., knowledge_tool_runtimes: _Optional[_Iterable[_Union[KnowledgeToolRuntime, _Mapping]]] = ..., authoring: _Optional[_Union[InlineAuthoringOptions, _Mapping]] = ..., display_name: _Optional[str] = ..., knowledge_tool_reference: _Optional[str] = ..., context_tool: _Optional[_Union[RuntimeContextTool, _Mapping]] = ..., phonetic_correction: _Optional[_Union[PhoneticCorrectionConfig, _Mapping]] = ...) -> None: ...
+    tts_pronunciation: TtsPronunciationConfig
+    def __init__(self, node_id: _Optional[str] = ..., llm_worker: _Optional[_Union[_voice_runtime_pb2.LlmRuntime, _Mapping]] = ..., instructions: _Optional[_Union[AgentInstructions, _Mapping]] = ..., context_policy: _Optional[_Union[ContextPolicy, str]] = ..., tools: _Optional[_Iterable[_Union[NodeToolMetadata, _Mapping]]] = ..., mcp_servers: _Optional[_Iterable[_Union[McpServerRuntime, _Mapping]]] = ..., api_tool_runtimes: _Optional[_Iterable[_Union[ApiToolRuntime, _Mapping]]] = ..., a2a_tool_runtimes: _Optional[_Iterable[_Union[A2aToolRuntime, _Mapping]]] = ..., built_in_tools: _Optional[_Iterable[_Union[BuiltInTool, _Mapping]]] = ..., knowledge_revision_id: _Optional[str] = ..., knowledge_function_name: _Optional[str] = ..., knowledge_description: _Optional[str] = ..., knowledge_tool_runtimes: _Optional[_Iterable[_Union[KnowledgeToolRuntime, _Mapping]]] = ..., authoring: _Optional[_Union[InlineAuthoringOptions, _Mapping]] = ..., display_name: _Optional[str] = ..., knowledge_tool_reference: _Optional[str] = ..., context_tool: _Optional[_Union[RuntimeContextTool, _Mapping]] = ..., phonetic_correction: _Optional[_Union[PhoneticCorrectionConfig, _Mapping]] = ..., tts_pronunciation: _Optional[_Union[TtsPronunciationConfig, _Mapping]] = ...) -> None: ...
+
+class TtsPronunciationConfig(_message.Message):
+    __slots__ = ("entries",)
+    ENTRIES_FIELD_NUMBER: _ClassVar[int]
+    entries: _containers.RepeatedCompositeFieldContainer[TtsPronunciationEntry]
+    def __init__(self, entries: _Optional[_Iterable[_Union[TtsPronunciationEntry, _Mapping]]] = ...) -> None: ...
+
+class TtsPronunciationEntry(_message.Message):
+    __slots__ = ("text", "pronunciation")
+    TEXT_FIELD_NUMBER: _ClassVar[int]
+    PRONUNCIATION_FIELD_NUMBER: _ClassVar[int]
+    text: str
+    pronunciation: str
+    def __init__(self, text: _Optional[str] = ..., pronunciation: _Optional[str] = ...) -> None: ...
 
 class PhoneticCorrectionConfig(_message.Message):
     __slots__ = ("lists", "min_similarity", "min_margin")
@@ -705,10 +721,12 @@ class DtmfInputRuntime(_message.Message):
     def __init__(self, timeout_seconds: _Optional[int] = ..., end_key: _Optional[str] = ...) -> None: ...
 
 class AgentInstructions(_message.Message):
-    __slots__ = ("system_prompt",)
+    __slots__ = ("system_prompt", "literal_context")
     SYSTEM_PROMPT_FIELD_NUMBER: _ClassVar[int]
+    LITERAL_CONTEXT_FIELD_NUMBER: _ClassVar[int]
     system_prompt: str
-    def __init__(self, system_prompt: _Optional[str] = ...) -> None: ...
+    literal_context: str
+    def __init__(self, system_prompt: _Optional[str] = ..., literal_context: _Optional[str] = ...) -> None: ...
 
 class NodeToolMetadata(_message.Message):
     __slots__ = ("tool_id", "kind", "name", "description", "mcp", "api", "a2a", "knowledge", "messages")

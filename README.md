@@ -44,6 +44,60 @@ carries bounded typed system/per-call user prompt variables. Handoff routes carr
 typed parameters, `none | conversation | recent` context policy and one blocking
 `request_start` message. Older bootstrap services/revision fallbacks are unavailable.
 
+## Shared speech correction — 10.8.2
+
+`@overthinker1127/port-contracts/speech-correction` exposes the same bounded
+tag-scoped `createPhoneticCorrector` and streaming-compatible
+`compileTtsPronunciation` used by the voice worker and authoring preview.
+STT preview resolves one supplied heard word within a chosen tag; it does not
+replace the whole transcript or guarantee an LLM will call the tool. TTS preview
+shows transformed input, not the provider's actual voice or pronunciation.
+TTS rules remain case-sensitive literal substitutions, not regular expressions.
+
+## Shared authored Liquid templates — 10.8.1
+
+API validation, worker rendering, and browser previews use the same restricted
+LiquidJS 10.30.1 engine:
+
+```ts
+import { inspectLiquidTemplate, renderLiquidTemplate } from '@overthinker1127/port-contracts/templates'
+
+const source = '{% if confirmed %}{{name | default: "고객"}}님, 예약 확정{% else %}예약 대기{% endif %}'
+inspectLiquidTemplate(source) // { variables, requiredVariables }, without runtime values
+renderLiquidTemplate(source, { confirmed: true, name: '홍길동' })
+```
+
+`variables` lists external references; `requiredVariables` contains unconditional
+strict reads. Conditional/default-only inputs remain optional, but a later strict
+read makes the same input required. Default filter arguments and range bounds
+retain Liquid's strict evaluation. Local assignments and the internal
+`offset: continue` register are not exposed as caller inputs. An omitted optional
+value must be absent from the request, not replaced with an empty string.
+
+Supported constructs include conditions, case, assign/capture, bounded for loops,
+break/continue, comments, string/arithmetic/default filters, and explicit ISO-date
+formatting in UTC. Exact flat dotted keys, Korean variables and existing signed
+date aliases remain supported. Computed property paths, arbitrary JavaScript,
+file/template includes and unsupported filters are rejected.
+
+Pass only permitted plain JSON data. Functions, getters, prototype-related keys,
+behavior-bearing objects and cycles are rejected. Inserted values are never parsed
+again and output is plain text, not HTML. Rendered preview must remain a text node.
+Missing executed values fail except conditional/default idioms. `LiquidTemplateError`
+exposes a static `code`, optional 1-based `line` and `column`, never source or values.
+
+Limits: source/default output 65,536 UTF-16 units, optional output maximum 262,144,
+context strings/keys 262,144, depth 16, collection/range 1,000, total iterations
+1,000, steps 10,000, allocation accounting 1,048,576 and cooperative render time
+100ms. These bounds do not sandbox arbitrary host code; do not register host filters.
+Date formatting never uses implicit `now`/`today`; use trusted snapshot variables.
+
+`AgentInstructions.literal_context` is optional field 2, capped at 16,000 Unicode
+codepoints. It carries reference data appended **after** authored `system_prompt`
+rendering. Consumers must not evaluate it as Liquid. API and worker deploy together;
+ambiguous historical retained Space runtimes lacking this boundary fail closed
+rather than guessing a split or rewriting retained hashes.
+
 ## Goal-routed Supervisor — 10.5.0
 
 `PublishedSupervisorSnapshot.goal_routes` repeats `PublishedGoalRoute`: frozen

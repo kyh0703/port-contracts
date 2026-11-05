@@ -497,7 +497,24 @@ export interface PublishedAgentNodeRuntime {
     | RuntimeContextTool
     | undefined;
   /** Optional local reference snapshot; unrelated transcript text is never rewritten. */
-  phoneticCorrection?: PhoneticCorrectionConfig | undefined;
+  phoneticCorrection?:
+    | PhoneticCorrectionConfig
+    | undefined;
+  /** Pronunciation substitutions affect synthesis only, never conversation text. */
+  ttsPronunciation?: TtsPronunciationConfig | undefined;
+}
+
+/**
+ * Case-sensitive literal substitutions. Longest matches win without recursion.
+ * ASCII letters/underscores delimit Latin rules; numbers and Korean particles do not.
+ */
+export interface TtsPronunciationConfig {
+  entries: TtsPronunciationEntry[];
+}
+
+export interface TtsPronunciationEntry {
+  text: string;
+  pronunciation: string;
 }
 
 /** Tag-scoped reference data, with no remote source or business-action authority. */
@@ -728,6 +745,8 @@ export interface DtmfInputRuntime {
 
 export interface AgentInstructions {
   systemPrompt: string;
+  /** Reference data appended after rendering the authored system prompt, never evaluated as Liquid. */
+  literalContext?: string | undefined;
 }
 
 export interface NodeToolMetadata {
@@ -4089,6 +4108,7 @@ function createBasePublishedAgentNodeRuntime(): PublishedAgentNodeRuntime {
     knowledgeToolReference: undefined,
     contextTool: undefined,
     phoneticCorrection: undefined,
+    ttsPronunciation: undefined,
   };
 }
 
@@ -4147,6 +4167,9 @@ export const PublishedAgentNodeRuntime: MessageFns<PublishedAgentNodeRuntime> = 
     }
     if (message.phoneticCorrection !== undefined) {
       PhoneticCorrectionConfig.encode(message.phoneticCorrection, writer.uint32(162).fork()).join();
+    }
+    if (message.ttsPronunciation !== undefined) {
+      TtsPronunciationConfig.encode(message.ttsPronunciation, writer.uint32(170).fork()).join();
     }
     return writer;
   },
@@ -4302,6 +4325,14 @@ export const PublishedAgentNodeRuntime: MessageFns<PublishedAgentNodeRuntime> = 
           message.phoneticCorrection = PhoneticCorrectionConfig.decode(reader, reader.uint32());
           continue;
         }
+        case 21: {
+          if (tag !== 170) {
+            break;
+          }
+
+          message.ttsPronunciation = TtsPronunciationConfig.decode(reader, reader.uint32());
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -4391,6 +4422,11 @@ export const PublishedAgentNodeRuntime: MessageFns<PublishedAgentNodeRuntime> = 
         : isSet(object.phonetic_correction)
         ? PhoneticCorrectionConfig.fromJSON(object.phonetic_correction)
         : undefined,
+      ttsPronunciation: isSet(object.ttsPronunciation)
+        ? TtsPronunciationConfig.fromJSON(object.ttsPronunciation)
+        : isSet(object.tts_pronunciation)
+        ? TtsPronunciationConfig.fromJSON(object.tts_pronunciation)
+        : undefined,
     };
   },
 
@@ -4450,6 +4486,9 @@ export const PublishedAgentNodeRuntime: MessageFns<PublishedAgentNodeRuntime> = 
     if (message.phoneticCorrection !== undefined) {
       obj.phoneticCorrection = PhoneticCorrectionConfig.toJSON(message.phoneticCorrection);
     }
+    if (message.ttsPronunciation !== undefined) {
+      obj.ttsPronunciation = TtsPronunciationConfig.toJSON(message.ttsPronunciation);
+    }
     return obj;
   },
 
@@ -4486,6 +4525,147 @@ export const PublishedAgentNodeRuntime: MessageFns<PublishedAgentNodeRuntime> = 
     message.phoneticCorrection = (object.phoneticCorrection !== undefined && object.phoneticCorrection !== null)
       ? PhoneticCorrectionConfig.fromPartial(object.phoneticCorrection)
       : undefined;
+    message.ttsPronunciation = (object.ttsPronunciation !== undefined && object.ttsPronunciation !== null)
+      ? TtsPronunciationConfig.fromPartial(object.ttsPronunciation)
+      : undefined;
+    return message;
+  },
+};
+
+function createBaseTtsPronunciationConfig(): TtsPronunciationConfig {
+  return { entries: [] };
+}
+
+export const TtsPronunciationConfig: MessageFns<TtsPronunciationConfig> = {
+  encode(message: TtsPronunciationConfig, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    for (const v of message.entries) {
+      TtsPronunciationEntry.encode(v!, writer.uint32(10).fork()).join();
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): TtsPronunciationConfig {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseTtsPronunciationConfig();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.entries.push(TtsPronunciationEntry.decode(reader, reader.uint32()));
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): TtsPronunciationConfig {
+    return {
+      entries: globalThis.Array.isArray(object?.entries)
+        ? object.entries.map((e: any) => TtsPronunciationEntry.fromJSON(e))
+        : [],
+    };
+  },
+
+  toJSON(message: TtsPronunciationConfig): unknown {
+    const obj: any = {};
+    if (message.entries?.length) {
+      obj.entries = message.entries.map((e) => TtsPronunciationEntry.toJSON(e));
+    }
+    return obj;
+  },
+
+  create(base?: DeepPartial<TtsPronunciationConfig>): TtsPronunciationConfig {
+    return TtsPronunciationConfig.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<TtsPronunciationConfig>): TtsPronunciationConfig {
+    const message = createBaseTtsPronunciationConfig();
+    message.entries = object.entries?.map((e) => TtsPronunciationEntry.fromPartial(e)) || [];
+    return message;
+  },
+};
+
+function createBaseTtsPronunciationEntry(): TtsPronunciationEntry {
+  return { text: "", pronunciation: "" };
+}
+
+export const TtsPronunciationEntry: MessageFns<TtsPronunciationEntry> = {
+  encode(message: TtsPronunciationEntry, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.text !== "") {
+      writer.uint32(10).string(message.text);
+    }
+    if (message.pronunciation !== "") {
+      writer.uint32(18).string(message.pronunciation);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): TtsPronunciationEntry {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseTtsPronunciationEntry();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.text = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.pronunciation = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): TtsPronunciationEntry {
+    return {
+      text: isSet(object.text) ? globalThis.String(object.text) : "",
+      pronunciation: isSet(object.pronunciation) ? globalThis.String(object.pronunciation) : "",
+    };
+  },
+
+  toJSON(message: TtsPronunciationEntry): unknown {
+    const obj: any = {};
+    if (message.text !== "") {
+      obj.text = message.text;
+    }
+    if (message.pronunciation !== "") {
+      obj.pronunciation = message.pronunciation;
+    }
+    return obj;
+  },
+
+  create(base?: DeepPartial<TtsPronunciationEntry>): TtsPronunciationEntry {
+    return TtsPronunciationEntry.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<TtsPronunciationEntry>): TtsPronunciationEntry {
+    const message = createBaseTtsPronunciationEntry();
+    message.text = object.text ?? "";
+    message.pronunciation = object.pronunciation ?? "";
     return message;
   },
 };
@@ -7734,13 +7914,16 @@ export const DtmfInputRuntime: MessageFns<DtmfInputRuntime> = {
 };
 
 function createBaseAgentInstructions(): AgentInstructions {
-  return { systemPrompt: "" };
+  return { systemPrompt: "", literalContext: undefined };
 }
 
 export const AgentInstructions: MessageFns<AgentInstructions> = {
   encode(message: AgentInstructions, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
     if (message.systemPrompt !== "") {
       writer.uint32(10).string(message.systemPrompt);
+    }
+    if (message.literalContext !== undefined) {
+      writer.uint32(18).string(message.literalContext);
     }
     return writer;
   },
@@ -7760,6 +7943,14 @@ export const AgentInstructions: MessageFns<AgentInstructions> = {
           message.systemPrompt = reader.string();
           continue;
         }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.literalContext = reader.string();
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -7776,6 +7967,11 @@ export const AgentInstructions: MessageFns<AgentInstructions> = {
         : isSet(object.system_prompt)
         ? globalThis.String(object.system_prompt)
         : "",
+      literalContext: isSet(object.literalContext)
+        ? globalThis.String(object.literalContext)
+        : isSet(object.literal_context)
+        ? globalThis.String(object.literal_context)
+        : undefined,
     };
   },
 
@@ -7783,6 +7979,9 @@ export const AgentInstructions: MessageFns<AgentInstructions> = {
     const obj: any = {};
     if (message.systemPrompt !== "") {
       obj.systemPrompt = message.systemPrompt;
+    }
+    if (message.literalContext !== undefined) {
+      obj.literalContext = message.literalContext;
     }
     return obj;
   },
@@ -7793,6 +7992,7 @@ export const AgentInstructions: MessageFns<AgentInstructions> = {
   fromPartial(object: DeepPartial<AgentInstructions>): AgentInstructions {
     const message = createBaseAgentInstructions();
     message.systemPrompt = object.systemPrompt ?? "";
+    message.literalContext = object.literalContext ?? undefined;
     return message;
   },
 };
