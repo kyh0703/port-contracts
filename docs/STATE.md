@@ -1,7 +1,14 @@
 # State
 
-current_version: contracts-10.8.2
-last_updated: 2026-11-05
+current_version: contracts-10.9.0
+last_updated: 2026-11-06
+
+## Optional model frequency penalty — 10.9.0
+
+- `NodeModelSettings.frequency_penalty` is optional double field 5 with
+  inclusive 0–2 validation. Absence, explicit zero and fractions retain wire
+  presence; unsupported providers, including Luna, must omit the parameter.
+- Existing speech-correction and Liquid template exports remain available.
 
 ## 음성 보정 미리보기 공유 matcher — 10.8.2
 

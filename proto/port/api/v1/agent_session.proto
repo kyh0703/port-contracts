@@ -400,6 +400,8 @@ message NodeModelSettings {
   // Bounds UTF-8 serialized conversation history, excluding fixed instructions.
   // Absent preserves the publication's existing inference behavior.
   optional uint32 history_max_bytes = 4 [(buf.validate.field).uint32 = {gte: 8192 lte: 262144}];
+  // Absence keeps the provider default; explicit zero retains wire presence.
+  optional double frequency_penalty = 5 [(buf.validate.field).double = {gte: 0, lte: 2}];
 }
 
 message NodeToolBinding {

@@ -447,16 +447,18 @@ class InlineAuthoringOptions(_message.Message):
     def __init__(self, model: _Optional[_Union[NodeModelSettings, _Mapping]] = ..., tool_bindings: _Optional[_Iterable[_Union[NodeToolBinding, _Mapping]]] = ...) -> None: ...
 
 class NodeModelSettings(_message.Message):
-    __slots__ = ("temperature", "max_tokens", "reasoning_effort", "history_max_bytes")
+    __slots__ = ("temperature", "max_tokens", "reasoning_effort", "history_max_bytes", "frequency_penalty")
     TEMPERATURE_FIELD_NUMBER: _ClassVar[int]
     MAX_TOKENS_FIELD_NUMBER: _ClassVar[int]
     REASONING_EFFORT_FIELD_NUMBER: _ClassVar[int]
     HISTORY_MAX_BYTES_FIELD_NUMBER: _ClassVar[int]
+    FREQUENCY_PENALTY_FIELD_NUMBER: _ClassVar[int]
     temperature: float
     max_tokens: int
     reasoning_effort: str
     history_max_bytes: int
-    def __init__(self, temperature: _Optional[float] = ..., max_tokens: _Optional[int] = ..., reasoning_effort: _Optional[str] = ..., history_max_bytes: _Optional[int] = ...) -> None: ...
+    frequency_penalty: float
+    def __init__(self, temperature: _Optional[float] = ..., max_tokens: _Optional[int] = ..., reasoning_effort: _Optional[str] = ..., history_max_bytes: _Optional[int] = ..., frequency_penalty: _Optional[float] = ...) -> None: ...
 
 class NodeToolBinding(_message.Message):
     __slots__ = ("tool_id", "parameter", "variable", "target")

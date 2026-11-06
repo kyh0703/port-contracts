@@ -561,7 +561,11 @@ export interface NodeModelSettings {
    * Bounds UTF-8 serialized conversation history, excluding fixed instructions.
    * Absent preserves the publication's existing inference behavior.
    */
-  historyMaxBytes?: number | undefined;
+  historyMaxBytes?:
+    | number
+    | undefined;
+  /** Absence keeps the provider default; explicit zero retains wire presence. */
+  frequencyPenalty?: number | undefined;
 }
 
 export interface NodeToolBinding {
@@ -5129,7 +5133,13 @@ export const InlineAuthoringOptions: MessageFns<InlineAuthoringOptions> = {
 };
 
 function createBaseNodeModelSettings(): NodeModelSettings {
-  return { temperature: undefined, maxTokens: undefined, reasoningEffort: undefined, historyMaxBytes: undefined };
+  return {
+    temperature: undefined,
+    maxTokens: undefined,
+    reasoningEffort: undefined,
+    historyMaxBytes: undefined,
+    frequencyPenalty: undefined,
+  };
 }
 
 export const NodeModelSettings: MessageFns<NodeModelSettings> = {
@@ -5145,6 +5155,9 @@ export const NodeModelSettings: MessageFns<NodeModelSettings> = {
     }
     if (message.historyMaxBytes !== undefined) {
       writer.uint32(32).uint32(message.historyMaxBytes);
+    }
+    if (message.frequencyPenalty !== undefined) {
+      writer.uint32(41).double(message.frequencyPenalty);
     }
     return writer;
   },
@@ -5188,6 +5201,14 @@ export const NodeModelSettings: MessageFns<NodeModelSettings> = {
           message.historyMaxBytes = reader.uint32();
           continue;
         }
+        case 5: {
+          if (tag !== 41) {
+            break;
+          }
+
+          message.frequencyPenalty = reader.double();
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -5215,6 +5236,11 @@ export const NodeModelSettings: MessageFns<NodeModelSettings> = {
         : isSet(object.history_max_bytes)
         ? globalThis.Number(object.history_max_bytes)
         : undefined,
+      frequencyPenalty: isSet(object.frequencyPenalty)
+        ? globalThis.Number(object.frequencyPenalty)
+        : isSet(object.frequency_penalty)
+        ? globalThis.Number(object.frequency_penalty)
+        : undefined,
     };
   },
 
@@ -5232,6 +5258,9 @@ export const NodeModelSettings: MessageFns<NodeModelSettings> = {
     if (message.historyMaxBytes !== undefined) {
       obj.historyMaxBytes = Math.round(message.historyMaxBytes);
     }
+    if (message.frequencyPenalty !== undefined) {
+      obj.frequencyPenalty = message.frequencyPenalty;
+    }
     return obj;
   },
 
@@ -5244,6 +5273,7 @@ export const NodeModelSettings: MessageFns<NodeModelSettings> = {
     message.maxTokens = object.maxTokens ?? undefined;
     message.reasoningEffort = object.reasoningEffort ?? undefined;
     message.historyMaxBytes = object.historyMaxBytes ?? undefined;
+    message.frequencyPenalty = object.frequencyPenalty ?? undefined;
     return message;
   },
 };

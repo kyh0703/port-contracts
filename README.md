@@ -44,6 +44,18 @@ carries bounded typed system/per-call user prompt variables. Handoff routes carr
 typed parameters, `none | conversation | recent` context policy and one blocking
 `request_start` message. Older bootstrap services/revision fallbacks are unavailable.
 
+## Optional model frequency penalty — 10.9.0
+
+`NodeModelSettings.frequency_penalty` is optional double field 5, exposed as
+`frequencyPenalty` in TypeScript/JSON. Validation accepts finite values from
+0 through 2 inclusive. Absence preserves the provider default; explicit zero,
+fractions, and 2 retain presence over binary/JSON serialization. Existing model
+fields, publication revisions, speech-correction and template exports are unchanged.
+
+The wire field does not declare provider support. Consumers must omit it for
+unsupported models, including GPT-6 Luna. Runtime support for historical
+GPT-4o and GPT-4.1 publications does not make those models newly selectable.
+
 ## Shared speech correction — 10.8.2
 
 `@overthinker1127/port-contracts/speech-correction` exposes the same bounded
