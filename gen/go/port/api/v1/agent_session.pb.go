@@ -2469,6 +2469,11 @@ type NodeModelSettings struct {
 	HistoryMaxBytes *uint32 `protobuf:"varint,4,opt,name=history_max_bytes,json=historyMaxBytes,proto3,oneof" json:"history_max_bytes,omitempty"`
 	// Absence keeps the provider default; explicit zero retains wire presence.
 	FrequencyPenalty *float64 `protobuf:"fixed64,5,opt,name=frequency_penalty,json=frequencyPenalty,proto3,oneof" json:"frequency_penalty,omitempty"`
+	TopP             *float64 `protobuf:"fixed64,6,opt,name=top_p,json=topP,proto3,oneof" json:"top_p,omitempty"`
+	PresencePenalty  *float64 `protobuf:"fixed64,7,opt,name=presence_penalty,json=presencePenalty,proto3,oneof" json:"presence_penalty,omitempty"`
+	Seed             *uint32  `protobuf:"varint,8,opt,name=seed,proto3,oneof" json:"seed,omitempty"`
+	Verbosity        *string  `protobuf:"bytes,9,opt,name=verbosity,proto3,oneof" json:"verbosity,omitempty"`
+	ServiceTier      *string  `protobuf:"bytes,10,opt,name=service_tier,json=serviceTier,proto3,oneof" json:"service_tier,omitempty"`
 	unknownFields    protoimpl.UnknownFields
 	sizeCache        protoimpl.SizeCache
 }
@@ -2536,6 +2541,41 @@ func (x *NodeModelSettings) GetFrequencyPenalty() float64 {
 		return *x.FrequencyPenalty
 	}
 	return 0
+}
+
+func (x *NodeModelSettings) GetTopP() float64 {
+	if x != nil && x.TopP != nil {
+		return *x.TopP
+	}
+	return 0
+}
+
+func (x *NodeModelSettings) GetPresencePenalty() float64 {
+	if x != nil && x.PresencePenalty != nil {
+		return *x.PresencePenalty
+	}
+	return 0
+}
+
+func (x *NodeModelSettings) GetSeed() uint32 {
+	if x != nil && x.Seed != nil {
+		return *x.Seed
+	}
+	return 0
+}
+
+func (x *NodeModelSettings) GetVerbosity() string {
+	if x != nil && x.Verbosity != nil {
+		return *x.Verbosity
+	}
+	return ""
+}
+
+func (x *NodeModelSettings) GetServiceTier() string {
+	if x != nil && x.ServiceTier != nil {
+		return *x.ServiceTier
+	}
+	return ""
 }
 
 type NodeToolBinding struct {
@@ -8469,20 +8509,31 @@ const file_port_api_v1_agent_session_proto_rawDesc = "" +
 	"\x10max_result_bytes\x18\x04 \x01(\rB\f\xbaH\t*\a\x18\x80\x80\x01(\x80\bR\x0emaxResultBytes\"\x9b\x01\n" +
 	"\x16InlineAuthoringOptions\x124\n" +
 	"\x05model\x18\x01 \x01(\v2\x1e.port.api.v1.NodeModelSettingsR\x05model\x12K\n" +
-	"\rtool_bindings\x18\x02 \x03(\v2\x1c.port.api.v1.NodeToolBindingB\b\xbaH\x05\x92\x01\x02\x10\x1eR\ftoolBindings\"\xb7\x03\n" +
+	"\rtool_bindings\x18\x02 \x03(\v2\x1c.port.api.v1.NodeToolBindingB\b\xbaH\x05\x92\x01\x02\x10\x1eR\ftoolBindings\"\xcd\x06\n" +
 	"\x11NodeModelSettings\x12>\n" +
-	"\vtemperature\x18\x01 \x01(\x01B\x17\xbaH\x14\x12\x12\x19\x00\x00\x00\x00\x00\x00\x00@)\x00\x00\x00\x00\x00\x00\x00\x00H\x00R\vtemperature\x88\x01\x01\x12.\n" +
+	"\vtemperature\x18\x01 \x01(\x01B\x17\xbaH\x14\x12\x12\x19\x00\x00\x00\x00\x00\x00\x00@)\x00\x00\x00\x00\x00\x00\x00\x00H\x00R\vtemperature\x88\x01\x01\x12/\n" +
 	"\n" +
-	"max_tokens\x18\x02 \x01(\x05B\n" +
-	"\xbaH\a\x1a\x05\x18\x80 (\x01H\x01R\tmaxTokens\x88\x01\x01\x12H\n" +
-	"\x10reasoning_effort\x18\x03 \x01(\tB\x18\xbaH\x15r\x13R\x03lowR\x06mediumR\x04highH\x02R\x0freasoningEffort\x88\x01\x01\x12=\n" +
+	"max_tokens\x18\x02 \x01(\x05B\v\xbaH\b\x1a\x06\x18\x80\xe8\a(\x01H\x01R\tmaxTokens\x88\x01\x01\x12c\n" +
+	"\x10reasoning_effort\x18\x03 \x01(\tB3\xbaH0r.R\x04noneR\aminimalR\x03lowR\x06mediumR\x04highR\x05xhighR\x03maxH\x02R\x0freasoningEffort\x88\x01\x01\x12=\n" +
 	"\x11history_max_bytes\x18\x04 \x01(\rB\f\xbaH\t*\a\x18\x80\x80\x10(\x80@H\x03R\x0fhistoryMaxBytes\x88\x01\x01\x12I\n" +
-	"\x11frequency_penalty\x18\x05 \x01(\x01B\x17\xbaH\x14\x12\x12\x19\x00\x00\x00\x00\x00\x00\x00@)\x00\x00\x00\x00\x00\x00\x00\x00H\x04R\x10frequencyPenalty\x88\x01\x01B\x0e\n" +
+	"\x11frequency_penalty\x18\x05 \x01(\x01B\x17\xbaH\x14\x12\x12\x19\x00\x00\x00\x00\x00\x00\x00@)\x00\x00\x00\x00\x00\x00\x00\xc0H\x04R\x10frequencyPenalty\x88\x01\x01\x121\n" +
+	"\x05top_p\x18\x06 \x01(\x01B\x17\xbaH\x14\x12\x12\x19\x00\x00\x00\x00\x00\x00\xf0?)\x00\x00\x00\x00\x00\x00\x00\x00H\x05R\x04topP\x88\x01\x01\x12G\n" +
+	"\x10presence_penalty\x18\a \x01(\x01B\x17\xbaH\x14\x12\x12\x19\x00\x00\x00\x00\x00\x00\x00@)\x00\x00\x00\x00\x00\x00\x00\xc0H\x06R\x0fpresencePenalty\x88\x01\x01\x12$\n" +
+	"\x04seed\x18\b \x01(\rB\v\xbaH\b*\x06\x18\xff\xff\xff\xff\aH\aR\x04seed\x88\x01\x01\x12;\n" +
+	"\tverbosity\x18\t \x01(\tB\x18\xbaH\x15r\x13R\x03lowR\x06mediumR\x04highH\bR\tverbosity\x88\x01\x01\x12R\n" +
+	"\fservice_tier\x18\n" +
+	" \x01(\tB*\xbaH'r%R\x04autoR\adefaultR\x04flexR\x04fastR\bpriorityH\tR\vserviceTier\x88\x01\x01B\x0e\n" +
 	"\f_temperatureB\r\n" +
 	"\v_max_tokensB\x13\n" +
 	"\x11_reasoning_effortB\x14\n" +
 	"\x12_history_max_bytesB\x14\n" +
-	"\x12_frequency_penalty\"\xb2\x01\n" +
+	"\x12_frequency_penaltyB\b\n" +
+	"\x06_top_pB\x13\n" +
+	"\x11_presence_penaltyB\a\n" +
+	"\x05_seedB\f\n" +
+	"\n" +
+	"_verbosityB\x0f\n" +
+	"\r_service_tier\"\xb2\x01\n" +
 	"\x0fNodeToolBinding\x12 \n" +
 	"\atool_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x06toolId\x12%\n" +
 	"\tparameter\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\tparameter\x12#\n" +

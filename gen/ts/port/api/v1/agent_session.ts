@@ -566,6 +566,11 @@ export interface NodeModelSettings {
     | undefined;
   /** Absence keeps the provider default; explicit zero retains wire presence. */
   frequencyPenalty?: number | undefined;
+  topP?: number | undefined;
+  presencePenalty?: number | undefined;
+  seed?: number | undefined;
+  verbosity?: string | undefined;
+  serviceTier?: string | undefined;
 }
 
 export interface NodeToolBinding {
@@ -5139,6 +5144,11 @@ function createBaseNodeModelSettings(): NodeModelSettings {
     reasoningEffort: undefined,
     historyMaxBytes: undefined,
     frequencyPenalty: undefined,
+    topP: undefined,
+    presencePenalty: undefined,
+    seed: undefined,
+    verbosity: undefined,
+    serviceTier: undefined,
   };
 }
 
@@ -5158,6 +5168,21 @@ export const NodeModelSettings: MessageFns<NodeModelSettings> = {
     }
     if (message.frequencyPenalty !== undefined) {
       writer.uint32(41).double(message.frequencyPenalty);
+    }
+    if (message.topP !== undefined) {
+      writer.uint32(49).double(message.topP);
+    }
+    if (message.presencePenalty !== undefined) {
+      writer.uint32(57).double(message.presencePenalty);
+    }
+    if (message.seed !== undefined) {
+      writer.uint32(64).uint32(message.seed);
+    }
+    if (message.verbosity !== undefined) {
+      writer.uint32(74).string(message.verbosity);
+    }
+    if (message.serviceTier !== undefined) {
+      writer.uint32(82).string(message.serviceTier);
     }
     return writer;
   },
@@ -5209,6 +5234,46 @@ export const NodeModelSettings: MessageFns<NodeModelSettings> = {
           message.frequencyPenalty = reader.double();
           continue;
         }
+        case 6: {
+          if (tag !== 49) {
+            break;
+          }
+
+          message.topP = reader.double();
+          continue;
+        }
+        case 7: {
+          if (tag !== 57) {
+            break;
+          }
+
+          message.presencePenalty = reader.double();
+          continue;
+        }
+        case 8: {
+          if (tag !== 64) {
+            break;
+          }
+
+          message.seed = reader.uint32();
+          continue;
+        }
+        case 9: {
+          if (tag !== 74) {
+            break;
+          }
+
+          message.verbosity = reader.string();
+          continue;
+        }
+        case 10: {
+          if (tag !== 82) {
+            break;
+          }
+
+          message.serviceTier = reader.string();
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -5241,6 +5306,23 @@ export const NodeModelSettings: MessageFns<NodeModelSettings> = {
         : isSet(object.frequency_penalty)
         ? globalThis.Number(object.frequency_penalty)
         : undefined,
+      topP: isSet(object.topP)
+        ? globalThis.Number(object.topP)
+        : isSet(object.top_p)
+        ? globalThis.Number(object.top_p)
+        : undefined,
+      presencePenalty: isSet(object.presencePenalty)
+        ? globalThis.Number(object.presencePenalty)
+        : isSet(object.presence_penalty)
+        ? globalThis.Number(object.presence_penalty)
+        : undefined,
+      seed: isSet(object.seed) ? globalThis.Number(object.seed) : undefined,
+      verbosity: isSet(object.verbosity) ? globalThis.String(object.verbosity) : undefined,
+      serviceTier: isSet(object.serviceTier)
+        ? globalThis.String(object.serviceTier)
+        : isSet(object.service_tier)
+        ? globalThis.String(object.service_tier)
+        : undefined,
     };
   },
 
@@ -5261,6 +5343,21 @@ export const NodeModelSettings: MessageFns<NodeModelSettings> = {
     if (message.frequencyPenalty !== undefined) {
       obj.frequencyPenalty = message.frequencyPenalty;
     }
+    if (message.topP !== undefined) {
+      obj.topP = message.topP;
+    }
+    if (message.presencePenalty !== undefined) {
+      obj.presencePenalty = message.presencePenalty;
+    }
+    if (message.seed !== undefined) {
+      obj.seed = Math.round(message.seed);
+    }
+    if (message.verbosity !== undefined) {
+      obj.verbosity = message.verbosity;
+    }
+    if (message.serviceTier !== undefined) {
+      obj.serviceTier = message.serviceTier;
+    }
     return obj;
   },
 
@@ -5274,6 +5371,11 @@ export const NodeModelSettings: MessageFns<NodeModelSettings> = {
     message.reasoningEffort = object.reasoningEffort ?? undefined;
     message.historyMaxBytes = object.historyMaxBytes ?? undefined;
     message.frequencyPenalty = object.frequencyPenalty ?? undefined;
+    message.topP = object.topP ?? undefined;
+    message.presencePenalty = object.presencePenalty ?? undefined;
+    message.seed = object.seed ?? undefined;
+    message.verbosity = object.verbosity ?? undefined;
+    message.serviceTier = object.serviceTier ?? undefined;
     return message;
   },
 };

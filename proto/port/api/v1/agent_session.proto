@@ -395,13 +395,18 @@ message InlineAuthoringOptions {
 
 message NodeModelSettings {
   optional double temperature = 1 [(buf.validate.field).double = {gte: 0, lte: 2}];
-  optional int32 max_tokens = 2 [(buf.validate.field).int32 = {gte: 1, lte: 4096}];
-  optional string reasoning_effort = 3 [(buf.validate.field).string = {in: ["low", "medium", "high"]}];
+  optional int32 max_tokens = 2 [(buf.validate.field).int32 = {gte: 1, lte: 128000}];
+  optional string reasoning_effort = 3 [(buf.validate.field).string = {in: ["none", "minimal", "low", "medium", "high", "xhigh", "max"]}];
   // Bounds UTF-8 serialized conversation history, excluding fixed instructions.
   // Absent preserves the publication's existing inference behavior.
   optional uint32 history_max_bytes = 4 [(buf.validate.field).uint32 = {gte: 8192 lte: 262144}];
   // Absence keeps the provider default; explicit zero retains wire presence.
-  optional double frequency_penalty = 5 [(buf.validate.field).double = {gte: 0, lte: 2}];
+  optional double frequency_penalty = 5 [(buf.validate.field).double = {gte: -2, lte: 2}];
+  optional double top_p = 6 [(buf.validate.field).double = {gte: 0, lte: 1}];
+  optional double presence_penalty = 7 [(buf.validate.field).double = {gte: -2, lte: 2}];
+  optional uint32 seed = 8 [(buf.validate.field).uint32.lte = 2147483647];
+  optional string verbosity = 9 [(buf.validate.field).string = {in: ["low", "medium", "high"]}];
+  optional string service_tier = 10 [(buf.validate.field).string = {in: ["auto", "default", "flex", "fast", "priority"]}];
 }
 
 message NodeToolBinding {

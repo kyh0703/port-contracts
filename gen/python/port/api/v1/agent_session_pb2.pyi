@@ -447,18 +447,28 @@ class InlineAuthoringOptions(_message.Message):
     def __init__(self, model: _Optional[_Union[NodeModelSettings, _Mapping]] = ..., tool_bindings: _Optional[_Iterable[_Union[NodeToolBinding, _Mapping]]] = ...) -> None: ...
 
 class NodeModelSettings(_message.Message):
-    __slots__ = ("temperature", "max_tokens", "reasoning_effort", "history_max_bytes", "frequency_penalty")
+    __slots__ = ("temperature", "max_tokens", "reasoning_effort", "history_max_bytes", "frequency_penalty", "top_p", "presence_penalty", "seed", "verbosity", "service_tier")
     TEMPERATURE_FIELD_NUMBER: _ClassVar[int]
     MAX_TOKENS_FIELD_NUMBER: _ClassVar[int]
     REASONING_EFFORT_FIELD_NUMBER: _ClassVar[int]
     HISTORY_MAX_BYTES_FIELD_NUMBER: _ClassVar[int]
     FREQUENCY_PENALTY_FIELD_NUMBER: _ClassVar[int]
+    TOP_P_FIELD_NUMBER: _ClassVar[int]
+    PRESENCE_PENALTY_FIELD_NUMBER: _ClassVar[int]
+    SEED_FIELD_NUMBER: _ClassVar[int]
+    VERBOSITY_FIELD_NUMBER: _ClassVar[int]
+    SERVICE_TIER_FIELD_NUMBER: _ClassVar[int]
     temperature: float
     max_tokens: int
     reasoning_effort: str
     history_max_bytes: int
     frequency_penalty: float
-    def __init__(self, temperature: _Optional[float] = ..., max_tokens: _Optional[int] = ..., reasoning_effort: _Optional[str] = ..., history_max_bytes: _Optional[int] = ..., frequency_penalty: _Optional[float] = ...) -> None: ...
+    top_p: float
+    presence_penalty: float
+    seed: int
+    verbosity: str
+    service_tier: str
+    def __init__(self, temperature: _Optional[float] = ..., max_tokens: _Optional[int] = ..., reasoning_effort: _Optional[str] = ..., history_max_bytes: _Optional[int] = ..., frequency_penalty: _Optional[float] = ..., top_p: _Optional[float] = ..., presence_penalty: _Optional[float] = ..., seed: _Optional[int] = ..., verbosity: _Optional[str] = ..., service_tier: _Optional[str] = ...) -> None: ...
 
 class NodeToolBinding(_message.Message):
     __slots__ = ("tool_id", "parameter", "variable", "target")

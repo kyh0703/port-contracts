@@ -44,6 +44,15 @@ carries bounded typed system/per-call user prompt variables. Handoff routes carr
 typed parameters, `none | conversation | recent` context policy and one blocking
 `request_start` message. Older bootstrap services/revision fallbacks are unavailable.
 
+## Optional model generation controls — 10.10.0
+
+`NodeModelSettings` adds optional `top_p` (field 6), `presence_penalty` (7),
+`seed` (8), `verbosity` (9), and `service_tier` (10). Missing fields retain
+existing consumer defaults; explicit zero retains binary and JSON presence. Output tokens
+allow 1–128,000, frequency/presence penalties allow -2–2, and reasoning effort
+also accepts `none`, `minimal`, `xhigh`, and `max`. Consumers validate model capabilities
+before forwarding settings; `fast` and the legacy `priority` tier are both accepted. This contract does not add a new provider.
+
 ## Optional model frequency penalty — 10.9.0
 
 `NodeModelSettings.frequency_penalty` is optional double field 5, exposed as
