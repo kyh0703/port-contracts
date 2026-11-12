@@ -233,14 +233,15 @@ test('supports bounded assign, capture, for, case, break, and continue', () => {
   assert.equal(renderLiquidTemplate('{% for n in (1..count) %}{{ n }}{% endfor %}', { count: '3' }), '123');
 });
 
-test('preserves plain text, Korean aliases, exact dotted keys, and signed date offsets', () => {
-  const values = { 'customer.name': 'flat', customer: { name: 'nested' }, 고객명: '김고객', '오늘+1': '2026-11-06', '오늘-2': '2026-11-03', '사용자.이름': '홍길동' };
-  assert.equal(renderLiquidTemplate('안내 {{고객명}} {{customer.name}} {{오늘+1}} {{오늘-2}} {{사용자.이름}}', values), '안내 김고객 flat 2026-11-06 2026-11-03 홍길동');
-  assert.deepEqual(inspectLiquidTemplate('{{오늘+1}} {{오늘-2}} {{사용자.이름}} {{customer.name}}').variables, ['오늘+1', '오늘-2', '사용자.이름', 'customer.name']);
-  assert.equal(renderLiquidTemplate('{{ 오늘 + 1 }} / {{ 오늘 - 2 }}', values), '2026-11-06 / 2026-11-03');
-  assert.deepEqual(inspectLiquidTemplate('{{ 오늘 + 1 }} {{ 오늘 - 2 }}').variables, ['오늘+1', '오늘-2']);
-  assert.equal(renderLiquidTemplate('{{ customer.name }}', { customer: { name: 'nested' } }), 'nested');
-  assert.equal(renderLiquidTemplate('그대로 안내합니다.', {}), '그대로 안내합니다.');
+test('rejects non-English identifiers while retaining Korean text and values', () => {
+  for (const source of ['{{고객명}}', '{{customer.이름}}', '{{customer["이름"]}}', '{{오늘+1}}', '{% assign 이름 = "홍길동" %}{{이름}}', '{% for 항목 in items %}{{항목}}{% endfor %}']) {
+    assert.throws(() => inspectLiquidTemplate(source), { name: 'LiquidTemplateError', code: 'UNSUPPORTED_SYNTAX' });
+  }
+  const values = { customer_name: '홍길동', 'date+1': '2026-11-06' };
+  assert.equal(renderLiquidTemplate('안내 {{customer_name}} {{date+1}}', values), '안내 홍길동 2026-11-06');
+  assert.deepEqual(inspectLiquidTemplate('{{customer_name}} {{date+1}}').variables, ['customer_name', 'date+1']);
+  assert.equal(renderLiquidTemplate('{{ name | default: "고객" }}', {}), '고객');
+  assert.equal(renderLiquidTemplate('{{ payload.name }}', { payload: { name: '홍길동', 부서: '상담' } }), '홍길동');
 });
 
 test('inserts data once without interpreting it as source or HTML-encoding it', () => {

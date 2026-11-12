@@ -75,7 +75,7 @@ replace the whole transcript or guarantee an LLM will call the tool. TTS preview
 shows transformed input, not the provider's actual voice or pronunciation.
 TTS rules remain case-sensitive literal substitutions, not regular expressions.
 
-## Shared authored Liquid templates — 10.8.1
+## Shared authored Liquid templates — 11.0.0
 
 API validation, worker rendering, and browser previews use the same restricted
 LiquidJS 10.30.1 engine:
@@ -97,9 +97,10 @@ value must be absent from the request, not replaced with an empty string.
 
 Supported constructs include conditions, case, assign/capture, bounded for loops,
 break/continue, comments, string/arithmetic/default filters, and explicit ISO-date
-formatting in UTC. Exact flat dotted keys, Korean variables and existing signed
-date aliases remain supported. Computed property paths, arbitrary JavaScript,
-file/template includes and unsupported filters are rejected.
+formatting in UTC. Exact flat dotted keys and signed date offsets remain supported.
+Variable names and property paths use English identifiers; Korean text and values
+remain supported. Computed property paths, arbitrary JavaScript, file/template
+includes and unsupported filters are rejected.
 
 Pass only permitted plain JSON data. Functions, getters, prototype-related keys,
 behavior-bearing objects and cycles are rejected. Inserted values are never parsed

@@ -108,6 +108,11 @@ function checkProperty(property: string, token?: Token): void {
   }
 }
 
+function checkIdentifier(name: string, token?: Token): void {
+  if (/[^\x00-\x7f]/.test(name)) fail('UNSUPPORTED_SYNTAX', token);
+  checkProperty(name, token);
+}
+
 type PlainValue = null | boolean | number | string | PlainValue[] | { [key: string]: PlainValue };
 
 function copyValues(values: Readonly<Record<string, unknown>>): Record<string, PlainValue> {
@@ -491,7 +496,7 @@ function validateToken(token: Token, source: string, ranges: RangeToken[]): void
       if (TypeGuards.isWordToken(property)) {
         property.content = source.slice(property.begin, property.end).replace(/\s*([+-])\s*(\d+)$/, '$1$2');
       }
-      checkProperty(String(property.content), token);
+      checkIdentifier(String(property.content), token);
     }
     if (token.input.slice(cursor, token.end).trim()) fail('PARSE_ERROR', token);
     token.input = source;
@@ -535,10 +540,10 @@ function prepareTemplates(templates: Template[], source: string): void {
       else validateToken(argument, source, ranges);
     }
     for (const local of template.localScope?.() ?? []) {
-      checkProperty(local.content, template.token);
+      checkIdentifier(local.content, template.token);
       if (TypeGuards.isWordToken(local) && source.slice(local.begin, local.end) !== local.content) fail('UNSUPPORTED_SYNTAX', template.token);
     }
-    for (const local of template.blockScope?.() ?? []) checkProperty(local, template.token);
+    for (const local of template.blockScope?.() ?? []) checkIdentifier(local, template.token);
     if (template.children) prepareTemplates(toValueSync(template.children(false, true)) as Template[], source);
     if (template instanceof ForTag) {
       for (const key of Object.keys(template.hash.hash)) {
